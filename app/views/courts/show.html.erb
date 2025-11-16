@@ -1,0 +1,86 @@
+<div class="max-w-5xl mx-auto px-4 py-6">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-semibold"><%= @court.name %></h1>
+      <p class="text-gray-600">Court details, map and scheduled games.</p>
+    </div>
+    <div class="flex items-center gap-4">
+      <% if can_manage?(@court) %>
+        <%= link_to "Edit Court", edit_court_path(@court), class: "text-sm text-indigo-600 hover:underline" %>
+      <% end %>
+      <%= link_to "Back to Courts", courts_path, class: "text-sm text-gray-600 hover:underline" %>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg border p-6 shadow-sm">
+    <% lat, lng = @court.coordinates.to_s.split(",").map(&:to_f) %>
+
+    <% if geocoding_exceeded? %>
+      <div class="mb-2 rounded-md bg-yellow-50 border border-yellow-200 p-2 text-yellow-800 text-sm">
+        Google geocoding quota exceeded for today (limit: <%= Geocoding::Quota::DAILY_LIMIT %>). Address lookup via Google is disabled — map unavailable.
+      </div>
+    <% else %>
+      <% if lat && lng && !(lat.zero? && lng.zero?) %>
+        <div data-controller="map-show"
+              data-map-show-lat-value="<%= lat %>"
+              data-map-show-lng-value="<%= lng %>"
+              class="h-72 w-full rounded border mb-4"></div>
+      <% else %>
+        <div class="h-72 w-full rounded border bg-gray-50 flex items-center justify-center text-gray-400 mb-4">
+          Coordinates not available
+        </div>
+      <% end %>
+    <% end %>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+      <div>
+        <p class="text-sm text-gray-500">Address</p>
+        <p class="text-lg font-medium text-gray-900"><%= @court.address.presence || "Unknown address" %></p>
+      </div>
+
+      <div>
+        <p class="text-sm text-gray-500">Coordinates</p>
+        <p class="text-sm font-mono text-gray-700">
+          <%= lat.round(6) rescue "—" %>, <%= lng.round(6) rescue "—" %>
+        </p>
+      </div>
+    </div>
+
+    <% if @court.formatted_contact.present? %>
+      <div class="mb-4">
+        <p class="text-sm text-gray-500">Contact</p>
+        <p class="text-lg font-medium text-indigo-700"><%= @court.formatted_contact %></p>
+      </div>
+    <% end %>
+
+    <h2 class="text-lg font-medium mb-3">Games Scheduled</h2>
+    <% if @court.games.any? %>
+      <ul class="list-none space-y-3 mb-6">
+        <% @court.games.each do |game| %>
+          <li class="rounded-md border p-3 flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-500">
+                <%= game.date.strftime("%B %d, %Y") %> — <span class="font-medium text-gray-900"><%= game.time.strftime("%I:%M %p") %></span>
+              </p>
+              <p class="text-sm text-gray-600 mt-1">
+                <%= pluralize(game.participations.count, "participant") %>
+              </p>
+            </div>
+            <div>
+              <%= link_to "View", game_path(game), class: "text-sm font-medium text-indigo-600 hover:text-indigo-700" %>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <div class="rounded-lg border border-dashed p-6 text-center text-gray-500 mb-6">
+        No games scheduled for this court.
+      </div>
+    <% end %>
+
+    <div class="flex items-center gap-3">
+      <%= link_to "Create Game", new_game_path(court_id: @court.id), class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition" %>
+      <%= link_to "Back to Courts", courts_path, class: "text-sm text-gray-600 hover:underline" %>
+    </div>
+  </div>
+</div>

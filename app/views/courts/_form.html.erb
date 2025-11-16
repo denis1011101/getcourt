@@ -1,0 +1,70 @@
+<%= form_with(model: court, local: true) do |form| %>
+  <% if court.errors.any? %>
+    <div id="error_explanation" class="mb-4 rounded-md bg-red-50 border border-red-200 p-4 text-red-700">
+      <h2 class="font-semibold"><%= pluralize(court.errors.count, "error") %> prohibited this court from being saved:</h2>
+      <ul class="mt-2 list-disc list-inside text-sm">
+        <% court.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="bg-white rounded-lg border p-6 shadow-sm">
+    <div class="grid grid-cols-1 gap-4">
+      <div>
+        <%= form.label :name, class: "block text-sm font-semibold text-gray-800" %>
+        <%= form.text_field :name,
+              autofocus: true,
+              placeholder: "Court name (e.g. Central Court)",
+              class: "mt-1 block w-full rounded-md border border-gray-300 bg-white text-lg text-gray-900 shadow-sm px-3 py-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" %>
+        <p class="mt-1 text-xs text-gray-500">Enter a clear short name for the court.</p>
+      </div>
+
+      <div class="space-y-3" data-controller="map-picker"
+           data-map-picker-default-lat-value="56.838011"
+           data-map-picker-default-lng-value="60.597465">
+        <label class="block text-sm font-medium text-gray-700">Select on the map</label>
+        <% if geocoding_exceeded? %>
+          <div class="mb-2 rounded-md bg-yellow-50 border border-yellow-200 p-2 text-yellow-800 text-sm">
+            Google geocoding quota exceeded for today (limit: <%= Geocoding::Quota::DAILY_LIMIT %>). Address lookup via Google is disabled — coordinates selection on the map is unavailable.
+          </div>
+        <% else %>
+          <div data-map-picker-target="map" class="h-72 w-full rounded border bg-white"></div>
+        <% end %>
+        <div class="flex items-center gap-3">
+          <button type="button" class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-500" data-action="click->map-picker#geolocate">
+            Use my location
+          </button>
+          <span class="text-xs text-gray-500">Click on the map or drag the marker</span>
+        </div>
+
+        <%= form.hidden_field :coordinates,
+              data: { "map-picker-target": "coordinates", action: "input->map-picker#syncFromInput" } %>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4 items-center">
+        <div class="sm:col-span-1">
+          <label class="block text-sm text-gray-600">Contact type</label>
+          <%= form.select :contact_type,
+                (Court::CONTACT_TYPES rescue %w[phone whatsapp telegram viber other]).map { |t| [t.capitalize, t] },
+                { include_blank: "Select" },
+                class: "mt-1 block w-full rounded-md border-gray-300" %>
+        </div>
+
+        <div class="sm:col-span-2">
+          <label class="block text-sm text-gray-600">Contact</label>
+          <%= form.text_field :contact_value,
+                placeholder: "Phone number or messenger handle",
+                class: "mt-1 block w-full rounded-md border-gray-300" %>
+          <p class="text-xs text-gray-500 mt-1">Enter phone, username or link.</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <%= form.submit "Save Court", class: "rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition" %>
+        <%= link_to "Cancel", courts_path, class: "text-sm text-gray-600 hover:underline" %>
+      </div>
+    </div>
+  </div>
+<% end %>
