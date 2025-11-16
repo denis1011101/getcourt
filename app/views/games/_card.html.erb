@@ -1,0 +1,33 @@
+<div class="rounded-md border p-4 bg-white shadow-sm flex flex-col justify-between">
+  <div>
+    <p class="text-sm text-gray-500">
+      <%= game.next_date ? game.next_date.strftime("%B %d, %Y") : (game.date && game.date.strftime("%B %d, %Y")) %>
+      <% if game.next_time || game.time %>
+        — <span class="font-medium text-gray-900"><%= (game.next_time || game.time)&.strftime("%I:%M %p") %></span>
+      <% end %>
+    </p>
+
+    <p class="text-sm text-gray-600 mt-2">
+      <%= link_to game.court.name, court_path(game.court), class: "text-indigo-600 hover:underline" %>
+    </p>
+
+    <p class="text-sm text-gray-700 mt-3">
+      <span class="inline-block rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800">
+        <%= pluralize(game.participations.count, "participant") %>
+      </span>
+      <% if game.recurring? %>
+        <span class="ml-2 inline-block rounded-full bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700">Weekly</span>
+      <% end %>
+      <% if game.respond_to?(:with_coach) && (game.try(:with_coach?) || game.with_coach.to_s == "1") %>
+        <span class="ml-2 inline-block rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700">With coach</span>
+      <% end %>
+    </p>
+  </div>
+
+  <div class="mt-4 flex items-center justify-between">
+    <%= link_to "View", game_path(game), class: "text-sm font-medium text-indigo-600 hover:text-indigo-700" %>
+    <% if can_manage?(game) %>
+      <%= link_to "Edit", edit_game_path(game), class: "text-sm text-gray-600 hover:underline" %>
+    <% end %>
+  </div>
+</div>

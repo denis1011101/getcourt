@@ -1,0 +1,7 @@
+<%= turbo_stream.replace "participations" do %>
+  <%= render partial: "participations/list", locals: { game: @game } %>
+<% end %>
+
+<%= turbo_stream.replace "participation_controls" do %>
+  <%= render partial: "participations/controls", locals: { game: @game } %>
+<% end %>

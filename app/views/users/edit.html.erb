@@ -1,0 +1,21 @@
+<div class="max-w-3xl mx-auto px-4 py-6">
+  <h1 class="text-xl font-semibold mb-4">Account</h1>
+
+  <p class="mb-4 text-sm text-gray-700">
+    To receive Telegram notifications, please open a chat with our bot and send the registration command.
+    Click <a href="https://t.me/GetCourtBot" class="text-indigo-600 hover:underline" target="_blank" rel="noopener">https://t.me/GetCourtBot</a> and send:
+  </p>
+
+  <div class="mb-4 p-3 bg-gray-50 border rounded">
+    <code>/register <%= @registration_token %></code>
+  </div>
+
+  <p class="text-xs text-gray-500">
+    Send this command either in a private chat with the bot (to receive personal notifications) or in a group where the bot is a member (to register the group chat id). After registering the token will be cleared automatically.
+  </p>
+
+  <div class="mt-4">
+    <%= link_to "Regenerate token", edit_account_path, class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition" %>
+    <%= link_to "Back", root_path, class: "ml-4 text-sm text-gray-600 hover:underline" %>
+  </div>
+</div>

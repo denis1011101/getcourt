@@ -1,0 +1,42 @@
+<div class="max-w-5xl mx-auto px-4 py-6">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-semibold">Game details</h1>
+      <p class="text-gray-600">Full information about the game and participants.</p>
+    </div>
+    <div>
+      <%= link_to "Back to Games", games_path, class: "text-sm text-gray-600 hover:underline" %>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg border p-6 shadow-sm">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+      <div>
+        <p class="text-sm text-gray-500">Date</p>
+        <% nd = @game.next_date %>
+        <p class="text-lg font-medium text-gray-900">
+          <% game_badges(@game).each do |b| %>
+            <span class="<%= b[:classes] %>"><%= b[:text] %></span>
+          <% end %>
+          <%= display_date(@game) %>
+        </p>
+      </div>
+
+      <div>
+        <p class="text-sm text-gray-500">Time</p>
+        <p class="text-lg font-medium text-gray-900"><%= display_time(@game) %></p>
+      </div>
+
+      <div class="sm:col-span-2">
+        <p class="text-sm text-gray-500">Court</p>
+        <p class="text-lg font-medium text-indigo-700">
+          <%= link_to @game.court.name, court_path(@game.court), class: "hover:underline" %>
+        </p>
+      </div>
+    </div>
+
+    <h2 class="text-sm font-semibold text-gray-700 mb-2">Participants</h2>
+    <%= render "participations/list", game: @game %>
+    <%= render "participations/controls", game: @game %>
+  </div>
+</div>

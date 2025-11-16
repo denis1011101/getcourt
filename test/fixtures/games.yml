@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  date: 2025-08-27
+  time: 2025-08-27 21:06:12
+  court: one
+  user: one
+
+two:
+  date: 2025-08-27
+  time: 2025-08-27 21:06:12
+  court: two
+  user: two

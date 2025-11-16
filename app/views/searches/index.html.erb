@@ -1,0 +1,60 @@
+<div class="max-w-5xl mx-auto px-4 py-6">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-semibold">Search for Nearby Tennis Courts</h1>
+      <p class="text-gray-600">Enter a place or paste coordinates (lat,lng). You can also use your current location.</p>
+    </div>
+  </div>
+
+<%= form_with url: searches_path, method: :get, local: true do %>
+  <div class="flex items-stretch gap-2" data-controller="geolocation">
+    <%= text_field_tag :location, params[:location], id: "location-input",
+          placeholder: "e.g. New York, 40.78,-73.96 or Central Court (city, coords or court name)",
+          class: "w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500",
+          data: { "geolocation-target" => "input" } %>
+
+    <%= submit_tag "Search", class: "rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition" %>
+
+    <%= button_tag "Use my location",
+          type: "button",
+          class: "inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-500",
+          data: { "geolocation-target" => "button", "action" => "click->geolocation#locate" } %>
+    </button>
+  </div>
+<% end %>
+
+  <% if @courts.present? %>
+    <h2 class="text-lg font-medium mb-3 mt-6">Nearby Courts</h2>
+    <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <% @courts.each do |court| %>
+        <% addr = court.address %>
+        <% unknown = (addr == "Unknown address" || addr == "Geocoding error") %>
+        <li class="group rounded-lg border bg-white p-4 shadow-sm hover:shadow-md transition">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h3 class="text-base font-semibold text-gray-900">
+                <%= link_to court.name, court_path(court), class: "hover:underline" %>
+              </h3>
+              <p class="mt-1 text-sm <%= unknown ? 'text-gray-400' : 'text-gray-600' %>">
+                <span class="inline-flex items-center gap-1">
+                  <svg class="h-4 w-4 <%= unknown ? 'text-gray-300' : 'text-indigo-500' %>" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M10 2a6 6 0 00-6 6c0 4.418 6 10 6 10s6-5.582 6-10a6 6 0 00-6-6zm0 8a2 2 0 110-4 2 2 0 010 4z" clip-rule="evenodd"/>
+                  </svg>
+                  <%= unknown ? "Address unavailable" : addr %>
+                </span>
+              </p>
+              <% if court.coordinates.present? %>
+                <p class="mt-1 text-xs text-gray-400 font-mono">coords: <%= court.coordinates %></p>
+              <% end %>
+            </div>
+            <%= link_to "View", court_path(court), class: "text-sm font-medium text-indigo-600 hover:text-indigo-700" %>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <div class="rounded-lg border border-dashed p-8 text-center text-gray-500 mt-6">
+      No courts found nearby.
+    </div>
+  <% end %>
+</div>

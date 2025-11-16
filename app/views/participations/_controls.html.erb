@@ -1,0 +1,20 @@
+<div id="participation_controls" class="flex items-center gap-3">
+  <% g = local_assigns[:game] || @game %>
+  <% participation = g.participations.find_by(user: current_user) %>
+
+  <% if participation %>
+    <%= button_to 'Leave Game',
+          game_participation_path(g, participation),
+          method: :delete,
+          form: { data: { turbo: true } },
+          class: "inline-flex items-center rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700 transition" %>
+  <% else %>
+    <%= button_to 'Join Game',
+          game_participations_path(g),
+          method: :post,
+          form: { data: { turbo: true } },
+          class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition" %>
+  <% end %>
+
+  <%= link_to "Back to Games", games_path, class: "text-sm text-gray-600 hover:underline" %>
+</div>

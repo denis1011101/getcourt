@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Get Court</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <!-- Google Maps JavaScript API -->
+    <script>window.initMap = window.initMap || function(){};</script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=<%= ENV['GOOGLE_MAPS_API_KEY'] %>&callback=initMap"></script>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="bg-gray-50 text-gray-900">
+    <header class="border-b bg-white">
+      <nav class="mx-auto max-w-5xl px-4 py-4 flex justify-between items-start gap-4">
+        <!-- Левая колонка: Логотип (всегда в две строки) -->
+        <div>
+          <%= link_to root_path, class: "text-xl font-semibold" do %>
+            <span class="leading-tight">
+              <span class="block">Get</span>
+              <span class="block">Court</span>
+            </span>
+          <% end %>
+        </div>
+
+        <!-- Правая колонка -->
+        <div class="flex items-start gap-6">
+          <!-- Первая строка: пункты меню (на одном уровне с Add Court) -->
+          <div class="flex items-center gap-6">
+            <%= link_to "Courts", courts_path, class: "text-sm text-gray-700 hover:text-gray-900" %>
+            <%= link_to "Games", games_path, class: "text-sm text-gray-700 hover:text-gray-900" %>
+            <%= link_to "Search nearby", searches_path, class: "text-sm text-gray-700 hover:text-gray-900 whitespace-nowrap" %>
+          </div>
+
+          <!-- Колонка действий: сверху Add Court, снизу строка с Sign и подписью -->
+          <div class="relative flex flex-col items-center">
+            <%= link_to "Add Court", new_court_path, class: "inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-500 whitespace-nowrap" %>
+
+            <!-- Вторая строка: Sign in/out по центру под кнопкой, слева подпись -->
+            <div class="relative mt-2 w-full flex justify-center">
+              <% if user_signed_in? %>
+                <!-- подпись слева от ссылки -->
+                <span class="absolute right-full pr-2 text-sm text-gray-600 whitespace-nowrap">
+                  Signed in as
+                  <%= link_to (current_user.email.presence || current_user.name.presence || "Account"), edit_account_path,
+                              class: "ml-1 font-semibold text-indigo-600 hover:underline whitespace-nowrap" %>
+                </span>
+                <!-- ссылка по центру под Add Court -->
+                <%= link_to "Sign out", sign_out_path, data: { "turbo-method": :delete, "turbo-confirm": "Sign out?" }, class: "text-sm text-red-600 hover:underline" %>
+              <% else %>
+                <%= link_to "Sign in", new_session_path, class: "text-sm text-gray-700 hover:underline" %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="mx-auto max-w-5xl px-4 py-8">
+      <%= render "shared/flash" %>
+
+      <turbo-frame id="geocoding-status" src="<%= geocoding_status_path %>"></turbo-frame>
+
+      <%= yield %>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+<div class="max-w-5xl mx-auto px-4 py-6">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-semibold">Edit Game</h1>
+      <p class="text-gray-600">Update game details and participants.</p>
+    </div>
+    <div>
+      <%= link_to "Back to Games", games_path, class: "text-sm text-gray-600 hover:underline" %>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg border p-6 shadow-sm">
+    <%= render "form", game: @game %>
+
+    <div class="mt-4 flex items-center gap-3">
+      <%= link_to "View Game", game_path(@game), class: "text-sm text-indigo-600 hover:underline" %>
+      <% if @game.persisted? && can_manage?(@game) %>
+        <%= link_to "Delete Game", game_path(@game), method: :delete, data: { confirm: "Are you sure?" }, class: "text-sm text-red-600 hover:underline" %>
+      <% end %>
+    </div>
+  </div>
+</div>

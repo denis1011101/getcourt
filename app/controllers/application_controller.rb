@@ -1,0 +1,62 @@
+class ApplicationController < ActionController::Base
+  # Browser support check (keeps tolerant policy; skips in development and for non-HTML requests).
+  before_action :check_browser_support, if: -> { request.format.html? }
+
+  protect_from_forgery with: :exception
+  before_action :authenticate_user!
+
+  helper_method :current_user, :user_signed_in?, :sign_in, :sign_out, :geocoding_exceeded?, :can_manage?
+
+  private
+
+  def check_browser_support
+    # If Browser gem is not available or in development, skip strict checks.
+    return if Rails.env.development?
+    return unless defined?(Browser)
+
+    browser = Browser.new(request.user_agent)
+    allowed = browser.modern? || browser.mobile? || browser.tablet?
+
+    unless allowed
+      render plain: "Please use a modern browser.", status: :unsupported_media_type
+    end
+  rescue => e
+    Rails.logger.debug "Browser check skipped: #{e.class} #{e.message}"
+  end
+
+  def can_manage?(record)
+    return false unless current_user
+    return true if current_user.admin?
+    return true if record.respond_to?(:user) && record.user == current_user
+    return true if record.respond_to?(:user_id) && record.user_id == current_user&.id
+
+    false
+  end
+
+  def current_user
+    @current_user ||= User.find_by(id: session[:user_id]) if session[:user_id].present?
+  end
+
+  def user_signed_in?
+    current_user.present?
+  end
+
+  def sign_in(user)
+    session[:user_id] = user.id
+  end
+
+  def sign_out
+    session.delete(:user_id)
+    @current_user = nil
+  end
+
+  def authenticate_user!
+    return if user_signed_in?
+
+    redirect_to new_session_path, alert: "Please sign in"
+  end
+
+  def geocoding_exceeded?
+    defined?(Geocoding::Quota) && Geocoding::Quota.exceeded?
+  end
+end
