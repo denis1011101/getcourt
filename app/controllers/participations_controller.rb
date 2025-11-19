@@ -9,7 +9,8 @@ class ParticipationsController < ApplicationController
         user_name = current_user.try(:name) || current_user.try(:email) || "User ##{current_user.id}"
         date_str = (@game.respond_to?(:next_date) ? (@game.next_date || @game.date) : @game.date)
         time_str = (@game.respond_to?(:next_time) ? (@game.next_time || @game.time) : @game.time)
-        text = "#{user_name} joined your game on #{date_str&.strftime('%Y-%m-%d')} at #{time_str&.strftime('%H:%M')}"
+        game_url = "https://getcourt.co/games/#{@game.id}"
+        text = "#{user_name} joined your game on #{date_str&.strftime('%Y-%m-%d')} at #{time_str&.strftime('%H:%M')}\n#{game_url}"
         SendTelegramNotificationJob.perform_later(@game.user.telegram_chat_id, text)
       end
       respond_to do |format|
@@ -40,7 +41,8 @@ class ParticipationsController < ApplicationController
       user_name = current_user.try(:name) || current_user.try(:email) || "User ##{current_user.id}"
       date_str = (@game.respond_to?(:next_date) ? (@game.next_date || @game.date) : @game.date)
       time_str = (@game.respond_to?(:next_time) ? (@game.next_time || @game.time) : @game.time)
-      text = "#{user_name} left your game on #{date_str&.strftime('%Y-%m-%d')} at #{time_str&.strftime('%H:%M')}"
+      game_url = "https://getcourt.co/games/#{@game.id}"
+      text = "#{user_name} left your game on #{date_str&.strftime('%Y-%m-%d')} at #{time_str&.strftime('%H:%M')}\n#{game_url}"
       SendTelegramNotificationJob.perform_later(@game.user.telegram_chat_id, text)
     end
 
