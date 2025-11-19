@@ -37,3 +37,7 @@
 !/app/assets/builds/.keep
 
 key.*
+
+vendor/bundle/
+
+config/*
