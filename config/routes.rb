@@ -5,6 +5,10 @@ Rails.application.routes.draw do
   post '/geocoding/reset',  to: 'geocoding#reset',   as: :geocoding_reset
   post "/bot_webhook", to: "bot_webhook#receive"
 
+  resource :account, only: %i[edit update], controller: :users do
+    post :regenerate_token
+  end
+
   # auth
   get  "/sign_in",  to: "sessions#new",    as: :new_session
   post "/sign_in",  to: "sessions#create", as: :sign_in
@@ -21,8 +25,6 @@ Rails.application.routes.draw do
     resources :participations, only: [:create, :destroy]
   end
   resources :searches, only: [:index]
-
-  resource :account, only: %i[edit update], controller: :users
 
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest

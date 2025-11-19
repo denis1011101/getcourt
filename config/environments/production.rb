@@ -88,5 +88,10 @@ Rails.application.configure do
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
   config.hosts << "getcourt.co"
+  config.hosts << "127.0.0.1"
+  config.hosts << "localhost"
+
+  # Allow Rails to serve precompiled assets if you don't use nginx to serve /public
+  config.public_file_server.enabled = ENV['RAILS_SERVE_STATIC_FILES'].present?
   config.force_ssl = true
 end

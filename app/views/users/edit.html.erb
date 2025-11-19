@@ -15,7 +15,11 @@
   </p>
 
   <div class="mt-4">
-    <%= link_to "Regenerate token", edit_account_path, class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition" %>
+    <%= button_to "Regenerate token",
+          regenerate_token_account_path,
+          method: :post,
+          class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition",
+          data: { turbo: true } %>
     <%= link_to "Back", root_path, class: "ml-4 text-sm text-gray-600 hover:underline" %>
   </div>
 </div>

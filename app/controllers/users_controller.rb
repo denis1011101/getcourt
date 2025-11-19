@@ -15,6 +15,12 @@ class UsersController < ApplicationController
     end
   end
 
+  def regenerate_token
+    @user = current_user
+    @registration_token = @user.regenerate_telegram_registration_token!
+    redirect_to edit_account_path, notice: "Token regenerated"
+  end
+
   private
 
   def user_update_params
