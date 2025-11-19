@@ -1,5 +1,6 @@
-class BotWebhookController < ActionController::API
+class BotWebhookController < ApplicationController
   skip_before_action :verify_authenticity_token
+  skip_before_action :authenticate_user!
 
   # POST /bot_webhook
   def receive

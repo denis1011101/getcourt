@@ -24,6 +24,18 @@ class User < ApplicationRecord
     update_column(:telegram_registration_token, nil)
   end
 
+ def regenerate_telegram_registration_token!
+   loop do
+     token = SecureRandom.hex(12)
+     # уникальность (индекс уникальный, но лучше не ловить исключение)
+     unless self.class.exists?(telegram_registration_token: token)
+       update_column(:telegram_registration_token, token)
+
+       return token
+     end
+   end
+ end
+
   def notify_via_telegram(text)
     return false unless telegram_chat_id.present?
     TelegramNotifier.send_message(telegram_chat_id, text)
