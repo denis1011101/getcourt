@@ -5,18 +5,15 @@ class DailyTelegramNotificationsJob < ApplicationJob
   def perform(day_offset = 0)
     target_date = Date.current + day_offset
 
-    # Берём игры: либо дата = target_date, либо recurring (потом проверим по occurrence_date)
+    # Только реальные колонки
     scope = Game.where("date = ? OR recurring = ?", target_date, true)
 
     scope.find_each do |game|
-      # Для recurring: если game.date >= Date.current, то первое событие ещё не прошло → используем game.date
-      # иначе берём game.next_date (следующее повторение)
       occurrence_date = if game.recurring
-                          game.date >= Date.current ? game.date : game.next_date
+                          game.date && game.date >= Date.current ? game.date : game.next_date
                         else
                           game.date
                         end
-
       next unless occurrence_date == target_date
 
       owner = game.user
