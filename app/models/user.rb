@@ -6,6 +6,7 @@ class User < ApplicationRecord
 
   validates :email, presence: true, uniqueness: { case_sensitive: false }
   validates :telegram_username, format: { with: /\A@?[\w\d_]{5,32}\z/, message: "is invalid" }, allow_blank: true
+  validates :telegram_chat_id, uniqueness: true, allow_nil: true
 
   def admin?
     admin == true

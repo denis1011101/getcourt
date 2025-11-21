@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_16_214845) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_21_201037) do
   create_table "courts", force: :cascade do |t|
     t.string "name"
     t.string "coordinates"
@@ -61,6 +61,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_16_214845) do
     t.bigint "telegram_chat_id"
     t.string "telegram_registration_token"
     t.index ["email"], name: "index_users_on_email", unique: true, where: "email IS NOT NULL"
+    t.index ["telegram_chat_id"], name: "index_users_on_telegram_chat_id_unique", unique: true
     t.index ["telegram_registration_token"], name: "index_users_on_telegram_registration_token", unique: true
     t.index ["telegram_username"], name: "index_users_on_telegram_username"
   end
