@@ -39,3 +39,5 @@
 key.*
 
 vendor/bundle/
+
+README-INTERNAL.md
