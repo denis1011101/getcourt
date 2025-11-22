@@ -1,7 +1,24 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Get Court</title>
+    <title><%= meta_title %></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="<%= meta_description %>" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="<%= request.original_url %>" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="<%= meta_title %>"/>
+    <meta property="og:description" content="<%= meta_description %>"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:url" content="<%= request.original_url %>"/>
+    <meta property="og:image" content="<%= meta_image %>"/>
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="<%= meta_title %>" />
+    <meta name="twitter:description" content="<%= meta_description %>" />
+    <meta name="twitter:image" content="<%= meta_image %>" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
