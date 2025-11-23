@@ -1,0 +1,14 @@
+<div class="flex items-center justify-between mb-6 py-2">
+  <div class="pr-4">
+    <h1 class="text-2xl font-semibold"><%= title %></h1>
+    <% if local_assigns[:description].present? %>
+      <p class="text-gray-600 mt-1 max-w-2xl"><%= description %></p>
+    <% end %>
+  </div>
+
+  <% if local_assigns[:action_text] && local_assigns[:action_path] %>
+    <div class="flex-shrink-0">
+      <%= link_to action_text, action_path, class: "inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition" %>
+    </div>
+  <% end %>
+</div>

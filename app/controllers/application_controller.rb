@@ -53,6 +53,17 @@ class ApplicationController < ActionController::Base
   def authenticate_user!
     return if user_signed_in?
 
+    # Сохраняем откуда пришли (только GET запросы с нашего домена)
+    if request.get? && request.format.html?
+      session[:return_to] = request.fullpath
+    elsif request.referer.present?
+      # для POST попробуем взять referer
+      uri = URI.parse(request.referer) rescue nil
+      if uri && (uri.host.nil? || uri.host == request.host)
+        session[:return_to] = uri.request_uri
+      end
+    end
+
     redirect_to new_session_path, alert: "Please sign in"
   end
 

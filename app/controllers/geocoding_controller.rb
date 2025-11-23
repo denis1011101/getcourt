@@ -1,7 +1,6 @@
 class GeocodingController < ApplicationController
   before_action :authorize_admin!, only: %i[reset]
   skip_before_action :authenticate_user!, only: %i[status reset_form]
-  before_action :authorize_admin!, only: %i[reset]
 
   def frame_response
     content = render_to_string(partial: "geocoding/status")

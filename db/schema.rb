@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_21_201037) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_23_174042) do
   create_table "courts", force: :cascade do |t|
     t.string "name"
     t.string "coordinates"
@@ -60,7 +60,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_21_201037) do
     t.string "telegram_username"
     t.bigint "telegram_chat_id"
     t.string "telegram_registration_token"
+    t.string "skill_level"
+    t.boolean "coach", default: false, null: false
+    t.text "preferred_sports"
+    t.json "skill_levels", default: {}, null: false
+    t.string "login_code"
+    t.datetime "login_code_sent_at"
+    t.string "login_via"
+    t.boolean "require_verification", default: false, null: false
+    t.string "preferred_login_via"
     t.index ["email"], name: "index_users_on_email", unique: true, where: "email IS NOT NULL"
+    t.index ["login_code"], name: "index_users_on_login_code"
+    t.index ["skill_level"], name: "index_users_on_skill_level"
     t.index ["telegram_chat_id"], name: "index_users_on_telegram_chat_id_unique", unique: true
     t.index ["telegram_registration_token"], name: "index_users_on_telegram_registration_token", unique: true
     t.index ["telegram_username"], name: "index_users_on_telegram_username"

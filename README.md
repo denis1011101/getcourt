@@ -1,24 +1,30 @@
-# README
+# GetCourt
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Website: https://getcourt.co/
 
-Things you may want to cover:
+GetCourt is a simple app to bring together the community of people who play tennis.  
+Create and join court games, manage courts, invite players, and receive Telegram reminders and notifications.
 
-* Ruby version
+Main features
+- Create and manage courts with coordinates and contact info
+- Create recurring or one-off games and manage participants
+- Telegram bot integration for notifications and registration tokens
+- Mobile-friendly UI with map integration and simple search
 
-* System dependencies
+Main technologies
+- Ruby 3.4 / Ruby on Rails 8.0
+- Hotwire (Turbo + Stimulus) for interactivity
+- Tailwind CSS for styling
+- SQLite for development and production
+- Background jobs for notifications (ActiveJob / queue adapter)
+- Google / Nominatim geocoding for addresses
 
-* Configuration
+## License
 
-* Database creation
+This project is licensed under the **Apache License 2.0**.  
+See the [LICENSE](LICENSE) file for details.
 
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+**Note on Trademarks:**  
+The "GetCourt" name, logo, and associated branding are trademarks of the project author. 
+While the code is open source, this license **does not** grant permission to use these trademarks 
+to endorse or promote products derived from this software without prior written permission.

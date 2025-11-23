@@ -33,41 +33,51 @@
   </head>
 
   <body class="bg-gray-50 text-gray-900">
+    <!-- Top header (visible on all screens). Right-side menu hidden on small screens. -->
     <header class="border-b bg-white">
-      <nav class="mx-auto max-w-5xl px-4 py-4 flex justify-between items-start gap-4">
-        <!-- Левая колонка: Логотип (всегда в две строки) -->
-        <div>
-          <%= link_to root_path, class: "text-xl font-semibold" do %>
-            <span class="leading-tight">
-              <span class="block">Get</span>
-              <span class="block">Court</span>
-            </span>
+      <nav class="mx-auto max-w-5xl px-4 py-3 flex justify-between items-center gap-4">
+        <!-- Logo (always top-left, two lines) -->
+        <div class="flex-shrink-0">
+          <%= link_to root_path, class: "text-xl font-semibold leading-tight" do %>
+            <span class="block">Get</span>
+            <span class="block">Court</span>
           <% end %>
         </div>
 
-        <!-- Правая колонка -->
-        <div class="flex items-start gap-6">
-          <!-- Первая строка: пункты меню (на одном уровне с Add Court) -->
+        <!-- Mobile sign info (visible only on small screens) -->
+        <div class="flex items-center gap-3 sm:hidden">
+          <% if user_signed_in? %>
+            <div class="text-right">
+              <div class="text-xs text-gray-600">Signed in as</div>
+              <div class="text-sm font-semibold text-indigo-600 truncate" style="max-width:130px;">
+                <%= link_to (current_user.email.presence || current_user.name.presence || "Account"), edit_account_path, class: "hover:underline inline-block" %>
+              </div>
+            </div>
+            <%= link_to "Sign out", sign_out_path, data: { "turbo-method": :delete, "turbo-confirm": "Sign out?" }, class: "ml-2 text-sm text-red-600 hover:underline" %>
+          <% else %>
+            <%= link_to "Sign in", new_session_path, class: "text-sm text-gray-700 hover:underline" %>
+          <% end %>
+        </div>
+
+        <!-- Right column: hidden on small screens to keep header compact -->
+        <div class="hidden sm:flex items-start gap-6">
           <div class="flex items-center gap-6">
             <%= link_to "Courts", courts_path, class: "text-sm text-gray-700 hover:text-gray-900" %>
             <%= link_to "Games", games_path, class: "text-sm text-gray-700 hover:text-gray-900" %>
             <%= link_to "Search nearby", searches_path, class: "text-sm text-gray-700 hover:text-gray-900 whitespace-nowrap" %>
+            <%= link_to "Tennis Life", tennis_life_path, class: "text-sm text-gray-700 hover:text-gray-900 whitespace-nowrap" %>
           </div>
 
-          <!-- Колонка действий: сверху Add Court, снизу строка с Sign и подписью -->
           <div class="relative flex flex-col items-center">
             <%= link_to "Add Court", new_court_path, class: "inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-500 whitespace-nowrap" %>
 
-            <!-- Вторая строка: Sign in/out по центру под кнопкой, слева подпись -->
             <div class="relative mt-2 w-full flex justify-center">
               <% if user_signed_in? %>
-                <!-- подпись слева от ссылки -->
                 <span class="absolute right-full pr-2 text-sm text-gray-600 whitespace-nowrap">
                   Signed in as
                   <%= link_to (current_user.email.presence || current_user.name.presence || "Account"), edit_account_path,
                               class: "ml-1 font-semibold text-indigo-600 hover:underline whitespace-nowrap" %>
                 </span>
-                <!-- ссылка по центру под Add Court -->
                 <%= link_to "Sign out", sign_out_path, data: { "turbo-method": :delete, "turbo-confirm": "Sign out?" }, class: "text-sm text-red-600 hover:underline" %>
               <% else %>
                 <%= link_to "Sign in", new_session_path, class: "text-sm text-gray-700 hover:underline" %>
@@ -78,12 +88,48 @@
       </nav>
     </header>
 
-    <main class="mx-auto max-w-5xl px-4 py-8">
+    <main class="mx-auto max-w-5xl px-4 py-2">
       <%= render "shared/flash" %>
 
       <turbo-frame id="geocoding-status" src="<%= geocoding_status_path %>"></turbo-frame>
 
       <%= yield %>
+      <!-- spacer чтобы контент не заезжал под мобильную нижнюю навигацию -->
+      <div class="h-20 sm:hidden" aria-hidden="true"></div>
     </main>
+
+    <!-- Mobile bottom navigation (visible only on small screens) -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t sm:hidden z-50" style="padding-bottom: env(safe-area-inset-bottom);">
+      <div class="max-w-5xl mx-auto px-1 py-2 grid grid-cols-5 gap-1 items-end justify-items-center">
+        <%= link_to courts_path, class: "flex flex-col items-center justify-center text-xs text-gray-700 hover:bg-gray-50 rounded-md py-2 px-2 transition-colors" do %>
+          <span class="font-medium">Courts</span>
+        <% end %>
+
+        <%= link_to games_path, class: "flex flex-col items-center justify-center text-xs text-gray-700 hover:bg-gray-50 rounded-md py-2 px-2 transition-colors" do %>
+          <span class="font-medium">Games</span>
+        <% end %>
+
+        <%# Mobile central button: on Games -> new_game, otherwise -> new_court %>
+        <% central_path, central_title = if controller_name == "games"
+          [new_game_path, "Add Game"]
+        else
+          [new_court_path, "Add Court"]
+        end %>
+
+        <%= link_to central_path, class: "inline-flex items-center rounded-lg bg-gradient-to-r from-indigo-600 to-indigo-500 px-3 py-1.5 text-sm font-medium text-white hover:from-indigo-500 hover:to-indigo-400 whitespace-nowrap", title: central_title do %>
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+          </svg>
+        <% end %>
+
+        <%= link_to searches_path, class: "flex flex-col items-center justify-center text-xs text-gray-700 hover:bg-gray-50 rounded-md py-2 px-2 transition-colors" do %>
+          <span class="font-medium">Search</span>
+        <% end %>
+
+        <%= link_to tennis_life_path, class: "flex flex-col items-center justify-center text-xs text-gray-700 hover:bg-gray-50 rounded-md py-2 px-2 transition-colors" do %>
+          <span class="font-medium">TL</span>
+        <% end %>
+      </div>
+    </nav>
   </body>
 </html>

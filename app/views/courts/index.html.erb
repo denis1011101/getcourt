@@ -1,11 +1,9 @@
-<div class="max-w-5xl mx-auto px-4 py-6">
-  <div class="flex items-center justify-between mb-6">
-    <div>
-      <h1 class="text-2xl font-semibold">Tennis Courts</h1>
-      <p class="text-gray-600">Welcome to the Get Court application! Here you can find and manage tennis courts.</p>
-    </div>
-    <%= link_to 'Add New Court', new_court_path, class: 'inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition' %>
-  </div>
+<div class="max-w-5xl mx-auto px-4 py-2">
+  <%= render "shared/page_header",
+      title: "Tennis Courts",
+      description: "Welcome to the Get Court application! Here you can find and manage tennis courts.",
+      action_text: "Add New Court",
+      action_path: new_court_path %>
 
   <% if @courts.empty? %>
     <div class="rounded-lg border border-dashed p-8 text-center text-gray-500">

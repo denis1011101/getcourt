@@ -1,5 +1,6 @@
 class ParticipationsController < ApplicationController
   before_action :set_game, only: [:create, :destroy]
+  before_action :authenticate_user!, only: [:create]
 
   def create
     @participation = @game.participations.build(user: current_user)

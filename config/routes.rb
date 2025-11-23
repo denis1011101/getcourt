@@ -1,18 +1,24 @@
 Rails.application.routes.draw do
+  get "tennis_life/index"
   # geocoding quota status and reset
   get  '/geocoding/status', to: 'geocoding#status',  as: :geocoding_status
   get  '/geocoding/reset',  to: 'geocoding#reset_form', as: :geocoding_reset_form
   post '/geocoding/reset',  to: 'geocoding#reset',   as: :geocoding_reset
   post "/bot_webhook", to: "bot_webhook#receive"
+  get '/tennis_life', to: 'tennis_life#index', as: :tennis_life
 
   resource :account, only: %i[edit update], controller: :users do
     post :regenerate_token
   end
 
   # auth
-  get  "/sign_in",  to: "sessions#new",    as: :new_session
-  post "/sign_in",  to: "sessions#create", as: :sign_in
-  delete "/sign_out", to: "sessions#destroy", as: :sign_out
+  get  '/sign_in',           to: 'sessions#new',    as: :new_session
+  post '/sign_in',           to: 'sessions#create', as: :session
+  get  '/sign_in/verify',    to: 'sessions#verify', as: :verify_session
+  post '/sign_in/verify',    to: 'sessions#check'
+  delete '/sign_out',        to: 'sessions#destroy', as: :destroy_session
+  delete '/sign_out',        to: 'sessions#destroy', as: :sign_out
+
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
