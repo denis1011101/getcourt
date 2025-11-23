@@ -16,14 +16,16 @@
         </label>
 
         <div class="flex items-center gap-2">
-          <span class="text-sm text-gray-600 mr-2">Preferred verification method:</span>
+          <span class="text-sm text-gray-600 mr-2">Verification method:</span>
           <%= f.select :preferred_login_via,
-                options_for_select([["Email", "email"], ["Telegram", "telegram"]], @user.preferred_login_via),
+                options_for_select([["Telegram", "telegram"]], @user.preferred_login_via),
                 {}, class: "mt-1 block rounded border px-3 py-2 text-sm" %>
         </div>
       </div>
 
-      <p class="text-xs text-gray-500 mt-2">When enabled, sign-in codes will be sent via your chosen method.</p>
+      <p class="text-xs text-gray-500 mt-2">
+        By default you sign in without a code. Enable verification + Telegram to require a one‑time code sent to your bot chat.
+      </p>
     </div>
 
     <!-- Информационный блок Telegram (просто HTML внутри формы) -->
