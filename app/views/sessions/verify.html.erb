@@ -1,0 +1,20 @@
+<div class="max-w-md mx-auto p-6 bg-white rounded shadow-sm">
+  <h1 class="text-xl font-semibold mb-4">Enter Telegram code</h1>
+
+  <p class="text-sm text-gray-600 mb-4">
+    We sent a 6‑character code via Telegram for <strong><%= @email %></strong>. Enter it below.
+  </p>
+
+  <%= form_with url: verify_session_path, method: :post, local: true do %>
+    <%= hidden_field_tag :email, @email %>
+    <div class="mb-4">
+      <%= label_tag :code, "Code", class: "block text-sm font-medium text-gray-700" %>
+      <%= text_field_tag :code, nil, autofocus: true, required: true,
+            class: "mt-1 block w-full rounded border px-3 py-2 tracking-widest uppercase" %>
+    </div>
+    <div class="flex items-center gap-2">
+      <%= submit_tag "Verify", class: "rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700" %>
+      <%= link_to "Back", new_session_path(email: @email), class: "text-sm text-gray-700 hover:underline" %>
+    </div>
+  <% end %>
+</div>

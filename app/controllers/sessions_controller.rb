@@ -14,48 +14,45 @@ class SessionsController < ApplicationController
   end
 
   # POST /sign_in
-  # params: email, via (email|telegram)
   def create
     email = params[:email].to_s.strip.downcase
-    via = params[:via].to_s.presence || "email"
-
     if email.blank?
       redirect_to new_session_path, alert: "Email required" and return
     end
 
-    user = User.find_or_create_by(email: email) do |u|
-      u.name = email.split("@").first.titleize
-    end
+    user = User.find_or_create_by(email: email) { |u| u.name = email.split("@").first.titleize }
 
-    code = user.generate_login_code!(via: via)
+    need_code = user.require_verification? && user.preferred_login_via == "telegram"
 
-    case via
-    when "email"
-      UserMailer.login_code_email(user, code).deliver_later
-    when "telegram"
+    if need_code
       unless user.telegram_chat_id.present?
-        redirect_to new_session_path, alert: "No Telegram connected for this account" and return
+        redirect_to new_session_path, alert: "Telegram not connected for this account" and return
       end
+      code = user.generate_login_code!(via: "telegram")
       TelegramNotifier.send_message(user.telegram_chat_id, "Your GetCourt login code: #{code}")
+      redirect_to verify_session_path(email: user.email), notice: "Login code sent via Telegram", status: :see_other
     else
-      redirect_to new_session_path, alert: "Unknown delivery method" and return
+      sign_in(user)
+      target = session.delete(:return_to) || root_path
+      redirect_to target, notice: "Signed in as #{user.email}"
     end
-
-    redirect_to verify_session_path(email: user.email), notice: "Login code sent via #{via}"
   end
 
-  # GET /sign_in/verify
   def verify
     @email = params[:email]
   end
 
   # POST /sign_in/verify
-  # params: email, code
   def check
     email = params[:email].to_s.strip.downcase
-    code = params[:code].to_s.strip
+    code  = params[:code].to_s.strip
+    user  = User.find_by(email: email)
 
-    user = User.find_by(email: email)
+    if user && !(user.require_verification? && user.preferred_login_via == "telegram")
+      sign_in(user)
+      target = session.delete(:return_to) || root_path
+      redirect_to target, notice: "Signed in as #{user.email}" and return
+    end
 
     if user && user.valid_login_code?(code)
       user.clear_login_code!
