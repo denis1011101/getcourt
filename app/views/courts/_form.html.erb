@@ -25,11 +25,7 @@
            data-map-picker-default-lat-value="56.838011"
            data-map-picker-default-lng-value="60.597465">
         <label class="block text-sm font-medium text-gray-700">Select on the map</label>
-        <% if geocoding_exceeded? %>
-          <div class="mb-2 rounded-md bg-yellow-50 border border-yellow-200 p-2 text-yellow-800 text-sm">
-            Google geocoding quota exceeded for today (limit: <%= Geocoding::Quota::DAILY_LIMIT %>). Address lookup via Google is disabled — coordinates selection on the map is unavailable.
-          </div>
-        <% else %>
+        <%= render "shared/map_panel" do %>
           <div data-map-picker-target="map" class="h-72 w-full rounded border bg-white"></div>
         <% end %>
         <div class="flex items-center gap-3">
@@ -63,7 +59,7 @@
 
       <div class="flex items-center gap-2">
         <%= form.submit "Save Court", class: "rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition" %>
-        <%= link_to "Cancel", courts_path, class: "text-sm text-gray-600 hover:underline" %>
+        <%= link_to "Cancel", courts_path, class: "block inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition" %>
       </div>
     </div>
   </div>

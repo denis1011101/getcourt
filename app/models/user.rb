@@ -1,4 +1,51 @@
 class User < ApplicationRecord
+  SKILL_LEVELS = %w[beginner intermediate advanced pro].freeze
+  SPORTS = ["Tennis", "Padel", "Squash", "Table Tennis"].freeze
+
+  # generate one-time login code and remember send time/method
+  def generate_login_code!(via: "email")
+    code = SecureRandom.hex(3) # 6 hex chars, adjust length if needed
+    update_columns(login_code: code, login_code_sent_at: Time.current, login_via: via.to_s)
+    code
+  end
+
+  # valid only for X minutes
+  def valid_login_code?(code, ttl_minutes: 15)
+    return false if login_code.blank? || login_code_sent_at.blank?
+    return false if Time.current > (login_code_sent_at + ttl_minutes.minutes)
+    ActiveSupport::SecurityUtils.secure_compare(login_code.to_s, code.to_s)
+  end
+
+  def clear_login_code!
+    update_columns(login_code: nil, login_code_sent_at: nil, login_via: nil)
+  end
+
+  # store preferred_sports as JSON array in a text column, default empty array
+  attribute :preferred_sports, :json, default: []
+  attribute :skill_levels, :json, default: {}
+
+  # возвращает уровень для спорта (строка или nil)
+  def skill_level_for(sport)
+    skill_levels.to_h[sport]
+  end
+
+  def set_skill_level_for(sport, level)
+    s = skill_levels.to_h
+    if level.present?
+      s[sport] = level
+    else
+      s.delete(sport)
+    end
+    update_column(:skill_levels, s)
+  end
+
+  def skill_level_display_for(sport)
+    skill_level_for(sport)&.titleize
+  end
+
+  # валидации (опционально)
+  validate :skill_levels_values_valid
+
   has_many :games
   has_many :participations
 
@@ -7,9 +54,18 @@ class User < ApplicationRecord
   validates :email, presence: true, uniqueness: { case_sensitive: false }
   validates :telegram_username, format: { with: /\A@?[\w\d_]{5,32}\z/, message: "is invalid" }, allow_blank: true
   validates :telegram_chat_id, uniqueness: true, allow_nil: true
+  validates :skill_level, inclusion: { in: SKILL_LEVELS }, allow_nil: true
 
   def admin?
     admin == true
+  end
+
+  def skill_level_display
+    skill_level&.titleize
+  end
+
+  def coach?
+    self.coach == true
   end
 
   # ensure registration token for bot-based registration
@@ -49,5 +105,20 @@ class User < ApplicationRecord
 
   def normalize_email
     self.email = email.to_s.strip.downcase.presence
+  end
+
+  def skill_levels_values_valid
+    return if skill_levels.blank?
+    unless skill_levels.is_a?(Hash)
+      errors.add(:skill_levels, "must be a hash")
+      return
+    end
+
+    skill_levels.each do |sport, level|
+      next if level.blank?
+      unless SPORTS.include?(sport) && SKILL_LEVELS.include?(level)
+        errors.add(:skill_levels, "contains invalid entry for #{sport}")
+      end
+    end
   end
 end

@@ -24,7 +24,9 @@ class UsersController < ApplicationController
   private
 
   def user_update_params
-    # no telegram fields submitted from form any more
-    params.require(:user).permit()
+    params.require(:user).permit(:name, :email, :telegram_username, :coach,
+                                 :require_verification, :preferred_login_via,
+                                 preferred_sports: [],
+                                 skill_levels: {}) # permit JSON object
   end
 end

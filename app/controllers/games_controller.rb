@@ -1,6 +1,7 @@
 class GamesController < ApplicationController
   before_action :set_game, only: %i[show edit update destroy]
   before_action :authorize_manage_game!, only: %i[edit update destroy]
+  skip_before_action :authenticate_user!, only: %i[index show]
 
   helper_method :display_date, :display_time, :game_badges
 
