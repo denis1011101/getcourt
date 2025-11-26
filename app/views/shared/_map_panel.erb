@@ -9,7 +9,7 @@
   <% else %>
     <div class="h-40 w-full rounded border bg-gray-50 flex flex-col items-center justify-center text-gray-600 mb-4 p-4">
       <p class="text-sm mb-2"><%= local_assigns[:message].presence || "Map is hidden for unauthenticated users." %></p>
-      <%= link_to "Sign in to view the map", new_session_path, class: "text-indigo-600 hover:underline" %>
+      <%= link_to "Sign in or Sign up to view the map", new_session_path, title: "Sign in or create an account", class: "text-indigo-600 hover:underline" %>
     </div>
   <% end %>
 <% end %>

@@ -1,0 +1,18 @@
+<% g = local_assigns[:game] || @game %>
+<li id="participation_<%= participation.id %>" class="flex items-center gap-3">
+  <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-sm font-medium text-gray-700">
+    <%= participation.user.name.to_s.strip[0]&.upcase || "?" %>
+  </span>
+
+  <span class="text-sm text-gray-800 flex-1"><%= participation.user.name || participation.user.email %></span>
+
+  <%# show Remove button to game owner or admin (not for self — self has "Leave" control elsewhere) %>
+  <% if can_remove_participant?(g, participation.user) && participation.user != current_user %>
+    <%= button_to "Remove",
+          game_participation_path(g, participation),
+          method: :delete,
+          form: { data: { turbo: true } },
+          data: { confirm: "Remove this player from the game?" },
+          class: "px-3 py-1.5 text-xs text-red-600 bg-red-50 rounded hover:bg-red-100 transition-colors font-medium" %>
+  <% end %>
+</li>

@@ -1,19 +1,12 @@
 class ParticipationsController < ApplicationController
   before_action :set_game, only: [:create, :destroy]
-  before_action :authenticate_user!, only: [:create]
+  before_action :authenticate_user!, only: [:create, :destroy]
 
   def create
     @participation = @game.participations.build(user: current_user)
 
     if @participation.save
-      if @game.user&.telegram_chat_id.present?
-        user_name = current_user.try(:name) || current_user.try(:email) || "User ##{current_user.id}"
-        date_str = (@game.respond_to?(:next_date) ? (@game.next_date || @game.date) : @game.date)
-        time_str = (@game.respond_to?(:next_time) ? (@game.next_time || @game.time) : @game.time)
-        game_url = "https://getcourt.co/games/#{@game.id}"
-        text = "#{user_name} joined your game on #{date_str&.strftime('%Y-%m-%d')} at #{time_str&.strftime('%H:%M')}\n#{game_url}"
-        SendTelegramNotificationJob.perform_later(@game.user.telegram_chat_id, text)
-      end
+      Telegram::ParticipationNotifier.notify_owner(@game, current_user, action: :joined)
       respond_to do |format|
         format.turbo_stream
         format.html { redirect_to @game, notice: 'Successfully joined the game.' }
@@ -33,29 +26,28 @@ class ParticipationsController < ApplicationController
   end
 
   def destroy
-    @participation = @game.participations.find_by(user: current_user)
-    @participation_id = @participation&.id
+    @participation = @game.participations.find_by(id: params[:id]) ||
+                     @game.participations.find_by(user: current_user)
+    unless @participation
+      head :not_found and return
+    end
 
-    @participation&.destroy
+    unless AccessControl.can_remove_participant?(current_user, @game, @participation.user)
+      head :forbidden and return
+    end
+
+    @participation_id = @participation.id
+    removed_user = @participation.user
+    @participation.destroy
 
     if @participation_id && @game.user&.telegram_chat_id.present?
-      user_name = current_user.try(:name) || current_user.try(:email) || "User ##{current_user.id}"
-      date_str = (@game.respond_to?(:next_date) ? (@game.next_date || @game.date) : @game.date)
-      time_str = (@game.respond_to?(:next_time) ? (@game.next_time || @game.time) : @game.time)
-      game_url = "https://getcourt.co/games/#{@game.id}"
-      text = "#{user_name} left your game on #{date_str&.strftime('%Y-%m-%d')} at #{time_str&.strftime('%H:%M')}\n#{game_url}"
-      SendTelegramNotificationJob.perform_later(@game.user.telegram_chat_id, text)
+      action = (removed_user == current_user) ? :left : :removed
+      Telegram::ParticipationNotifier.notify_owner(@game, removed_user, action: action)
     end
 
     respond_to do |format|
-      format.turbo_stream do
-        if @participation_id
-          render :destroy
-        else
-          head :ok
-        end
-      end
-      format.html { redirect_to @game, notice: 'Successfully left the game.' }
+      format.turbo_stream { render :destroy }
+      format.html { redirect_to @game, notice: 'Participation removed.' }
     end
   end
 

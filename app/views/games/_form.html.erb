@@ -38,6 +38,34 @@
       </div>
     </div>
 
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+      <div>
+        <%= form.label :players_count, "Players", class: "block text-sm font-medium text-gray-700" %>
+        <%= form.select :players_count,
+              options_for_select([[2,2],[4,4]], (game.players_count || 4)),
+              {}, class: "mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+        <p class="mt-1 text-xs text-gray-500">Select required number of players (2 or 4).</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+      <div>
+        <%= form.label :sport, "Sport", class: "block text-sm font-medium text-gray-700" %>
+        <%= form.select :sport,
+              options_for_select(User::SPORTS.map { |s| [s, s] }, (game.respond_to?(:sport) ? game.sport : nil)),
+              { include_blank: "— select sport —" },
+              class: "mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+      </div>
+
+      <div>
+        <%= form.label :skill_level, "Required level", class: "block text-sm font-medium text-gray-700" %>
+        <%= form.select :skill_level,
+              options_for_select(User::SKILL_LEVELS.map { |l| [l.titleize, l] }, (game.respond_to?(:skill_level) ? game.skill_level : nil)),
+              { include_blank: "Any level" },
+              class: "mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+      </div>
+    </div>
+
     <div class="space-y-3"
          data-controller="court-picker"
          data-court-picker-default-lat-value="56.838011"

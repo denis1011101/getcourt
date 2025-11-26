@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_23_174042) do
+ActiveRecord::Schema[8.0].define(version: 2025_11_26_201202) do
   create_table "courts", force: :cascade do |t|
     t.string "name"
     t.string "coordinates"
@@ -35,6 +35,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_23_174042) do
     t.text "times", default: "[]", null: false
     t.boolean "with_coach", default: false, null: false
     t.date "last_participations_reset_at"
+    t.integer "players_count", default: 4, null: false
+    t.string "sport"
+    t.string "skill_level"
     t.index ["court_id"], name: "index_games_on_court_id"
     t.index ["recurring"], name: "index_games_on_recurring"
     t.index ["user_id"], name: "index_games_on_user_id"

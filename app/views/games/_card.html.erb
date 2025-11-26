@@ -12,14 +12,14 @@
     </p>
 
     <p class="text-sm text-gray-700 mt-3">
+      <% required = (game.respond_to?(:players_count) && game.players_count.to_i > 0) ? game.players_count.to_i : 4 %>
       <span class="inline-block rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-800">
-        <%= pluralize(game.participations.count, "participant") %>
+        <%= "#{game.participations.count}/#{required} players" %>
       </span>
-      <% if game.recurring? %>
-        <span class="ml-2 inline-block rounded-full bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700">Weekly</span>
-      <% end %>
-      <% if game.respond_to?(:with_coach) && (game.try(:with_coach?) || game.with_coach.to_s == "1") %>
-        <span class="ml-2 inline-block rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700">With coach</span>
+
+      <%# render badges from controller helper %>
+      <% game_badges(game).each do |b| %>
+        <span class="<%= b[:classes] %>"><%= b[:text] %></span>
       <% end %>
     </p>
   </div>
