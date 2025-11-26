@@ -106,13 +106,13 @@ class GamesController < ApplicationController
                   classes: "inline-flex items-center rounded-full bg-blue-50/20 px-2 py-0.5 text-xs font-medium text-blue-700 mr-2" }
     end
 
-    # players wanted: show when participants are less than required (default 4)
     if game.respond_to?(:participations)
       required = (game.respond_to?(:players_count) && game.players_count.to_i > 0) ? game.players_count.to_i : 4
-      if game.participations.size < required
-        badges << { text: "Players wanted (#{game.participations.size}/#{required})",
-                    classes: "inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 mr-2" }
-      end
+        spots_left = required - game.participations.size
+        badges << {
+          text: "#{spots_left} spot#{'s' if spots_left != 1} left — #{game.participations.size}/#{required}",
+          classes: "inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 mr-2"
+        }
     end
 
     # recurring / weekly
