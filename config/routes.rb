@@ -4,7 +4,14 @@ Rails.application.routes.draw do
   get  '/geocoding/status', to: 'geocoding#status',  as: :geocoding_status
   get  '/geocoding/reset',  to: 'geocoding#reset_form', as: :geocoding_reset_form
   post '/geocoding/reset',  to: 'geocoding#reset',   as: :geocoding_reset
+
+if Rails.env.production?
   post "/bot_webhook", to: "bot_webhook#receive"
+else
+  # In development/test we prefer polling. Keep webhook route commented for manual testing (ngrok).
+  # post "/bot_webhook", to: "bot_webhook#receive"
+end
+
   get '/tennis_life', to: 'tennis_life#index', as: :tennis_life
 
   resource :account, only: %i[edit update], controller: :users do

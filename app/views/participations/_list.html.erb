@@ -1,7 +1,7 @@
 <div id="participations">
   <ul class="mb-4 space-y-2">
     <% game.participations.each do |participation| %>
-      <%= render partial: "participations/participation", locals: { participation: participation } %>
+      <%= render partial: "participations/item", locals: { participation: participation, game: game } %>
     <% end %>
 
     <% if game.participations.empty? %>

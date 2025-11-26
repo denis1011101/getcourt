@@ -6,6 +6,21 @@
     <meta name="description" content="<%= meta_description %>" />
     <meta name="google-site-verification" content="QKaZtbncns-eyZmeVp-DVA3riXkmBgcvdLDQKoSYn7c" />
     <meta name="robots" content="index, follow" />
+
+    <!-- FAVICONS START -->
+    <!-- Главная для Google (кратна 48px) -->
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <!-- Для Android и Chrome -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
+    <!-- Стандартные для браузеров -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <!-- Для iPhone/iPad -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <!-- Манифест -->
+    <link rel="manifest" href="/site.webmanifest">
+    <!-- FAVICONS END -->
+
     <link rel="canonical" href="<%= request.original_url %>" />
 
     <!-- Open Graph -->
@@ -55,7 +70,7 @@
             </div>
             <%= link_to "Sign out", sign_out_path, data: { "turbo-method": :delete, "turbo-confirm": "Sign out?" }, class: "ml-2 text-sm text-red-600 hover:underline" %>
           <% else %>
-            <%= link_to "Sign in", new_session_path, class: "text-sm text-gray-700 hover:underline" %>
+            <%= link_to "Sign in / Sign up", new_session_path, title: "Sign in or create an account", class: "text-sm text-gray-700 hover:underline" %>
           <% end %>
         </div>
 
@@ -80,7 +95,7 @@
                 </span>
                 <%= link_to "Sign out", sign_out_path, data: { "turbo-method": :delete, "turbo-confirm": "Sign out?" }, class: "text-sm text-red-600 hover:underline" %>
               <% else %>
-                <%= link_to "Sign in", new_session_path, class: "text-sm text-gray-700 hover:underline" %>
+                <%= link_to "Sign in / Sign up", new_session_path, title: "Sign in or create an account", class: "text-sm text-gray-700 hover:underline" %>
               <% end %>
             </div>
           </div>

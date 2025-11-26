@@ -5,7 +5,7 @@ class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
   before_action :authenticate_user!
 
-  helper_method :current_user, :user_signed_in?, :sign_in, :sign_out, :geocoding_exceeded?, :can_manage?
+  helper_method :current_user, :user_signed_in?, :sign_in, :sign_out, :geocoding_exceeded?, :can_manage?, :can_remove_participant?
 
   private
 
@@ -25,12 +25,11 @@ class ApplicationController < ActionController::Base
   end
 
   def can_manage?(record)
-    return false unless current_user
-    return true if current_user.admin?
-    return true if record.respond_to?(:user) && record.user == current_user
-    return true if record.respond_to?(:user_id) && record.user_id == current_user&.id
+    AccessControl.can_manage?(current_user, record)
+  end
 
-    false
+  def can_remove_participant?(game, participation_user)
+    AccessControl.can_remove_participant?(current_user, game, participation_user)
   end
 
   def current_user
@@ -64,7 +63,7 @@ class ApplicationController < ActionController::Base
       end
     end
 
-    redirect_to new_session_path, alert: "Please sign in"
+    redirect_to new_session_path, alert: "Please sign in or sign up"
   end
 
   def geocoding_exceeded?

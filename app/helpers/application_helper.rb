@@ -19,7 +19,7 @@ module ApplicationHelper
 
   def meta_description
     (content_for?(:meta_description) && content_for(:meta_description).to_s.presence) ||
-      "GetCourt — create events and invite friends for tennis, table tennis, skovsh and padel. Quick setup, participant management and Telegram reminders."
+      "GetCourt — create events and invite friends for tennis, table tennis, squash and padel. Quick setup, participant management and Telegram reminders."
   end
 
   def meta_image

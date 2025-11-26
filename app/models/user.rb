@@ -4,7 +4,8 @@ class User < ApplicationRecord
 
   # generate one-time login code and remember send time/method
   def generate_login_code!(via: "email")
-    code = SecureRandom.hex(3) # 6 hex chars, adjust length if needed
+    # 4-digit numeric one-time code (uniform 0000..9999)
+    code = format("%04d", SecureRandom.random_number(10_000))
     update_columns(login_code: code, login_code_sent_at: Time.current, login_via: via.to_s)
     code
   end
