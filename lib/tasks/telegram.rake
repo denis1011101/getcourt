@@ -1,4 +1,11 @@
 namespace :telegram do
+  desc "Send daily telegram reminders (tomorrow and today)"
+  task send_daily: :environment do
+    # Для cron в production выполняем синхронно, чтобы не зависеть от очереди.
+    DailyTelegramNotificationsJob.perform_now(1) # tomorrow
+    DailyTelegramNotificationsJob.perform_now(0) # today
+  end
+
   desc "Poll Telegram updates (development only). Run: bin/rails telegram:poll"
   task poll: :environment do
     if Rails.env.production?
