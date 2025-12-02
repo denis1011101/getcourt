@@ -29,7 +29,7 @@ class SessionsController < ApplicationController
         redirect_to new_session_path, alert: "Telegram not connected for this account" and return
       end
       code = user.generate_login_code!(via: "telegram")
-      TelegramNotifier.send_message(user.telegram_chat_id, "Your GetCourt login code: #{code}")
+      ::Telegram::Notifier.send_message(user.telegram_chat_id, "Your GetCourt login code: #{code}")
       redirect_to verify_session_path(email: user.email), notice: "Login code sent via Telegram", status: :see_other
     else
       sign_in(user)

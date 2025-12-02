@@ -8,17 +8,21 @@
     <meta name="robots" content="index, follow" />
 
     <!-- FAVICONS START -->
-    <!-- Главная для Google (кратна 48px) -->
-    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
-    <!-- Для Android и Chrome -->
-    <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
-    <!-- Стандартные для браузеров -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <!-- Для iPhone/iPad -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <!-- Манифест -->
-    <link rel="manifest" href="/site.webmanifest">
+        <!-- Fallback для всех браузеров -->
+        <link rel="icon" href="/favicon.ico" sizes="any">
+        <!-- SVG для современных браузеров -->
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+        <!-- Главная для Google (кратна 48px) -->
+        <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+        <!-- Для Android и Chrome -->
+        <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
+        <!-- Стандартные для браузеров -->
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+        <!-- Для iPhone/iPad -->
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+        <!-- Манифест -->
+        <link rel="manifest" href="/site.webmanifest">
     <!-- FAVICONS END -->
 
     <link rel="canonical" href="<%= request.original_url %>" />

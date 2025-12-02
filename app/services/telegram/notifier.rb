@@ -16,6 +16,3 @@ module Telegram
     end
   end
 end
-
-# compatibility alias used across the codebase
-TelegramNotifier = Telegram::Notifier unless defined?(TelegramNotifier)
