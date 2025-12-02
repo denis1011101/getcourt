@@ -24,7 +24,7 @@ module Telegram
 
       data = JSON.parse(res.body) rescue {}
       (data["result"] || []).each do |update|
-        process_update(update)
+        Telegram::UpdateService.process(update)
         @offset = update["update_id"].to_i + 1
       end
     rescue => e
@@ -39,13 +39,114 @@ module Telegram
       end
     end
 
+    # Отправка JSON запроса к Telegram API
+    def send_api(method, payload = {})
+      uri = URI("#{@api}/#{method}")
+      req = Net::HTTP::Post.new(uri)
+      req["Content-Type"] = "application/json"
+      req.body = payload.to_json
+      Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == "https") do |http|
+        http.request(req)
+      end
+    rescue => e
+      Rails.logger.error "[BOT] send_api #{method} error: #{e.class} #{e.message}"
+      nil
+    end
+
     private
 
     # Duplicate small part of BotWebhookController logic to handle /register commands
-    def process_update(update)
+     def process_update(update)
+      Rails.logger.info "[BOT] Poller.process_update update_id=#{update['update_id'].inspect}"
+
+      # callback_query (button presses)
+      if (cq = update["callback_query"])
+        Rails.logger.info "[BOT] Poller.callback_query=#{cq.inspect}"
+        data = cq["data"].to_s
+        from = cq["from"] || {}
+        chat_id = from["id"]
+        chat_hash = { "id" => chat_id, "username" => from["username"], "first_name" => from["first_name"] }
+
+        # menu:games or paginated menu:games:page:N
+        if data =~ /\Amenu:games(?::page:(\d+))?\z/
+          page = ($1 || 1).to_i
+          res = Telegram::GameService.payload_for_page(chat_id: chat_id, page: page)
+          send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: "Games", show_alert: false })
+          # payload_for_page returns payload ready for sendMessage
+          send_api("sendMessage", res[:payload])
+          return
+        end
+
+        # join callback
+        if data =~ /\Ajoin:(\d+)\z/
+          game_id = $1.to_i
+          ok, msg = Telegram::GameService.join_by_chat(chat_hash, game_id)
+          send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: msg, show_alert: false })
+          send_api("sendMessage", { chat_id: chat_id, text: msg })
+          return
+        end
+
+      # leave callback
+      if data =~ /\Aleave:(\d+)\z/
+        game_id = $1.to_i
+        ok, msg = Telegram::GameService.leave_by_chat(chat_hash, game_id)
+        send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: msg, show_alert: false })
+        send_api("sendMessage", { chat_id: chat_id, text: msg })
+        return
+      end
+
+      # my_games pagination callback
+      if data =~ /\Amenu:my_games(?::page:(\d+))?\z/
+        page = ($1 || 1).to_i
+        res = Telegram::GameService.payload_for_my_games(chat_id: chat_id, page: page)
+        send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: "My Games", show_alert: false })
+        send_api("sendMessage", res[:payload])
+        return
+      end
+
+        send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: "Unknown action", show_alert: false })
+        return
+      end
+
       message = update["message"] || {}
       chat = message["chat"] || {}
       text = message["text"].to_s.strip
+      Rails.logger.info "[BOT] Poller message chat=#{chat.inspect} text=#{text.inspect}"
+
+      # handle /start for polling mode (create/link user)
+      if text =~ %r{\A/start\b}i
+        begin
+          user, created = Telegram::UserService.find_or_create_for_chat(chat)
+          chat_id = chat["id"].to_s
+          if created
+            TelegramNotifier.send_message(chat_id, "Welcome! Created account #{user.email}. You can manage it on the site.")
+            TelegramNotifier.send_message(chat_id, "To link an existing account, generate a registration token on the site and send: /register <token>")
+          else
+            TelegramNotifier.send_message(chat_id, "Hello #{user.name || user.email}. Your Telegram is linked to this account.")
+          end
+        rescue => e
+          Rails.logger.error "[BOT] Poller /start handling failed: #{e.class} #{e.message}"
+        end
+        return
+      end
+
+      # /all_games — show paginated list of available games (excluding user's participations)
+      if text =~ %r{\A/all_games(?:\s+(\d+))?\b}i
+        page = ($1 || 1).to_i
+        res = Telegram::GameService.payload_for_page(chat_id: chat["id"], page: page)
+        Rails.logger.info "[BOT] /all_games page=#{page} meta=#{res[:meta].inspect}"
+        send_api("sendMessage", res[:payload])
+        return
+      end
+
+      # /my_games — show user's joined games with Leave buttons
+      if text =~ %r{\A/my_games(?:\s+(\d+))?\b}i
+        page = ($1 || 1).to_i
+        res = Telegram::GameService.payload_for_my_games(chat_id: chat["id"], page: page)
+        Rails.logger.info "[BOT] /my_games page=#{page} meta=#{res[:meta].inspect}"
+        send_api("sendMessage", res[:payload])
+        return
+      end
 
       if text =~ %r{\A/register\s+([0-9a-fA-F]+)\z}i
         token = $1
