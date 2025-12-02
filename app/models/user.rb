@@ -51,6 +51,7 @@ class User < ApplicationRecord
   has_many :participations
 
   before_validation :normalize_email
+  before_validation :set_default_registration_source, on: :create
 
   validates :email, presence: true, uniqueness: { case_sensitive: false }
   validates :telegram_username, format: { with: /\A@?[\w\d_]{5,32}\z/, message: "is invalid" }, allow_blank: true
@@ -106,6 +107,10 @@ class User < ApplicationRecord
 
   def normalize_email
     self.email = email.to_s.strip.downcase.presence
+  end
+
+  def set_default_registration_source
+    self.registration_source = "email" if registration_source.blank?
   end
 
   def skill_levels_values_valid

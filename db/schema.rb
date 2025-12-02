@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_11_26_201202) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_02_191511) do
   create_table "courts", force: :cascade do |t|
     t.string "name"
     t.string "coordinates"
@@ -72,8 +72,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_11_26_201202) do
     t.string "login_via"
     t.boolean "require_verification", default: false, null: false
     t.string "preferred_login_via"
+    t.string "registration_source", default: "email", null: false
+    t.boolean "telegram_generated_email", default: false, null: false
     t.index ["email"], name: "index_users_on_email", unique: true, where: "email IS NOT NULL"
     t.index ["login_code"], name: "index_users_on_login_code"
+    t.index ["registration_source"], name: "index_users_on_registration_source"
     t.index ["skill_level"], name: "index_users_on_skill_level"
     t.index ["telegram_chat_id"], name: "index_users_on_telegram_chat_id_unique", unique: true
     t.index ["telegram_registration_token"], name: "index_users_on_telegram_registration_token", unique: true
