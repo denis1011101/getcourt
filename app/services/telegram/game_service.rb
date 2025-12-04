@@ -123,8 +123,12 @@ module Telegram
         return { payload: payload, meta: { page: 1, total_pages: 0 } }
       end
 
-      # игры, в которых пользователь участвует
-      base = Game.joins(:participations).where(participations: { user_id: user.id }).order(:date).distinct
+      # игры, в которых пользователь участвует И/ИЛИ которые он создал
+      # include owned games and games where he participates
+      base = Game.where(user_id: user.id)
+                 .or(Game.where(id: user.participations.select(:game_id)))
+                 .order(:date).distinct
+
       total = base.count
       total_pages = [ (total.to_f / per_page).ceil, 1 ].max
       page = [[page, 1].max, total_pages].min
@@ -137,7 +141,13 @@ module Telegram
       end
 
       lines = games.map { |g| game_card(g) }
-      btn_rows = games.map { |g| [{ text: "Leave ##{g.id}", callback_data: "leave:#{g.id}" }] }
+      btn_rows = games.map do |g|
+        if g.user_id == user.id
+          [{ text: "Invite ##{g.id}", callback_data: "invite:#{g.id}" }]
+        else
+          [{ text: "Leave ##{g.id}", callback_data: "leave:#{g.id}" }]
+        end
+      end
 
       nav_buttons = []
       nav_buttons << { text: "« Prev", callback_data: "menu:my_games:page:#{page - 1}" } if page > 1

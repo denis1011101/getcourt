@@ -13,6 +13,25 @@ module Telegram
         chat_id = from["id"]
         chat_hash = { "id" => chat_id, "username" => from["username"], "first_name" => from["first_name"] }
 
+        # invite callback — instruct owner how to send invites
+        if data =~ /\Ainvite:(\d+)\z/
+          game_id = $1.to_i
+          owner = User.find_by(telegram_chat_id: chat_id.to_s)
+          game = Game.find_by(id: game_id)
+          if game && owner && game.user_id == owner.id
+            poller.send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: "Reply to the message with usernames to invite", show_alert: false })
+            # include machine-readable marker INVITE_PROMPT so replies are unambiguous (no waiting)
+            poller.send_api("sendMessage", {
+              chat_id: chat_id,
+              text: "INVITE_PROMPT game:#{game_id}\nPlease reply to this message with usernames to invite (e.g. @kisskatusha @john_doe). All usernames in your reply will be processed immediately.",
+              reply_markup: { force_reply: true, selective: true }
+            })
+          else
+            poller.send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: "Only the game owner can invite", show_alert: false })
+          end
+          return
+        end
+
         if data =~ /\Amenu:games(?::page:(\d+))?\z/
           page = ($1 || 1).to_i
           res = Telegram::GameService.payload_for_page(chat_id: chat_id, page: page)
@@ -54,6 +73,121 @@ module Telegram
       chat = message["chat"] || {}
       text = message["text"].to_s.strip
       Rails.logger.info "[BOT] UpdateService message chat=#{chat.inspect} text=#{text.inspect}"
+
+      # If this is a reply to our INVITE_PROMPT, convert to immediate /invite processing
+      if message["reply_to_message"] && (rt = message["reply_to_message"]["text"].to_s) =~ /\AINVITE_PROMPT game:(\d+)\b/
+        game_id = $1.to_i
+        # convert the user's reply into the same format as /invite <game_id> <handles>
+        text = "/invite #{game_id} #{text}"
+        Rails.logger.info "[BOT] UpdateService converted reply -> #{text}"
+      end
+
+      # If there is a pending invite collection for this chat, collect lines or handle /done
+      pending_key = "tg:pending_invite:#{chat['id']}"
+      if Rails.cache.exist?(pending_key) && !(text =~ %r{\A/invite\b}i)
+        pending = Rails.cache.read(pending_key) || {}
+        # /done — process accumulated handles
+        if text =~ %r{\A/done\b}i
+          handles = Array(pending[:handles]).uniq
+          Rails.cache.delete(pending_key)
+          # reuse existing /invite processing logic by building a fake command text
+          fake = "/invite #{pending[:game_id]} #{handles.map { |h| '@'+h }.join(' ')}"
+          text = fake
+        else
+          # collect handles from this message and save, then ack
+          found = text.scan(/@[\w\d_]+/i).map { |h| h.sub('@','').downcase }
+          pending[:handles] = Array(pending[:handles]) | found
+          Rails.cache.write(pending_key, pending, expires_in: 10.minutes)
+          poller.send_api("sendMessage", { chat_id: chat['id'], text: "Added #{found.map{|h| "@#{h}"}.join(', ')}. Send more or /done to finish." })
+          return
+        end
+      end
+
+      # /invite GAME_ID @user1 @user2 ...
+      if text =~ %r{\A/invite\s+(\d+)\s+(.+)}i
+        game_id = $1.to_i
+        raw = $2.to_s
+        # immediate feedback
+        poller.send_api("sendMessage", { chat_id: chat["id"], text: "Processing invitations..." })
+        handles = raw.scan(/@[\w\d_]+/i).map { |h| h.sub('@','').downcase }.uniq
+        if handles.empty?
+          poller.send_api("sendMessage", { chat_id: chat["id"], text: "No usernames found. Use: /invite #{game_id} @user1 @user2" })
+          return
+        end
+
+        inviter = User.find_by(telegram_chat_id: chat["id"].to_s)
+        game = Game.find_by(id: game_id)
+        unless inviter && game && game.user_id == inviter.id
+          poller.send_api("sendMessage", { chat_id: chat["id"], text: "Only the game owner can send invites." })
+          return
+        end
+
+        not_found = []
+        skipped_self = []
+
+        # Build mapping username -> user by asking Telegram getChat for each stored chat_id.
+        username_map = {}
+        chatid_map = {}
+        User.where("telegram_chat_id IS NOT NULL AND telegram_chat_id != ''").find_each do |u|
+          cid = u.telegram_chat_id.to_s
+          begin
+            res = poller.send_api("getChat", { chat_id: cid })
+            if res && res.respond_to?(:body)
+              data = JSON.parse(res.body) rescue nil
+              nick = data.dig("result", "username")&.downcase if data && data["ok"]
+              username_map[nick] = u if nick.present?
+            end
+          rescue => _e
+            # ignore per-user failures (bot may be blocked / chat deleted)
+          end
+          chatid_map[cid] = u
+        end
+
+        handles.each do |uname|
+          # match by username (preferred) or by chat_id string if user provided numeric/chat id
+          user = username_map[uname] || chatid_map[uname]
+
+          # If we couldn't resolve the username via DB+getChat, check if it's the inviter's own username/chat id.
+          if user.nil? || user.telegram_chat_id.blank?
+            inviter_username = chat["username"].to_s.downcase
+            inviter_chatid_str = inviter&.telegram_chat_id.to_s
+            if inviter && (uname == inviter_username || uname == inviter_chatid_str)
+              skipped_self << "@#{uname}"
+              next
+            end
+
+            not_found << "@#{uname}"
+            next
+          end
+
+          # If resolved user is inviter -> skip with specific message
+          if inviter && user.id == inviter.id
+            skipped_self << "@#{uname}"
+            next
+          end
+
+          invite_text = "You are invited to join game *##{game.id}* (#{game.sport.to_s.titleize}) by #{inviter.name || inviter.email}.\n\n#{Telegram::GameService.game_card(game)}"
+           payload = {
+             chat_id: user.telegram_chat_id,
+             text: invite_text,
+             parse_mode: "Markdown",
+             reply_markup: { inline_keyboard: [[{ text: "Join ##{game.id}", callback_data: "join:#{game.id}" }]] }
+           }
+           poller.send_api("sendMessage", payload)
+         end
+
+        if not_found.empty? && skipped_self.empty?
+          summary = "Invitations sent."
+        elsif not_found.any? && skipped_self.empty?
+          summary = "Invitations processed. Users not found: #{not_found.join(', ')}. Not found users must open @GetCourtBot and press /start to create or link their account."
+        elsif skipped_self.any? && not_found.empty?
+          summary = "You tried to invite yourself (#{skipped_self.join(', ')}); skipped. To join your own game, press \"Join ##{game.id}\" in the game list or send /join #{game.id}."
+        else
+          summary = "Invitations processed. Users not found: #{not_found.join(', ')}. You tried to invite yourself (#{skipped_self.join(', ')}); skipped. Not found users must open @GetCourtBot and press /start to create or link their account."
+        end
+        poller.send_api("sendMessage", { chat_id: chat["id"], text: summary })
+         return
+      end
 
       if text =~ %r{\A/start\b}i
         begin
