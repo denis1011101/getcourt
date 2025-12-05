@@ -141,13 +141,43 @@ module Telegram
       end
 
       lines = games.map { |g| game_card(g) }
+      
       btn_rows = games.map do |g|
         if g.user_id == user.id
-          [{ text: "Invite ##{g.id}", callback_data: "invite:#{g.id}" }]
+          # compute game datetime (date + optional time)
+          game_time = begin
+            if g.respond_to?(:date) && g.date.present?
+              if g.respond_to?(:time) && g.time.present?
+                DateTime.parse("#{g.date} #{g.time}")
+              else
+                g.date.to_datetime
+              end
+            else
+              nil
+            end
+          rescue => _e
+            nil
+          end
+
+          # compute available spots (same logic as game_card)
+          total = if g.respond_to?(:players_count) && g.players_count.present?
+                    g.players_count.to_i
+                  else
+                    (g.participations.size + 4)
+                  end
+          taken = g.participations.size
+          left = [total - taken, 0].max
+
+          # show Invite only for future games with at least one spot
+          if (game_time.nil? || game_time > Time.current) && left > 0
+            [{ text: "Invite ##{g.id}", callback_data: "invite:#{g.id}" }]
+          else
+            nil
+          end
         else
           [{ text: "Leave ##{g.id}", callback_data: "leave:#{g.id}" }]
         end
-      end
+      end.compact
 
       nav_buttons = []
       nav_buttons << { text: "« Prev", callback_data: "menu:my_games:page:#{page - 1}" } if page > 1

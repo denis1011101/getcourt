@@ -32,6 +32,38 @@ module Telegram
           return
         end
 
+        # create court flow (ForceReply)
+        if data =~ /\Acreate_court\z/
+          owner = User.find_by(telegram_chat_id: chat_id.to_s)
+          if owner
+            poller.send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: "Reply to create a Court", show_alert: false })
+            poller.send_api("sendMessage", {
+              chat_id: chat_id,
+              text: "COURT_PROMPT\nReply with court info in one line or multiple lines:\nName; lat,lon; contact_type:contact_value\nExample:\nCentral Court; 55.7558,37.6173; telegram:ivan123",
+              reply_markup: { force_reply: true, selective: true }
+            })
+          else
+            poller.send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: "No linked account", show_alert: false })
+          end
+          return
+        end
+
+        # create game flow (ForceReply)
+        if data =~ /\Acreate_game\z/
+          owner = User.find_by(telegram_chat_id: chat_id.to_s)
+          if owner
+            poller.send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: "Reply to create a Game", show_alert: false })
+            poller.send_api("sendMessage", {
+              chat_id: chat_id,
+              text: "GAME_PROMPT\nReply with: court_id date(YYYY-MM-DD) time(HH:MM) players_count sport\nExample:\n3 2025-12-10 19:00 4 tennis",
+              reply_markup: { force_reply: true, selective: true }
+            })
+          else
+            poller.send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: "No linked account", show_alert: false })
+          end
+          return
+        end
+
         if data =~ /\Amenu:games(?::page:(\d+))?\z/
           page = ($1 || 1).to_i
           res = Telegram::GameService.payload_for_page(chat_id: chat_id, page: page)
@@ -80,6 +112,18 @@ module Telegram
         # convert the user's reply into the same format as /invite <game_id> <handles>
         text = "/invite #{game_id} #{text}"
         Rails.logger.info "[BOT] UpdateService converted reply -> #{text}"
+      end
+
+      # COURT_PROMPT -> /create_court <payload>
+      if message["reply_to_message"] && (rt = message["reply_to_message"]["text"].to_s) =~ /\ACOURT_PROMPT\b/
+        text = "/create_court #{text}"
+        Rails.logger.info "[BOT] UpdateService converted court reply -> #{text}"
+      end
+
+      # GAME_PROMPT -> /create_game <payload>
+      if message["reply_to_message"] && (rt = message["reply_to_message"]["text"].to_s) =~ /\AGAME_PROMPT\b/
+        text = "/create_game #{text}"
+        Rails.logger.info "[BOT] UpdateService converted game reply -> #{text}"
       end
 
       # If there is a pending invite collection for this chat, collect lines or handle /done
@@ -187,6 +231,96 @@ module Telegram
         end
         poller.send_api("sendMessage", { chat_id: chat["id"], text: summary })
          return
+      end
+
+      # if user sent bare /create_court -> prompt with ForceReply
+      if text =~ %r{\A/create_court\b}i && !(text =~ %r{\A/create_court\s+(.+)}i)
+        inviter = User.find_by(telegram_chat_id: chat["id"].to_s)
+        unless inviter
+          poller.send_api("sendMessage", { chat_id: chat["id"], text: "No linked account. Send /start first." })
+          return
+        end
+        poller.send_api("sendMessage", {
+          chat_id: chat["id"],
+          text: "COURT_PROMPT\nReply with court info in one line or multiple lines:\nName; lat,lon; contact_type:contact_value\nExample:\nCentral Court; 55.7558,37.6173; telegram:ivan123",
+          reply_markup: { force_reply: true, selective: true }
+        })
+        return
+      end
+
+      # if user sent bare /create_game -> prompt with ForceReply
+      if text =~ %r{\A/create_game\b}i && !(text =~ %r{\A/create_game\s+(.+)}i)
+        inviter = User.find_by(telegram_chat_id: chat["id"].to_s)
+        unless inviter
+          poller.send_api("sendMessage", { chat_id: chat["id"], text: "No linked account. Send /start first." })
+          return
+        end
+        poller.send_api("sendMessage", {
+          chat_id: chat["id"],
+          text: "GAME_PROMPT\nReply with: court_id date(YYYY-MM-DD) time(HH:MM) players_count sport\nExample:\n3 2025-12-10 19:00 4 tennis",
+          reply_markup: { force_reply: true, selective: true }
+        })
+        return
+      end
+
+      # /create_court Name; lat,lon; contact_type:contact_value
+      if text =~ %r{\A/create_court\s+(.+)}i
+        payload = $1.to_s.strip
+        inviter = User.find_by(telegram_chat_id: chat["id"].to_s)
+        unless inviter
+          poller.send_api("sendMessage", { chat_id: chat["id"], text: "No linked account. Send /start first." })
+          return
+        end
+
+        # parse: allow semicolon-separated or newline
+        parts = payload.split(/\s*;\s*/).map(&:strip)
+        name = parts[0].presence || "Unnamed court"
+        coords = parts[1].to_s.strip
+        contact = parts[2].to_s.strip
+
+        court = Court.new(name: name, user: inviter)
+        court.coordinates = coords if coords.present?
+        if contact.present? && contact.include?(":")
+          ct, cv = contact.split(":", 2).map(&:strip)
+          court.contact_type = ct
+          court.contact_value = cv
+        end
+
+        if court.save
+          poller.send_api("sendMessage", { chat_id: chat["id"], text: "Court created: ##{court.id} #{court.name}" })
+        else
+          poller.send_api("sendMessage", { chat_id: chat["id"], text: "Failed to create court: #{court.errors.full_messages.join(', ')}" })
+        end
+        return
+      end
+
+      # /create_game court_id date time players_count sport
+      if text =~ %r{\A/create_game\s+(.+)}i
+        payload = $1.to_s.strip
+        inviter = User.find_by(telegram_chat_id: chat["id"].to_s)
+        unless inviter
+          poller.send_api("sendMessage", { chat_id: chat["id"], text: "No linked account. Send /start first." })
+          return
+        end
+
+        parts = payload.split(/\s+/)
+        if parts.size < 4
+          poller.send_api("sendMessage", { chat_id: chat["id"], text: "Invalid format. Use: /create_game court_id date time players_count sport" })
+          return
+        end
+        court_id = parts[0].to_i
+        date_str = parts[1]
+        time_str = parts[2]
+        players_count = parts[3].to_i
+        sport = parts[4..].join(" ").presence || "unspecified"
+
+        game = Game.new(court_id: court_id, user: inviter, date: date_str.presence, time: time_str.presence, players_count: players_count, sport: sport)
+        if game.save
+          poller.send_api("sendMessage", { chat_id: chat["id"], text: "Game created: ##{game.id}\n#{Telegram::GameService.game_card(game)}" })
+        else
+          poller.send_api("sendMessage", { chat_id: chat["id"], text: "Failed to create game: #{game.errors.full_messages.join(', ')}" })
+        end
+        return
       end
 
       if text =~ %r{\A/start\b}i
