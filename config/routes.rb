@@ -6,16 +6,19 @@ Rails.application.routes.draw do
   post '/geocoding/reset',  to: 'geocoding#reset',   as: :geocoding_reset
 
 if Rails.env.production?
-  post "/bot_webhook", to: "bot_webhook#receive"
+  post "/bot_webhook", to: "bot_webhook#create"
 else
   # In development/test we prefer polling. Keep webhook route commented for manual testing (ngrok).
-  # post "/bot_webhook", to: "bot_webhook#receive"
 end
 
   get '/tennis_life', to: 'tennis_life#index', as: :tennis_life
 
   resource :account, only: %i[edit update], controller: :users do
     post :regenerate_token
+  end
+
+  resources :users, only: [:index, :show] do
+    resource :player_statistic, only: [:show]
   end
 
   # auth

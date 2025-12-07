@@ -4,16 +4,22 @@ module Telegram
 
     # Формирует короткую текстовую карточку для одной игры
     def self.game_card(game)
-      date = game.try(:date)&.strftime("%Y-%m-%d") || "—"
-      time = (game.try(:time)&.strftime("%H:%M") rescue game.try(:time).to_s.presence) || "—"
+      # use next_date/next_time so recurring games show next occurrence
+      date = (game.next_date || game.date)&.strftime("%Y-%m-%d") || "—"
+      time = if (t = game.next_time || game.time)
+               (t.respond_to?(:strftime) ? t.strftime("%H:%M") : t.to_s)
+             else
+               "—"
+             end
+
       total = if game.respond_to?(:players_count) && game.players_count.present?
                 game.players_count.to_i
               else
-                # fallback: estimate (participations + 4) to show capacity
                 (game.participations.size + 4)
               end
       taken = game.participations.size
       left = [total - taken, 0].max
+
       [
         "*##{game.id}* — #{game.sport.to_s.titleize}",
         "Date: #{date} #{time}",
@@ -24,9 +30,16 @@ module Telegram
 
     # Возвращает ActiveRecord::Relation для страницы
     def self.page_of_games(page: 1, per_page: DEFAULT_PER_PAGE)
+      # keep behaviour but sort by next_date/next_time in Ruby to account for recurring
+      all = Game.all.to_a
+      sorted = all.sort_by do |g|
+        nd = g.next_date || Date.new(9999,1,1)
+        nt = g.next_time || Time.new(0)
+        [nd, nt]
+      end
       page = page.to_i < 1 ? 1 : page.to_i
       offset = (page - 1) * per_page
-      Game.order(:date).offset(offset).limit(per_page)
+      sorted.slice(offset, per_page) || []
     end
 
     # Возвращает общее количество страниц
@@ -41,24 +54,26 @@ module Telegram
       page = page.to_i < 1 ? 1 : page.to_i
       per_page = per_page.to_i <= 0 ? DEFAULT_PER_PAGE : per_page.to_i
 
-      base = Game.order(:date)
+      # load games and sort by next occurrence so recurring games appear with updated dates
+      base = Game.all.to_a
       if chat_id.present?
         user = User.find_by(telegram_chat_id: chat_id.to_s)
         if user
-          # Exclude games where this user already participates.
-          # Use subquery on participations/game_id to avoid dropping games with no participations.
-          base = base.where.not(id: user.participations.select(:game_id))
+          base.reject! { |g| user.participations.map(&:game_id).include?(g.id) }
         end
       end
 
-      total = base.count
+      sorted = base.sort_by do |g|
+        nd = g.next_date || Date.new(9999,1,1)
+        nt = g.next_time || Time.new(0)
+        [nd, nt]
+      end
+
+      total = sorted.size
       total_pages = [ (total.to_f / per_page).ceil, 1 ].max
-
-      # КЛЮЧЕВОЕ: закрепить page в диапазоне [1..total_pages]
       page = [[page, 1].max, total_pages].min
-
       offset = (page - 1) * per_page
-      games = base.offset(offset).limit(per_page)
+      games = sorted.slice(offset, per_page) || []
 
       if games.empty?
         payload = {
@@ -141,7 +156,7 @@ module Telegram
       end
 
       lines = games.map { |g| game_card(g) }
-      
+
       btn_rows = games.map do |g|
         if g.user_id == user.id
           # compute game datetime (date + optional time)

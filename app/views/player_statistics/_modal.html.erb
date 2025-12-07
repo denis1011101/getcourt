@@ -1,0 +1,73 @@
+<%# Player statistics modal (CSS-only: open by hash, close via #close) %>
+<div id="player-stats-<%= user.id %>" class="ps-modal" aria-hidden="true">
+  <!-- overlay (click to close via anchor) -->
+  <a href="#close" data-turbo="false" class="absolute inset-0 z-40" aria-hidden="true"></a>
+
+  <div class="fixed left-1/2 top-16 z-50 w-[90%] md:w-auto max-w-2xl transform -translate-x-1/2 bg-white p-6 md:p-8 rounded-lg shadow-lg pointer-events-auto">
+    <a href="#close" data-turbo="false" class="absolute top-3 right-3 text-gray-600 hover:text-gray-800 text-xl" aria-label="Close">✕</a>
+
+    <h2 id="ps-title-<%= user.id %>" class="text-xl font-semibold mb-4">
+      <%= user.name.presence || user.email %> — Statistics
+    </h2>
+
+    <%# determine whether there is any meaningful data %>
+    <% if stats.present? %>
+      <% has_hours = stats.singles_hours.to_f > 0 || stats.doubles_hours.to_f > 0 %>
+      <% has_sessions = (stats.singles_sessions.to_i + stats.doubles_sessions.to_i + stats.singles_games.to_i + stats.doubles_games.to_i) > 0 %>
+      <% has_match_stats = stats.aces.to_i > 0 || stats.double_faults.to_i > 0 || stats.first_serve_percent.present? %>
+      <% has_ratings = stats.singles_rating.present? || stats.doubles_rating.present? %>
+    <% else %>
+      <% has_hours = has_sessions = has_match_stats = has_ratings = false %>
+    <% end %>
+
+    <% if stats.blank? || !(has_hours || has_sessions || has_match_stats || has_ratings) %>
+      <p class="text-gray-600">No statistics available yet.</p>
+    <% else %>
+      <% if has_hours %>
+        <section class="mb-4">
+          <h3 class="text-sm font-medium text-gray-700 mb-1">Hours</h3>
+          <p class="text-gray-600">Singles: <%= stats.singles_hours.to_f.round(1) %>h</p>
+          <p class="text-gray-600">Doubles: <%= stats.doubles_hours.to_f.round(1) %>h</p>
+          <p class="text-gray-600">Total: <%= stats.total_hours %>h</p>
+        </section>
+      <% end %>
+
+      <% if has_sessions %>
+        <section class="mb-4">
+          <h3 class="text-sm font-medium text-gray-700 mb-1">Sessions / Games</h3>
+          <% if (stats.singles_sessions.to_i + stats.singles_games.to_i) > 0 %>
+            <p class="text-gray-600">Singles: sessions <%= stats.singles_sessions.to_i %>, games <%= stats.singles_games.to_i %>, win rate <%= stats.singles_win_rate || 'N/A' %>%</p>
+          <% end %>
+          <% if (stats.doubles_sessions.to_i + stats.doubles_games.to_i) > 0 %>
+            <p class="text-gray-600">Doubles: sessions <%= stats.doubles_sessions.to_i %>, games <%= stats.doubles_games.to_i %>, win rate <%= stats.doubles_win_rate || 'N/A' %>%</p>
+          <% end %>
+        </section>
+      <% end %>
+
+      <% if has_match_stats %>
+        <section class="mb-4">
+          <h3 class="text-sm font-medium text-gray-700 mb-1">Match stats</h3>
+          <p class="text-gray-600">
+            Aces: <%= stats.aces.to_i %>, Double faults: <%= stats.double_faults.to_i %>
+            <% if stats.first_serve_percent.present? %>, 1st serve %: <%= stats.first_serve_percent %><% end %>
+          </p>
+        </section>
+      <% end %>
+
+      <% if has_ratings %>
+        <section>
+          <h3 class="text-sm font-medium text-gray-700 mb-1">Ratings</h3>
+          <% if stats.singles_rating.present? %>
+            <p class="text-gray-600">Singles rating: <%= stats.singles_rating %></p>
+          <% end %>
+          <% if stats.doubles_rating.present? %>
+            <p class="text-gray-600">Doubles rating: <%= stats.doubles_rating %></p>
+          <% end %>
+        </section>
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+<!-- hidden target for closing the modal -->
+<span id="close" style="display:none" aria-hidden="true"></span>

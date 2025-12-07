@@ -2,6 +2,8 @@
   <ul class="mb-4 space-y-2">
     <% game.participations.each do |participation| %>
       <%= render partial: "participations/item", locals: { participation: participation, game: game } %>
+      <% user = participation.user %>
+      <%= render partial: "player_statistics/modal", locals: { user: user, stats: user.player_statistic || user.create_player_statistic } %>
     <% end %>
 
     <% if game.participations.empty? %>

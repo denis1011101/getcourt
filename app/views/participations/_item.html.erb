@@ -4,7 +4,11 @@
     <%= participation.user.name.to_s.strip[0]&.upcase || "?" %>
   </span>
 
-  <span class="text-sm text-gray-800 flex-1"><%= participation.user.name || participation.user.email %></span>
+  <span class="text-sm text-gray-800 flex-1">
+    <a href="#player-stats-<%= participation.user.id %>" data-turbo="false" class="text-indigo-600 hover:underline">
+      <%= participation.user.name.presence || participation.user.email %>
+    </a>
+  </span>
 
   <%# show Remove button to game owner or admin (not for self — self has "Leave" control elsewhere) %>
   <% if can_remove_participant?(g, participation.user) && participation.user != current_user %>
