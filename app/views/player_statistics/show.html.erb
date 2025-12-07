@@ -1,0 +1,43 @@
+<% if stats.blank? %>
+<div id="player-stats-<%= user.id %>" class="ps-modal" aria-hidden="true">
+  <div class="ps-modal__overlay"></div>
+  <div class="ps-modal__content" role="dialog" aria-labelledby="ps-title-<%= user.id %>">
+    <a class="ps-modal__close" href="#close" aria-label="Close">✕</a>
+    <h2 id="ps-title-<%= user.id %>"><%= user.name.presence || user.email %> — Statistics</h2>
+
+    <p class="text-gray-600">No statistics available yet.</p>
+  </div>
+</div>
+<% else %>
+<div id="player-stats-<%= user.id %>" class="ps-modal" aria-hidden="true">
+  <div class="ps-modal__overlay"></div>
+  <div class="ps-modal__content" role="dialog" aria-labelledby="ps-title-<%= user.id %>">
+    <a class="ps-modal__close" href="#close" aria-label="Close">✕</a>
+    <h2 id="ps-title-<%= user.id %>"><%= user.name.presence || user.email %> — Statistics</h2>
+
+    <section>
+      <h3>Hours</h3>
+      <p>Singles: <%= stats.singles_hours.to_f.round(1) %>h</p>
+      <p>Doubles: <%= stats.doubles_hours.to_f.round(1) %>h</p>
+      <p>Total: <%= stats.total_hours %>h</p>
+    </section>
+
+    <section>
+      <h3>Sessions / Games</h3>
+      <p>Singles: sessions <%= stats.singles_sessions.to_i %>, games <%= stats.singles_games.to_i %>, win rate <%= stats.singles_win_rate || 'N/A' %>%</p>
+      <p>Doubles: sessions <%= stats.doubles_sessions.to_i %>, games <%= stats.doubles_games.to_i %>, win rate <%= stats.doubles_win_rate || 'N/A' %>%</p>
+    </section>
+
+    <section>
+      <h3>Match stats</h3>
+      <p>Aces: <%= stats.aces.to_i %>, Double faults: <%= stats.double_faults.to_i %>, 1st serve %: <%= stats.first_serve_percent || 'N/A' %></p>
+    </section>
+
+    <section>
+      <h3>Ratings</h3>
+      <p>Singles rating: <%= stats.singles_rating || 1500 %></p>
+      <p>Doubles rating: <%= stats.doubles_rating || 1500 %></p>
+    </section>
+  </div>
+</div>
+<% end %>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_02_191511) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_06_165857) do
   create_table "courts", force: :cascade do |t|
     t.string "name"
     t.string "coordinates"
@@ -54,6 +54,28 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_02_191511) do
     t.index ["user_id"], name: "index_participations_on_user_id"
   end
 
+  create_table "player_statistics", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.float "singles_hours"
+    t.float "doubles_hours"
+    t.integer "singles_sessions"
+    t.integer "doubles_sessions"
+    t.integer "singles_games"
+    t.integer "doubles_games"
+    t.integer "singles_wins"
+    t.integer "singles_losses"
+    t.integer "doubles_wins"
+    t.integer "doubles_losses"
+    t.integer "aces"
+    t.integer "double_faults"
+    t.float "first_serve_percent"
+    t.float "singles_rating"
+    t.float "doubles_rating"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_player_statistics_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -88,4 +110,5 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_02_191511) do
   add_foreign_key "games", "users"
   add_foreign_key "participations", "games"
   add_foreign_key "participations", "users"
+  add_foreign_key "player_statistics", "users"
 end

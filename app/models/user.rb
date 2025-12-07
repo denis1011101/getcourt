@@ -1,4 +1,7 @@
 class User < ApplicationRecord
+  has_one :player_statistic, dependent: :destroy
+  after_create :ensure_player_statistic
+
   SKILL_LEVELS = %w[beginner intermediate advanced pro].freeze
   SPORTS = ["Tennis", "Padel", "Squash", "Table Tennis"].freeze
 
@@ -104,6 +107,10 @@ class User < ApplicationRecord
   end
 
   private
+
+  def ensure_player_statistic
+    create_player_statistic unless player_statistic
+  end
 
   def normalize_email
     self.email = email.to_s.strip.downcase.presence
