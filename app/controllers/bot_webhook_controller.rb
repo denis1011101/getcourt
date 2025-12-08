@@ -4,36 +4,31 @@ class BotWebhookController < ApplicationController
 
   # POST /bot_webhook
   def create
-    # optional: validate secret token if you set one via setWebhook(secret_token: ...)
-    secret = ENV["TELEGRAM_WEBHOOK_SECRET"].to_s
-    incoming = request.headers["X-Telegram-Bot-Api-Secret-Token"].to_s
-    if secret.present? && !ActiveSupport::SecurityUtils.secure_compare(incoming, secret)
-      Rails.logger.warn "[BOT] webhook secret mismatch"
+    # validate secret token if configured
+    expected = ENV["TELEGRAM_WEBHOOK_SECRET"].to_s.presence
+    received = request.headers["X-Telegram-Bot-Api-Secret-Token"]
+    if expected && expected != received
+      Rails.logger.warn "[BotWebhook] webhook secret mismatch from #{request.remote_ip}"
       head :forbidden and return
     end
 
-    if request.raw_post.present?
-      begin
-        update = JSON.parse(request.raw_post)
-      rescue JSON::ParserError => e
-        Rails.logger.warn "[BotWebhook] JSON parse error: #{e.message}"
-        update = params.to_unsafe_h
-      end
-    else
-      update = params.to_unsafe_h
+    raw = request.raw_post.to_s
+    update = begin
+      JSON.parse(raw)
+    rescue JSON::ParserError
+      # some reverse proxies / clients may nest payload under "bot_webhook"
+      params[:bot_webhook] || params.to_unsafe_h
     end
 
-    if update["callback_query"]
-      Telegram::CallbackHandler.handle(update["callback_query"])
-    elsif update["message"]
-      Telegram::MessageHandler.handle(update["message"])
-    elsif update["edited_message"]
-      Telegram::MessageHandler.handle(update["edited_message"])
-    end
+    # if the payload was wrapped (as seen in logs), unwrap
+    update = update["bot_webhook"] if update.is_a?(Hash) && update.key?("bot_webhook")
+
+    # enqueue processing (async) — safe for production
+    Telegram::UpdateJob.perform_later(update)
 
     head :ok
   rescue => e
-    Rails.logger.error "[BotWebhook] #{e.class} #{e.message}"
-    head :ok
+    Rails.logger.error "[BotWebhook] #{e.class}: #{e.message}\n#{e.backtrace.first(10).join("\n")}"
+    head :internal_server_error
   end
 end
