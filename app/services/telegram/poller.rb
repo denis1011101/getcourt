@@ -129,6 +129,59 @@ module Telegram
         return
       end
 
+      # manage: show per-participant Remove buttons (owner only)
+      if data =~ /\Amanage:(\d+)\z/
+        game_id = $1.to_i
+        owner = User.find_by(telegram_chat_id: chat_id.to_s)
+        game = Game.includes(participations: :user).find_by(id: game_id)
+        if game && owner && game.user_id == owner.id
+          participants = game.participations.map(&:user).compact.reject { |u| u.id == owner.id }
+          if participants.empty?
+            send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: "No other participants to manage", show_alert: false })
+            send_api("sendMessage", { chat_id: chat_id, text: "No other participants to manage for game ##{game_id}." })
+          else
+            rows = participants.map do |p|
+              [{ text: "Remove #{p.name || p.email}", callback_data: "remove:#{game.id}:#{p.id}" }]
+            end
+            send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: "Manage players", show_alert: false })
+            send_api("sendMessage", { chat_id: chat_id, text: "Participants for game ##{game_id}:", reply_markup: { inline_keyboard: rows } })
+          end
+        else
+          send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: "Only the game owner can manage players", show_alert: false })
+        end
+        return
+      end
+
+      # remove: owner removes participant
+      if data =~ /\Aremove:(\d+):(\d+)\z/
+        game_id = $1.to_i
+        target_user_id = $2.to_i
+        owner = User.find_by(telegram_chat_id: chat_id.to_s)
+        game = Game.find_by(id: game_id)
+        if game && owner && game.user_id == owner.id
+          participation = game.participations.find_by(user_id: target_user_id)
+          if participation
+            target = participation.user
+            begin
+              participation.destroy!
+              send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: "Removed #{target&.name || 'user'} from ##{game_id}", show_alert: false })
+              send_api("sendMessage", { chat_id: chat_id, text: "User #{target&.name || target&.email || target_user_id} removed from game ##{game_id}." })
+              if target && target.telegram_chat_id.present?
+                send_api("sendMessage", { chat_id: target.telegram_chat_id, text: "You have been removed from game ##{game_id} by the owner." })
+              end
+            rescue => e
+              Rails.logger.error "[BOT] UpdateService remove error: #{e.class} #{e.message}"
+              send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: "Failed to remove player (server error)", show_alert: false })
+            end
+          else
+            send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: "Player not found in this game", show_alert: false })
+          end
+        else
+          send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: "Only the game owner can remove players", show_alert: false })
+        end
+        return
+      end
+
       # my_games pagination callback
       if data =~ /\Amenu:my_games(?::page:(\d+))?\z/
         page = ($1 || 1).to_i

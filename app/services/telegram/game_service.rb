@@ -196,6 +196,9 @@ module Telegram
             buttons << { text: "Join ##{g.id}", callback_data: "join:#{g.id}" }
           end
 
+          # owner management: opens per-participant remove buttons
+          buttons << { text: "Manage ##{g.id}", callback_data: "manage:#{g.id}" }
+
           # allow owner to delete the game (confirmation should be handled in callback handling)
           buttons << { text: "Delete ##{g.id}", callback_data: "delete:#{g.id}" }
 
