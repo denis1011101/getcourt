@@ -160,13 +160,15 @@ module Telegram
       btn_rows = games.map do |g|
         # treat as owner either by user_id OR by matching owner's telegram_chat_id to caller chat_id
         if g.user_id == user.id || (g.user&.telegram_chat_id.to_s == chat_id.to_s)
-          # compute game datetime (date + optional time)
+          # compute game datetime using next_date/next_time for recurring games
           game_time = begin
-            if g.respond_to?(:date) && g.date.present?
-              if g.respond_to?(:time) && g.time.present?
-                DateTime.parse("#{g.date} #{g.time}")
+            d = g.next_date || g.date
+            t = g.next_time || g.time
+            if d.present?
+              if t.present?
+                DateTime.parse("#{d} #{t.strftime('%H:%M')}")
               else
-                g.date.to_datetime
+                d.to_datetime
               end
             else
               nil
