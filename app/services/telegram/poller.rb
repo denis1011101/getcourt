@@ -95,6 +95,40 @@ module Telegram
         return
       end
 
+      # decline callback — notify owner that invite was declined
+      if data =~ /\Adecline:(\d+)\z/
+        game_id = $1.to_i
+        decliner = User.find_by(telegram_chat_id: chat_id.to_s)
+        game = Game.find_by(id: game_id)
+        send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: "You declined invite to game ##{game_id}", show_alert: false })
+        send_api("sendMessage", { chat_id: chat_id, text: "You declined invite to game ##{game_id}." })
+        if game && game.user && game.user.telegram_chat_id.present?
+          name = decliner ? (decliner.name || decliner.email) : "A user"
+          send_api("sendMessage", { chat_id: game.user.telegram_chat_id, text: "#{name} declined invite to game ##{game_id}." })
+        end
+        return
+      end
+
+      # delete callback (owner only)
+      if data =~ /\Adelete:(\d+)\z/
+        game_id = $1.to_i
+        owner = User.find_by(telegram_chat_id: chat_id.to_s)
+        game = Game.find_by(id: game_id)
+        if game && owner && game.user_id == owner.id
+          begin
+            game.destroy!
+            send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: "Game ##{game_id} deleted", show_alert: false })
+            send_api("sendMessage", { chat_id: chat_id, text: "Game ##{game_id} has been deleted." })
+          rescue => e
+            Rails.logger.error "[BOT] Poller.delete error: #{e.class} #{e.message}"
+            send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: "Failed to delete game (server error).", show_alert: false })
+          end
+        else
+          send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: "Only the game owner can delete", show_alert: false })
+        end
+        return
+      end
+
       # my_games pagination callback
       if data =~ /\Amenu:my_games(?::page:(\d+))?\z/
         page = ($1 || 1).to_i

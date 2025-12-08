@@ -88,6 +88,41 @@ module Telegram
           return
         end
 
+        if data =~ /\Adecline:(\d+)\z/
+          game_id = $1.to_i
+          decliner = User.find_by(telegram_chat_id: chat_id.to_s)
+          game = Game.find_by(id: game_id)
+          # ack button for user
+          poller.send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: "You declined invite to game ##{game_id}", show_alert: false })
+          poller.send_api("sendMessage", { chat_id: chat_id, text: "You declined invite to game ##{game_id}." })
+          # notify owner if available
+          if game && game.user && game.user.telegram_chat_id.present?
+            owner_cid = game.user.telegram_chat_id
+            name = decliner ? (decliner.name || decliner.email) : "A user"
+            poller.send_api("sendMessage", { chat_id: owner_cid, text: "#{name} declined invite to game ##{game_id}." })
+          end
+          return
+        end
+
+        if data =~ /\Adelete:(\d+)\z/
+          game_id = $1.to_i
+          owner = User.find_by(telegram_chat_id: chat_id.to_s)
+          game = Game.find_by(id: game_id)
+          if game && owner && game.user_id == owner.id
+            begin
+              game.destroy!
+              poller.send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: "Game ##{game_id} deleted", show_alert: false })
+              poller.send_api("sendMessage", { chat_id: chat_id, text: "Game ##{game_id} has been deleted." })
+            rescue => e
+              Rails.logger.error "[BOT] UpdateService delete error: #{e.class} #{e.message}"
+              poller.send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: "Failed to delete game (server error).", show_alert: false })
+            end
+          else
+            poller.send_api("answerCallbackQuery", { callback_query_id: cq["id"], text: "Only the game owner can delete", show_alert: false })
+          end
+          return
+        end
+
         if data =~ /\Amenu:my_games(?::page:(\d+))?\z/
           page = ($1 || 1).to_i
           res = Telegram::GameService.payload_for_my_games(chat_id: chat_id, page: page)
@@ -212,10 +247,13 @@ module Telegram
 
           invite_text = "You are invited to join game *##{game.id}* (#{game.sport.to_s.titleize}) by #{inviter.name || inviter.email}.\n\n#{Telegram::GameService.game_card(game)}"
            payload = {
-             chat_id: user.telegram_chat_id,
-             text: invite_text,
-             parse_mode: "Markdown",
-             reply_markup: { inline_keyboard: [[{ text: "Join ##{game.id}", callback_data: "join:#{game.id}" }]] }
+            chat_id: user.telegram_chat_id,
+            text: invite_text,
+            parse_mode: "Markdown",
+            reply_markup: { inline_keyboard: [[
+              { text: "Join ##{game.id}", callback_data: "join:#{game.id}" },
+              { text: "Decline ##{game.id}", callback_data: "decline:#{game.id}" }
+            ]] }
            }
            poller.send_api("sendMessage", payload)
          end

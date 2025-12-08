@@ -183,12 +183,20 @@ module Telegram
           taken = g.participations.size
           left = [total - taken, 0].max
 
-          # show Invite only for future games with at least one spot
-          if (game_time.nil? || game_time > Time.current) && left > 0
-            [{ text: "Invite ##{g.id}", callback_data: "invite:#{g.id}" }]
+          # build buttons row: Invite (if future + spots), Join/Leave and Delete for owner
+          buttons = []
+          buttons << { text: "Invite ##{g.id}", callback_data: "invite:#{g.id}" } if (game_time.nil? || game_time > Time.current) && left > 0
+
+          if g.participations.exists?(user_id: user.id)
+            buttons << { text: "Leave ##{g.id}", callback_data: "leave:#{g.id}" }
           else
-            nil
+            buttons << { text: "Join ##{g.id}", callback_data: "join:#{g.id}" }
           end
+
+          # allow owner to delete the game (confirmation should be handled in callback handling)
+          buttons << { text: "Delete ##{g.id}", callback_data: "delete:#{g.id}" }
+
+          buttons.empty? ? nil : buttons
         else
           [{ text: "Leave ##{g.id}", callback_data: "leave:#{g.id}" }]
         end
