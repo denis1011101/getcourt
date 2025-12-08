@@ -158,7 +158,8 @@ module Telegram
       lines = games.map { |g| game_card(g) }
 
       btn_rows = games.map do |g|
-        if g.user_id == user.id
+        # treat as owner either by user_id OR by matching owner's telegram_chat_id to caller chat_id
+        if g.user_id == user.id || (g.user&.telegram_chat_id.to_s == chat_id.to_s)
           # compute game datetime (date + optional time)
           game_time = begin
             if g.respond_to?(:date) && g.date.present?
