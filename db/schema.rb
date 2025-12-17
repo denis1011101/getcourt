@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_06_165857) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_14_122046) do
   create_table "courts", force: :cascade do |t|
     t.string "name"
     t.string "coordinates"
@@ -19,6 +19,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_06_165857) do
     t.integer "user_id"
     t.string "contact_type"
     t.string "contact_value"
+    t.string "timezone"
+    t.index ["timezone"], name: "index_courts_on_timezone"
     t.index ["user_id"], name: "index_courts_on_user_id"
   end
 
@@ -38,7 +40,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_06_165857) do
     t.integer "players_count", default: 4, null: false
     t.string "sport"
     t.string "skill_level"
+    t.boolean "prebooking_enabled", default: false, null: false
     t.index ["court_id"], name: "index_games_on_court_id"
+    t.index ["prebooking_enabled"], name: "index_games_on_prebooking_enabled"
     t.index ["recurring"], name: "index_games_on_recurring"
     t.index ["user_id"], name: "index_games_on_user_id"
     t.index ["with_coach"], name: "index_games_on_with_coach"
@@ -76,6 +80,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_06_165857) do
     t.index ["user_id"], name: "index_player_statistics_on_user_id"
   end
 
+  create_table "prebookings", force: :cascade do |t|
+    t.integer "game_id", null: false
+    t.date "date", null: false
+    t.integer "slot_index", null: false
+    t.integer "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["game_id", "date", "slot_index"], name: "index_prebookings_on_game_date_slot", unique: true
+    t.index ["game_id"], name: "index_prebookings_on_game_id"
+    t.index ["user_id"], name: "index_prebookings_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -111,4 +127,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_06_165857) do
   add_foreign_key "participations", "games"
   add_foreign_key "participations", "users"
   add_foreign_key "player_statistics", "users"
+  add_foreign_key "prebookings", "games"
+  add_foreign_key "prebookings", "users"
 end

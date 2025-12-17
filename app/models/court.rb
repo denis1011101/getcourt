@@ -7,6 +7,11 @@ class Court < ApplicationRecord
   validates :name, presence: true
   belongs_to :user, optional: true
 
+  # обновлять timezone асинхронно после создания/обновления координат (в фоне)
+  after_commit :enqueue_timezone_fetch, on: %i[create update], if: -> { saved_change_to_coordinates? }
+  # также планируем асинхронное получение адреса при смене координат
+  after_commit :enqueue_address_fetch, on: %i[create update], if: -> { saved_change_to_coordinates? }
+
   CONTACT_TYPES = %w[phone whatsapp telegram viber other].freeze
 
   def contact_label
@@ -15,7 +20,7 @@ class Court < ApplicationRecord
 
   def formatted_contact
     return nil if contact_value.blank?
-    
+
     contact_label ? "#{contact_label}: #{contact_value}" : contact_value
   end
 
@@ -60,8 +65,14 @@ class Court < ApplicationRecord
     return "Unknown address" unless lat && lng
     return "Unknown address" if lat.zero? && lng.zero?
 
-    @address = Rails.cache.fetch("addr:#{lat},#{lng}", expires_in: 1.day) do
-      geocode_google(lat, lng) || geocode_nominatim(lat, lng) || "Unknown address"
+    cache_key = "addr:#{lat},#{lng}"
+    cached = Rails.cache.read(cache_key)
+    if cached.present?
+      @address = cached
+    else
+      # не делаем блокирующих сетевых вызовов в рендере — планируем background job
+      enqueue_address_fetch
+      @address = "Unknown address"
     end
   rescue => e
     Rails.logger.warn("Geocoding failed: #{e.class} #{e.message}")
@@ -72,7 +83,35 @@ class Court < ApplicationRecord
     self.class.parse_pair(coordinates)
   end
 
+  def fetch_and_set_timezone!
+    lat, lng = coordinates_pair
+    return nil unless lat && lng
+
+    key = ENV["GOOGLE_TIMEZONE_API_KEY"] || ENV["GOOGLE_MAPS_API_KEY"]
+    return nil if key.to_s.strip.empty?
+
+    ts = Time.now.to_i
+    url = URI("https://maps.googleapis.com/maps/api/timezone/json?location=#{lat},#{lng}&timestamp=#{ts}&key=#{key}&language=en")
+    data = fetch_json(url)
+    tzid = data&.dig("timeZoneId")
+    return nil unless tzid
+
+    rails_name = ActiveSupport::TimeZone.all.find { |z| z.tzinfo.name == tzid }&.name
+    update_column(:timezone, rails_name || tzid)
+  rescue => e
+    Rails.logger.warn "Timezone fetch failed for Court##{id}: #{e.message}"
+    nil
+  end
+
   private
+
+  def enqueue_address_fetch
+    Geocoding::FetchCourtAddressJob.perform_later(id)
+  end
+
+  def enqueue_timezone_fetch
+    Geocoding::FetchCourtTimezoneJob.perform_later(id)
+  end
 
   def geocode_google(lat, lng)
     key = ENV["GOOGLE_GEOCODING_API_KEY"] || ENV["GOOGLE_MAPS_API_KEY"]

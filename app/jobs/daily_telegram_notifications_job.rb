@@ -16,8 +16,9 @@ class DailyTelegramNotificationsJob < ApplicationJob
                         end
       next unless occurrence_date == target_date
 
-      owner = game.user
-      next unless owner&.telegram_chat_id.present?
+      # Отправляем всем участникам (Participation)
+      recipients = game.participations.includes(:user).map(&:user).compact.uniq
+      next if recipients.empty?
 
       time = game.next_time || game.time
       time_str = time&.strftime("%H:%M") || "—:--"
@@ -27,7 +28,10 @@ class DailyTelegramNotificationsJob < ApplicationJob
       game_url = "https://getcourt.co/games/#{game.id}"
       text = "Reminder: you have a game #{when_text} (#{target_date.strftime('%Y-%m-%d')}) at #{time_str} on #{court_name}. Participants: #{participants_count}\n#{game_url}"
 
-      SendTelegramNotificationJob.perform_later(owner.telegram_chat_id, text)
+      recipients.each do |recipient|
+        next unless recipient&.telegram_chat_id.present?
+        SendTelegramNotificationJob.perform_later(recipient.telegram_chat_id, text)
+      end
     end
   end
 end

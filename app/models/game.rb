@@ -2,8 +2,52 @@ class Game < ApplicationRecord
   belongs_to :court
   belongs_to :user
   has_many :participations, dependent: :destroy
+  has_many :prebookings, dependent: :destroy
 
   validates :date, presence: { message: "must be present" }
+
+  validates :players_count, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
+  validate :prebooking_requires_recurring
+
+  def prebooking_requires_recurring
+    if prebooking_enabled? && !recurring?
+      errors.add(:prebooking_enabled, "can be enabled only for repeating (weekly) games")
+    end
+  end
+
+  # return true if prebookings behaviour is enabled for this game
+  def prebooking_enabled?
+    if respond_to?(:prebooking) # legacy/possible boolean column :prebooking
+      !!self.prebooking
+    elsif respond_to?(:prebooking_enabled) # alternative column name
+      !!self.prebooking_enabled
+    else
+      prebookings.exists?
+    end
+  end
+
+  # Ensure prebooking slots exist for next n occurrences (default 4)
+  def ensure_prebookings_for_next_weeks(n = 4)
+    return unless prebooking_enabled?
+
+    dates = []
+    if recurring?
+      d = next_date || date
+      while dates.size < n
+        dates << d
+        d += 7
+      end
+    else
+      dates << date if date.present?
+    end
+
+    # create slots for each date and slot index up to players_count
+    dates.each do |d|
+      (1..(players_count.to_i > 0 ? players_count.to_i : 4)).each do |slot|
+        prebookings.find_or_create_by!(date: d, slot_index: slot)
+      end
+    end
+  end
 
   def date
     d = read_attribute(:date)

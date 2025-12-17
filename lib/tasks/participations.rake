@@ -6,6 +6,6 @@ namespace :participations do
 
   desc "Clear participations for past one-off (non-recurring) games"
   task cleanup_one_off: :environment do
-    ResetPastOneOffParticipationsJob.perform_now
+    CleanupPastOneOffGamesJob.perform_now
   end
 end

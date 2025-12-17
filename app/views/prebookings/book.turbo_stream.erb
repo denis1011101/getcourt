@@ -1,0 +1,4 @@
+
+<%= turbo_stream.replace "prebookings-#{@game.id}" do %>
+  <%= render "games/prebookings", game: @game %>
+<% end %>

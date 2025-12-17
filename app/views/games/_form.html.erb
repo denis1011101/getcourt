@@ -12,11 +12,27 @@
 
   <div class="bg-white rounded-lg border p-6 shadow-sm">
     <div class="mb-4">
+      <%# recurring toggle — Apply button removed, Stimulus will submit hidden turbo form %>
       <label class="inline-flex items-center gap-2">
-        <%= form.check_box :recurring, { class: "h-4 w-4 text-indigo-600" }, "1", "0" %>
+        <%= form.check_box :recurring,
+              { class: "h-4 w-4 text-indigo-600", id: "game_recurring",
+                data: { controller: "recurring", action: "change->recurring#toggle" } },
+              "1", "0" %>
         <span class="text-sm text-gray-700">Repeat weekly</span>
       </label>
       <p class="mt-1 text-xs text-gray-500">If checked, this date and time will recur every week.</p>
+    </div>
+
+    <div class="mb-4">
+      <label class="inline-flex items-center gap-2">
+        <%= check_box_tag "game[prebooking_enabled]", "1", game.prebooking_enabled?,
+              class: "h-4 w-4 text-indigo-600", id: "game_prebooking_enabled", disabled: !game.recurring? %>
+        <span class="text-sm text-gray-700">Enable prebooking</span>
+      </label>
+      <p class="mt-1 text-xs text-gray-500">Players can reserve slots for upcoming dates.</p>
+      <% unless game.recurring? %>
+        <p class="mt-1 text-xs text-gray-600">Prebooking can be enabled only for repeating (weekly) games. Check "Repeat weekly" to enable prebooking.</p>
+      <% end %>
     </div>
 
     <div class="mb-4">

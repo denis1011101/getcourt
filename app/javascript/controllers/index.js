@@ -1,4 +1,6 @@
-import { eagerLoadControllersFrom } from "@hotwired/stimulus-loading"
 import { application } from "controllers/application"
+// Обратите внимание: импортируем lazyLoad...
+import { lazyLoadControllersFrom } from "@hotwired/stimulus-loading"
 
-eagerLoadControllersFrom("controllers", application)
+// Меняем eager на lazy
+lazyLoadControllersFrom("controllers", application)

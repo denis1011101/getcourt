@@ -21,6 +21,7 @@ class GamesController < ApplicationController
     @game = Game.new(gp.merge(user: current_user))
 
     if @game.save
+      @game.ensure_prebookings_for_next_weeks if @game.prebooking_enabled?
       redirect_to @game, notice: 'Game was successfully created.'
     else
       Rails.logger.warn "Game save failed: #{ @game.errors.full_messages.join('; ') }"
@@ -34,6 +35,7 @@ class GamesController < ApplicationController
   def update
     gp = sanitized_game_params
     if @game.update(gp)
+      @game.ensure_prebookings_for_next_weeks if @game.prebooking_enabled?
       redirect_to @game, notice: 'Game was successfully updated.'
     else
       Rails.logger.warn "Game update failed: #{ @game.errors.full_messages.join('; ') }"
@@ -44,6 +46,18 @@ class GamesController < ApplicationController
   def destroy
     @game.destroy
     redirect_to games_url, notice: 'Game was successfully destroyed.'
+  end
+
+  # GET /games/prebooking_fragment
+  def prebooking_fragment
+    if params[:game_id].present?
+      @game = Game.find_by(id: params[:game_id]) || Game.new
+      @game.recurring = ActiveModel::Type::Boolean.new.cast(params[:recurring])
+    else
+      @game = Game.new(recurring: ActiveModel::Type::Boolean.new.cast(params[:recurring]))
+    end
+
+    render partial: "games/prebooking_fragment", locals: { game: @game }
   end
 
   private
@@ -59,7 +73,7 @@ class GamesController < ApplicationController
   end
 
   def game_params
-    params.require(:game).permit(:court_id, :recurring, :occurrences_per_week, :with_coach, :date, :time, :players_count, :skill_level, :sport)
+    params.require(:game).permit(:court_id, :recurring, :occurrences_per_week, :with_coach, :date, :time, :players_count, :skill_level, :sport, :prebooking_enabled)
   end
 
   def display_date(game)

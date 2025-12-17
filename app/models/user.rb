@@ -60,6 +60,12 @@ class User < ApplicationRecord
   validates :telegram_username, format: { with: /\A@?[\w\d_]{5,32}\z/, message: "is invalid" }, allow_blank: true
   validates :telegram_chat_id, uniqueness: true, allow_nil: true
   validates :skill_level, inclusion: { in: SKILL_LEVELS }, allow_nil: true
+  validates :timezone, inclusion: { in: ActiveSupport::TimeZone.all.map(&:name) }, allow_blank: true
+
+  # return stored timezone or default (Yekaterinburg)
+  def timezone_or_default
+    read_attribute(:timezone).presence || 'Asia/Yekaterinburg'
+  end
 
   def admin?
     admin == true

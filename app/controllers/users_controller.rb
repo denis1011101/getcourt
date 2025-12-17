@@ -25,7 +25,7 @@ class UsersController < ApplicationController
 
   def user_update_params
     params.require(:user).permit(:name, :email, :telegram_username, :coach,
-                                 :require_verification, :preferred_login_via,
+                                 :require_verification, :preferred_login_via, :timezone,
                                  preferred_sports: [],
                                  skill_levels: {}) # permit JSON object
   end

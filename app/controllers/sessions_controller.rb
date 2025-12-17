@@ -34,7 +34,7 @@ class SessionsController < ApplicationController
     else
       sign_in(user)
       target = session.delete(:return_to) || root_path
-      redirect_to target, notice: "Signed in as #{user.email}"
+      redirect_to target, notice: "Signed in as #{user.email}", status: :see_other
     end
   end
 

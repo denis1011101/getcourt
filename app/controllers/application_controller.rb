@@ -63,7 +63,7 @@ class ApplicationController < ActionController::Base
       end
     end
 
-    redirect_to new_session_path, alert: "Please sign in or sign up"
+    redirect_to new_session_path, alert: "Please sign in or sign up", status: :see_other
   end
 
   def geocoding_exceeded?
