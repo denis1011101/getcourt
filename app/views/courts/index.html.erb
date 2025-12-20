@@ -22,9 +22,9 @@
               <h3 class="text-base font-semibold text-gray-900">
                 <%= link_to court.name, court_path(court), class: "hover:underline" %>
               </h3>
-              <p class="mt-1 text-sm <%= unknown ? 'text-gray-400' : 'text-gray-600' %>">
+              <p class="mt-1 text-sm <%= unknown ? 'text-gray-700' : 'text-gray-600' %>">
                 <span class="inline-flex items-center gap-1">
-                  <svg class="h-4 w-4 <%= unknown ? 'text-gray-300' : 'text-indigo-500' %>" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <svg class="h-4 w-4 <%= unknown ? 'text-gray-600' : 'text-indigo-600' %>" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                     <path fill-rule="evenodd" d="M10 2a6 6 0 00-6 6c0 4.418 6 10 6 10s6-5.582 6-10a6 6 0 00-6-6zm0 8a2 2 0 110-4 2 2 0 010 4z" clip-rule="evenodd"/>
                   </svg>
                   <%= unknown ? "Address unavailable" : addr %>
