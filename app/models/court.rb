@@ -87,7 +87,7 @@ class Court < ApplicationRecord
     lat, lng = coordinates_pair
     return nil unless lat && lng
 
-    key = ENV["GOOGLE_TIMEZONE_API_KEY"] || ENV["GOOGLE_MAPS_API_KEY"]
+    key = ENV["GOOGLE_TIMEZONE_API_KEY"]
     return nil if key.to_s.strip.empty?
 
     ts = Time.now.to_i
@@ -114,7 +114,7 @@ class Court < ApplicationRecord
   end
 
   def geocode_google(lat, lng)
-    key = ENV["GOOGLE_GEOCODING_API_KEY"] || ENV["GOOGLE_MAPS_API_KEY"]
+    key = ENV["GOOGLE_GEOCODING_API_KEY"]
     return nil if key.to_s.strip.empty? # нет серверного ключа — пропускаем
 
     url = URI("https://maps.googleapis.com/maps/api/geocode/json?latlng=#{lat},#{lng}&key=#{key}&language=en")
@@ -135,7 +135,7 @@ class Court < ApplicationRecord
   end
 
   def self.geocode_text_google(str)
-    key = ENV["GOOGLE_GEOCODING_API_KEY"] || ENV["GOOGLE_MAPS_API_KEY"]
+    key = ENV["GOOGLE_GEOCODING_API_KEY"]
     return nil if key.to_s.strip.empty?
 
     url = URI("https://maps.googleapis.com/maps/api/geocode/json?address=#{URI.encode_www_form_component(str)}&key=#{key}&language=en")

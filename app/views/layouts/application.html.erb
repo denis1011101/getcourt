@@ -25,7 +25,7 @@
         <link rel="manifest" href="/site.webmanifest">
     <!-- FAVICONS END -->
 
-    <link rel="canonical" href="<%= request.original_url %>" />
+    <link rel="canonical" href="<%= request.base_url + request.path %>" />
 
     <!-- Open Graph -->
     <meta property="og:title" content="<%= meta_title %>"/>

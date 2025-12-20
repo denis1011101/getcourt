@@ -5,7 +5,7 @@ module Geocoding
     queue_as :default
 
     def perform
-      project_id = ENV["GCP_PROJECT"] || ENV["GOOGLE_CLOUD_PROJECT"]
+      project_id = ENV["GCP_PROJECT"]
       raise "GCP project not set (GCP_PROJECT / GOOGLE_CLOUD_PROJECT)" unless project_id
 
       period = (ENV["GOOGLE_GEOCODING_PERIOD"] || "hour").to_s.downcase

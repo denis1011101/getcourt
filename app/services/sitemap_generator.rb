@@ -18,6 +18,8 @@ class SitemapGenerator
     xml << "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n"
 
     add_url(xml, root_url)
+    add_url(xml, courts_url)
+    add_url(xml, games_url)
     Court.find_each do |court|
       add_url(xml, court_url(court), court.updated_at)
     end
@@ -42,6 +44,14 @@ class SitemapGenerator
 
   def court_url(court)
     "#{@host}#{Rails.application.routes.url_helpers.court_path(court)}"
+  end
+
+  def courts_url
+    "#{@host}#{Rails.application.routes.url_helpers.courts_path}"
+  end
+
+  def games_url
+    "#{@host}#{Rails.application.routes.url_helpers.games_path}"
   end
 
   def game_url(game)
