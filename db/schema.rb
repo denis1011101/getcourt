@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_14_122046) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_20_164242) do
   create_table "courts", force: :cascade do |t|
     t.string "name"
     t.string "coordinates"
@@ -80,6 +80,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_14_122046) do
     t.index ["user_id"], name: "index_player_statistics_on_user_id"
   end
 
+  create_table "prebooking_cancellations", force: :cascade do |t|
+    t.integer "game_id", null: false
+    t.date "date", null: false
+    t.integer "user_id", null: false
+    t.datetime "cancelled_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["game_id", "date"], name: "index_prebooking_cancellations_on_game_id_and_date", unique: true
+    t.index ["game_id"], name: "index_prebooking_cancellations_on_game_id"
+    t.index ["user_id"], name: "index_prebooking_cancellations_on_user_id"
+  end
+
   create_table "prebookings", force: :cascade do |t|
     t.integer "game_id", null: false
     t.date "date", null: false
@@ -127,6 +139,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_14_122046) do
   add_foreign_key "participations", "games"
   add_foreign_key "participations", "users"
   add_foreign_key "player_statistics", "users"
+  add_foreign_key "prebooking_cancellations", "games"
+  add_foreign_key "prebooking_cancellations", "users"
   add_foreign_key "prebookings", "games"
   add_foreign_key "prebookings", "users"
 end

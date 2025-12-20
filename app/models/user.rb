@@ -27,6 +27,7 @@ class User < ApplicationRecord
   # store preferred_sports as JSON array in a text column, default empty array
   attribute :preferred_sports, :json, default: []
   attribute :skill_levels, :json, default: {}
+  attribute :timezone, :string
 
   # возвращает уровень для спорта (строка или nil)
   def skill_level_for(sport)

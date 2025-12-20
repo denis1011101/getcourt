@@ -1,9 +1,13 @@
-<% dates = if @game.recurring?
-  base = (@game.next_date.present? && @game.next_date > @game.date) ? @game.next_date : (@game.date + 7.days)
-  Array.new(3) { |i| base + i.weeks }
-else
-  []
-end %>
+<% if @game.recurring? %>
+  <% display_date = @game.next_date.presence || @game.date %>
+  <% candidates = [] %>
+  <% candidates << @game.next_date if @game.next_date.present? %>
+  <% candidates << (display_date + 7.days) %>
+  <% base = candidates.find { |d| d > display_date } || (display_date + 7.days) %>
+  <% dates = Array.new(3) { |i| base + i.weeks } %>
+<% else %>
+  <% dates = [] %>
+<% end %>
 <% required = (@game.players_count.to_i > 0 ? @game.players_count.to_i : 4) %>
 
 <div id="prebookings-<%= @game.id %>" class="mt-6">
@@ -20,30 +24,45 @@ end %>
       </thead>
       <tbody>
         <% dates.each do |d| %>
-          <tr class="border-t">
-            <td class="px-3 py-2"><%= d.strftime("%Y-%m-%d") %></td>
-            <% (1..required).each do |si| %>
-              <% pb = @game.prebookings.find_by(date: d, slot_index: si) %>
-              <td class="px-3 py-2">
-                <% if pb && pb.user %>
-                  <div class="flex items-center gap-2">
-                    <span><%= pb.user.name.presence || pb.user.email %></span>
-                    <% if pb.user == current_user || can_manage?(@game) %>
-                      <%= button_to "Cancel", cancel_game_prebooking_path(@game, pb), method: :post, class: "text-xs text-red-600" %>
-                    <% end %>
-                  </div>
+          <% cancellation = PrebookingCancellation.find_by(game_id: @game.id, date: d) %>
+          <tr class="border-t <%= 'opacity-60 bg-red-50' if cancellation %>">
+            <td class="px-3 py-2">
+              <%= d.strftime("%Y-%m-%d") %>
+              <% if user_signed_in? && (current_user.admin? || @game.user == current_user) %>
+                <% if cancellation %>
+                  <%= button_to "Restore date", game_prebooking_cancellation_path(@game, cancellation), method: :delete, class: "ml-2 text-xs text-green-600" %>
                 <% else %>
-                  <% if user_signed_in? %>
-                    <% if pb %>
-                      <%= button_to "Book", book_game_prebooking_path(@game, pb), method: :post, class: "text-xs bg-indigo-600 text-white px-2 py-1 rounded" %>
-                    <% else %>
-                      <span class="text-xs text-gray-400">—</span>
-                    <% end %>
-                  <% else %>
-                    <span class="text-xs text-gray-400">Sign in to book</span>
-                  <% end %>
+                  <%= button_to "Cancel date", game_prebooking_cancellations_path(@game, date: d), method: :post, data: { confirm: "Cancel all bookings for #{d.strftime('%Y-%m-%d')}?" }, class: "ml-2 text-xs text-red-600" %>
                 <% end %>
-              </td>
+              <% end %>
+            </td>
+
+            <% if cancellation %>
+              <td class="px-3 py-2 text-red-600" colspan="<%= required %>">Cancelled — bookings disabled for this date</td>
+            <% else %>
+              <% (1..required).each do |si| %>
+                <% pb = @game.prebookings.find_by(date: d, slot_index: si) %>
+                <td class="px-3 py-2">
+                  <% if pb && pb.user %>
+                    <div class="flex items-center gap-2">
+                      <span><%= pb.user.name.presence || pb.user.email %></span>
+                      <% if pb.user == current_user || (user_signed_in? && (current_user.admin? || @game.user == current_user)) %>
+                        <%= button_to "Cancel", cancel_game_prebooking_path(@game, pb), method: :post, class: "text-xs text-red-600" %>
+                      <% end %>
+                    </div>
+                  <% else %>
+                    <% if user_signed_in? %>
+                      <% if pb %>
+                        <%= button_to "Book", book_game_prebooking_path(@game, pb), method: :post, class: "text-xs bg-indigo-600 text-white px-2 py-1 rounded" %>
+                      <% else %>
+                        <span class="text-xs text-gray-400">—</span>
+                      <% end %>
+                    <% else %>
+                      <span class="text-xs text-gray-400">Sign in to book</span>
+                    <% end %>
+                  <% end %>
+                </td>
+              <% end %>
             <% end %>
           </tr>
         <% end %>

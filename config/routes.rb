@@ -50,6 +50,8 @@ end
         post :cancel
       end
     end
+
+    resources :prebooking_cancellations, only: [:create, :destroy]
   end
   resources :searches, only: [:index]
 

@@ -42,6 +42,11 @@ class PrebookingsController < ApplicationController
   def can_participate?(game, date = nil)
     return false unless game&.prebooking_enabled?
 
+    # запрещаем, если дата отменена
+    if date.present? && PrebookingCancellation.exists?(game_id: game.id, date: date)
+      return false
+    end
+
     scope = game.prebookings
     scope = scope.where(date: date) if date.present?
     taken = scope.where.not(user_id: nil).count

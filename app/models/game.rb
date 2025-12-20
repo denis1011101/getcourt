@@ -3,6 +3,7 @@ class Game < ApplicationRecord
   belongs_to :user
   has_many :participations, dependent: :destroy
   has_many :prebookings, dependent: :destroy
+  has_many :prebooking_cancellations, dependent: :destroy
 
   validates :date, presence: { message: "must be present" }
 
@@ -65,10 +66,23 @@ class Game < ApplicationRecord
   def next_date
     d = date
     return nil unless d
+
     if recurring?
+      # advance to first occurrence >= today
       d += 7 while d < Date.today
+
+      # skip cancelled occurrences
+      max_iters = 520 # safety cap (~10 years)
+      iter = 0
+      while prebooking_cancellations.exists?(date: d) && iter < max_iters
+        d += 7
+        iter += 1
+      end
+
+      return nil if prebooking_cancellations.exists?(date: d) # all skipped
       d
     else
+      return nil if prebooking_cancellations.exists?(date: d)
       d
     end
   end
