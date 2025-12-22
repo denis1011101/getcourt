@@ -8,17 +8,6 @@ module Telegram
       creator = game.user
       return unless creator&.telegram_chat_id
 
-      # skip if creator already has meaningful statistics
-      stats = creator.player_statistic
-      meaningful = stats.present? && (
-        stats.singles_hours.to_f > 0 ||
-        stats.doubles_hours.to_f > 0 ||
-        (stats.singles_sessions.to_i + stats.doubles_sessions.to_i + stats.singles_games.to_i + stats.doubles_games.to_i) > 0 ||
-        stats.aces.to_i > 0 || stats.double_faults.to_i > 0 ||
-        stats.singles_rating.present? || stats.doubles_rating.present?
-      )
-      return if meaningful
-
       host = ENV.fetch("APP_HOST", "http://localhost:3000")
       game_url = Rails.application.routes.url_helpers.game_url(game, host: host)
       signed = game.signed_id(expires_in: 7.days, purpose: "mark_not_happened")

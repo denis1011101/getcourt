@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_20_164242) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_22_204850) do
   create_table "courts", force: :cascade do |t|
     t.string "name"
     t.string "coordinates"
@@ -41,6 +41,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_20_164242) do
     t.string "sport"
     t.string "skill_level"
     t.boolean "prebooking_enabled", default: false, null: false
+    t.string "post_game_stats_reminder_job_id"
     t.index ["court_id"], name: "index_games_on_court_id"
     t.index ["prebooking_enabled"], name: "index_games_on_prebooking_enabled"
     t.index ["recurring"], name: "index_games_on_recurring"

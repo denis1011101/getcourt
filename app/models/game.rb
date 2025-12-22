@@ -1,4 +1,6 @@
 class Game < ApplicationRecord
+  after_commit :schedule_post_game_stats_reminder, on: %i[create update]
+
   belongs_to :court
   belongs_to :user
   has_many :participations, dependent: :destroy
@@ -9,6 +11,68 @@ class Game < ApplicationRecord
 
   validates :players_count, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   validate :prebooking_requires_recurring
+
+  # Schedule reminder for (game_datetime + 3.hours). Cancels previous scheduled if present.
+  def schedule_post_game_stats_reminder
+    t = scheduled_post_game_stats_reminder_time
+    return unless t && t > Time.zone.now
+
+    cancel_post_game_stats_reminder if post_game_stats_reminder_job_id.present?
+
+    enqueued = Telegram::PostGameStatsReminderJob.set(wait_until: t).perform_later(id)
+    jid = enqueued.respond_to?(:provider_job_id) ? enqueued.provider_job_id : (enqueued.respond_to?(:job_id) ? enqueued.job_id : nil)
+    update_column(:post_game_stats_reminder_job_id, jid) if jid
+  end
+
+  # Try to remove previously scheduled job for SolidQueue (fall back to several possible APIs).
+  def cancel_post_game_stats_reminder
+    jid = post_game_stats_reminder_job_id
+    return unless jid
+
+    adapter = Rails.application.config.active_job.queue_adapter
+
+    begin
+      # SolidQueue common attempts
+      if adapter == :solid_queue || adapter.to_s.downcase.include?("solid")
+        # try repository API
+        if defined?(SolidQueue::Repository) && SolidQueue::Repository.respond_to?(:delete)
+          SolidQueue::Repository.delete(jid) rescue nil
+        end
+
+        # try job model
+        if defined?(SolidQueue::Job) && SolidQueue::Job.respond_to?(:find_by)
+          SolidQueue::Job.find_by(id: jid)&.destroy
+        end
+
+        # try top-level delete
+        if defined?(SolidQueue) && SolidQueue.respond_to?(:delete)
+          SolidQueue.delete(jid) rescue nil
+        end
+      end
+    rescue => _e
+      # noop
+    end
+
+    update_column(:post_game_stats_reminder_job_id, nil)
+  end
+
+  def scheduled_post_game_stats_reminder_time
+    return nil unless date.present?
+
+    d = date
+    begin
+      if time.respond_to?(:hour)
+        scheduled = Time.zone.local(d.year, d.month, d.day, time.hour, time.min)
+      else
+        parts = time.to_s.split(":")
+        scheduled = Time.zone.local(d.year, d.month, d.day, parts[0].to_i, parts[1].to_i)
+      end
+    rescue
+      scheduled = Time.zone.local(d.year, d.month, d.day, 23, 59)
+    end
+
+    scheduled + 3.hours
+  end
 
   def prebooking_requires_recurring
     if prebooking_enabled? && !recurring?
