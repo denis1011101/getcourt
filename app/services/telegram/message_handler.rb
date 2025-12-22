@@ -6,6 +6,32 @@ module Telegram
       chat_id = message.dig("chat", "id") || message.dig("from", "id")
       return unless chat_id
 
+      # handle bot commands (/create_game, /create_court, /all_games, /my_games)
+      text = message["text"].to_s
+      if text.start_with?("/")
+        case text.split.first
+        when /\A\/create_game(@|$)/
+          Api.send_simple(chat_id, "TODO: /create_game flow (not implemented)")
+          return
+        when /\A\/create_court(@|$)/
+          Api.send_simple(chat_id, "TODO: /create_court flow (not implemented)")
+          return
+        when /\A\/all_games(@|$)/
+          list = Game.order(date: :desc).limit(20).map { |g| "#{g.id}: #{g.date} #{g.time}" }.join("\n")
+          Api.send_simple(chat_id, list.presence || "No games found")
+          return
+        when /\A\/my_games(@|$)/
+          user = User.find_by(telegram_chat_id: chat_id.to_s) || User.find_by(telegram_chat_id: chat_id.to_i)
+          if user
+            list = user.games.order(date: :desc).limit(20).map { |g| "#{g.id}: #{g.date} #{g.time}" }.join("\n")
+            Api.send_simple(chat_id, list.presence || "You have no games")
+          else
+            Api.send_simple(chat_id, "User not found")
+          end
+          return
+        end
+      end
+
       key = "tg:conv:#{chat_id}"
       conv = Rails.cache.read(key) || {}
 
