@@ -1,4 +1,5 @@
 class GamesController < ApplicationController
+  before_action :handle_mark_not_happened, only: [:show]
   before_action :set_game, only: %i[show edit update destroy]
   before_action :authorize_manage_game!, only: %i[edit update destroy]
   skip_before_action :authenticate_user!, only: %i[index show]
@@ -58,6 +59,13 @@ class GamesController < ApplicationController
     end
 
     render partial: "games/prebooking_fragment", locals: { game: @game }
+  end
+
+  # TODO: implement marking an occurrence as "not happened".
+  # For now we only log and do nothing — the button will open the game page.
+  def handle_mark_not_happened
+    return unless params[:mark_not_happened].present?
+    Rails.logger.info("[TODO] mark_not_happened clicked for game=#{params[:id]} (not implemented)")
   end
 
   private
