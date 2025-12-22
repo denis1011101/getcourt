@@ -59,7 +59,9 @@ class Game < ApplicationRecord
   def scheduled_post_game_stats_reminder_time
     return nil unless date.present?
 
-    d = date
+    d = next_date || date
+    return nil unless d.present?
+
     begin
       if time.respond_to?(:hour)
         scheduled = Time.zone.local(d.year, d.month, d.day, time.hour, time.min)
