@@ -5,32 +5,36 @@ module Telegram
       callback_id = callback_query["id"]
       from = callback_query["from"] || {}
       chat_id = callback_query.dig("message","chat","id") || from["id"]
+      return unless chat_id && data.present?
 
-      case
-      when data.start_with?("tg_fill:")
-        game_id = data.split(":",2).last
-        key = conv_key(chat_id)
-        Rails.cache.write(key, { "game_id" => game_id, "step" => "ask_singles_hours", "created_at" => Time.current }, expires_in: 2.hours)
-        Api.answer_callback(callback_id)
-        Api.send_force_reply(chat_id, "Please reply with singles hours (example: 1.5).")
-      when data.start_with?("tg_not_happened:")
-        signed = data.split(":",2).last
-        Api.answer_callback(callback_id, "Processing...", show_alert: false)
-        begin
-          game = Game.find_signed(signed, purpose: "mark_not_happened")
-          if game
-            # implement your business logic for marking as not happened
-            game.update!(players_count: 0) if game.respond_to?(:players_count)
-            Api.send_simple(chat_id, "Thanks — the game has been marked as not happened.")
-          else
-            Api.send_simple(chat_id, "Link expired or game not found.")
+      begin
+        case data
+        when /\Atg_fill:(\d+)\z/
+          game_id = $1.to_i
+          key = conv_key(chat_id)
+          Rails.cache.write(key, { "game_id" => game_id, "step" => "ask_singles_hours", "created_at" => Time.current }, expires_in: 2.hours)
+          Api.answer_callback(callback_id)
+          Api.send_force_reply(chat_id, "Please reply with singles hours (example: 1.5).")
+
+        when /\Atg_not_happened:(\d+)\z/
+          game = Game.find_by(id: $1.to_i)
+          unless game && game.user&.telegram_chat_id.to_i == chat_id.to_i
+            Api.answer_callback(callback_id, "Unauthorized or game not found.", show_alert: true)
+            return
           end
-        rescue => e
-          Rails.logger.error "[Telegram::CallbackHandler] #{e.class} #{e.message}"
-          Api.send_simple(chat_id, "An error occurred while marking the game.")
+
+          host = ENV.fetch("APP_HOST", "http://localhost:3000")
+          signed = game.signed_id(expires_in: 7.days, purpose: "mark_not_happened")
+          game_url = Rails.application.routes.url_helpers.game_url(game, host: host)
+          Api.answer_callback(callback_id)
+          Api.send_simple(chat_id, "Mark game as not happened: #{game_url}?mark_not_happened=#{signed}")
+
+        else
+          Api.answer_callback(callback_id)
         end
-      else
-        Api.answer_callback(callback_id)
+      rescue => e
+        Rails.logger.error "[Telegram::CallbackHandler] #{e.class} #{e.message}"
+        Api.answer_callback(callback_id, "Callback processing error.", show_alert: true)
       end
     end
 
