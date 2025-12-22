@@ -54,37 +54,49 @@ module Telegram
       page = page.to_i < 1 ? 1 : page.to_i
       per_page = per_page.to_i <= 0 ? DEFAULT_PER_PAGE : per_page.to_i
 
-      # load games and sort by next occurrence so recurring games appear with updated dates
+      # load ALL games (do not exclude user's own/participating games)
       base = Game.all.to_a
-      if chat_id.present?
-        user = User.find_by(telegram_chat_id: chat_id.to_s)
+
+      user = chat_id.present? ? User.find_by(telegram_chat_id: chat_id.to_s) : nil
+      user_game_ids =
         if user
-          base.reject! { |g| user.participations.map(&:game_id).include?(g.id) }
+          user.participations.pluck(:game_id).to_set
+        else
+          Set.new
         end
-      end
 
       sorted = base.sort_by do |g|
-        nd = g.next_date || Date.new(9999,1,1)
-        nt = g.next_time || Time.new(0)
-        [nd, nt]
+        nd = g.next_date || Date.new(9999, 1, 1)
+        nt = g.next_time || g.time
+        nt_key =
+          if nt.respond_to?(:strftime)
+            nt.strftime("%H:%M")
+          else
+            nt.to_s
+          end
+        [nd, nt_key]
       end
 
       total = sorted.size
-      total_pages = [ (total.to_f / per_page).ceil, 1 ].max
+      total_pages = [(total.to_f / per_page).ceil, 1].max
       page = [[page, 1].max, total_pages].min
       offset = (page - 1) * per_page
       games = sorted.slice(offset, per_page) || []
 
       if games.empty?
-        payload = {
-          chat_id: chat_id.to_s,
-          text: "No upcoming games found."
-        }
+        payload = { chat_id: chat_id.to_s, text: "No games found." }
         return { payload: payload, meta: { page: page, total_pages: total_pages } }
       end
 
       lines = games.map { |g| game_card(g) }
-      btn_rows = games.map { |g| [{ text: "Join ##{g.id}", callback_data: "join:#{g.id}" }] }
+
+      btn_rows = games.map do |g|
+        if user && user_game_ids.include?(g.id)
+          [{ text: "Leave ##{g.id}", callback_data: "leave:#{g.id}" }]
+        else
+          [{ text: "Join ##{g.id}", callback_data: "join:#{g.id}" }]
+        end
+      end
 
       nav_buttons = []
       nav_buttons << { text: "« Prev", callback_data: "menu:games:page:#{page - 1}" } if page > 1
