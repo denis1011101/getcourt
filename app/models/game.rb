@@ -157,6 +157,23 @@ class Game < ApplicationRecord
     time
   end
 
+  def previous_occurrence_before_next_date
+    return nil unless recurring? && next_date.present?
+
+    prev = next_date - 7
+    max_iters = 520
+    iter = 0
+    while prebooking_cancellations.exists?(date: prev) && iter < max_iters
+      prev -= 7
+      iter += 1
+    end
+
+    return nil if prebooking_cancellations.exists?(date: prev)
+    return nil if date.present? && prev < date
+
+    prev
+  end
+
   def should_reset_participations?(as_of = Date.today)
     return false unless recurring?
     nd = next_date
