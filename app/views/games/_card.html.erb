@@ -1,7 +1,7 @@
 <div class="rounded-md border p-4 bg-white shadow-sm flex flex-col justify-between">
   <div>
     <p class="text-sm text-gray-500">
-      <%= game.next_date ? game.next_date.strftime("%B %d, %Y") : (game.date && game.date.strftime("%B %d, %Y")) %>
+      <%= game.display_date_for_show ? game.display_date_for_show.strftime("%B %d, %Y") : (game.date && game.date.strftime("%B %d, %Y")) %>
       <% if game.next_time || game.time %>
         — <span class="font-medium text-gray-900"><%= (game.next_time || game.time)&.strftime("%I:%M %p") %></span>
       <% end %>
