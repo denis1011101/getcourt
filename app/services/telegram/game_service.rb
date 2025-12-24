@@ -5,7 +5,7 @@ module Telegram
     # Формирует короткую текстовую карточку для одной игры
     def self.game_card(game)
       # use next_date/next_time so recurring games show next occurrence
-      date = (game.next_date || game.date)&.strftime("%Y-%m-%d") || "—"
+      date = (game.previous_occurrence_before_next_date || game.date)&.strftime("%Y-%m-%d") || "—"
       time = if (t = game.next_time || game.time)
                (t.respond_to?(:strftime) ? t.strftime("%H:%M") : t.to_s)
              else
