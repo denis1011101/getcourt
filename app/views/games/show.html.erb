@@ -12,7 +12,6 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
       <div>
         <p class="text-sm text-gray-500">Date</p>
-        <% @game.display_date_for_show %>
         <p class="text-lg font-medium text-gray-900">
           <% game_badges(@game).each do |b| %>
             <span class="<%= b[:classes] %>"><%= b[:text] %></span>

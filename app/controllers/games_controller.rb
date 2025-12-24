@@ -85,7 +85,7 @@ class GamesController < ApplicationController
   end
 
   def display_date(game)
-    nd = game.next_date
+    nd = game.display_date_for_show
     nd ? nd.strftime("%Y-%m-%d") : (game.date.presence || "—")
   end
 
