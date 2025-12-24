@@ -135,9 +135,17 @@ class Game < ApplicationRecord
   def display_date_for_show
     nd = next_date
     return date unless nd
+
+    prev = previous_occurrence_before_next_date
+
+    # if participations were reset for the previous occurrence, show that one
+    if prev && last_participations_reset_at.present? && last_participations_reset_at.to_date == prev
+      return prev
+    end
+
     return nd if nd >= Date.today
 
-    previous_occurrence_before_next_date || nd
+    prev || nd
   end
 
   def next_date
