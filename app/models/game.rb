@@ -129,6 +129,17 @@ class Game < ApplicationRecord
     read_attribute(:time)
   end
 
+  # Choose which occurrence to show on the game page:
+  # - if next_date is today or in the future => show next_date
+  # - otherwise => show previous occurrence (if any), fallback to next_date
+  def display_date_for_show
+    nd = next_date
+    return date unless nd
+    return nd if nd >= Date.today
+
+    previous_occurrence_before_next_date || nd
+  end
+
   def next_date
     d = date
     return nil unless d
