@@ -1,6 +1,6 @@
 module Telegram
   module Handlers
-    class ContactsFlow
+    class ContactsHandler
       class << self
         # Entry for callback_query handling related to courts
         def handle_callback(callback)
