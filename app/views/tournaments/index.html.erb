@@ -1,0 +1,26 @@
+<div class="max-w-5xl mx-auto px-4 py-2">
+  <%= render "shared/page_header",
+      title: "Tournaments",
+      description: "Create and manage tournaments.",
+      action_text: "Create tournament",
+      action_path: new_tournament_path %>
+
+  <% if @tournaments.empty? %>
+    <div class="rounded-lg border border-dashed p-8 text-center text-gray-500">
+      No tournaments yet.
+      <div class="mt-4">
+        <%= link_to "Create tournament", new_tournament_path, class: "btn" %>
+      </div>
+    </div>
+  <% else %>
+    <h2 class="text-lg font-medium mb-3">Tournaments</h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <% @tournaments.each do |tournament| %>
+        <div>
+          <%= render partial: "tournaments/card", locals: { tournament: tournament } %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

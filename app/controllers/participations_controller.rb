@@ -1,8 +1,20 @@
 class ParticipationsController < ApplicationController
   before_action :set_game, only: [:create, :destroy]
-  before_action :authenticate_user!, only: [:create, :destroy]
+  before_action :authenticate_user!, only: [:destroy]
 
   def create
+    unless current_user
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace("participation_controls",
+            partial: "participations/controls",
+            locals: { sign_in_path: new_session_path })
+        end
+        format.html { redirect_to new_session_path }
+      end
+      return
+    end
+
     @participation = @game.participations.build(user: current_user)
 
     if @participation.save

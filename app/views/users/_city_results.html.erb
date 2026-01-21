@@ -1,0 +1,15 @@
+<div id="city-search-results">
+    <% if cities.any? %>
+    <div class="mt-2 grid gap-2">
+        <% cities.each do |c| %>
+        <%= link_to "#{c.name}, #{c.country_code} — #{c.timezone}",
+                    edit_account_path(selected_city_timezone: c.timezone, selected_city_name: "#{c.name}, #{c.country_code} — #{c.timezone}"),
+                    class: "block text-left w-full rounded border px-3 py-2 hover:bg-gray-50" %>
+        <% end %>
+    </div>
+    <% else %>
+    <% unless params[:selected_city_name].present? || @selected_city_name.present? || params[:selected_city_timezone].present? || current_user&.timezone.present? %>
+    <p class="text-sm text-gray-500 mt-2">No matches.</p>
+    <% end %>
+    <% end %>
+</div>

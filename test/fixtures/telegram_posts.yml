@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  telegram_channel: one
+  message_id: 1
+  text: MyText
+  extra: 
+  published_at: 2026-01-02 02:56:09
+
+two:
+  telegram_channel: two
+  message_id: 1
+  text: MyText
+  extra: 
+  published_at: 2026-01-02 02:56:09

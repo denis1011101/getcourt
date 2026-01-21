@@ -1,20 +1,23 @@
 Rails.application.routes.draw do
+  get '/contacts', to: 'pages#contacts', as: :contacts
+  get '/mission',  to: 'pages#mission',  as: :mission
   get "tennis_life/index"
   # geocoding quota status and reset
   get  '/geocoding/status', to: 'geocoding#status',  as: :geocoding_status
   get  '/geocoding/reset',  to: 'geocoding#reset_form', as: :geocoding_reset_form
   post '/geocoding/reset',  to: 'geocoding#reset',   as: :geocoding_reset
 
-if Rails.env.production?
-  post "/bot_webhook", to: "bot_webhook#create"
-else
-  # In development/test we prefer polling. Keep webhook route commented for manual testing (ngrok).
-end
+  if Rails.env.production?
+    post "/bot_webhook", to: "bot_webhook#create"
+  else
+    # In development/test we prefer polling. Keep webhook route commented for manual testing (ngrok).
+  end
 
   get '/tennis_life', to: 'tennis_life#index', as: :tennis_life
 
   resource :account, only: %i[edit update], controller: :users do
     post :regenerate_token
+    post :clear_city, to: 'users#clear_city', as: :clear_city
   end
 
   resources :users, only: [:index, :show] do
@@ -54,6 +57,19 @@ end
     resources :prebooking_cancellations, only: [:create, :destroy]
   end
   resources :searches, only: [:index]
+
+  resources :tournaments do
+    member do
+      post :join
+      post :leave
+      post :select_bracket
+      post :reset_bracket
+    end
+
+    collection do
+      get :options
+    end
+  end
 
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest

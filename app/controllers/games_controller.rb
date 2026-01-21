@@ -7,7 +7,7 @@ class GamesController < ApplicationController
   helper_method :display_date, :display_time, :game_badges
 
   def index
-    @games = Game.all
+    @games = Game.includes(:court, :tournament).order(:date, :time)
   end
 
   def show

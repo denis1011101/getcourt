@@ -1,0 +1,9 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  tournament: one
+  date: 2025-12-27
+
+two:
+  tournament: two
+  date: 2025-12-27

@@ -10,7 +10,24 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_22_204850) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_06_185917) do
+  create_table "cities", force: :cascade do |t|
+    t.integer "geoname_id"
+    t.string "name"
+    t.string "asciiname"
+    t.string "country_code"
+    t.decimal "latitude", precision: 10, scale: 6
+    t.decimal "longitude", precision: 10, scale: 6
+    t.integer "population"
+    t.string "timezone"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["country_code"], name: "index_cities_on_country_code"
+    t.index ["geoname_id"], name: "index_cities_on_geoname_id", unique: true
+    t.index ["name"], name: "index_cities_on_name"
+    t.index ["timezone"], name: "index_cities_on_timezone"
+  end
+
   create_table "courts", force: :cascade do |t|
     t.string "name"
     t.string "coordinates"
@@ -19,8 +36,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_22_204850) do
     t.integer "user_id"
     t.string "contact_type"
     t.string "contact_value"
-    t.string "timezone"
-    t.index ["timezone"], name: "index_courts_on_timezone"
     t.index ["user_id"], name: "index_courts_on_user_id"
   end
 
@@ -42,9 +57,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_22_204850) do
     t.string "skill_level"
     t.boolean "prebooking_enabled", default: false, null: false
     t.string "post_game_stats_reminder_job_id"
+    t.integer "tournament_id"
     t.index ["court_id"], name: "index_games_on_court_id"
     t.index ["prebooking_enabled"], name: "index_games_on_prebooking_enabled"
     t.index ["recurring"], name: "index_games_on_recurring"
+    t.index ["tournament_id"], name: "index_games_on_tournament_id"
     t.index ["user_id"], name: "index_games_on_user_id"
     t.index ["with_coach"], name: "index_games_on_with_coach"
   end
@@ -105,6 +122,70 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_22_204850) do
     t.index ["user_id"], name: "index_prebookings_on_user_id"
   end
 
+  create_table "telegram_channels", force: :cascade do |t|
+    t.string "username", null: false
+    t.string "url"
+    t.string "title"
+    t.bigint "last_message_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["username"], name: "index_telegram_channels_on_username", unique: true
+  end
+
+  create_table "telegram_posts", force: :cascade do |t|
+    t.integer "telegram_channel_id", null: false
+    t.bigint "message_id", null: false
+    t.text "text"
+    t.json "extra", default: {}
+    t.datetime "published_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["published_at"], name: "index_telegram_posts_on_published_at"
+    t.index ["telegram_channel_id", "message_id"], name: "index_telegram_posts_on_telegram_channel_id_and_message_id", unique: true
+    t.index ["telegram_channel_id"], name: "index_telegram_posts_on_telegram_channel_id"
+  end
+
+  create_table "tournament_courts", force: :cascade do |t|
+    t.integer "tournament_id", null: false
+    t.integer "court_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["court_id"], name: "index_tournament_courts_on_court_id"
+    t.index ["tournament_id"], name: "index_tournament_courts_on_tournament_id"
+  end
+
+  create_table "tournament_dates", force: :cascade do |t|
+    t.integer "tournament_id", null: false
+    t.date "date"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tournament_id"], name: "index_tournament_dates_on_tournament_id"
+  end
+
+  create_table "tournament_participants", force: :cascade do |t|
+    t.integer "tournament_id", null: false
+    t.integer "user_id", null: false
+    t.string "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tournament_id"], name: "index_tournament_participants_on_tournament_id"
+    t.index ["user_id"], name: "index_tournament_participants_on_user_id"
+  end
+
+  create_table "tournaments", force: :cascade do |t|
+    t.integer "players_count"
+    t.string "format"
+    t.date "start_date"
+    t.date "end_date"
+    t.integer "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "name"
+    t.json "bracket_data", default: {}
+    t.integer "selected_variant"
+    t.index ["user_id"], name: "index_tournaments_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -125,6 +206,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_22_204850) do
     t.string "preferred_login_via"
     t.string "registration_source", default: "email", null: false
     t.boolean "telegram_generated_email", default: false, null: false
+    t.string "timezone", default: "Asia/Yekaterinburg"
+    t.string "city_name"
+    t.boolean "notify_nearby", default: false, null: false
     t.index ["email"], name: "index_users_on_email", unique: true, where: "email IS NOT NULL"
     t.index ["login_code"], name: "index_users_on_login_code"
     t.index ["registration_source"], name: "index_users_on_registration_source"
@@ -136,6 +220,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_22_204850) do
 
   add_foreign_key "courts", "users"
   add_foreign_key "games", "courts"
+  add_foreign_key "games", "tournaments"
   add_foreign_key "games", "users"
   add_foreign_key "participations", "games"
   add_foreign_key "participations", "users"
@@ -144,4 +229,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_22_204850) do
   add_foreign_key "prebooking_cancellations", "users"
   add_foreign_key "prebookings", "games"
   add_foreign_key "prebookings", "users"
+  add_foreign_key "telegram_posts", "telegram_channels"
+  add_foreign_key "tournament_courts", "courts"
+  add_foreign_key "tournament_courts", "tournaments"
+  add_foreign_key "tournament_dates", "tournaments"
+  add_foreign_key "tournament_participants", "tournaments"
+  add_foreign_key "tournament_participants", "users"
+  add_foreign_key "tournaments", "users"
 end

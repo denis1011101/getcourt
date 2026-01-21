@@ -45,6 +45,12 @@ gem "thruster", require: false
 # For env
 gem "dotenv-rails"
 
+# Russian transliteration support
+gem "russian"
+
+# For fething tg channels
+gem 'tdlib-ruby'
+
 # For counting google map request
 gem "google-cloud-monitoring", require: false
 
@@ -62,6 +68,7 @@ end
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
+  gem "telegram-bot-ruby"
 end
 
 group :test do

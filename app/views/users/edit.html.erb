@@ -82,6 +82,20 @@
         <p class="text-xs text-gray-500 mt-1">Tick if you coach — this helps others find and hire coaches in the future.</p>
       </div>
 
+      <div>
+        <%= f.label :city_name, "City", class: "block text-sm font-medium text-gray-700" %>
+        <%= f.text_field :city_name, value: (params[:city_query].presence || @user.city_name || @selected_city_name), placeholder: "e.g. Moskva", class: "mt-1 block w-full rounded border px-3 py-2" %>
+        <p class="text-sm text-gray-600 mt-2">Enter a place. The system will transliterate names and try to detect timezone automatically on save. Press "Save Changes".</p>
+      </div>
+
+      <div>
+        <label class="inline-flex items-center gap-2">
+          <%= f.check_box :notify_nearby, class: "h-4 w-4 text-indigo-600" %>
+          <span class="text-sm text-gray-700">Notify me about nearby searches</span>
+        </label>
+        <p class="text-xs text-gray-500 mt-1">Receive notifications when someone searches for players near you.</p>
+      </div>
+
       <!-- Кнопки действий -->
       <div class="mt-4 flex items-center gap-3">
         <%= f.submit "Save Changes", class: "rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 cursor-pointer" %>

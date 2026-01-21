@@ -20,7 +20,20 @@ class SessionsController < ApplicationController
       redirect_to new_session_path, alert: "Email required" and return
     end
 
-    user = User.find_or_create_by(email: email) { |u| u.name = email.split("@").first.titleize }
+    user = User.find_or_initialize_by(email: email)
+    user.name = email.split("@").first.titleize if user.name.blank?
+
+    result = user.save
+    Rails.logger.info "[SessionsController#create] save result=#{result.inspect} persisted=#{user.persisted?} new_record=#{user.new_record?} errors=#{user.errors.full_messages.inspect}"
+
+    unless user.persisted?
+      redirect_to new_session_path, alert: "Could not create account" and return
+    end
+
+    unless user.save
+      Rails.logger.warn "[SessionsController#create] user not saved email=#{email.inspect} errors=#{user.errors.full_messages.inspect}"
+      redirect_to new_session_path, alert: user.errors.full_messages.to_sentence.presence || "Could not create account" and return
+    end
 
     need_code = user.require_verification? && user.preferred_login_via == "telegram"
 
@@ -28,14 +41,17 @@ class SessionsController < ApplicationController
       unless user.telegram_chat_id.present?
         redirect_to new_session_path, alert: "Telegram not connected for this account" and return
       end
+
       code = user.generate_login_code!(via: "telegram")
       ::Telegram::Notifier.send_message(user.telegram_chat_id, "Your GetCourt login code: `#{code}`")
-      redirect_to verify_session_path(email: user.email), notice: "Login code sent via Telegram", status: :see_other
-    else
-      sign_in(user)
-      target = session.delete(:return_to) || root_path
-      redirect_to target, notice: "Signed in as #{user.email}", status: :see_other
+      redirect_to verify_session_path(email: user.email), notice: "Login code sent via Telegram", status: :see_other and return
     end
+
+    sign_in(user)
+    Rails.logger.info "[SessionsController#create] signed in user_id=#{user.id} session_user_id=#{session[:user_id].inspect}"
+
+    target = session.delete(:return_to) || root_path
+    redirect_to target, notice: "Signed in as #{user.email}", status: :see_other
   end
 
   def verify

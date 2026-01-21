@@ -1,9 +1,16 @@
 class User < ApplicationRecord
+  before_validation :normalize_email, :titleize_city_name
+  before_validation :set_default_registration_source, on: :create
+
   has_one :player_statistic, dependent: :destroy
   after_create :ensure_player_statistic
 
   SKILL_LEVELS = %w[beginner intermediate advanced pro].freeze
   SPORTS = ["Tennis", "Padel", "Squash", "Table Tennis"].freeze
+
+  TIMEZONES = (
+    TZInfo::Timezone.all_identifiers + ActiveSupport::TimeZone.all.map(&:name)
+  ).uniq.freeze
 
   # generate one-time login code and remember send time/method
   def generate_login_code!(via: "email")
@@ -54,14 +61,11 @@ class User < ApplicationRecord
   has_many :games
   has_many :participations
 
-  before_validation :normalize_email
-  before_validation :set_default_registration_source, on: :create
-
   validates :email, presence: true, uniqueness: { case_sensitive: false }
   validates :telegram_username, format: { with: /\A@?[\w\d_]{5,32}\z/, message: "is invalid" }, allow_blank: true
   validates :telegram_chat_id, uniqueness: true, allow_nil: true
   validates :skill_level, inclusion: { in: SKILL_LEVELS }, allow_nil: true
-  validates :timezone, inclusion: { in: ActiveSupport::TimeZone.all.map(&:name) }, allow_blank: true
+  validates :timezone, inclusion: { in: TIMEZONES }, allow_blank: true
 
   # return stored timezone or default (Yekaterinburg)
   def timezone_or_default
@@ -121,10 +125,17 @@ class User < ApplicationRecord
 
   def normalize_email
     self.email = email.to_s.strip.downcase.presence
+    true  # явно возвращаем true
+  end
+
+  def titleize_city_name
+    self.city_name = city_name.to_s.titleize.presence
+    true  # <-- FIX: явно возвращаем true, чтобы не прерывать save
   end
 
   def set_default_registration_source
     self.registration_source = "email" if registration_source.blank?
+    true  # явно возвращаем true
   end
 
   def skill_levels_values_valid

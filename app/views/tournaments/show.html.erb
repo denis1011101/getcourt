@@ -1,0 +1,43 @@
+<h1><%= @tournament.name.present? ? @tournament.name : "Tournament" %></h1>
+
+<p><strong>Players:</strong> <%= @tournament.players_count || "—" %></p>
+<p><strong>Format:</strong> <%= @tournament.format&.humanize || "—" %></p>
+
+<% if @tournament.respond_to?(:courts) && @tournament.courts.any? %>
+  <p><strong>Courts:</strong> <%= @tournament.courts.map(&:name).to_sentence %></p>
+<% elsif @tournament.court_ids.present? %>
+  <p><strong>Courts:</strong> <%= @tournament.court_ids.join(", ") %></p>
+<% end %>
+
+<% if @tournament.start_date.present? || @tournament.end_date.present? %>
+  <p><strong>Dates:</strong>
+    <%= @tournament.start_date %>
+    <% if @tournament.end_date.present? %> — <%= @tournament.end_date %><% end %>
+  </p>
+<% end %>
+
+<p><%= link_to "View bracket options", options_tournaments_path(tournament_id: @tournament.id), class: "btn" %></p>
+
+<% if defined?(@variants) && @variants.present? %>
+  <h2>Bracket variants</h2>
+  <% @variants.each_with_index do |v, i| %>
+    <section>
+      <h3>Option <%= i + 1 %>: <%= v[:name] || "Variant" %></h3>
+      <p>Slots: <%= v[:size] %> — Byes: <%= v[:byes] %></p>
+      <% if v[:rounds] %>
+        <% v[:rounds].each_with_index do |round, rindex| %>
+          <h4>Round <%= rindex + 1 %></h4>
+          <ul>
+            <% round.each do |pair| %>
+              <li><%= Array(pair).join(" vs ") %></li>
+            <% end %>
+          </ul>
+        <% end %>
+      <% else %>
+        <pre><%= v.inspect %></pre>
+      <% end %>
+    </section>
+  <% end %>
+<% else %>
+  <p>No bracket variants yet.</p>
+<% end %>

@@ -12,10 +12,21 @@
   <% else %>
     <h2 class="text-lg font-medium mb-3">Upcoming Games</h2>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      <% @games.each do |game| %>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <% @games.each do |game| %>
+      <div>
         <%= render partial: "games/card", locals: { game: game } %>
-      <% end %>
-    </div>
-  <% end %>
+
+        <% if game.tournament.present? %>
+          <div class="mt-2 text-sm text-gray-600">
+            Tournament:
+            <%= link_to (game.tournament.respond_to?(:name) ? game.tournament.name : "##{game.tournament.id}"),
+                        tournament_path(game.tournament),
+                        class: "font-medium text-indigo-600" %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>
 </div>

@@ -1,19 +1,22 @@
-<div id="participation_controls" class="flex items-center gap-3">
-  <% g = local_assigns[:game] || @game %>
-  <% participation = g.participations.find_by(user: current_user) %>
+<% sign_in_path = (respond_to?(:new_session_path) && new_session_path) || '/sign_in' rescue '/sign_in' %>
+<% g = local_assigns[:game] || @game %>
+<% user_participation = user_signed_in? ? g.participations.find_by(user: current_user) : nil %>
 
-  <% if participation %>
-    <%= button_to 'Leave Game',
-          game_participation_path(g, participation),
-          method: :delete,
-          form: { data: { turbo: true } },
-          class: "inline-flex items-center rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700 transition" %>
+<div id="participation_controls" class="flex items-center gap-3">
+  <% if user_signed_in? %>
+    <% if user_participation %>
+      <%= form_with url: game_participation_path(g, user_participation), method: :delete, data: { turbo: true }, html: { class: "inline-flex" } do |f| %>
+        <%= f.button "Leave Game", type: :submit, class: "inline-flex items-center rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700 transition" %>
+      <% end %>
+    <% else %>
+      <%= form_with url: game_participations_path(g), method: :post, data: { turbo: true }, html: { class: "inline-flex" } do |f| %>
+        <%= f.button "Join Game", type: :submit, class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition" %>
+      <% end %>
+    <% end %>
   <% else %>
-    <%= button_to 'Join Game',
-          game_participations_path(g),
-          method: :post,
-          form: { data: { turbo: true } },
-          class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition" %>
+    <a href="<%= sign_in_path %>" class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition">
+      Log in to join
+    </a>
   <% end %>
 
   <%= link_to "Back to Games", games_path, class: "block inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition" %>

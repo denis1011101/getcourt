@@ -59,8 +59,12 @@
           <li class="rounded-md border p-3 flex items-center justify-between">
             <div>
               <p class="text-sm text-gray-500">
-                <%= game.date.strftime("%B %d, %Y") %> — <span class="font-medium text-gray-900"><%= game.time.strftime("%I:%M %p") %></span>
-              </p>
+                <% if game.date.present? || game.time.present? %>
+                  <%= game.date.present? ? game.date.strftime("%B %d, %Y") : "Date not set" %> — 
+                  <span class="font-medium text-gray-900"><%= game.time.present? ? game.time.strftime("%I:%M %p") : "—" %></span>
+                <% else %>
+                  Not scheduled
+                <% end %>
               <p class="text-sm text-gray-600 mt-1">
                 <%= pluralize(game.participations.count, "participant") %>
               </p>

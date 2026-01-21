@@ -1,0 +1,102 @@
+module Telegram
+  module Presenters
+    class ProfilePresenter
+      def initialize(user)
+        @user = user
+      end
+
+      def email_label
+        @user.respond_to?(:email) ? (@user.email.to_s.presence || "—") : "—"
+      end
+
+      def sports_label
+        if @user.respond_to?(:preferred_sports) && @user.preferred_sports.present?
+          arr = @user.preferred_sports
+          arr.is_a?(Array) ? arr.join(", ") : arr.to_s
+        elsif @user.respond_to?(:sports) && @user.sports.present?
+          @user.sports.to_s
+        else
+          "—"
+        end
+      end
+
+      def level_label
+        if @user.respond_to?(:skill_level) && @user.skill_level.present?
+          @user.skill_level.to_s
+        elsif @user.respond_to?(:level) && @user.level.present?
+          @user.level.to_s
+        else
+          "—"
+        end
+      end
+
+      def city_label
+        val =
+          if @user.respond_to?(:city_name) && @user.city_name.present?
+            @user.city_name
+          elsif @user.respond_to?(:city) && @user.city.present?
+            @user.city
+          elsif @user.respond_to?(:location) && @user.location.present?
+            @user.location
+          else
+            nil
+          end
+        val.present? ? val.to_s.titleize : "—"
+      end
+
+      def coach_label
+        if @user.respond_to?(:coach)
+          @user.coach ? "Yes" : "No"
+        else
+          "—"
+        end
+      end
+
+      def notify_label
+        if @user.respond_to?(:notify_nearby)
+          @user.notify_nearby ? "Yes" : "No"
+        else
+          "—"
+        end
+      end
+
+      # return raw/current value for given field (used by FieldFlow)
+      def current_value_for(field)
+        case field.to_s
+        when "email"
+          @user.respond_to?(:email) ? @user.email.to_s : ""
+        when "sports"
+          if @user.respond_to?(:preferred_sports) && @user.preferred_sports.present?
+            arr = @user.preferred_sports
+            arr.is_a?(Array) ? arr.join(", ") : arr.to_s
+          elsif @user.respond_to?(:sports) && @user.sports.present?
+            @user.sports.to_s
+          else
+            ""
+          end
+        when "city"
+          if @user.respond_to?(:city_name) && @user.city_name.present?
+            @user.city_name.to_s
+          elsif @user.respond_to?(:city) && @user.city.present?
+            @user.city.to_s
+          elsif @user.respond_to?(:location) && @user.location.present?
+            @user.location.to_s
+          else
+            ""
+          end
+        when "coach"
+          @user.respond_to?(:coach) ? (@user.coach ? "Yes" : "No") : ""
+        when "notify"
+          @user.respond_to?(:notify_nearby) ? (@user.notify_nearby ? "Yes" : "No") : ""
+        else
+          if @user.respond_to?(field)
+            v = @user.public_send(field)
+            v.nil? ? "" : v.to_s
+          else
+            ""
+          end
+        end
+      end
+    end
+  end
+end

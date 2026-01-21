@@ -1,6 +1,7 @@
 class Game < ApplicationRecord
   after_commit :schedule_post_game_stats_reminder, on: %i[create update]
 
+  belongs_to :tournament, optional: true
   belongs_to :court
   belongs_to :user
   has_many :participations, dependent: :destroy
@@ -97,20 +98,18 @@ class Game < ApplicationRecord
   def ensure_prebookings_for_next_weeks(n = 4)
     return unless prebooking_enabled?
 
-    dates = []
-    if recurring?
-      d = next_date || date
-      while dates.size < n
-        dates << d
-        d += 7
+    dates =
+      if recurring?
+        prebooking_candidate_dates(n)
+      else
+        [date].compact
       end
-    else
-      dates << date if date.present?
-    end
 
-    # create slots for each date and slot index up to players_count
+    Rails.logger.debug "[Game#ensure_prebookings_for_next_weeks] game_id=#{id} candidate_dates=#{dates.inspect} classes=#{dates.map(&:class).inspect} existing=#{prebookings.distinct.pluck(:date).map{|d| [d, d.class]}.inspect}"
+
     dates.each do |d|
-      (1..(players_count.to_i > 0 ? players_count.to_i : 4)).each do |slot|
+      d = d.to_date
+      (1..prebooking_required_players).each do |slot|
         prebookings.find_or_create_by!(date: d, slot_index: slot)
       end
     end
@@ -170,6 +169,22 @@ class Game < ApplicationRecord
       return nil if prebooking_cancellations.exists?(date: d)
       d
     end
+  end
+
+  # Возвращает массив дат-кандидатов для предварительной записи (Date), по умолчанию 3 даты
+  def prebooking_candidate_dates(count = 3)
+    return [] unless recurring?
+    display_date = (next_date.presence || date).to_date
+    candidates = []
+    candidates << next_date.to_date if next_date.present?
+    candidates << (display_date + 7)            # keep Date arithmetic
+    base = candidates.find { |d| d > display_date } || (display_date + 7)
+    Array.new(count) { |i| base + i * 7 }       # produce Date objects
+  end
+
+  # Сколько слотов требуется на дату (по умолчанию 4)
+  def prebooking_required_players
+    players_count.to_i > 0 ? players_count.to_i : 4
   end
 
   def next_time
