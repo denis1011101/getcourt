@@ -1,6 +1,6 @@
 module Telegram
   module Flows
-    class CourtsFlow
+    class ContactsFlow
       class << self
         # Entry for callback_query handling related to courts
         def handle_callback(callback)
@@ -8,6 +8,7 @@ module Telegram
           cb_id = callback["id"]
           from = callback["from"] || {}
           chat_id = (callback.dig("message", "chat", "id") || from["id"]).to_s
+          msg_id = callback.dig("message", "message_id")
           poller = Telegram::Poller.new
 
           case data
