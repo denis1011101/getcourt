@@ -1,6 +1,6 @@
 module Telegram
-  module Flows
-    class CourtsFlow
+  module Handlers
+    class TennisLifeHandler
       class << self
         # Entry for callback_query handling related to courts
         def handle_callback(callback)
