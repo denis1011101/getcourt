@@ -17,6 +17,11 @@ module Telegram
           end
         end
 
+        # Use the shared formatter (uses display_date_for_show / next_date logic)
+        def game_label(g)
+          Telegram::Handlers::GamesHandler.game_label(g)
+        end
+
         # Return label used in games lists (shared formatter used everywhere)
         def game_label(g)
           # date/time

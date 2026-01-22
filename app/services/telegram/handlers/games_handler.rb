@@ -17,33 +17,35 @@ module Telegram
           end
         end
 
+        def owner_display(user)
+          return nil unless user
+
+          user.name.to_s.strip.presence ||
+            user.username.to_s.strip.presence ||
+            user.telegram_username.to_s.strip.presence ||
+            "User"
+        end
+
         # Return label used in games lists (shared formatter used everywhere)
         def game_label(g)
-          date =
-            if g.respond_to?(:has_attribute?) && g.has_attribute?(:starts_at) && g.starts_at
-              g.starts_at.respond_to?(:strftime) ? g.starts_at.strftime("%Y-%m-%d %H:%M") : g.starts_at.to_s
-            elsif g.respond_to?(:starts_at) && g.starts_at
-              g.starts_at.to_s
-            elsif g.respond_to?(:date) && g.respond_to?(:time) && (g.date.present? || g.time.present?)
-              dt = []
-              dt << (g.date.respond_to?(:strftime) ? g.date.strftime("%Y-%m-%d") : g.date.to_s) if g.date.present?
-              dt << (g.time.respond_to?(:strftime) ? g.time.strftime("%H:%M") : g.time.to_s) if g.time.present?
-              dt.join(" ")
-            else
-              nil
+          date = game_datetime_for_ui(g)
+
+          sport =
+            if g.respond_to?(:has_attribute?) && g.has_attribute?(:sport)
+              g.sport.to_s.strip.presence
+            elsif g.respond_to?(:sport)
+              g.sport.to_s.strip.presence
             end
 
-          sport = if g.respond_to?(:has_attribute?) && g.has_attribute?(:sport)
-                    g.sport.to_s.strip.presence
-                  elsif g.respond_to?(:sport)
-                    g.sport.to_s.strip.presence
-                  end
+          owner = owner_display(g.respond_to?(:user) ? g.user : nil)
 
           required = (g.respond_to?(:players_count) && g.players_count.to_i > 0) ? g.players_count.to_i : 4
           taken = (g.respond_to?(:participations) ? g.participations.size : 0)
           spots_left = required - taken
-          spots_text = "#{spots_left} spot#{'s' if spots_left != 1} left — #{taken}/#{required}"
-          parts = [sport, date, spots_text].compact
+          spots_left = 0 if spots_left.negative?
+          spots_text = "#{spots_left} spot#{'s' if spots_left != 1} left"
+
+          parts = [sport, owner, date, spots_text].compact
           label = parts.join(" — ")
           label.presence || (g.respond_to?(:title) ? g.title.to_s.presence || "Game ##{g.id}" : "Game ##{g.id}")
         end
@@ -54,7 +56,7 @@ module Telegram
           total = Game.count
           pages = (total.to_f / PER_PAGE).ceil
           offset = (page - 1) * PER_PAGE
-          games = Game.order("id DESC").offset(offset).limit(PER_PAGE)
+          games = Game.includes(:user, :participations).order("id DESC").offset(offset).limit(PER_PAGE)
 
           header = "Games — page #{page}/#{[pages, 1].max}"
 
@@ -67,39 +69,7 @@ module Telegram
           end
 
           buttons = games.map do |g|
-            # date/time
-            date =
-              if g.respond_to?(:has_attribute?) && g.has_attribute?(:starts_at) && g.starts_at
-                g.starts_at.respond_to?(:strftime) ? g.starts_at.strftime("%Y-%m-%d %H:%M") : g.starts_at.to_s
-              elsif g.respond_to?(:starts_at) && g.starts_at
-                g.starts_at.to_s
-              elsif g.respond_to?(:date) && g.respond_to?(:time) && (g.date.present? || g.time.present?)
-                dt = []
-                dt << (g.date.respond_to?(:strftime) ? g.date.strftime("%Y-%m-%d") : g.date.to_s) if g.date.present?
-                dt << (g.time.respond_to?(:strftime) ? g.time.strftime("%H:%M") : g.time.to_s) if g.time.present?
-                dt.join(" ")
-              else
-                nil
-              end
-
-            # sport
-            sport = if g.respond_to?(:has_attribute?) && g.has_attribute?(:sport)
-                      g.sport.to_s.strip.presence
-                    elsif g.respond_to?(:sport)
-                      g.sport.to_s.strip.presence
-                    end
-
-            # spots left / ratio
-            required = (g.respond_to?(:players_count) && g.players_count.to_i > 0) ? g.players_count.to_i : 4
-            taken = (g.respond_to?(:participations) ? g.participations.size : 0)
-            spots_left = required - taken
-            spots_text = "#{spots_left} spot#{'s' if spots_left != 1} left — #{taken}/#{required}"
-
-            parts = [sport, date, spots_text].compact
-            label = parts.join(" — ")
-            label = label.presence || "Game ##{g.id}"
-
-            [{ text: label, callback_data: "game:show:#{g.id}:#{page}" }]
+            [{ text: game_label(g), callback_data: "game:show:#{g.id}:#{page}" }]
           end
 
           nav = []
@@ -107,7 +77,6 @@ module Telegram
           nav << [{ text: "Next ›", callback_data: "menu:games:page:#{page + 1}" }] if page < pages
           buttons.concat(nav) unless nav.empty?
 
-            # + main menu
           buttons << [{ text: "Main menu", callback_data: "menu:main" }]
 
           if message_id
@@ -149,7 +118,10 @@ module Telegram
             end
           title ||= "Game ##{game.id}"
           lines << "*#{title}*"
-          lines << ("When: #{game.starts_at}" if game.respond_to?(:starts_at) && game.starts_at)
+
+          when_str = game_datetime_for_ui(game)
+          lines << "When: #{when_str}" if when_str.present?
+
           lines << players_line
           lines << ("Court: #{game.court&.name}") if game.respond_to?(:court) && game.court
           lines << owner_line
@@ -190,6 +162,50 @@ module Telegram
           else
             Telegram::Api.send_with_buttons(chat_id, text, buttons)
           end
+        end
+
+        private
+
+        # Prefer Game model occurrence logic: display_date_for_show -> next_date -> date.
+        # Keep output like "YYYY-MM-DD HH:MM" (as in the list now).
+        def game_datetime_for_ui(g)
+          d =
+            if g.respond_to?(:display_date_for_show)
+              g.display_date_for_show
+            elsif g.respond_to?(:next_date)
+              g.next_date
+            elsif g.respond_to?(:date)
+              g.date
+            end
+
+          return nil unless d.present?
+
+          t =
+            if g.respond_to?(:next_time)
+              g.next_time
+            elsif g.respond_to?(:time)
+              g.time
+            end
+
+          date_str = d.respond_to?(:strftime) ? d.strftime("%Y-%m-%d") : d.to_s
+          time_str = format_time_hhmm(t)
+
+          time_str.present? ? "#{date_str} #{time_str}" : date_str
+        end
+
+        def format_time_hhmm(t)
+          return nil if t.nil?
+          return t.strftime("%H:%M") if t.respond_to?(:strftime)
+
+          s = t.to_s.strip
+          return nil if s.empty?
+
+          parts = s.split(":")
+          return nil if parts.size < 2
+
+          hh = parts[0].to_i.to_s.rjust(2, "0")
+          mm = parts[1].to_i.to_s.rjust(2, "0")
+          "#{hh}:#{mm}"
         end
       end
     end

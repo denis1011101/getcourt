@@ -26,12 +26,25 @@ module Telegram
                 return true
               end
 
-              poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Reply with usernames to invite", show_alert: false }) rescue nil
+              # NEW: store "pending invite input" state instead of ForceReply (Telegram UI can get stuck with force_reply)
+              Rails.cache.write(invite_cache_key(chat_id), game_id, expires_in: 10.minutes)
+
+              poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Send usernames to invite", show_alert: false }) rescue nil
               poller.send_api("sendMessage", {
                 chat_id: chat_id,
-                text: "#{PROMPT_PREFIX}#{game_id}\nReply to this message with usernames to invite (e.g. @alice @bob).",
-                reply_markup: { force_reply: true, selective: true }
+                text: "Send usernames to invite (e.g. @alice @bob).\nSend /cancel to abort.",
+                reply_markup: {
+                  inline_keyboard: [[
+                    { text: "Cancel", callback_data: "game:invite_cancel:#{game_id}" }
+                  ]]
+                }
               }) rescue nil
+              return true
+
+            when /\Agame:invite_cancel:(\d+)\z/
+              Rails.cache.delete(invite_cache_key(chat_id))
+              poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Invite cancelled", show_alert: false }) rescue nil
+              poller.send_api("sendMessage", { chat_id: chat_id, text: "Invite cancelled." }) rescue nil
               return true
 
             when /\Agame:invite_decline:(\d+)\z/
@@ -73,24 +86,41 @@ module Telegram
             false
           end
 
-          # message entry (reply to INVITE_PROMPT)
+          # message entry (reply to INVITE_PROMPT) OR pending invite state
           def handle_message(message)
-            rt = message.dig("reply_to_message", "text").to_s
-            return false unless rt.start_with?(PROMPT_PREFIX)
-
             chat_id = message.dig("chat", "id").to_s
+            text = message["text"].to_s.strip
             poller = Telegram::Poller.new
 
-            game_id = rt.sub(PROMPT_PREFIX, "").to_i
+            # allow explicit cancel
+            if text.casecmp("/cancel").zero?
+              if Rails.cache.delete(invite_cache_key(chat_id))
+                poller.send_api("sendMessage", { chat_id: chat_id, text: "Invite cancelled." }) rescue nil
+                return true
+              end
+              return false
+            end
+
+            # Backward compatibility: old flow via reply_to_message prefix
+            rt = message.dig("reply_to_message", "text").to_s
+            game_id =
+              if rt.start_with?(PROMPT_PREFIX)
+                rt.sub(PROMPT_PREFIX, "").to_i
+              else
+                Rails.cache.read(invite_cache_key(chat_id)).to_i
+              end
+
+            return false if game_id <= 0
+
             game = Game.find_by(id: game_id)
             inviter = User.find_by(telegram_chat_id: chat_id)
 
             unless game && inviter && (inviter.admin? || game.user_id == inviter.id)
+              Rails.cache.delete(invite_cache_key(chat_id))
               poller.send_api("sendMessage", { chat_id: chat_id, text: "Only the game owner can send invites." }) rescue nil
               return true
             end
 
-            text = message["text"].to_s
             handles = text.scan(/@[\w\d_]+/i).map { |h| h.delete_prefix("@").downcase }.uniq
             if handles.empty?
               poller.send_api("sendMessage", { chat_id: chat_id, text: "No usernames found. Example: @alice @bob" }) rescue nil
@@ -143,6 +173,7 @@ module Telegram
                 "Invitations processed. #{parts.join('. ')}"
               end
 
+            Rails.cache.delete(invite_cache_key(chat_id))
             poller.send_api("sendMessage", { chat_id: chat_id, text: summary }) rescue nil
             true
           rescue => e
@@ -151,6 +182,10 @@ module Telegram
           end
 
           private
+
+          def invite_cache_key(chat_id)
+            "telegram:invite_flow:pending:#{chat_id}"
+          end
 
           def resolve_users_by_handles(handles)
             map = {}
