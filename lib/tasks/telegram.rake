@@ -25,6 +25,6 @@ namespace :telegram do
 
   desc "Update users.telegram_username from Telegram getChat (for users with telegram_chat_id)"
   task update_usernames: :environment do
-    UpdateTelegramUsernamesJob.perform_now
+    Telegram::UpdateTelegramUsernamesJob.perform_now
   end
 end
