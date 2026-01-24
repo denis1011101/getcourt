@@ -1,6 +1,8 @@
 class CleanupPastOneOffGamesJob < ApplicationJob
   queue_as :default
 
+  # TODO: Последить удаляются ли нерегулярные прошедшие игры
+  #
   # Remove participations for non-recurring games that are strictly in the past,
   # then destroy the one-off game record.
   def perform

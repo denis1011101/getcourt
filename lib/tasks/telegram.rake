@@ -22,4 +22,9 @@ namespace :telegram do
     puts "Starting Telegram poller (Ctrl-C to stop)..."
     poller.run_loop(poll_interval: 1)
   end
+
+  desc "Update users.telegram_username from Telegram getChat (for users with telegram_chat_id)"
+  task update_usernames: :environment do
+    UpdateTelegramUsernamesJob.perform_now
+  end
 end

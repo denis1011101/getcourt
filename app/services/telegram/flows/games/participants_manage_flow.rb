@@ -96,7 +96,7 @@ module Telegram
 
             buttons = []
             if others.empty?
-              buttons << [{ text: "No removable players", callback_data: "game:show:#{game.id}:#{page}" }]
+              buttons << [{ text: "Back to game", callback_data: "game:show:#{game.id}:#{page}" }]
             else
               others.each do |u|
                 buttons << [{ text: "Remove #{target_label(u)}", callback_data: "game:remove:#{game.id}:#{u.id}:#{page}" }]

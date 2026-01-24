@@ -237,7 +237,7 @@ module Telegram
             keys.to_set
           end
 
-          def build_keyboard(game_id, date_keys, state, user_booked)
+          def build_keyboard(game_id, date_keys, state, user_booked, page: 1)
             rows = date_keys.each_with_index.map do |key, i|
               if user_booked.include?(key)
                 checked = state[:cancel].include?(key) ? "☐" : "☑"
@@ -247,7 +247,9 @@ module Telegram
                 [{ text: "#{checked} #{key}", callback_data: "prebook:toggle:#{game_id}:#{i}" }]
               end
             end
+
             rows << [{ text: "Confirm", callback_data: "prebook:confirm:#{game_id}" }]
+            rows << [{ text: "Back to game", callback_data: "game:show:#{game_id}:#{page}" }]
             rows
           end
 
