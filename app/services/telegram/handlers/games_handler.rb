@@ -4,6 +4,8 @@ module Telegram
       PER_PAGE = 5
 
       class << self
+        extend Telegram::Handlers::ReplyHelpers
+
         def menu(chat_id, message_id: nil)
           buttons = [
             [{ text: "All games",   callback_data: "menu:games:page:1" }],
@@ -61,11 +63,8 @@ module Telegram
           header = "Games — page #{page}/#{[pages, 1].max}"
 
           if games.empty?
-            if message_id
-              Telegram::Api.edit_message_text(chat_id, message_id, "#{header}\n\nNo games on this page.") and return
-            else
-              Telegram::Api.send_simple(chat_id, "#{header}\n\nNo games on this page.") and return
-            end
+            send_or_edit_text(chat_id, "#{header}\n\nNo games on this page.", message_id: message_id)
+            return
           end
 
           buttons = games.map do |g|
@@ -154,8 +153,7 @@ module Telegram
             buttons << [{ text: "Delete", callback_data: "game:delete:#{game.id}:#{page}" }]
           end
 
-          buttons << [{ text: "Back to list", callback_data: "menu:games:page:#{page}" }]
-          buttons << [{ text: "Main menu", callback_data: "menu:main" }]
+          buttons << [{ text: "Back to games", callback_data: "menu:games:page:#{page}" }]
 
           if message_id
             Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, buttons)
