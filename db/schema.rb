@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_06_185917) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_25_192342) do
   create_table "cities", force: :cascade do |t|
     t.integer "geoname_id"
     t.string "name"
@@ -66,6 +66,25 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_06_185917) do
     t.index ["with_coach"], name: "index_games_on_with_coach"
   end
 
+  create_table "matches", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "opponent_id"
+    t.integer "game_id"
+    t.string "mode", null: false
+    t.string "outcome", null: false
+    t.string "surface"
+    t.string "score"
+    t.datetime "played_at", null: false
+    t.json "stats", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["game_id"], name: "index_matches_on_game_id"
+    t.index ["opponent_id"], name: "index_matches_on_opponent_id"
+    t.index ["user_id", "mode", "played_at"], name: "index_matches_on_user_id_and_mode_and_played_at"
+    t.index ["user_id", "played_at"], name: "index_matches_on_user_id_and_played_at"
+    t.index ["user_id"], name: "index_matches_on_user_id"
+  end
+
   create_table "participations", force: :cascade do |t|
     t.integer "user_id", null: false
     t.integer "game_id", null: false
@@ -74,6 +93,21 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_06_185917) do
     t.index ["game_id"], name: "index_participations_on_game_id"
     t.index ["user_id", "game_id"], name: "index_participations_on_user_and_game", unique: true
     t.index ["user_id"], name: "index_participations_on_user_id"
+  end
+
+  create_table "player_statistic_entries", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "game_id", null: false
+    t.integer "actor_id", null: false
+    t.string "source", default: "telegram", null: false
+    t.json "data", default: {}, null: false
+    t.datetime "recorded_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["actor_id"], name: "index_player_statistic_entries_on_actor_id"
+    t.index ["game_id"], name: "index_player_statistic_entries_on_game_id"
+    t.index ["user_id", "game_id", "source"], name: "index_ps_entries_on_user_game_source", unique: true
+    t.index ["user_id"], name: "index_player_statistic_entries_on_user_id"
   end
 
   create_table "player_statistics", force: :cascade do |t|
@@ -222,8 +256,14 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_06_185917) do
   add_foreign_key "games", "courts"
   add_foreign_key "games", "tournaments"
   add_foreign_key "games", "users"
+  add_foreign_key "matches", "games"
+  add_foreign_key "matches", "users"
+  add_foreign_key "matches", "users", column: "opponent_id"
   add_foreign_key "participations", "games"
   add_foreign_key "participations", "users"
+  add_foreign_key "player_statistic_entries", "games"
+  add_foreign_key "player_statistic_entries", "users"
+  add_foreign_key "player_statistic_entries", "users", column: "actor_id"
   add_foreign_key "player_statistics", "users"
   add_foreign_key "prebooking_cancellations", "games"
   add_foreign_key "prebooking_cancellations", "users"

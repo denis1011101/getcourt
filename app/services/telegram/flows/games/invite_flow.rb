@@ -146,7 +146,8 @@ module Telegram
 
               label =
                 if Telegram::Handlers::GamesHandler.respond_to?(:game_label)
-                  Telegram::Handlers::GamesHandler.game_label(game)
+                  # IMPORTANT: show inviter nick (not game owner) in the label
+                  Telegram::Handlers::GamesHandler.game_label(game, owner: inviter)
                 else
                   "Game ##{game.id}"
                 end

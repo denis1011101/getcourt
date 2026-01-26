@@ -16,6 +16,12 @@ module Telegram
           return true
         end
 
+        # TG statistics flow (callbacks)
+        if data.match?(/\Atg_fill(?::|_)/)
+          Telegram::Flows::StatsFlow.handle_callback(callback_query)
+          return true
+        end
+
         false
       rescue => e
         Rails.logger.error "[Telegram::Handlers::CallbackRouter] #{e.class}: #{e.message}"

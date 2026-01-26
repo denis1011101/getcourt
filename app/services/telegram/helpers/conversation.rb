@@ -9,6 +9,11 @@ module Telegram
           "#{KEY_PREFIX}#{chat_id}"
         end
 
+        # Backward-compatible alias for callers that use `.set`
+        def set(chat_id, attrs = {})
+          start(chat_id, attrs)
+        end
+
         # start or update conversation state, returns stored state or false on failure
         def start(chat_id, attrs = {})
           state = attrs.merge("created_at" => Time.current)

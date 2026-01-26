@@ -2,7 +2,6 @@ module Telegram
   module Processors
     class ReplyProcessor
       class << self
-        # return true if message was handled as a reply-to-prompt
         def process(message)
           chat = message["chat"] || {}
           chat_id = (chat["id"] || message.dig("from","id")).to_s
@@ -17,12 +16,13 @@ module Telegram
             Telegram::Flows::Profile::FieldFlow.process_profile_field_reply(message)
             return true
           when "profile_sports"
-            # sports editing is interactive via buttons; guide the user
             Telegram::Api.send_simple(chat_id, "Please use the buttons to edit your sports.") rescue nil
             return true
           when "search_name"
             Telegram::Handlers::SearchHandler.search_by_name(chat_id, text, 1) rescue nil
             return true
+          when "game_stats_input"
+            return Telegram::Flows::StatsFlow.process_text(message)
           else
             return false
           end

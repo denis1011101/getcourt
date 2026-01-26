@@ -14,6 +14,13 @@ module Telegram
         def handle_message(message)
           Rails.logger.debug "[Telegram::MainMenuProcessor] incoming message: #{message.inspect}"
 
+          # 1) Stats field input (ожидаем число) — перехватываем первым
+          begin
+            return if Telegram::Flows::StatsFieldInputFlow.handle_message(message)
+          rescue => e
+            Rails.logger.error "[Telegram::MainMenuProcessor] StatsFieldInputFlow error: #{e.class} #{e.message}"
+          end
+
           # route ordinary messages to edit flow responder if edit in progress for this chat
           chat = message["chat"] || {}
           chat_id = (chat["id"] || message.dig("from","id")).to_s

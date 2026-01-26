@@ -22,14 +22,19 @@ module Telegram
         def owner_display(user)
           return nil unless user
 
-          user.name.to_s.strip.presence ||
-            user.username.to_s.strip.presence ||
-            user.telegram_username.to_s.strip.presence ||
-            "User"
+          # prefer telegram nick
+          if user.respond_to?(:telegram_username) && user.telegram_username.to_s.strip.present?
+            "@#{user.telegram_username.to_s.strip.delete_prefix('@')}"
+          elsif user.respond_to?(:username) && user.username.to_s.strip.present?
+            "@#{user.username.to_s.strip.delete_prefix('@')}"
+          else
+            user.name.to_s.strip.presence || "User"
+          end
         end
 
         # Return label used in games lists (shared formatter used everywhere)
-        def game_label(g)
+        # owner: override whose nick is shown (default: game.user)
+        def game_label(g, owner: nil)
           date = game_datetime_for_ui(g)
 
           sport =
@@ -39,7 +44,10 @@ module Telegram
               g.sport.to_s.strip.presence
             end
 
-          owner = owner_display(g.respond_to?(:user) ? g.user : nil)
+          coach = coach_badge_for(g)
+
+          owner ||= (g.respond_to?(:user) ? g.user : nil)
+          owner_name = owner_display(owner)
 
           required = (g.respond_to?(:players_count) && g.players_count.to_i > 0) ? g.players_count.to_i : 4
           taken = (g.respond_to?(:participations) ? g.participations.size : 0)
@@ -47,7 +55,7 @@ module Telegram
           spots_left = 0 if spots_left.negative?
           spots_text = "#{spots_left} spot#{'s' if spots_left != 1} left"
 
-          parts = [sport, owner, date, spots_text].compact
+          parts = [sport, coach, owner_name, date, spots_text].compact
           label = parts.join(" — ")
           label.presence || (g.respond_to?(:title) ? g.title.to_s.presence || "Game ##{g.id}" : "Game ##{g.id}")
         end
@@ -118,6 +126,9 @@ module Telegram
           title ||= "Game ##{game.id}"
           lines << "*#{title}*"
 
+          coach = coach_badge_for(game)
+          lines << "Coach: #{coach}" if coach.present?
+
           when_str = game_datetime_for_ui(game)
           lines << "When: #{when_str}" if when_str.present?
 
@@ -146,6 +157,19 @@ module Telegram
 
           buttons << row1
 
+          # статистика: залочена до начала игры (по TZ создателя), после начала — открывает tg_fill
+          can_fill_stats = user && (user.admin? || user.id == game.user_id)
+
+          if game.started_for_ui?
+            if can_fill_stats
+              buttons << [{ text: "Statistics", callback_data: "tg_fill:#{game.id}:#{page}" }]
+            else
+              buttons << [{ text: "Statistics", callback_data: "tg_stats_unauthorized:#{game.id}" }]
+            end
+          else
+            buttons << [{ text: "Statistics (locked)", callback_data: "tg_stats_locked:#{game.id}" }]
+          end
+
           if user && (user.admin? || user.id == game.user_id)
             buttons << [{ text: "Invite players", callback_data: "game:invite:#{game.id}" }]
             buttons << [{ text: "Manage players", callback_data: "game:manage:#{game.id}:#{page}" }]
@@ -163,6 +187,68 @@ module Telegram
         end
 
         private
+
+        def coach_badge_for(game)
+          return nil unless game
+
+          # mirror the same semantics used in [`GamesController#game_badges`](app/controllers/games_controller.rb)
+          if game.respond_to?(:with_coach?) && game.with_coach?
+            "With coach"
+          elsif game.respond_to?(:needs_coach?) && game.needs_coach?
+            "Need coach"
+          elsif game.respond_to?(:with_coach?) || game.respond_to?(:needs_coach?)
+            "No coach"
+          else
+            nil
+          end
+        end
+
+        # Uses the same “occurrence” logic as UI: display_date_for_show -> next_date -> date
+        # If time is missing, unlock at start of the day.
+        def game_start_at_for_ui(g)
+          # IMPORTANT: this method relies on Time.zone (caller wraps Time.use_zone)
+          d =
+            if g.respond_to?(:display_date_for_show)
+              g.display_date_for_show
+            elsif g.respond_to?(:next_date)
+              g.next_date
+            elsif g.respond_to?(:date)
+              g.date
+            end
+          return nil unless d.present?
+
+          t =
+            if g.respond_to?(:next_time)
+              g.next_time
+            elsif g.respond_to?(:time)
+              g.time
+            end
+
+          date =
+            if d.respond_to?(:to_date)
+              d.to_date
+            else
+              Date.parse(d.to_s) rescue nil
+            end
+          return nil unless date
+
+          hh = 0
+          mm = 0
+
+          if t.respond_to?(:strftime)
+            hh = t.strftime("%H").to_i
+            mm = t.strftime("%M").to_i
+          else
+            s = format_time_hhmm(t)
+            if s.present?
+              parts = s.split(":")
+              hh = parts[0].to_i
+              mm = parts[1].to_i
+            end
+          end
+
+          Time.zone.local(date.year, date.month, date.day, hh, mm, 0)
+        end
 
         # Prefer Game model occurrence logic: display_date_for_show -> next_date -> date.
         # Keep output like "YYYY-MM-DD HH:MM" (as in the list now).

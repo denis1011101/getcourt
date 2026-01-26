@@ -218,4 +218,81 @@ class Game < ApplicationRecord
   def mark_participations_reset!(date = next_date)
     update_column(:last_participations_reset_at, date)
   end
+  
+  # Таймзона создателя (или дефолт приложения)
+  def creator_time_zone
+    tz = user&.timezone_or_default if respond_to?(:user)
+    tz = tz.presence
+    tz || Time.zone.name
+  rescue
+    Time.zone.name
+  end
+
+  # Старт игры в таймзоне создателя (или переданной).
+  # Логика "occurrence" как в UI: display_date_for_show -> next_date -> date, время: next_time -> time.
+  # Если время отсутствует — считаем стартом начало дня.
+  def start_at_for_ui(time_zone: creator_time_zone)
+    Time.use_zone(time_zone) do
+      start_at_for_ui_in_current_zone
+    end
+  rescue
+    nil
+  end
+
+  def started_for_ui?(now: nil, time_zone: creator_time_zone)
+    Time.use_zone(time_zone) do
+      now ||= Time.zone.now
+      start_at = start_at_for_ui_in_current_zone
+      start_at ? (now >= start_at) : false
+    end
+  rescue
+    false
+  end
+
+  private
+
+  # IMPORTANT: relies on Time.zone being already set (caller wraps Time.use_zone)
+  def start_at_for_ui_in_current_zone
+    d =
+      if respond_to?(:display_date_for_show)
+        display_date_for_show
+      elsif respond_to?(:next_date)
+        next_date
+      elsif respond_to?(:date)
+        date
+      end
+    return nil unless d.present?
+
+    t =
+      if respond_to?(:next_time)
+        next_time
+      elsif respond_to?(:time)
+        time
+      end
+
+    date =
+      if d.respond_to?(:to_date)
+        d.to_date
+      else
+        Date.parse(d.to_s) rescue nil
+      end
+    return nil unless date
+
+    hh = 0
+    mm = 0
+
+    if t.respond_to?(:strftime)
+      hh = t.strftime("%H").to_i
+      mm = t.strftime("%M").to_i
+    else
+      s = t.to_s.strip
+      if s.include?(":")
+        parts = s.split(":")
+        hh = parts[0].to_i
+        mm = parts[1].to_i
+      end
+    end
+
+    Time.zone.local(date.year, date.month, date.day, hh, mm, 0)
+  end
 end
