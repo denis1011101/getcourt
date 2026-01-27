@@ -82,26 +82,6 @@ class Game < ApplicationRecord
     update_column(:post_game_stats_reminder_job_id, nil)
   end
 
-  def scheduled_post_game_stats_reminder_time
-    return nil unless date.present?
-
-    d = next_date || date
-    return nil unless d.present?
-
-    begin
-      if time.respond_to?(:hour)
-        scheduled = Time.zone.local(d.year, d.month, d.day, time.hour, time.min)
-      else
-        parts = time.to_s.split(":")
-        scheduled = Time.zone.local(d.year, d.month, d.day, parts[0].to_i, parts[1].to_i)
-      end
-    rescue
-      scheduled = Time.zone.local(d.year, d.month, d.day, 23, 59)
-    end
-
-    scheduled + 4.hours
-  end
-
   def prebooking_requires_recurring
     if prebooking_enabled? && !recurring?
       errors.add(:prebooking_enabled, "can be enabled only for repeating (weekly) games")
