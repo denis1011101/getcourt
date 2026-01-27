@@ -30,5 +30,31 @@ class StatisticsPresenter
     def allowed_keys
       @allowed_keys ||= FIELDS.map { |f| f[:key].to_s }.freeze
     end
+
+    # Telegram UX: user enters only "hours".
+    # We map hours into singles_hours (2 players) or doubles_hours (4+ players).
+    def hours_field_for_game(game)
+      count = stats_players_count(game)
+      count >= 4 ? :doubles_hours : :singles_hours
+    end
+
+    def hours_label_for_game(game)
+      hours_field_for_game(game) == :doubles_hours ? "Hours (doubles)" : "Hours (singles)"
+    end
+
+    private
+
+    def stats_players_count(game)
+      return game.players_count.to_i if game.respond_to?(:players_count) && game.players_count.to_i.positive?
+
+      users = []
+      users << game.user if game.respond_to?(:user)
+      if game.respond_to?(:participations)
+        users.concat(game.participations.includes(:user).map(&:user))
+      end
+      users.compact.uniq { |u| u.id }.size
+    rescue
+      2
+    end
   end
 end

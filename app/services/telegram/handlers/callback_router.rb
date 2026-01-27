@@ -22,6 +22,12 @@ module Telegram
           return true
         end
 
+        # TG game result flow (callbacks)
+        if data.match?(/\Atg_score(?::|_)/)
+          Telegram::Flows::StatsScoreFlow.handle_callback(callback_query)
+          return true
+        end
+
         false
       rescue => e
         Rails.logger.error "[Telegram::Handlers::CallbackRouter] #{e.class}: #{e.message}"

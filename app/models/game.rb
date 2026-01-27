@@ -13,7 +13,7 @@ class Game < ApplicationRecord
   validates :players_count, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   validate :prebooking_requires_recurring
 
-  # Schedule reminder for (game_datetime + 3.hours). Cancels previous scheduled if present.
+  # Schedule reminder for (game_datetime + 4.hours). Cancels previous scheduled if present.
   def schedule_post_game_stats_reminder
     t = scheduled_post_game_stats_reminder_time
     return unless t && t > Time.zone.now
@@ -74,7 +74,7 @@ class Game < ApplicationRecord
       scheduled = Time.zone.local(d.year, d.month, d.day, 23, 59)
     end
 
-    scheduled + 3.hours
+    scheduled + 4.hours
   end
 
   def prebooking_requires_recurring
@@ -102,10 +102,10 @@ class Game < ApplicationRecord
       if recurring?
         prebooking_candidate_dates(n)
       else
-        [date].compact
+        [ date ].compact
       end
 
-    Rails.logger.debug "[Game#ensure_prebookings_for_next_weeks] game_id=#{id} candidate_dates=#{dates.inspect} classes=#{dates.map(&:class).inspect} existing=#{prebookings.distinct.pluck(:date).map{|d| [d, d.class]}.inspect}"
+    Rails.logger.debug "[Game#ensure_prebookings_for_next_weeks] game_id=#{id} candidate_dates=#{dates.inspect} classes=#{dates.map(&:class).inspect} existing=#{prebookings.distinct.pluck(:date).map { |d| [ d, d.class ] }.inspect}"
 
     dates.each do |d|
       d = d.to_date
@@ -218,7 +218,7 @@ class Game < ApplicationRecord
   def mark_participations_reset!(date = next_date)
     update_column(:last_participations_reset_at, date)
   end
-  
+
   # Таймзона создателя (или дефолт приложения)
   def creator_time_zone
     tz = user&.timezone_or_default if respond_to?(:user)

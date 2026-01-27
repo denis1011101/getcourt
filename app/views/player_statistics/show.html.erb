@@ -38,6 +38,37 @@
       <p>Singles rating: <%= stats.singles_rating || 1500 %></p>
       <p>Doubles rating: <%= stats.doubles_rating || 1500 %></p>
     </section>
+
+    <% if local_assigns[:matches].present? %>
+      <section>
+        <h3>Last 5 games</h3>
+        <ul>
+          <% matches.each do |m| %>
+            <% mode = m.mode.to_s %>
+            <% wl = (m.outcome.to_s == 'win' ? 'W' : 'L') %>
+            <% opponent_name = m.opponent_id.present? ? (names_by_id[m.opponent_id] || "##{m.opponent_id}") : nil %>
+            <% s = (m.stats || {}).to_h %>
+            <% partner_name = s["partner_id"].present? ? (names_by_id[s["partner_id"].to_i] || "##{s["partner_id"]}") : nil %>
+            <% opp_ids = Array(s["opponent_ids"]).map(&:to_i) %>
+            <% opp_names = opp_ids.map { |id| names_by_id[id] || "##{id}" } %>
+
+            <% details = [] %>
+            <% if mode == 'singles' %>
+              <% details << (opponent_name ? "vs #{opponent_name}" : 'singles') %>
+            <% else %>
+              <% details << (partner_name ? "with #{partner_name}" : 'doubles') %>
+              <% details << "vs #{opp_names.join(' + ')}" if opp_names.any? %>
+            <% end %>
+
+            <li>
+              <%= m.played_at&.strftime('%Y-%m-%d') %> — <%= mode %> <%= wl %>
+              <% if m.score.present? %> — <%= m.score %><% end %>
+              <% if details.any? %> — <%= details.join(' ') %><% end %>
+            </li>
+          <% end %>
+        </ul>
+      </section>
+    <% end %>
   </div>
 </div>
 <% end %>

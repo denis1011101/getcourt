@@ -177,7 +177,10 @@ module Telegram
           entered = entered.is_a?(Hash) ? entered : (conv["fields"].is_a?(Hash) ? conv["fields"] : {})
 
           game_id = game_id.to_i
-          field_defs = fields
+          game = Game.find_by(id: game_id)
+          hours_field = game ? StatisticsPresenter.hours_field_for_game(game) : :singles_hours
+          hours_label = game ? StatisticsPresenter.hours_label_for_game(game) : "Hours"
+          hours_key = hours_field.to_s
 
           lines = []
           lines << "*Statistics*"
@@ -185,21 +188,19 @@ module Telegram
           lines << ""
           lines << "Entered values (saved immediately):"
 
-          field_defs.each do |f|
-            key = f[:key].to_s
-            v = entered.key?(key) ? entered[key] : nil
-            shown = v.nil? ? "—" : v.to_s
-            lines << "• #{f[:label]}: #{shown}"
-          end
+          v = entered.key?(hours_key) ? entered[hours_key] : nil
+          shown = v.nil? ? "—" : v.to_s
+          lines << "• #{hours_label}: #{shown}"
 
           text = lines.join("\n")
 
-          field_buttons = field_defs.map do |f|
-            [{ text: f[:label], callback_data: "tg_fill_field:#{game_id}:#{f[:key]}" }]
-          end
+          field_buttons = [
+            [ { text: "Enter hours", callback_data: "tg_fill_field:#{game_id}:hours" } ],
+            [ { text: "Enter score", callback_data: "tg_score:#{game_id}" } ]
+          ]
 
           footer = [
-            [{ text: "Back", callback_data: "tg_fill_cancel:#{game_id}" }]
+            [ { text: "Back", callback_data: "tg_fill_cancel:#{game_id}" } ]
           ]
 
           if message_id.present?

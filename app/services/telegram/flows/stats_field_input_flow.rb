@@ -20,7 +20,10 @@ module Telegram
             return false
           end
 
-          unless StatisticsPresenter.field_def(field)
+          auto_hours = field.to_s == "hours"
+          effective_field = auto_hours ? StatisticsPresenter.hours_field_for_game(game) : field
+
+          unless StatisticsPresenter.field_def(effective_field)
             Telegram::Api.answer_callback(cb_id, "Unknown field.", show_alert: true) rescue nil
             return false
           end
@@ -34,14 +37,15 @@ module Telegram
             {
               "flow" => "game_stats_field_input",
               "game_id" => game_id.to_i,
-              "field" => field.to_s,
+              "field" => effective_field.to_s,
+              "auto_hours" => auto_hours,
               "page" => page,
               "message_id" => message_id,
               "fields" => entered
             }
           )
 
-          prompt(chat_id: chat_id, game_id: game_id, field: field, message_id: message_id)
+          prompt(chat_id: chat_id, game_id: game_id, field: effective_field, message_id: message_id, auto_hours: auto_hours)
           Telegram::Api.answer_callback(cb_id) rescue nil
           true
         end
@@ -60,9 +64,11 @@ module Telegram
           field = conv["field"].to_s
           return false unless StatisticsPresenter.field_def(field)
 
+          auto_hours = conv["auto_hours"] == true
+
           parsed = parse_value(field, text)
           if parsed == :invalid
-            prompt(chat_id: chat_id, game_id: game_id, field: field, message_id: conv["message_id"])
+            prompt(chat_id: chat_id, game_id: game_id, field: field, message_id: conv["message_id"], auto_hours: auto_hours)
             return true
           end
 
@@ -104,19 +110,27 @@ module Telegram
 
         private
 
-        def prompt(chat_id:, game_id:, field:, message_id:)
+        def prompt(chat_id:, game_id:, field:, message_id:, auto_hours: false)
           f = StatisticsPresenter.field_def(field)
           example = StatisticsPresenter.field_example(field)
+
+          label =
+            if auto_hours
+              game = Game.find_by(id: game_id)
+              game ? StatisticsPresenter.hours_label_for_game(game) : "Hours"
+            else
+              f[:label]
+            end
 
           text =
             "*Statistics*\n" \
             "Game ##{game_id}\n\n" \
-            "Enter value for: *#{f[:label]}*\n" \
+            "Enter value for: *#{label}*\n" \
             "Example: `#{example}`\n\n" \
             "Send a number in chat or use buttons below."
 
           keyboard = [
-            [{ text: "Back", callback_data: "tg_fill_back:#{game_id}" }]
+            [ { text: "Back", callback_data: "tg_fill_back:#{game_id}" } ]
           ]
 
           if message_id.present?

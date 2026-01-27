@@ -14,6 +14,13 @@ module Telegram
         def handle_message(message)
           Rails.logger.debug "[Telegram::MainMenuProcessor] incoming message: #{message.inspect}"
 
+          # 0) Score input (ожидаем счёт) — перехватываем первым
+          begin
+            return if Telegram::Flows::StatsScoreFlow.handle_message(message)
+          rescue => e
+            Rails.logger.error "[Telegram::MainMenuProcessor] StatsScoreFlow error: #{e.class} #{e.message}"
+          end
+
           # 1) Stats field input (ожидаем число) — перехватываем первым
           begin
             return if Telegram::Flows::StatsFieldInputFlow.handle_message(message)
@@ -23,7 +30,7 @@ module Telegram
 
           # route ordinary messages to edit flow responder if edit in progress for this chat
           chat = message["chat"] || {}
-          chat_id = (chat["id"] || message.dig("from","id")).to_s
+          chat_id = (chat["id"] || message.dig("from", "id")).to_s
           if Rails.cache.read("telegram:edit:chat:#{chat_id}")
             Telegram::Flows::Games::EditResponder.handle_message(message) rescue nil
             return
@@ -43,18 +50,18 @@ module Telegram
 
 
           chat = message["chat"] || {}
-          chat_id = (chat["id"] || message.dig("from","id")).to_s
+          chat_id = (chat["id"] || message.dig("from", "id")).to_s
           text = message["text"].to_s.strip
           cmd = text.split.first.to_s.downcase
 
           case cmd
           when /\A\/start\b/
-            chat_id = message.dig("chat","id") || message.dig("from","id")
+            chat_id = message.dig("chat", "id") || message.dig("from", "id")
             begin
               user = User.find_or_initialize_by(telegram_chat_id: chat_id.to_s)
               if user.new_record?
-                user.telegram_username = message.dig("from","username") rescue nil
-                user.name = message.dig("from","first_name") rescue nil if user.respond_to?(:name=)
+                user.telegram_username = message.dig("from", "username") rescue nil
+                user.name = message.dig("from", "first_name") rescue nil if user.respond_to?(:name=)
                 user.save(validate: false) rescue nil
                 Rails.logger.info "[Telegram::MainMenuProcessor] created user id=#{user.id} chat=#{chat_id}"
               end
@@ -67,11 +74,11 @@ module Telegram
             else
               Telegram::Handlers::MenuHandler.menu(chat_id) rescue nil
             end
-            return
+            nil
 
           when "/menu"
             Telegram::Handlers::MenuHandler.menu(chat_id) rescue nil
-            return
+            nil
           end
         rescue => e
           Rails.logger.error "[Telegram::MainMenuProcessor] handle_message error: #{e.class} #{e.message}\n#{e.backtrace.join("\n")}\nmessage: #{message.inspect}"
