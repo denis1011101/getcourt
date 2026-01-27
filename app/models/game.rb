@@ -16,13 +16,38 @@ class Game < ApplicationRecord
   # Schedule reminder for (game_datetime + 4.hours). Cancels previous scheduled if present.
   def schedule_post_game_stats_reminder
     t = scheduled_post_game_stats_reminder_time
-    return unless t && t > Time.zone.now
+    return unless t && t > Time.current
 
     cancel_post_game_stats_reminder if post_game_stats_reminder_job_id.present?
 
     enqueued = Telegram::PostGameStatsReminderJob.set(wait_until: t).perform_later(id)
     jid = enqueued.respond_to?(:provider_job_id) ? enqueued.provider_job_id : (enqueued.respond_to?(:job_id) ? enqueued.job_id : nil)
     update_column(:post_game_stats_reminder_job_id, jid) if jid
+  end
+
+  def scheduled_post_game_stats_reminder_time
+    d = next_date || date
+    return nil unless d.present?
+
+    Time.use_zone(creator_time_zone) do
+      hh = 0
+      mm = 0
+
+      t = time
+      if t.respond_to?(:strftime)
+        hh = t.strftime("%H").to_i
+        mm = t.strftime("%M").to_i
+      elsif t.present?
+        parts = t.to_s.strip.split(":")
+        hh = parts[0].to_i
+        mm = parts[1].to_i
+      end
+
+      start_at = Time.zone.local(d.year, d.month, d.day, hh, mm, 0)
+      start_at + 4.hours
+    end
+  rescue
+    nil
   end
 
   # Try to remove previously scheduled job for SolidQueue (fall back to several possible APIs).
