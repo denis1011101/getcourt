@@ -4,7 +4,7 @@ class Match < ApplicationRecord
   belongs_to :game, optional: true
 
   MODES = %w[singles doubles].freeze
-  OUTCOMES = %w[win loss].freeze
+  OUTCOMES = %w[win loss draw].freeze
   SURFACES = %w[hard clay grass carpet indoor_hard other].freeze
 
   validates :mode, inclusion: { in: MODES }
