@@ -43,7 +43,9 @@
 
     <% can_fill_stats = current_user && (current_user == @game.user || (current_user.respond_to?(:admin?) && current_user.admin?)) %>
     <% game_started =
-         if @game.respond_to?(:starts_at) && @game.starts_at.present?
+         if @game.respond_to?(:started_for_ui?)
+           @game.started_for_ui?
+         elsif @game.respond_to?(:starts_at) && @game.starts_at.present?
            @game.starts_at <= Time.current
          elsif @game.respond_to?(:date) && @game.date.present?
            @game.date <= Date.current
