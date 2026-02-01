@@ -24,10 +24,12 @@ module Telegram
         # Send a page with list of courts
         def list_page(chat_id, page = 1, message_id: nil)
           page = page.to_i < 1 ? 1 : page.to_i
-          total = Court.count
+          user = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
+          scope = Court.visible_to(user)
+          total = scope.count
           pages = (total.to_f / PER_PAGE).ceil
           offset = (page - 1) * PER_PAGE
-          courts = Court.order("id ASC").offset(offset).limit(PER_PAGE)
+          courts = scope.order("id ASC").offset(offset).limit(PER_PAGE)
           header = "Courts — page #{page}/#{[pages, 1].max}"
 
           if courts.empty?
@@ -95,7 +97,8 @@ module Telegram
 
         # Show court card with action buttons (create game, edit if owner/admin, back)
         def show_court(chat_id, court_id, page = 1, message_id: nil)
-          court = Court.find_by(id: court_id)
+          user = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
+          court = Court.visible_to(user).find_by(id: court_id)
           return Telegram::Api.send_simple(chat_id, "Court not found.") unless court
 
           header = "Court ##{court.id}"
