@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_25_192342) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_01_183802) do
   create_table "cities", force: :cascade do |t|
     t.integer "geoname_id"
     t.string "name"
@@ -36,6 +36,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_192342) do
     t.integer "user_id"
     t.string "contact_type"
     t.string "contact_value"
+    t.string "moderation_status", default: "pending", null: false
+    t.datetime "approved_at"
+    t.index ["moderation_status"], name: "index_courts_on_moderation_status"
     t.index ["user_id"], name: "index_courts_on_user_id"
   end
 
@@ -129,6 +132,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_25_192342) do
     t.float "doubles_rating"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "individual_training"
+    t.integer "group_training"
+    t.integer "break_points_saved"
+    t.integer "break_points_converted"
+    t.integer "winners"
+    t.integer "unforced_errors"
+    t.integer "net_points_won"
+    t.integer "service_points_won"
+    t.integer "return_points_won"
+    t.integer "return_games_won"
+    t.integer "games_won_total"
     t.index ["user_id"], name: "index_player_statistics_on_user_id"
   end
 

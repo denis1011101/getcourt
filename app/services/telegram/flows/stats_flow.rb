@@ -192,6 +192,18 @@ module Telegram
           shown = v.nil? ? "—" : v.to_s
           lines << "• #{hours_label}: #{shown}"
 
+          score =
+            if game_id > 0
+              Match.where(game_id: game_id)
+                .where.not(score: [ nil, "" ])
+                .order(updated_at: :desc)
+                .limit(1)
+                .pick(:score)
+            end
+
+          shown_score = score.to_s.strip.presence || "—"
+          lines << "• Score: #{shown_score}"
+
           text = lines.join("\n")
 
           field_buttons = [
@@ -199,14 +211,23 @@ module Telegram
             [ { text: "Enter score", callback_data: "tg_score:#{game_id}" } ]
           ]
 
+          stat_buttons = [
+            [ { text: "Aces", callback_data: "tg_fill_field:#{game_id}:aces" }, { text: "Double faults", callback_data: "tg_fill_field:#{game_id}:double_faults" } ],
+            [ { text: "Break points saved", callback_data: "tg_fill_field:#{game_id}:break_points_saved" }, { text: "Break points converted", callback_data: "tg_fill_field:#{game_id}:break_points_converted" } ],
+            [ { text: "Winners", callback_data: "tg_fill_field:#{game_id}:winners" }, { text: "Unforced errors", callback_data: "tg_fill_field:#{game_id}:unforced_errors" } ],
+            [ { text: "Net points won", callback_data: "tg_fill_field:#{game_id}:net_points_won" }, { text: "Service points won", callback_data: "tg_fill_field:#{game_id}:service_points_won" } ],
+            [ { text: "Return points won", callback_data: "tg_fill_field:#{game_id}:return_points_won" }, { text: "Games won on return", callback_data: "tg_fill_field:#{game_id}:return_games_won" } ],
+            [ { text: "Total games won", callback_data: "tg_fill_field:#{game_id}:games_won_total" } ]
+          ]
+
           footer = [
             [ { text: "Back", callback_data: "tg_fill_cancel:#{game_id}" } ]
           ]
 
           if message_id.present?
-            Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, field_buttons + footer) rescue nil
+            Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, field_buttons + stat_buttons + footer) rescue nil
           else
-            Telegram::Api.send_with_buttons(chat_id, text, field_buttons + footer) rescue nil
+            Telegram::Api.send_with_buttons(chat_id, text, field_buttons + stat_buttons + footer) rescue nil
           end
         end
 

@@ -1,15 +1,20 @@
 class StatisticsPresenter
   FIELDS = [
-    { key: :singles_hours,    label: "Singles hours",    example: "1.5" },
-    { key: :doubles_hours,    label: "Doubles hours",    example: "2.0" }
-    # { key: :singles_sessions, label: "Singles sessions", example: "1" },
-    # { key: :doubles_sessions, label: "Doubles sessions", example: "1" },
-    # { key: :singles_games,    label: "Singles matches",  example: "3" },
-    # { key: :doubles_games,    label: "Doubles matches",  example: "3" },
-    # { key: :singles_wins,     label: "Singles wins",     example: "2" },
-    # { key: :singles_losses,   label: "Singles losses",   example: "1" },
-    # { key: :doubles_wins,     label: "Doubles wins",     example: "2" },
-    # { key: :doubles_losses,   label: "Doubles losses",   example: "1" }
+    { key: :singles_hours,           label: "Singles hours",               example: "1.5" },
+    { key: :doubles_hours,           label: "Doubles hours",               example: "2.0" },
+    { key: :singles_games,           label: "Singles matches",             example: "3" },
+    { key: :doubles_games,           label: "Doubles matches",             example: "3" },
+    { key: :aces,                    label: "Aces",                        example: "5" },
+    { key: :double_faults,           label: "Double faults",               example: "2" },
+    { key: :break_points_saved,      label: "Break points saved",          example: "3" },
+    { key: :break_points_converted,  label: "Break points converted",      example: "2" },
+    { key: :winners,                 label: "Winners",                     example: "15" },
+    { key: :unforced_errors,         label: "Unforced errors",             example: "8" },
+    { key: :net_points_won,          label: "Net points won",              example: "6" },
+    { key: :service_points_won,      label: "Service points won",          example: "20" },
+    { key: :return_points_won,       label: "Return points won",           example: "12" },
+    { key: :return_games_won,        label: "Games won on return",         example: "4" },
+    { key: :games_won_total,         label: "Total games won",             example: "12" }
   ].freeze
 
   class << self

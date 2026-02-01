@@ -40,5 +40,122 @@
     <% if @game.prebooking_enabled? %>
       <%= render "prebookings", game: @game %>
     <% end %>
+
+    <% can_fill_stats = current_user && (current_user == @game.user || (current_user.respond_to?(:admin?) && current_user.admin?)) %>
+    <% game_started =
+         if @game.respond_to?(:starts_at) && @game.starts_at.present?
+           @game.starts_at <= Time.current
+         elsif @game.respond_to?(:date) && @game.date.present?
+           @game.date <= Date.current
+         else
+           true
+         end %>
+
+    <div class="mt-6 border-t pt-4">
+      <% stats_filled = PlayerStatisticEntry.where(game: @game).exists? || Match.where(game_id: @game.id).exists? %>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-gray-700">Enter statistics</h2>
+        <% if stats_filled %>
+          <span class="text-xs font-medium text-green-700 bg-green-50 px-2 py-1 rounded">Statistics saved</span>
+        <% else %>
+          <span class="text-xs font-medium text-amber-700 bg-amber-50 px-2 py-1 rounded">Fill in the statistics</span>
+        <% end %>
+      </div>
+
+      <% if can_fill_stats && game_started %>
+        <%= form_with url: game_player_statistics_path(@game), method: :post, data: { turbo: false }, class: "space-y-4" do %>
+          <% participants = [] %>
+          <% participants << @game.user if @game.respond_to?(:user) %>
+          <% if @game.respond_to?(:participations) %>
+            <% participants.concat(@game.participations.includes(:user).map(&:user)) %>
+          <% end %>
+          <% participants = participants.compact.uniq { |u| u.id } %>
+
+          <!-- Teams Selection -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b">
+            <div>
+              <h3 class="text-sm font-semibold text-gray-700 mb-2">Team A</h3>
+              <div class="space-y-1">
+                <% participants.each do |u| %>
+                  <% label = if u.respond_to?(:name) && u.name.present?
+                               u.name
+                             else
+                               u.email
+                             end %>
+                  <label class="flex items-center gap-2 text-sm text-gray-700">
+                    <%= check_box_tag "team_a_user_ids[]", u.id, false, class: "rounded border-gray-300" %>
+                    <span><%= label %></span>
+                  </label>
+                <% end %>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="text-sm font-semibold text-gray-700 mb-2">Team B</h3>
+              <div class="space-y-1">
+                <% participants.each do |u| %>
+                  <% label = if u.respond_to?(:name) && u.name.present?
+                               u.name
+                             else
+                               u.email
+                             end %>
+                  <label class="flex items-center gap-2 text-sm text-gray-700">
+                    <%= check_box_tag "team_b_user_ids[]", u.id, false, class: "rounded border-gray-300" %>
+                    <span><%= label %></span>
+                  </label>
+                <% end %>
+              </div>
+            </div>
+          </div>
+
+          <!-- Winner & Main Stats -->
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div>
+              <span class="block text-sm text-gray-600 mb-2">Winner</span>
+              <label class="flex items-center gap-2 text-sm text-gray-700 mb-1">
+                <%= radio_button_tag "winner_team", "a" %>
+                <span>Team A</span>
+              </label>
+              <label class="flex items-center gap-2 text-sm text-gray-700">
+                <%= radio_button_tag "winner_team", "b" %>
+                <span>Team B</span>
+              </label>
+            </div>
+
+            <div>
+              <label class="block text-sm text-gray-600 mb-1">Score</label>
+              <%= text_field_tag "statistics[score]", nil, placeholder: "6-4 3-6 10-8", class: "w-full rounded border-gray-300 text-sm" %>
+            </div>
+
+            <div>
+              <label class="block text-sm text-gray-600 mb-1">Hours</label>
+              <%= number_field_tag "statistics[hours]", nil, step: 0.1, min: 0, class: "w-full rounded border-gray-300 text-sm" %>
+            </div>
+          </div>
+
+          <!-- Additional Stats in Collapsible -->
+          <details class="border rounded p-3 bg-gray-50">
+            <summary class="cursor-pointer text-sm font-medium text-gray-700 hover:text-indigo-600">
+              Additional match statistics
+            </summary>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
+              <% StatisticsPresenter.fields.reject { |f| %i[singles_hours doubles_hours].include?(f[:key]) }.each do |f| %>
+                <div>
+                  <label class="block text-xs text-gray-600 mb-1"><%= f[:label] %></label>
+                  <% step = (StatisticsPresenter.field_type(f[:key]) == :float ? 0.1 : 1) %>
+                  <%= number_field_tag "statistics[#{f[:key]}]", nil, step: step, min: 0, placeholder: f[:example], class: "w-full rounded border-gray-300 text-sm" %>
+                </div>
+              <% end %>
+            </div>
+          </details>
+
+          <div class="pt-2">
+            <%= submit_tag "Save statistics", class: "inline-flex items-center rounded bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700" %>
+          </div>
+        <% end %>
+      <% else %>
+        <p class="text-gray-600 text-sm">Statistics entry is available after the game starts and only for the creator or admin.</p>
+      <% end %>
+    </div>
   </div>
 </div>

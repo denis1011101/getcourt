@@ -53,14 +53,25 @@ module PlayerStatistics
       ps = @user.player_statistic || @user.create_player_statistic
 
       games_key = @mode == "doubles" ? :doubles_games : :singles_games
-      sessions_key = @mode == "doubles" ? :doubles_sessions : :singles_sessions
       wins_key = @mode == "doubles" ? :doubles_wins : :singles_wins
       losses_key = @mode == "doubles" ? :doubles_losses : :singles_losses
 
+      training_key = nil
+      if @game.respond_to?(:with_coach?) && @game.with_coach?
+        if @mode == "doubles"
+          training_key = :group_training
+        else
+          training_key = :individual_training
+        end
+      end
+
       ps.with_lock do
         if new_record
-          ps[games_key] = ps[games_key].to_i + 1
-          ps[sessions_key] = ps[sessions_key].to_i + 1
+          if training_key
+            ps[training_key] = ps[training_key].to_i + 1
+          else
+            ps[games_key] = ps[games_key].to_i + 1
+          end
 
           if new_outcome == "win"
             ps[wins_key] = ps[wins_key].to_i + 1
@@ -69,14 +80,12 @@ module PlayerStatistics
           end
         else
           if old_outcome.present? && old_outcome != new_outcome
-            # undo old
             if old_outcome == "win"
               ps[wins_key] = ps[wins_key].to_i - 1
             elsif old_outcome == "loss"
               ps[losses_key] = ps[losses_key].to_i - 1
             end
 
-            # apply new
             if new_outcome == "win"
               ps[wins_key] = ps[wins_key].to_i + 1
             elsif new_outcome == "loss"
@@ -85,9 +94,10 @@ module PlayerStatistics
           end
         end
 
-        # safety: avoid negative counters
         ps[games_key] = [ps[games_key].to_i, 0].max
-        ps[sessions_key] = [ps[sessions_key].to_i, 0].max
+        if training_key
+          ps[training_key] = [ps[training_key].to_i, 0].max
+        end
         ps[wins_key] = [ps[wins_key].to_i, 0].max
         ps[losses_key] = [ps[losses_key].to_i, 0].max
 

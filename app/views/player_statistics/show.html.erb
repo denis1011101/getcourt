@@ -23,14 +23,21 @@
     </section>
 
     <section>
-      <h3>Sessions / Games</h3>
-      <p>Singles: sessions <%= stats.singles_sessions.to_i %>, games <%= stats.singles_games.to_i %>, win rate <%= stats.singles_win_rate || 'N/A' %>%</p>
-      <p>Doubles: sessions <%= stats.doubles_sessions.to_i %>, games <%= stats.doubles_games.to_i %>, win rate <%= stats.doubles_win_rate || 'N/A' %>%</p>
+      <h3>Trainings / Games</h3>
+      <p>Individual training: <%= stats.individual_training.to_i %></p>
+      <p>Group training: <%= stats.group_training.to_i %></p>
+      <p>Singles games: <%= stats.singles_games.to_i %>, win rate <%= stats.singles_win_rate || 'N/A' %>%</p>
+      <p>Doubles games: <%= stats.doubles_games.to_i %>, win rate <%= stats.doubles_win_rate || 'N/A' %>%</p>
     </section>
 
     <section>
       <h3>Match stats</h3>
       <p>Aces: <%= stats.aces.to_i %>, Double faults: <%= stats.double_faults.to_i %>, 1st serve %: <%= stats.first_serve_percent || 'N/A' %></p>
+      <p>Break points saved: <%= stats.break_points_saved.to_i %>, Break points converted: <%= stats.break_points_converted.to_i %></p>
+      <p>Winners: <%= stats.winners.to_i %>, Unforced errors: <%= stats.unforced_errors.to_i %></p>
+      <p>Net points won: <%= stats.net_points_won.to_i %></p>
+      <p>Service points won: <%= stats.service_points_won.to_i %>, Return points won: <%= stats.return_points_won.to_i %></p>
+      <p>Return games won: <%= stats.return_games_won.to_i %>, Games won total: <%= stats.games_won_total.to_i %></p>
     </section>
 
     <section>
@@ -45,7 +52,11 @@
         <ul>
           <% matches.each do |m| %>
             <% mode = m.mode.to_s %>
-            <% wl = (m.outcome.to_s == 'win' ? 'W' : 'L') %>
+            <% wl = case m.outcome.to_s
+                    when 'win' then 'W'
+                    when 'draw', 'tie' then 'D'
+                    else 'L'
+                    end %>
             <% opponent_name = m.opponent_id.present? ? (names_by_id[m.opponent_id] || "##{m.opponent_id}") : nil %>
             <% s = (m.stats || {}).to_h %>
             <% partner_name = s["partner_id"].present? ? (names_by_id[s["partner_id"].to_i] || "##{s["partner_id"]}") : nil %>

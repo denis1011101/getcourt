@@ -79,7 +79,7 @@
         </div>
 
         <!-- Right column: hidden on small screens to keep header compact -->
-        <div class="hidden sm:flex items-start gap-6">
+        <div class="hidden sm:flex flex-col items-end gap-2">
           <div class="flex items-center gap-6">
             <%= link_to "Courts", courts_path, class: "text-sm text-gray-700 hover:text-gray-900" %>
             <%= link_to "Games", games_path, class: "text-sm text-gray-700 hover:text-gray-900" %>
@@ -87,7 +87,7 @@
             <details class="relative inline-block">
               <summary class="text-sm text-gray-700 hover:text-gray-900 cursor-pointer list-none">More ▾</summary>
               <div class="absolute right-0 mt-2 w-48 bg-white border rounded shadow-md z-50">
-                <%# <%= link_to "Tournaments", tournaments_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" %> %>
+                <%# link_to "Tournaments", tournaments_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" %>
                 <%= link_to "Tennis Life", tennis_life_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" %>
                 <%= link_to "Contacts", contacts_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" %>
                 <%= link_to "Mission", mission_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" %>
@@ -95,21 +95,17 @@
             </details>
           </div>
 
-          <div class="relative flex flex-col items-center">
-            <%= link_to "Add Court", new_court_path, class: "inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-500 whitespace-nowrap" %>
-
-            <div class="relative mt-2 w-full flex justify-center">
-              <% if user_signed_in? %>
-                <span class="absolute right-full pr-2 text-sm text-gray-600 whitespace-nowrap">
-                  Signed in as
-                  <%= link_to (current_user.email.presence || current_user.name.presence || "Account"), edit_account_path,
-                              class: "ml-1 font-semibold text-indigo-600 hover:underline whitespace-nowrap" %>
-                </span>
-                <%= link_to "Sign out", sign_out_path, data: { "turbo-method": :delete, "turbo-confirm": "Sign out?" }, class: "text-sm text-red-600 hover:underline" %>
-              <% else %>
-                <%= link_to "Sign in / Sign up", new_session_path, title: "Sign in or create an account", class: "text-sm text-gray-700 hover:underline" %>
-              <% end %>
-            </div>
+          <div class="flex items-center gap-4">
+            <% if user_signed_in? %>
+              <span class="text-sm text-gray-600 whitespace-nowrap">
+                Signed in as
+                <%= link_to (current_user.email.presence || current_user.name.presence || "Account"), edit_account_path,
+                            class: "font-semibold text-indigo-600 hover:underline" %>
+              </span>
+              <%= link_to "Sign out", sign_out_path, data: { "turbo-method": :delete, "turbo-confirm": "Sign out?" }, class: "text-sm text-red-600 hover:underline" %>
+            <% else %>
+              <%= link_to "Sign in / Sign up", new_session_path, title: "Sign in or create an account", class: "text-sm text-gray-700 hover:underline font-semibold " %>
+            <% end %>
           </div>
         </div>
       </nav>
@@ -158,7 +154,7 @@
             <span class="font-medium">More</span>
           </summary>
           <div class="absolute bottom-14 left-1/2 transform -translate-x-1/2 w-56 bg-white border rounded-lg shadow-md z-50 p-2">
-            <%# <%= link_to "Tournaments", tournaments_path, class: "block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded" %> %>
+            <%# link_to "Tournaments", tournaments_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" %>
             <%= link_to "Tennis Life", tennis_life_path, class: "block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded" %>
             <%= link_to "Contacts", contacts_path, class: "block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded" %>
             <%= link_to "Mission", mission_path, class: "block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded" %>

@@ -76,6 +76,13 @@ module Telegram
           actor = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
           return false unless game && actor
 
+          entry_exists = PlayerStatisticEntry.where(game: game, source: "telegram").exists?
+          match_exists = Match.where(game_id: game.id).exists?
+          first_entry = false
+          if entry_exists == false && match_exists == false
+            first_entry = true
+          end
+
           # удалить пользовательское сообщение с числом (может не получиться — ок)
           Telegram::Api.post(
             "deleteMessage",
@@ -91,6 +98,10 @@ module Telegram
             recorded_at: Time.current,
             include_creator: true
           ).call
+
+          if first_entry
+            increment_activity_for_game(game)
+          end
 
           # обновить conversation для отображения
           entered = (conv["fields"].is_a?(Hash) ? conv["fields"] : {})
@@ -170,6 +181,45 @@ module Telegram
         rescue => e
           Rails.logger.error "[Telegram::Flows::StatsFieldInputFlow] Conversation.set failed chat_id=#{chat_id}: #{e.class}: #{e.message}"
           false
+        end
+
+        def increment_activity_for_game(game)
+          users = []
+          if game.respond_to?(:user)
+            users << game.user
+          end
+          if game.respond_to?(:participations)
+            users.concat(game.participations.includes(:user).map(&:user))
+          end
+          users = users.compact.uniq { |u| u.id }
+
+          mode = StatisticsPresenter.hours_field_for_game(game) == :doubles_hours ? :doubles : :singles
+
+          training_key = nil
+          if game.respond_to?(:with_coach?) && game.with_coach?
+            if mode == :doubles
+              training_key = :group_training
+            else
+              training_key = :individual_training
+            end
+          end
+
+          users.each do |u|
+            ps = u.player_statistic || u.create_player_statistic
+            ps.with_lock do
+              if training_key
+                ps[training_key] = ps[training_key].to_i + 1
+                ps[training_key] = [ps[training_key].to_i, 0].max
+              else
+                games_key = mode == :doubles ? :doubles_games : :singles_games
+                ps[games_key] = ps[games_key].to_i + 1
+                ps[games_key] = [ps[games_key].to_i, 0].max
+              end
+              ps.save!
+            end
+          end
+        rescue => e
+          Rails.logger.error "[Telegram::Flows::StatsFieldInputFlow] increment_activity_for_game error: #{e.class}: #{e.message}"
         end
       end
     end

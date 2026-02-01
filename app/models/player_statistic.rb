@@ -1,9 +1,12 @@
 class PlayerStatistic < ApplicationRecord
   belongs_to :user
 
-  validates :singles_hours, :doubles_hours, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
   validates :singles_sessions, :doubles_sessions, :singles_games, :doubles_games,
             :singles_wins, :singles_losses, :doubles_wins, :doubles_losses,
+            :individual_training, :group_training,
+            :aces, :double_faults, :break_points_saved, :break_points_converted,
+            :winners, :unforced_errors, :net_points_won, :service_points_won,
+            :return_points_won, :return_games_won, :games_won_total,
             numericality: { only_integer: true, greater_than_or_equal_to: 0 }, allow_nil: true
 
   # Generic helper: :int / :float based on schema type

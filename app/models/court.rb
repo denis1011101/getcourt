@@ -10,7 +10,20 @@ class Court < ApplicationRecord
   # планируем асинхронное получение адреса при смене координат
   after_commit :enqueue_address_fetch, on: %i[create update], if: -> { saved_change_to_coordinates? }
 
+  MODERATION_STATUSES = %w[pending approved rejected].freeze
+  validates :moderation_status, inclusion: { in: MODERATION_STATUSES }
   CONTACT_TYPES = %w[phone whatsapp telegram viber other].freeze
+
+  scope :approved, -> { where(moderation_status: "approved") }
+  scope :visible_to, ->(user) { user&.admin? ? all : approved }
+
+  def approved?
+    moderation_status == "approved"
+  end
+
+  def pending?
+    moderation_status == "pending"
+  end
 
   def contact_label
     contact_type.present? ? contact_type.capitalize : nil

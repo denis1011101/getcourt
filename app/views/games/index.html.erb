@@ -1,9 +1,11 @@
 <div class="max-w-5xl mx-auto px-4 py-2">
-  <%= render "shared/page_header",
-      title: "Scheduled Games",
-      description: "Manage and track upcoming matches.",
-      action_text: "Add New Game",
-      action_path: new_game_path %>
+  <% sign_in_path = (respond_to?(:new_session_path) && new_session_path) || '/sign_in' rescue '/sign_in' %>
+  <% action_text = user_signed_in? ? "Add New Game" : "Login to Add Game" %>
+   <%= render "shared/page_header",
+       title: "Scheduled Games",
+       description: "Manage and track upcoming matches.",
+      action_text: action_text,
+      action_path: (user_signed_in? ? new_game_path : sign_in_path) %>
 
   <% if @games.empty? %>
     <div class="rounded-lg border border-dashed p-8 text-center text-gray-500">

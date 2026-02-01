@@ -13,14 +13,18 @@
     <%# determine whether there is any meaningful data %>
     <% if stats.present? %>
       <% has_hours = stats.singles_hours.to_f > 0 || stats.doubles_hours.to_f > 0 %>
-      <% has_sessions = (stats.singles_sessions.to_i + stats.doubles_sessions.to_i + stats.singles_games.to_i + stats.doubles_games.to_i) > 0 %>
-      <% has_match_stats = stats.aces.to_i > 0 || stats.double_faults.to_i > 0 || stats.first_serve_percent.present? %>
+      <% has_activity = (stats.individual_training.to_i + stats.group_training.to_i + stats.singles_games.to_i + stats.doubles_games.to_i) > 0 %>
+      <% has_match_stats = stats.aces.to_i > 0 || stats.double_faults.to_i > 0 || stats.first_serve_percent.present? ||
+                          stats.break_points_saved.to_i > 0 || stats.break_points_converted.to_i > 0 ||
+                          stats.winners.to_i > 0 || stats.unforced_errors.to_i > 0 || stats.net_points_won.to_i > 0 ||
+                          stats.service_points_won.to_i > 0 || stats.return_points_won.to_i > 0 ||
+                          stats.return_games_won.to_i > 0 || stats.games_won_total.to_i > 0 %>
       <% has_ratings = stats.singles_rating.present? || stats.doubles_rating.present? %>
     <% else %>
-      <% has_hours = has_sessions = has_match_stats = has_ratings = false %>
+      <% has_hours = has_activity = has_match_stats = has_ratings = false %>
     <% end %>
 
-    <% if stats.blank? || !(has_hours || has_sessions || has_match_stats || has_ratings) %>
+    <% if stats.blank? || !(has_hours || has_activity || has_match_stats || has_ratings) %>
       <p class="text-gray-600">No statistics available yet.</p>
     <% else %>
       <% if has_hours %>
@@ -32,25 +36,27 @@
         </section>
       <% end %>
 
-      <% if has_sessions %>
+      <% if has_activity %>
         <section class="mb-4">
-          <h3 class="text-sm font-medium text-gray-700 mb-1">Sessions / Games</h3>
-          <% if (stats.singles_sessions.to_i + stats.singles_games.to_i) > 0 %>
-            <p class="text-gray-600">Singles: sessions <%= stats.singles_sessions.to_i %>, games <%= stats.singles_games.to_i %>, win rate <%= stats.singles_win_rate || 'N/A' %>%</p>
-          <% end %>
-          <% if (stats.doubles_sessions.to_i + stats.doubles_games.to_i) > 0 %>
-            <p class="text-gray-600">Doubles: sessions <%= stats.doubles_sessions.to_i %>, games <%= stats.doubles_games.to_i %>, win rate <%= stats.doubles_win_rate || 'N/A' %>%</p>
-          <% end %>
+          <h3 class="text-sm font-medium text-gray-700 mb-1">Trainings / Games</h3>
+          <p class="text-gray-600">Individual training: <%= stats.individual_training.to_i %></p>
+          <p class="text-gray-600">Group training: <%= stats.group_training.to_i %></p>
+          <p class="text-gray-600">Singles games: <%= stats.singles_games.to_i %>, win rate <%= stats.singles_win_rate || 'N/A' %>%</p>
+          <p class="text-gray-600">Doubles games: <%= stats.doubles_games.to_i %>, win rate <%= stats.doubles_win_rate || 'N/A' %>%</p>
         </section>
       <% end %>
 
       <% if has_match_stats %>
         <section class="mb-4">
           <h3 class="text-sm font-medium text-gray-700 mb-1">Match stats</h3>
-          <p class="text-gray-600">
-            Aces: <%= stats.aces.to_i %>, Double faults: <%= stats.double_faults.to_i %>
+          <p class="text-gray-600">Aces: <%= stats.aces.to_i %>, Double faults: <%= stats.double_faults.to_i %>
             <% if stats.first_serve_percent.present? %>, 1st serve %: <%= stats.first_serve_percent %><% end %>
           </p>
+          <p class="text-gray-600">Break points saved: <%= stats.break_points_saved.to_i %>, Break points converted: <%= stats.break_points_converted.to_i %></p>
+          <p class="text-gray-600">Winners: <%= stats.winners.to_i %>, Unforced errors: <%= stats.unforced_errors.to_i %></p>
+          <p class="text-gray-600">Net points won: <%= stats.net_points_won.to_i %></p>
+          <p class="text-gray-600">Service points won: <%= stats.service_points_won.to_i %>, Return points won: <%= stats.return_points_won.to_i %></p>
+          <p class="text-gray-600">Return games won: <%= stats.return_games_won.to_i %>, Games won total: <%= stats.games_won_total.to_i %></p>
         </section>
       <% end %>
 
@@ -60,7 +66,11 @@
           <ul class="text-gray-600 space-y-1">
             <% matches.each do |m| %>
               <% mode = m.mode.to_s %>
-              <% wl = (m.outcome.to_s == 'win' ? 'W' : 'L') %>
+              <% wl = case m.outcome.to_s
+                      when 'win' then 'W'
+                      when 'draw', 'tie' then 'D'
+                      else 'L'
+                      end %>
               <% opponent_name = m.opponent_id.present? ? (names_by_id[m.opponent_id] || "##{m.opponent_id}") : nil %>
               <% s = (m.stats || {}).to_h %>
               <% partner_name = s["partner_id"].present? ? (names_by_id[s["partner_id"].to_i] || "##{s["partner_id"]}") : nil %>

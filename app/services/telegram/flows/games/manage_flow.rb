@@ -152,10 +152,11 @@ module Telegram
 
               begin
                 Participation.find_or_create_by!(game: game, user: user)
-                poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Вы вступили в игру", show_alert: false }) rescue nil
+                poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "You have entered the game", show_alert: false }) rescue nil
+                Telegram::ParticipationNotifier.notify_owner(game, user, action: :joined) rescue nil
               rescue => e
                 Rails.logger.error "[GamesFlow] join error: #{e.class} #{e.message}"
-                poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Не удалось вступить", show_alert: true }) rescue nil
+                poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Failed to join the game", show_alert: true }) rescue nil
               end
               Telegram::Handlers::GamesHandler.show_game(chat_id, game.id, 1, message_id: message_id) rescue nil
               return
@@ -172,13 +173,14 @@ module Telegram
                 participation = Participation.find_by(game: game, user: user)
                 if participation
                   participation.destroy
-                  poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Вы покинули игру", show_alert: false }) rescue nil
+                  poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "You have left the game", show_alert: false }) rescue nil
+                  Telegram::ParticipationNotifier.notify_owner(game, user, action: :left) rescue nil
                 else
-                  poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Вы не в игре", show_alert: false }) rescue nil
+                  poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "You are not in the game", show_alert: false }) rescue nil
                 end
               rescue => e
                 Rails.logger.error "[GamesFlow] leave error: #{e.class} #{e.message}"
-                poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Не удалось покинуть игру", show_alert: true }) rescue nil
+                poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Failed to leave the game", show_alert: true }) rescue nil
               end
 
               Telegram::Handlers::GamesHandler.show_game(chat_id, game.id, 1, message_id: message_id) rescue nil

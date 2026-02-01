@@ -1,9 +1,11 @@
 <div class="max-w-5xl mx-auto px-4 py-2">
+  <% sign_in_path = (respond_to?(:new_session_path) && new_session_path) || '/sign_in' rescue '/sign_in' %>
+  <% action_text = user_signed_in? ? "Add New Court" : "Login to Add Court" %>
   <%= render "shared/page_header",
       title: "Tennis Courts",
       description: "Welcome to the Get Court application! Here you can find and manage tennis courts.",
-      action_text: "Add New Court",
-      action_path: new_court_path %>
+      action_text: action_text,
+      action_path: (user_signed_in? ? new_court_path : sign_in_path) %>
 
   <% if @courts.empty? %>
     <div class="rounded-lg border border-dashed p-8 text-center text-gray-500">

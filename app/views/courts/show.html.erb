@@ -16,6 +16,17 @@
   </div>
 
   <div class="bg-white rounded-lg border p-6 shadow-sm">
+    <% if @court.pending? %>
+      <div class="mb-4 rounded-md border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800">
+        This court is under moderation.
+      </div>
+      <% if current_user&.admin? %>
+        <div class="mb-4 flex items-center gap-2">
+          <%= button_to "Approve", approve_court_path(@court), method: :post, class: "inline-flex items-center rounded-md bg-green-600 px-3 py-2 text-white hover:bg-green-700 transition" %>
+          <%= button_to "Reject", reject_court_path(@court), method: :post, data: { turbo_confirm: "Reject this court?" }, class: "inline-flex items-center rounded-md bg-red-600 px-3 py-2 text-white hover:bg-red-700 transition" %>
+        </div>
+      <% end %>
+    <% end %>
     <% lat, lng = @court.coordinates.to_s.split(",").map(&:to_f) %>
 
     <%= render "shared/map_panel" do %>
@@ -82,7 +93,9 @@
     <% end %>
 
     <div class="flex items-center gap-3">
-      <%= link_to "Create Game", new_game_path(court_id: @court.id), class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition" %>
+      <% sign_in_path = (respond_to?(:new_session_path) && new_session_path) || '/sign_in' rescue '/sign_in' %>
+      <% action_text = user_signed_in? ? "Create Game" : "Login to Сreate Пame" %>
+      <%= link_to action_text, (user_signed_in? ? new_game_path(court_id: @court.id) : sign_in_path), class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition" %>
       <%= link_to "Back to Courts", courts_path, class: "block inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition" %>
     </div>
   </div>
