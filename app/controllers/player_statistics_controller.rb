@@ -120,7 +120,9 @@ end
   end
 
   def game_started?(game)
-    if game.respond_to?(:starts_at) && game.starts_at.present?
+    if game.respond_to?(:started_for_ui?)
+      game.started_for_ui?
+    elsif game.respond_to?(:starts_at) && game.starts_at.present?
       game.starts_at <= Time.current
     elsif game.respond_to?(:date) && game.date.present?
       game.date <= Date.current
