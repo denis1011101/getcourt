@@ -24,9 +24,14 @@ class DailyTelegramNotificationsJob < ApplicationJob
       time_str = time&.strftime("%H:%M") || "—:--"
       when_text = day_offset == 1 ? "tomorrow" : "today"
       court_name = game.court&.name || "unknown court"
-      participants_count = game.participations.count
+      participants = recipients.map do |u|
+        u.telegram_username.presence || u.name.presence || u.email.presence
+      end.compact
+
+      participants_text = participants.join("\n")
+
       game_url = "https://getcourt.co/games/#{game.id}"
-      text = "Reminder: you have a game #{when_text} (#{target_date.strftime('%Y-%m-%d')}) at #{time_str} on #{court_name}. Participants: #{participants_count}\n#{game_url}"
+      text = "Reminder: you have a game #{when_text} (#{target_date.strftime('%Y-%m-%d')}) at #{time_str} on #{court_name}.\nParticipants:\n#{participants_text}\n#{game_url}"
 
       recipients.each do |recipient|
         next unless recipient&.telegram_chat_id.present?

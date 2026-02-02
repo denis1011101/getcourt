@@ -35,6 +35,13 @@ module Telegram
             )
             return
 
+          when /\Atg_fill_more:(\d+)\z/
+            game_id = Regexp.last_match(1).to_i
+            ensure_menu_flow(chat_id, message_id, game_id)
+            render_additional_menu(chat_id)
+            Telegram::Api.answer_callback(cb_id) rescue nil
+            return
+
           when /\Atg_fill_skip:(\d+):([a-z_]+)\z/
             game_id = Regexp.last_match(1).to_i
             field = Regexp.last_match(2)
@@ -177,20 +184,12 @@ module Telegram
           entered = entered.is_a?(Hash) ? entered : (conv["fields"].is_a?(Hash) ? conv["fields"] : {})
 
           game_id = game_id.to_i
-          game = Game.find_by(id: game_id)
-          hours_field = game ? StatisticsPresenter.hours_field_for_game(game) : :singles_hours
-          hours_label = game ? StatisticsPresenter.hours_label_for_game(game) : "Hours"
-          hours_key = hours_field.to_s
 
           lines = []
           lines << "*Statistics*"
           lines << "Game ##{game_id}"
           lines << ""
           lines << "Entered values (saved immediately):"
-
-          v = entered.key?(hours_key) ? entered[hours_key] : nil
-          shown = v.nil? ? "—" : v.to_s
-          lines << "• #{hours_label}: #{shown}"
 
           score =
             if game_id > 0
@@ -204,12 +203,45 @@ module Telegram
           shown_score = score.to_s.strip.presence || "—"
           lines << "• Score: #{shown_score}"
 
+          fields.each do |f|
+            key = f[:key].to_s
+            label = f[:label].to_s
+            v = entered.key?(key) ? entered[key] : nil
+            shown = v.nil? ? "—" : v.to_s
+            lines << "• #{label}: #{shown}"
+          end
+
           text = lines.join("\n")
 
           field_buttons = [
+            [ { text: "Enter score", callback_data: "tg_score:#{game_id}" } ],
             [ { text: "Enter hours", callback_data: "tg_fill_field:#{game_id}:hours" } ],
-            [ { text: "Enter score", callback_data: "tg_score:#{game_id}" } ]
+            [ { text: "Additional match statistics", callback_data: "tg_fill_more:#{game_id}" } ]
           ]
+
+          footer = [
+            [ { text: "Back to game", callback_data: "tg_fill_cancel:#{game_id}" } ]
+          ]
+
+          if message_id.present?
+            Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, field_buttons + footer) rescue nil
+          else
+            Telegram::Api.send_with_buttons(chat_id, text, field_buttons + footer) rescue nil
+          end
+        end
+
+        def render_additional_menu(chat_id, game_id: nil, message_id: nil)
+          conv = safe_conv_get(chat_id)
+          game_id = game_id.presence || conv["game_id"]
+          message_id = message_id.presence || conv["message_id"]
+
+          game_id = game_id.to_i
+
+          lines = []
+          lines << "*Additional match statistics*"
+          lines << "Game ##{game_id}"
+
+          text = lines.join("\n")
 
           stat_buttons = [
             [ { text: "Aces", callback_data: "tg_fill_field:#{game_id}:aces" }, { text: "Double faults", callback_data: "tg_fill_field:#{game_id}:double_faults" } ],
@@ -221,13 +253,13 @@ module Telegram
           ]
 
           footer = [
-            [ { text: "Back", callback_data: "tg_fill_cancel:#{game_id}" } ]
+            [ { text: "Back to Statistics", callback_data: "tg_fill_back:#{game_id}" } ]
           ]
 
           if message_id.present?
-            Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, field_buttons + stat_buttons + footer) rescue nil
+            Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, stat_buttons + footer) rescue nil
           else
-            Telegram::Api.send_with_buttons(chat_id, text, field_buttons + stat_buttons + footer) rescue nil
+            Telegram::Api.send_with_buttons(chat_id, text, stat_buttons + footer) rescue nil
           end
         end
 
