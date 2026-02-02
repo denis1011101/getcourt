@@ -57,9 +57,38 @@
     </div>
 
     <% if @court.formatted_contact.present? %>
+      <% contact_type = @court.contact_type.to_s %>
+      <% contact_value = @court.contact_value.to_s %>
+      <% contact_text = @court.formatted_contact %>
+      <% digits = contact_value.gsub(/[^\d]/, "") %>
+      <% href =
+        case contact_type
+        when "phone"
+          digits.present? ? "tel:+#{digits}" : nil
+        when "telegram"
+          if contact_value.match?(/\Ahttps?:\/\//)
+            contact_value
+          else
+            username = contact_value.sub(/\A@/, "")
+            username.present? ? "https://t.me/#{username}" : nil
+          end
+        when "whatsapp"
+          digits.present? ? "https://wa.me/#{digits}" : nil
+        when "viber"
+          digits.present? ? "viber://chat?number=+#{digits}" : nil
+        else
+          nil
+        end %>
+
       <div class="mb-4">
         <p class="text-sm text-gray-500">Contact</p>
-        <p class="text-lg font-medium text-indigo-700"><%= @court.formatted_contact %></p>
+        <p class="text-lg font-medium text-indigo-700">
+          <% if href.present? %>
+            <%= link_to contact_text, href, class: "text-indigo-700 hover:text-indigo-800 underline", target: "_blank", rel: "noopener" %>
+          <% else %>
+            <%= contact_text %>
+          <% end %>
+        </p>
       </div>
     <% end %>
 
