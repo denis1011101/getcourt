@@ -64,7 +64,7 @@ class PlayerStatisticsController < ApplicationController
         team_b_ids = sanitize_team_ids(team_params[:team_b_user_ids], game)
         winner = params[:winner_team].to_s
 
-        if team_a_ids.any? && team_b_ids.any? && %w[a b].include?(winner)
+        if team_a_ids.any? && team_b_ids.any? && %w[a b draw].include?(winner)
           upsert_matches_for_teams(game, team_a_ids, team_b_ids, score, winner)
           increment_activity_for_game!(game)
           saved_any = true
@@ -157,9 +157,25 @@ end
 
     mode = if team_a_ids.size >= 2 || team_b_ids.size >= 2
              "doubles"
-           else
+    else
              "singles"
-           end
+    end
+
+    if winner == "draw"
+      team_a_ids.each do |user_id|
+        team_b_ids.each do |opponent_id|
+          upsert_match(game, user_id, opponent_id, mode, "draw", score, played_at)
+        end
+      end
+
+      team_b_ids.each do |user_id|
+        team_a_ids.each do |opponent_id|
+          upsert_match(game, user_id, opponent_id, mode, "draw", score, played_at)
+        end
+      end
+
+      return
+    end
 
     team_a_ids.each do |user_id|
       outcome = winner == "a" ? "win" : "loss"
@@ -211,11 +227,11 @@ end
       ps.with_lock do
         if training_key
           ps[training_key] = ps[training_key].to_i + 1
-          ps[training_key] = [ps[training_key].to_i, 0].max
+          ps[training_key] = [ ps[training_key].to_i, 0 ].max
         else
           games_key = mode == :doubles ? :doubles_games : :singles_games
           ps[games_key] = ps[games_key].to_i + 1
-          ps[games_key] = [ps[games_key].to_i, 0].max
+          ps[games_key] = [ ps[games_key].to_i, 0 ].max
         end
         ps.save!
       end

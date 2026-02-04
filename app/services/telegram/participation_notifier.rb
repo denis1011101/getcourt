@@ -4,7 +4,11 @@ module Telegram
     def self.notify_owner(game, actor, action:)
       return unless game.user&.telegram_chat_id.present?
 
-      user_name = actor&.telegram_username.presence || actor&.name.presence || actor&.email || "User ##{actor.id}"
+      user_name = if actor&.telegram_username.presence
+                    "@#{actor.telegram_username}"
+                  else
+                    actor&.name.presence || actor&.email || "User ##{actor.id}"
+                  end
       date = game.respond_to?(:next_date) ? (game.next_date || game.date) : game.date
       time = game.respond_to?(:next_time) ? (game.next_time || game.time) : game.time
       date_str = date&.strftime("%Y-%m-%d")
