@@ -71,6 +71,9 @@ bin/rails db:reset
 bin/rails db:fixtures:load
 ```
 
+# Migrations
+bin/rails g migration MigrationName
+
 SQLite configuration: [config/database.yml](config/database.yml)
 
 ## Architecture Notes (project-specific)

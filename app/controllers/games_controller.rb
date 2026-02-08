@@ -1,5 +1,5 @@
 class GamesController < ApplicationController
-  before_action :handle_mark_not_happened, only: [:show]
+  before_action :handle_mark_not_happened, only: [ :show ]
   before_action :set_game, only: %i[show edit update destroy]
   before_action :authorize_manage_game!, only: %i[edit update destroy]
   skip_before_action :authenticate_user!, only: %i[index show]
@@ -23,7 +23,7 @@ class GamesController < ApplicationController
 
     if @game.save
       @game.ensure_prebookings_for_next_weeks if @game.prebooking_enabled?
-      redirect_to @game, notice: 'Game was successfully created.'
+      redirect_to @game, notice: "Game was successfully created."
     else
       Rails.logger.warn "Game save failed: #{ @game.errors.full_messages.join('; ') }"
       render :new, status: :unprocessable_entity
@@ -37,7 +37,7 @@ class GamesController < ApplicationController
     gp = sanitized_game_params
     if @game.update(gp)
       @game.ensure_prebookings_for_next_weeks if @game.prebooking_enabled?
-      redirect_to @game, notice: 'Game was successfully updated.'
+      redirect_to @game, notice: "Game was successfully updated."
     else
       Rails.logger.warn "Game update failed: #{ @game.errors.full_messages.join('; ') }"
       render :edit, status: :unprocessable_entity
@@ -46,7 +46,7 @@ class GamesController < ApplicationController
 
   def destroy
     @game.destroy
-    redirect_to games_url, notice: 'Game was successfully destroyed.'
+    redirect_to games_url, notice: "Game was successfully destroyed."
   end
 
   # GET /games/prebooking_fragment
@@ -130,11 +130,13 @@ class GamesController < ApplicationController
 
     if game.respond_to?(:participations)
       required = (game.respond_to?(:players_count) && game.players_count.to_i > 0) ? game.players_count.to_i : 4
-        spots_left = required - game.participations.size
-        badges << {
-          text: "#{spots_left} spot#{'s' if spots_left != 1} left — #{game.participations.size}/#{required}",
-          classes: "inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 mr-2"
-        }
+      approved_participations = game.participations.respond_to?(:approved) ? game.participations.approved : game.participations
+      taken = approved_participations.size
+      spots_left = required - taken
+      badges << {
+        text: "#{spots_left} spot#{'s' if spots_left != 1} left — #{taken}/#{required}",
+        classes: "inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 mr-2"
+      }
     end
 
     # recurring / weekly

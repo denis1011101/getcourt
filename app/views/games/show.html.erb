@@ -1,5 +1,6 @@
+<% approved_count = @game.participations.respond_to?(:approved) ? @game.participations.approved.count : @game.participations.count %>
 <% content_for :meta_title, "#{@game.court&.name} — game on #{(@game.next_date || @game.date).strftime('%B %d, %Y')}" %>
-<% content_for :meta_description, "Join #{@game.participations.count} players at #{@game.court&.name}. Create or join games for tennis, padel and table tennis on GetCourt." %>
+<% content_for :meta_description, "Join #{approved_count} players at #{@game.court&.name}. Create or join games for tennis, padel and table tennis on GetCourt." %>
 <div class="max-w-5xl mx-auto px-4 py-6">
   <div class="flex items-center justify-between mb-6">
     <div>
@@ -78,7 +79,8 @@
           <% participants = [] %>
           <% participants << @game.user if @game.respond_to?(:user) %>
           <% if @game.respond_to?(:participations) %>
-            <% participants.concat(@game.participations.includes(:user).map(&:user)) %>
+            <% scope = @game.participations.respond_to?(:approved) ? @game.participations.approved : @game.participations %>
+            <% participants.concat(scope.includes(:user).map(&:user)) %>
           <% end %>
           <% participants = participants.compact.uniq { |u| u.id } %>
 

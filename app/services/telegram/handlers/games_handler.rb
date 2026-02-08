@@ -8,9 +8,9 @@ module Telegram
 
         def menu(chat_id, message_id: nil)
           buttons = [
-            [{ text: "All games",   callback_data: "menu:games:page:1" }],
-            [{ text: "Create game", callback_data: "game:create" }],
-            [{ text: "Main menu",  callback_data: "menu:main" }]
+            [ { text: "All games",   callback_data: "menu:games:page:1" } ],
+            [ { text: "Create game", callback_data: "game:create" } ],
+            [ { text: "Main menu",  callback_data: "menu:main" } ]
           ]
           if message_id
             Telegram::Api.edit_message_with_buttons(chat_id, message_id, "Games menu:", buttons)
@@ -50,12 +50,13 @@ module Telegram
           owner_name = owner_display(owner)
 
           required = (g.respond_to?(:players_count) && g.players_count.to_i > 0) ? g.players_count.to_i : 4
-          taken = (g.respond_to?(:participations) ? g.participations.size : 0)
+          approved_participations = g.respond_to?(:participations) ? (g.participations.respond_to?(:approved) ? g.participations.approved : g.participations) : []
+          taken = approved_participations.size
           spots_left = required - taken
           spots_left = 0 if spots_left.negative?
           spots_text = "#{spots_left} spot#{'s' if spots_left != 1} left"
 
-          parts = [sport, coach, owner_name, date, spots_text].compact
+          parts = [ sport, coach, owner_name, date, spots_text ].compact
           label = parts.join(" — ")
           label.presence || (g.respond_to?(:title) ? g.title.to_s.presence || "Game ##{g.id}" : "Game ##{g.id}")
         end
@@ -68,7 +69,7 @@ module Telegram
           offset = (page - 1) * PER_PAGE
           games = Game.includes(:user, :participations).order("id DESC").offset(offset).limit(PER_PAGE)
 
-          header = "Games — page #{page}/#{[pages, 1].max}"
+          header = "Games — page #{page}/#{[ pages, 1 ].max}"
 
           if games.empty?
             send_or_edit_text(chat_id, "#{header}\n\nNo games on this page.", message_id: message_id)
@@ -76,15 +77,15 @@ module Telegram
           end
 
           buttons = games.map do |g|
-            [{ text: game_label(g), callback_data: "game:show:#{g.id}:#{page}" }]
+            [ { text: game_label(g), callback_data: "game:show:#{g.id}:#{page}" } ]
           end
 
           nav = []
-          nav << [{ text: "‹ Prev", callback_data: "menu:games:page:#{page - 1}" }] if page > 1
-          nav << [{ text: "Next ›", callback_data: "menu:games:page:#{page + 1}" }] if page < pages
+          nav << [ { text: "‹ Prev", callback_data: "menu:games:page:#{page - 1}" } ] if page > 1
+          nav << [ { text: "Next ›", callback_data: "menu:games:page:#{page + 1}" } ] if page < pages
           buttons.concat(nav) unless nav.empty?
 
-          buttons << [{ text: "Main menu", callback_data: "menu:main" }]
+          buttons << [ { text: "Main menu", callback_data: "menu:main" } ]
 
           if message_id
             Telegram::Api.edit_message_with_buttons(chat_id, message_id, header, buttons)
@@ -100,7 +101,12 @@ module Telegram
           return Telegram::Api.send_simple(chat_id, "Game not found.") unless game
 
           # participants / owner info
-          participants_count = game.respond_to?(:participations) ? game.participations.size : 0
+          participants_count =
+            if game.respond_to?(:participations)
+              game.participations.respond_to?(:approved) ? game.participations.approved.size : game.participations.size
+            else
+              0
+            end
           capacity = (game.respond_to?(:players_count) && game.players_count.to_i > 0) ? game.players_count.to_i : "?"
           players_line = "Players: #{participants_count}/#{capacity}"
           owner = User.find_by(id: game.user_id) rescue nil
@@ -141,14 +147,19 @@ module Telegram
 
           user = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
 
+          participation = user ? game.participations.find_by(user_id: user.id) : nil
+          direct_join = user && (user.admin? || user.id == game.user_id)
           join_btn =
-            if user && game.participations.exists?(user_id: user.id)
+            if participation && participation.respond_to?(:pending?) && participation.pending?
+              { text: "Request sent", callback_data: "game:join_pending:#{game.id}" }
+            elsif participation
               { text: "Leave", callback_data: "game:leave:#{game.id}" }
             else
-              { text: "Join", callback_data: "game:join:#{game.id}" }
+              label = direct_join ? "Join" : "Request to join"
+              { text: label, callback_data: "game:join:#{game.id}" }
             end
 
-          row1 = [join_btn]
+          row1 = [ join_btn ]
 
           # показываем пребукинг только когда включён
           if game.prebooking_enabled? && (!game.respond_to?(:recurring?) || game.recurring?)
@@ -162,22 +173,22 @@ module Telegram
 
           if game.started_for_ui?
             if can_fill_stats
-              buttons << [{ text: "Statistics", callback_data: "tg_fill:#{game.id}:#{page}" }]
+              buttons << [ { text: "Statistics", callback_data: "tg_fill:#{game.id}:#{page}" } ]
             else
-              buttons << [{ text: "Statistics", callback_data: "tg_stats_unauthorized:#{game.id}" }]
+              buttons << [ { text: "Statistics", callback_data: "tg_stats_unauthorized:#{game.id}" } ]
             end
           else
-            buttons << [{ text: "Statistics (locked)", callback_data: "tg_stats_locked:#{game.id}" }]
+            buttons << [ { text: "Statistics (locked)", callback_data: "tg_stats_locked:#{game.id}" } ]
           end
 
           if user && (user.admin? || user.id == game.user_id)
-            buttons << [{ text: "Invite players", callback_data: "game:invite:#{game.id}" }]
-            buttons << [{ text: "Manage players", callback_data: "game:manage:#{game.id}:#{page}" }]
-            buttons << [{ text: "Edit", callback_data: "game:edit:#{game.id}" }]
-            buttons << [{ text: "Delete", callback_data: "game:delete:#{game.id}:#{page}" }]
+            buttons << [ { text: "Invite players", callback_data: "game:invite:#{game.id}" } ]
+            buttons << [ { text: "Manage players", callback_data: "game:manage:#{game.id}:#{page}" } ]
+            buttons << [ { text: "Edit", callback_data: "game:edit:#{game.id}" } ]
+            buttons << [ { text: "Delete", callback_data: "game:delete:#{game.id}:#{page}" } ]
           end
 
-          buttons << [{ text: "Back to games", callback_data: "menu:games:page:#{page}" }]
+          buttons << [ { text: "Back to games", callback_data: "menu:games:page:#{page}" } ]
 
           if message_id
             Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, buttons)

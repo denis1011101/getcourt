@@ -5,12 +5,20 @@
 <div id="participation_controls" class="flex items-center gap-3">
   <% if user_signed_in? %>
     <% if user_participation %>
-      <%= form_with url: game_participation_path(g, user_participation), method: :delete, data: { turbo: true }, html: { class: "inline-flex" } do |f| %>
-        <%= f.button "Leave Game", type: :submit, class: "inline-flex items-center rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700 transition" %>
+      <% if user_participation.respond_to?(:pending?) && user_participation.pending? %>
+        <span class="inline-flex items-center rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-700">Request sent</span>
+        <%= form_with url: game_participation_path(g, user_participation), method: :delete, data: { turbo: true }, html: { class: "inline-flex" } do |f| %>
+          <%= f.button "Cancel request", type: :submit, class: "inline-flex items-center rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700 transition" %>
+        <% end %>
+      <% else %>
+        <%= form_with url: game_participation_path(g, user_participation), method: :delete, data: { turbo: true }, html: { class: "inline-flex" } do |f| %>
+          <%= f.button "Leave Game", type: :submit, class: "inline-flex items-center rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700 transition" %>
+        <% end %>
       <% end %>
     <% else %>
       <%= form_with url: game_participations_path(g), method: :post, data: { turbo: true }, html: { class: "inline-flex" } do |f| %>
-        <%= f.button "Join Game", type: :submit, class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition" %>
+        <% join_label = (current_user == g.user || (current_user.respond_to?(:admin?) && current_user.admin?)) ? "Join" : "Request to join" %>
+        <%= f.button join_label, type: :submit, class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition" %>
       <% end %>
     <% end %>
   <% else %>
