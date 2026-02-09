@@ -75,10 +75,13 @@ module Telegram
         # Send a page with list of games
         def list_page(chat_id, page = 1, message_id: nil)
           page = page.to_i < 1 ? 1 : page.to_i
-          total = Game.count
+          # load games and sort by display_date_for_show (nearest first); unknown dates go last
+          all_games = Game.includes(:user, :participations).to_a
+          sorted = all_games.sort_by { |g| g.display_date_for_show || Date.new(9999,12,31) }
+          total = sorted.size
           pages = (total.to_f / PER_PAGE).ceil
           offset = (page - 1) * PER_PAGE
-          games = Game.includes(:user, :participations).order("id DESC").offset(offset).limit(PER_PAGE)
+          games = sorted.slice(offset, PER_PAGE) || []
 
           header = "Games — page #{page}/#{[ pages, 1 ].max}"
 
