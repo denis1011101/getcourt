@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_07_200512) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_09_165303) do
   create_table "cities", force: :cascade do |t|
     t.integer "geoname_id"
     t.string "name"
@@ -167,6 +167,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_07_200512) do
     t.integer "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "status", default: "approved", null: false
+    t.datetime "approved_at"
     t.index ["game_id", "date", "slot_index"], name: "index_prebookings_on_game_date_slot", unique: true
     t.index ["game_id"], name: "index_prebookings_on_game_id"
     t.index ["user_id"], name: "index_prebookings_on_user_id"

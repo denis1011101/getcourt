@@ -121,6 +121,9 @@ module Telegram
               "Owner: #{owner&.telegram_chat_id || '—'}"
             end
 
+          host = ENV.fetch("APP_HOST", "http://localhost:3000")
+          game_url = Rails.application.routes.url_helpers.game_url(game, host: host)
+
           lines = []
           # safe title extraction
           title =
@@ -129,8 +132,9 @@ module Telegram
             else
               (game.respond_to?(:sport) && game.sport.to_s.strip.presence)
             end
-          title ||= "Game ##{game.id}"
           lines << "*#{title}*"
+
+          lines << "Game ID: #{game.id}"
 
           coach = coach_badge_for(game)
           lines << "Coach: #{coach}" if coach.present?
@@ -184,6 +188,7 @@ module Telegram
           if user && (user.admin? || user.id == game.user_id)
             buttons << [ { text: "Invite players", callback_data: "game:invite:#{game.id}" } ]
             buttons << [ { text: "Manage players", callback_data: "game:manage:#{game.id}:#{page}" } ]
+            buttons << [ { text: "Open game in browser", url: game_url } ] unless host.to_s.include?("localhost")
             buttons << [ { text: "Edit", callback_data: "game:edit:#{game.id}" } ]
             buttons << [ { text: "Delete", callback_data: "game:delete:#{game.id}:#{page}" } ]
           end

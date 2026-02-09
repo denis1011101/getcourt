@@ -11,10 +11,12 @@ module Telegram
               Telegram::Flows::Games::Manage::CreateFlow.handle_callback(callback)
             when /\Agame:edit\b/
               Telegram::Flows::Games::Manage::EditFlow.handle_callback(callback)
-            when /\Agame:join\b/, /\Agame:leave\b/, /\Agame:join_pending\b/
+            when /\Agame:join\b/, /\Agame:join_invited:/, /\Agame:leave\b/, /\Agame:join_pending\b/
               Telegram::Flows::Games::Manage::JoinFlow.handle_callback(callback)
             when /\Agame:approve_participation:/, /\Agame:reject_participation:/
               Telegram::Flows::Games::Manage::ApproveFlow.handle_callback(callback)
+            when /\Agame:approve.*prebooking/, /\Agame:reject.*prebooking/
+              Telegram::Flows::Games::Manage::PrebookApproveFlow.handle_callback(callback)
             when /\Agame:delete\b/
               Telegram::Flows::Games::Manage::DeleteFlow.handle_callback(callback)
             else

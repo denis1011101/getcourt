@@ -31,7 +31,7 @@ class DailyTelegramNotificationsJob < ApplicationJob
       participants_text = participants.join("\n")
 
       game_url = "https://getcourt.co/games/#{game.id}"
-      text = "Reminder: you have a game #{when_text} (#{target_date.strftime('%Y-%m-%d')}) at #{time_str} on #{court_name}.\nParticipants:\n#{participants_text}\n#{game_url}"
+      text = "Reminder: you have a game #{when_text} (#{target_date.strftime('%Y-%m-%d')}) at #{time_str} on #{court_name}.\nParticipants:\n#{participants_text}\n\n#{game_url}"
 
       recipients.each do |recipient|
         next unless recipient&.telegram_chat_id.present?

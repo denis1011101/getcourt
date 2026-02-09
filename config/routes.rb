@@ -63,6 +63,8 @@ Rails.application.routes.draw do
       member do
         post :book
         post :cancel
+        post :approve
+        post :reject
       end
     end
 

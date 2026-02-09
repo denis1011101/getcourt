@@ -41,7 +41,8 @@ module Telegram
               write_prebook_state(cache_key, state)
 
               user_booked = user_booked_keys(game, user, dates)
-              keyboard = build_keyboard(game.id, state[:dates], state, user_booked)
+              pending = user_pending_keys(game, user, dates)
+              keyboard = build_keyboard(game.id, state[:dates], state, user_booked, user_pending: pending)
 
               poller.send_api("answerCallbackQuery", { callback_query_id: cb_id }) rescue nil
               if message_id
@@ -134,7 +135,8 @@ module Telegram
               # rebuild keyboard
               dates = date_keys.map { |s| (Date.parse(s) rescue nil) }.compact
               user_booked = user_booked_keys(game, user, dates)
-              keyboard = build_keyboard(game.id, date_keys, state, user_booked)
+              pending = user_pending_keys(game, user, dates)
+              keyboard = build_keyboard(game.id, date_keys, state, user_booked, user_pending: pending)
 
               message_id = callback.dig("message","message_id")
               poller.send_api("answerCallbackQuery", { callback_query_id: cb_id }) rescue nil
@@ -169,10 +171,12 @@ module Telegram
               cancelled = 0
               cancel_failed = []
 
+              direct_book = user.admin? || user.id == game.user_id
+
               cancel_dates.each do |d|
                 pb = game.prebookings.where(user_id: user.id).where("DATE(date) = ?", d).first
                 if pb
-                  pb.update!(user_id: nil)
+                  pb.update!(user_id: nil, status: "approved", approved_at: nil)
                   cancelled += 1
                 else
                   cancel_failed << d.to_s
@@ -185,24 +189,44 @@ module Telegram
               Rails.cache.delete(cache_key)
 
               booked = 0
+              pending_count = 0
               failed = []
+              new_pending_prebookings = []
 
               to_book.each do |d|
                 next if PrebookingCancellation.exists?(game_id: game.id, date: d)
                 slot = game.prebookings.where(user_id: nil).where("DATE(date) = ?", d).first
                 if slot
-                  slot.update!(user: user)
-                  booked += 1
+                  if direct_book
+                    slot.update!(user: user, status: "approved", approved_at: Time.current)
+                    booked += 1
+                  else
+                    slot.update!(user: user, status: "pending")
+                    pending_count += 1
+                    new_pending_prebookings << slot
+                  end
                 else
                   failed << d.to_s
                 end
               end
 
-              Rails.logger.info "[Telegram::Flows::Games::PrebookFlow] result booked=#{booked} cancelled=#{cancelled} failed=#{failed.inspect} cancel_failed=#{cancel_failed.inspect}"
+              # Send notification to owner only if there are new pending bookings
+              if new_pending_prebookings.any?
+                notify_owner_about_prebookings(game, user, new_pending_prebookings, poller)
+              end
+
+              Rails.logger.info "[Telegram::Flows::Games::PrebookFlow] result booked=#{booked} pending=#{pending_count} cancelled=#{cancelled} failed=#{failed.inspect} cancel_failed=#{cancel_failed.inspect}"
+
+              result_parts = []
+              result_parts << "Booked: #{booked}" if booked > 0
+              result_parts << "Pending approval: #{pending_count}" if pending_count > 0
+              result_parts << "Cancelled: #{cancelled}" if cancelled > 0
+              result_parts << "Failed: #{failed.join(', ')}" if failed.any?
+              result_text = result_parts.any? ? result_parts.join(", ") : "No changes"
 
               poller.send_api("answerCallbackQuery", {
                 callback_query_id: cb_id,
-                text: "Booked: #{booked}, Cancelled: #{cancelled}. Failed: #{failed.join(', ')}. Cancel failed: #{cancel_failed.join(', ')}",
+                text: result_text,
                 show_alert: false
               }) rescue nil
 
@@ -237,10 +261,21 @@ module Telegram
             keys.to_set
           end
 
-          def build_keyboard(game_id, date_keys, state, user_booked, page: 1)
+          def user_pending_keys(game, user, dates)
+            return Set.new unless user
+            keys = game.prebookings.where(user_id: user.id, status: "pending").where("DATE(date) IN (?)", dates).pluck(:date).map { |x| normalized_prebook_date(x) }
+            keys.to_set
+          end
+
+          def build_keyboard(game_id, date_keys, state, user_booked, page: 1, user_pending: Set.new)
             rows = date_keys.each_with_index.map do |key, i|
               if user_booked.include?(key)
-                checked = state[:cancel].include?(key) ? "☐" : "☑"
+                if user_pending.include?(key)
+                  # Pending booking — show hourglass
+                  checked = state[:cancel].include?(key) ? "☐" : "⏳"
+                else
+                  checked = state[:cancel].include?(key) ? "☐" : "☑"
+                end
                 [{ text: "#{checked} #{key}", callback_data: "prebook:toggle:#{game_id}:#{i}" }]
               else
                 checked = state[:book].include?(key) ? "☑" : "☐"
@@ -251,6 +286,37 @@ module Telegram
             rows << [{ text: "Confirm", callback_data: "prebook:confirm:#{game_id}" }]
             rows << [{ text: "Back to game", callback_data: "game:show:#{game_id}:#{page}" }]
             rows
+          end
+
+          def notify_owner_about_prebookings(game, user, prebookings, poller)
+            owner_chat_id = game.user&.telegram_chat_id
+            return unless owner_chat_id.present?
+
+            requester = if user.respond_to?(:telegram_username) && user.telegram_username.present?
+                          "@#{user.telegram_username}"
+                        elsif user.respond_to?(:username) && user.username.present?
+                          "@#{user.username}"
+                        else
+                          user.name.presence || user.email.presence || "User"
+                        end
+
+            dates_text = prebookings.map { |pb| pb.date.strftime("%Y-%m-%d") }.sort.join(", ")
+            host = ENV.fetch("APP_HOST", ENV.fetch("HOSTNAME", "https://getcourt.co"))
+            game_url = "#{host}/games/#{game.id}"
+            text = "Prebooking request for Game ##{game.id} from #{requester}\nDates: #{dates_text}\n\n#{game_url}"
+
+            buttons = [
+              [
+                { text: "Approve All", callback_data: "game:approve_all_prebookings:#{game.id}:#{user.id}" },
+                { text: "Reject All",  callback_data: "game:reject_all_prebookings:#{game.id}:#{user.id}" }
+              ]
+            ]
+
+            poller.send_api("sendMessage", {
+              chat_id: owner_chat_id,
+              text: text,
+              reply_markup: { inline_keyboard: buttons }
+            }) rescue nil
           end
 
           # ---- helpers for telegram prebook state ----

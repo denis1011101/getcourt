@@ -23,7 +23,7 @@ module Telegram
                     else action.to_s
                     end
 
-      text = "#{user_name} #{action_text} on #{date_str} at #{time_str}\n#{game_url}"
+      text = "#{user_name} #{action_text} on #{date_str} at #{time_str}\n\n#{game_url}"
       SendTelegramNotificationJob.perform_later(game.user.telegram_chat_id, text)
     end
   end

@@ -16,6 +16,8 @@ module Telegram
               when /\Agame:join:(\d+)\z/
                 game = Game.find_by(id: $1.to_i)
                 user = User.find_by(telegram_chat_id: chat_id.to_s)
+                host = ENV.fetch("APP_HOST", ENV.fetch("HOSTNAME", "https://getcourt.co"))
+                game_url = "#{host}/games/#{game.id}"
                 unless game && user
                   poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Game or user not found", show_alert: false }) rescue nil
                   return
@@ -59,7 +61,7 @@ module Telegram
                         ] ]
                         poller.send_api("sendMessage", {
                           chat_id: owner_chat_id,
-                          text: "Join request for Game ##{game.id} from #{requester}",
+                          text: "Join request for Game ##{game.id} from #{requester}\n\n#{game_url}",
                           reply_markup: { inline_keyboard: buttons }
                         }) rescue nil
                       end
@@ -67,6 +69,37 @@ module Telegram
                   end
                 rescue => e
                   Rails.logger.error "[Telegram::Flows::Games::Manage::JoinFlow] join error: #{e.class} #{e.message}"
+                  poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Failed to join the game", show_alert: true }) rescue nil
+                end
+
+                Telegram::Handlers::GamesHandler.show_game(chat_id, game.id, 1, message_id: message_id) rescue nil
+                nil
+
+              when /\Agame:join_invited:(\d+)\z/
+                game = Game.find_by(id: $1.to_i)
+                user = User.find_by(telegram_chat_id: chat_id.to_s)
+                unless game && user
+                  poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Game or user not found", show_alert: false }) rescue nil
+                  return
+                end
+
+                begin
+                  participation = Participation.find_by(game: game, user: user)
+
+                  if participation
+                    if participation.respond_to?(:pending?) && participation.pending?
+                      participation.update(status: "approved", approved_at: Time.current) rescue nil
+                      poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "You joined the game", show_alert: false }) rescue nil
+                    else
+                      poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "You already joined", show_alert: false }) rescue nil
+                    end
+                  else
+                    # Invited users are auto-approved without notifying the owner
+                    Participation.create!(game: game, user: user, status: "approved", approved_at: Time.current) rescue nil
+                    poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "You joined the game", show_alert: false }) rescue nil
+                  end
+                rescue => e
+                  Rails.logger.error "[Telegram::Flows::Games::Manage::JoinFlow] join_invited error: #{e.class} #{e.message}"
                   poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Failed to join the game", show_alert: true }) rescue nil
                 end
 

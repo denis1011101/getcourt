@@ -2,6 +2,8 @@ class Prebooking < ApplicationRecord
   belongs_to :game
   belongs_to :user, optional: true
 
+  enum :status, { pending: "pending", approved: "approved" }
+
   validates :slot_index, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validates :date, presence: true
   validates :game_id, uniqueness: { scope: [:date, :slot_index] }

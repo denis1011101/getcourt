@@ -1,7 +1,7 @@
 class PrebookingsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_game
-  before_action :set_prebooking, only: %i[book cancel]
+  before_action :set_prebooking, only: %i[book cancel approve reject]
 
   def book
     return head :forbidden unless can_participate?(@game, @prebooking.date)
@@ -16,17 +16,40 @@ class PrebookingsController < ApplicationController
       return
     end
 
-    @prebooking.update!(user: current_user)
-    redirect_back fallback_location: game_path(@game), notice: "You booked a slot."
+    direct_book = current_user == @game.user || (current_user.respond_to?(:admin?) && current_user.admin?)
+    status = direct_book ? "approved" : "pending"
+
+    @prebooking.update!(user: current_user, status: status, approved_at: direct_book ? Time.current : nil)
+
+    if status == "pending"
+      schedule_owner_notification(@game, current_user)
+      redirect_back fallback_location: game_path(@game), notice: "Booking request sent. Waiting for approval."
+    else
+      redirect_back fallback_location: game_path(@game), notice: "You booked a slot."
+    end
   end
 
   def cancel
-    if @prebooking.user == current_user || respond_to?(:can_manage?) && can_manage?(@game)
-      @prebooking.update!(user: nil)
+    if @prebooking.user == current_user || can_manage_game?
+      @prebooking.update!(user: nil, status: "approved", approved_at: nil)
       redirect_back fallback_location: game_path(@game), notice: "Booking cleared."
     else
       head :forbidden
     end
+  end
+
+  def approve
+    return head :forbidden unless can_manage_game?
+
+    @prebooking.update!(status: "approved", approved_at: Time.current)
+    redirect_back fallback_location: game_path(@game), notice: "Prebooking approved."
+  end
+
+  def reject
+    return head :forbidden unless can_manage_game?
+
+    @prebooking.update!(user: nil, status: "approved", approved_at: nil)
+    redirect_back fallback_location: game_path(@game), notice: "Prebooking rejected."
   end
 
   private
@@ -37,6 +60,10 @@ class PrebookingsController < ApplicationController
 
   def set_prebooking
     @prebooking = @game.prebookings.find(params[:id])
+  end
+
+  def can_manage_game?
+    current_user && (current_user == @game.user || (current_user.respond_to?(:admin?) && current_user.admin?))
   end
 
   def can_participate?(game, date = nil)
@@ -52,5 +79,12 @@ class PrebookingsController < ApplicationController
     taken = scope.where.not(user_id: nil).count
     capacity = (game.players_count.to_i > 0 ? game.players_count.to_i : 4)
     taken < capacity
+  end
+
+  def schedule_owner_notification(game, user)
+    batch_ts = Time.current.to_f.to_s
+    cache_key = "prebooking_notify:#{game.id}:#{user.id}"
+    Rails.cache.write(cache_key, batch_ts, expires_in: 25.seconds)
+    NotifyPrebookingOwnerJob.set(wait: 20.seconds).perform_later(game.id, user.id, batch_ts)
   end
 end
