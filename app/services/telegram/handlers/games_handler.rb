@@ -68,7 +68,7 @@ module Telegram
 
           # Always add game ID to title/sport
           title_with_id = "#{title || (g.respond_to?(:title) && g.title.to_s.presence) || 'Game'} ##{g.id}"
-          parts = [ title_with_id, owner_name, date, spots_text ].compact
+          parts = [ title_with_id, date, spots_text ].compact
           parts.join(" — ")
         end
 
