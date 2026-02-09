@@ -77,7 +77,15 @@ module Telegram
           page = page.to_i < 1 ? 1 : page.to_i
           # load games and sort by display_date_for_show (nearest first); unknown dates go last
           all_games = Game.includes(:user, :participations).to_a
-          sorted = all_games.sort_by { |g| g.display_date_for_show || Date.new(9999,12,31) }
+          # keep upcoming (nearest first) first, moved already-past games to the bottom
+          now = Time.zone.now
+          future, past = all_games.partition do |g|
+            sa = game_start_at_for_ui(g)
+            sa.nil? ? true : (sa >= now)
+          end
+          future_sorted = future.sort_by { |g| g.display_date_for_show || Date.new(9999,12,31) }
+          past_sorted   = past.sort_by   { |g| g.display_date_for_show || Date.new(9999,12,31) }
+          sorted = future_sorted + past_sorted
           total = sorted.size
           pages = (total.to_f / PER_PAGE).ceil
           offset = (page - 1) * PER_PAGE
