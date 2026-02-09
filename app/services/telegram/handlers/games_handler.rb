@@ -37,6 +37,16 @@ module Telegram
         def game_label(g, owner: nil)
           date = game_datetime_for_ui(g)
 
+          # safe title extraction: prefer title, then sport
+          title =
+            if g.respond_to?(:has_attribute?) && g.has_attribute?(:title)
+              g.title.to_s.strip.presence
+            elsif g.respond_to?(:sport)
+              g.sport.to_s.strip.presence
+            else
+              nil
+            end
+
           sport =
             if g.respond_to?(:has_attribute?) && g.has_attribute?(:sport)
               g.sport.to_s.strip.presence
@@ -56,9 +66,10 @@ module Telegram
           spots_left = 0 if spots_left.negative?
           spots_text = "#{spots_left} spot#{'s' if spots_left != 1} left"
 
-          parts = [ sport, coach, owner_name, date, spots_text ].compact
-          label = parts.join(" — ")
-          label.presence || (g.respond_to?(:title) ? g.title.to_s.presence || "Game ##{g.id}" : "Game ##{g.id}")
+          # Always add game ID to title/sport
+          title_with_id = "#{title || (g.respond_to?(:title) && g.title.to_s.presence) || 'Game'} ##{g.id}"
+          parts = [ title_with_id, owner_name, date, spots_text ].compact
+          parts.join(" — ")
         end
 
         # Send a page with list of games
@@ -125,16 +136,19 @@ module Telegram
           game_url = Rails.application.routes.url_helpers.game_url(game, host: host)
 
           lines = []
-          # safe title extraction
+          # safe title extraction: prefer title, then sport
           title =
             if game.respond_to?(:has_attribute?) && game.has_attribute?(:title)
               game.title.to_s.strip.presence
+            elsif game.respond_to?(:sport)
+              game.sport.to_s.strip.presence
             else
-              (game.respond_to?(:sport) && game.sport.to_s.strip.presence)
+              nil
             end
-          lines << "*#{title}*"
 
-          lines << "Game ID: #{game.id}"
+          # always show either the title/sport or fallback to "Game", always with game id on the first line
+          title_text = "#{title || 'Game'} ##{game.id}"
+          lines << "*#{title_text}*"
 
           coach = coach_badge_for(game)
           lines << "Coach: #{coach}" if coach.present?
