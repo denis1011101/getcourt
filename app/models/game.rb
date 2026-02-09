@@ -13,6 +13,17 @@ class Game < ApplicationRecord
   validates :players_count, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   validate :prebooking_requires_recurring
 
+  # Проверяет наличие отмены в памяти, если данные загружены, иначе делает запрос.
+  def cancelled_on?(d)
+    if prebooking_cancellations.loaded?
+      # Ищем в массиве в памяти
+      prebooking_cancellations.target.any? { |c| c.date == d }
+    else
+      # Делаем запрос в БД
+      prebooking_cancellations.exists?(date: d)
+    end
+  end
+
   # Schedule reminder for (game_datetime + 4.hours). Cancels previous scheduled if present.
   def schedule_post_game_stats_reminder
     t = scheduled_post_game_stats_reminder_time
@@ -152,6 +163,7 @@ class Game < ApplicationRecord
     prev || nd
   end
 
+
   def next_date
     d = date
     return nil unless d
@@ -161,17 +173,19 @@ class Game < ApplicationRecord
       d += 7 while d < Date.today
 
       # skip cancelled occurrences
-      max_iters = 520 # safety cap (~10 years)
+      max_iters = 520
       iter = 0
-      while prebooking_cancellations.exists?(date: d) && iter < max_iters
+
+      # ОПТИМИЗАЦИЯ: используем cancelled_on? вместо prebooking_cancellations.exists?
+      while cancelled_on?(d) && iter < max_iters
         d += 7
         iter += 1
       end
 
-      return nil if prebooking_cancellations.exists?(date: d) # all skipped
+      return nil if cancelled_on?(d) # all skipped
       d
     else
-      return nil if prebooking_cancellations.exists?(date: d)
+      return nil if cancelled_on?(d)
       d
     end
   end
@@ -202,12 +216,14 @@ class Game < ApplicationRecord
     prev = next_date - 7
     max_iters = 520
     iter = 0
-    while prebooking_cancellations.exists?(date: prev) && iter < max_iters
+
+    # ОПТИМИЗАЦИЯ: используем cancelled_on?
+    while cancelled_on?(prev) && iter < max_iters
       prev -= 7
       iter += 1
     end
 
-    return nil if prebooking_cancellations.exists?(date: prev)
+    return nil if cancelled_on?(prev)
     return nil if date.present? && prev < date
 
     prev

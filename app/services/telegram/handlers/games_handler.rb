@@ -47,21 +47,14 @@ module Telegram
               nil
             end
 
-          sport =
-            if g.respond_to?(:has_attribute?) && g.has_attribute?(:sport)
-              g.sport.to_s.strip.presence
-            elsif g.respond_to?(:sport)
-              g.sport.to_s.strip.presence
-            end
-
-          coach = coach_badge_for(g)
-
-          owner ||= (g.respond_to?(:user) ? g.user : nil)
-          owner_name = owner_display(owner)
-
           required = (g.respond_to?(:players_count) && g.players_count.to_i > 0) ? g.players_count.to_i : 4
-          approved_participations = g.respond_to?(:participations) ? (g.participations.respond_to?(:approved) ? g.participations.approved : g.participations) : []
-          taken = approved_participations.size
+          approved_count =
+            if g.participations.loaded?
+              g.participations.select { |p| p.respond_to?(:approved?) ? p.approved? : (p.status == 'approved') }.size
+            else
+              g.participations.respond_to?(:approved) ? g.participations.approved.count : g.participations.count
+            end
+          taken = approved_count
           spots_left = required - taken
           spots_left = 0 if spots_left.negative?
           spots_text = "#{spots_left} spot#{'s' if spots_left != 1} left"
@@ -73,23 +66,72 @@ module Telegram
         end
 
         # Send a page with list of games
+# Send a page with list of games
         def list_page(chat_id, page = 1, message_id: nil)
           page = page.to_i < 1 ? 1 : page.to_i
-          # load games and sort by display_date_for_show (nearest first); unknown dates go last
-          all_games = Game.includes(:user, :participations).to_a
-          # keep upcoming (nearest first) first, moved already-past games to the bottom
+
+          # 1. Загружаем только повторяющиеся ИЛИ те, что будут в будущем (или сегодня).
+          # Это сразу убирает из Ruby-обработки весь старый мусор.
+          all_games = Game.includes(:user, :participations, :prebooking_cancellations)
+                          .where("recurring = ? OR date >= ?", true, Date.current)
+                          .to_a
+
+          # 2. Предварительно вычисляем ключи сортировки (Дата и Время как число),
+          # чтобы не делать тяжелых вычислений внутри sort_by.
+          today = Date.current
+          # Получаем текущее время как число HHMM (например, 2130 для 21:30)
           now = Time.zone.now
-          future, past = all_games.partition do |g|
-            sa = game_start_at_for_ui(g)
-            sa.nil? ? true : (sa >= now)
+          now_hhmm = now.hour * 100 + now.min
+
+          # Преобразуем массив игр в массив хешей с готовыми ключами
+          mapped_games = all_games.map do |g|
+            # display_date_for_show используем из модели (с оптимизацией cancelled_on?)
+            d = g.display_date_for_show
+            # Если даты нет (всё отменено), кидаем в конец времен (9999 год)
+            sort_date = d || Date.new(9999, 12, 31)
+
+            # Вычисляем время как число (integer), чтобы сравнение было мгновенным
+            # g.next_time может быть Time или String
+            t_obj = g.respond_to?(:next_time) ? g.next_time : g.time
+            hhmm = 0
+            if t_obj.respond_to?(:strftime)
+              hhmm = t_obj.strftime("%H%M").to_i
+            elsif t_obj.to_s.include?(":")
+              parts = t_obj.to_s.split(":")
+              # часы * 100 + минуты
+              hhmm = parts[0].to_i * 100 + parts[1].to_i
+            end
+
+            # Определяем, игра в будущем или прошлом (для разделения списков)
+            is_future = if sort_date > today
+                          true
+                        elsif sort_date < today
+                          false
+                        else
+                          # Если сегодня — сравниваем время
+                          hhmm >= now_hhmm
+                        end
+
+            { game: g, date: sort_date, time: hhmm, is_future: is_future }
           end
-          future_sorted = future.sort_by { |g| g.display_date_for_show || Date.new(9999,12,31) }
-          past_sorted   = past.sort_by   { |g| g.display_date_for_show || Date.new(9999,12,31) }
-          sorted = future_sorted + past_sorted
-          total = sorted.size
+
+          # 3. Разделяем списки (Upcoming vs Past), используя булеан is_future
+          future_items, past_items = mapped_games.partition { |item| item[:is_future] }
+
+          # 4. Сортируем списки.
+          # Сортировка массива примитивов [Date, Integer] работает очень быстро.
+          sorter = ->(item) { [item[:date], item[:time]] }
+
+          sorted_future = future_items.sort_by(&sorter)
+          sorted_past   = past_items.sort_by(&sorter)
+
+          # 5. Собираем обратно объекты Game и применяем пагинацию
+          sorted_games = (sorted_future + sorted_past).map { |item| item[:game] }
+
+          total = sorted_games.size
           pages = (total.to_f / PER_PAGE).ceil
           offset = (page - 1) * PER_PAGE
-          games = sorted.slice(offset, PER_PAGE) || []
+          games = sorted_games.slice(offset, PER_PAGE) || []
 
           header = "Games — page #{page}/#{[ pages, 1 ].max}"
 
@@ -143,7 +185,7 @@ module Telegram
               "Owner: #{owner&.telegram_chat_id || '—'}"
             end
 
-          host = ENV.fetch("APP_HOST", "http://localhost:3000")
+          host = ENV.fetch("APP_HOST", "https://getcourt.co")
           game_url = Rails.application.routes.url_helpers.game_url(game, host: host)
 
           lines = []
@@ -213,10 +255,11 @@ module Telegram
           if user && (user.admin? || user.id == game.user_id)
             buttons << [ { text: "Invite players", callback_data: "game:invite:#{game.id}" } ]
             buttons << [ { text: "Manage players", callback_data: "game:manage:#{game.id}:#{page}" } ]
-            buttons << [ { text: "Open game in browser", url: game_url } ] unless host.to_s.include?("localhost")
             buttons << [ { text: "Edit", callback_data: "game:edit:#{game.id}" } ]
             buttons << [ { text: "Delete", callback_data: "game:delete:#{game.id}:#{page}" } ]
           end
+
+          buttons << [ { text: "Open game in browser", url: game_url } ] unless host.to_s.include?("localhost")
 
           buttons << [ { text: "Back to games", callback_data: "menu:games:page:#{page}" } ]
 
