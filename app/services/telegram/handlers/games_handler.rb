@@ -73,10 +73,9 @@ module Telegram
           current_user = User.find_by(telegram_chat_id: chat_id)
           user_city = current_user&.city_name.to_s.strip.downcase.presence
 
-          # 1. Загружаем только повторяющиеся ИЛИ те, что будут в будущем (или сегодня).
-          # Это сразу убирает из Ruby-обработки весь старый мусор.
+          # 1. Загружаем повторяющиеся, будущие и недавние прошедшие игры.
           all_games = Game.includes(:user, :court, :participations, :prebooking_cancellations)
-                          .where("recurring = ? OR date >= ?", true, Date.current)
+                          .where("recurring = ? OR date >= ?", true, 7.days.ago.to_date)
                           .to_a
 
           # 2. Предварительно вычисляем ключи сортировки (Дата и Время как число),
