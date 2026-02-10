@@ -66,13 +66,16 @@ module Telegram
         end
 
         # Send a page with list of games
-# Send a page with list of games
         def list_page(chat_id, page = 1, message_id: nil)
           page = page.to_i < 1 ? 1 : page.to_i
 
+          # Город текущего пользователя — игры в его городе будут показаны первыми
+          current_user = User.find_by(telegram_chat_id: chat_id)
+          user_city = current_user&.city_name.to_s.strip.downcase.presence
+
           # 1. Загружаем только повторяющиеся ИЛИ те, что будут в будущем (или сегодня).
           # Это сразу убирает из Ruby-обработки весь старый мусор.
-          all_games = Game.includes(:user, :participations, :prebooking_cancellations)
+          all_games = Game.includes(:user, :court, :participations, :prebooking_cancellations)
                           .where("recurring = ? OR date >= ?", true, Date.current)
                           .to_a
 
@@ -112,15 +115,21 @@ module Telegram
                           hhmm >= now_hhmm
                         end
 
-            { game: g, date: sort_date, time: hhmm, is_future: is_future }
+            # Совпадает ли город корта с городом пользователя (0 = свой город, 1 = другой)
+            same_city = if user_city && g.court&.city_name.to_s.strip.downcase == user_city
+                          0
+                        else
+                          1
+                        end
+
+            { game: g, date: sort_date, time: hhmm, is_future: is_future, city_rank: same_city }
           end
 
           # 3. Разделяем списки (Upcoming vs Past), используя булеан is_future
           future_items, past_items = mapped_games.partition { |item| item[:is_future] }
 
-          # 4. Сортируем списки.
-          # Сортировка массива примитивов [Date, Integer] работает очень быстро.
-          sorter = ->(item) { [item[:date], item[:time]] }
+          # 4. Сортируем: сначала свой город, потом по дате и времени.
+          sorter = ->(item) { [item[:city_rank], item[:date], item[:time]] }
 
           sorted_future = future_items.sort_by(&sorter)
           sorted_past   = past_items.sort_by(&sorter)
