@@ -30,7 +30,7 @@ module Telegram
             Api.send_simple(chat_id, list.presence || "No games found")
             return
           when /\A\/my_games(@|$)/
-            user = User.find_by(telegram_chat_id: chat_id.to_s) || User.find_by(telegram_chat_id: chat_id.to_i)
+            user = Telegram::Helpers::UserLookup.find_user(chat_id)
             if user
               list = user.games.includes(:user).order(id: :desc).limit(20).map { |g| game_line_for_command(g) }.join("\n")
               Api.send_simple(chat_id, list.presence || "You have no games")
@@ -106,7 +106,7 @@ module Telegram
 
           # finished collecting — persist into PlayerStatistic
           fields = conv["fields"] || {}
-          user = User.find_by(telegram_chat_id: chat_id.to_s) || User.find_by(telegram_chat_id: chat_id.to_i)
+          user = Telegram::Helpers::UserLookup.find_user(chat_id)
           unless user
             Api.send_simple(chat_id, "User not found — cannot record statistics.")
             Rails.cache.delete(key)
@@ -171,14 +171,9 @@ module Telegram
 
       # --- helpers for /all_games and /my_games ---
       def self.game_line_for_command(g)
-        when_str = game_datetime_for_command(g)
+        when_str = Telegram::Helpers::GameFormatting.game_datetime(g)
         sport = (g.respond_to?(:sport) ? g.sport.to_s.strip.presence : nil)
-        owner =
-          if g.respond_to?(:user) && g.user
-            g.user.name.to_s.strip.presence ||
-              g.user.username.to_s.strip.presence ||
-              g.user.telegram_username.to_s.strip.presence
-          end
+        owner = g.respond_to?(:user) && g.user ? Telegram::Helpers::UserLookup.display_name(g.user, fallback: nil) : nil
 
         parts = []
         parts << "#{g.id}:"
@@ -186,43 +181,6 @@ module Telegram
         parts << owner if owner.present?
         parts << when_str if when_str.present?
         parts.join(" ")
-      end
-
-      def self.game_datetime_for_command(g)
-        d =
-          if g.respond_to?(:display_date_for_show)
-            g.display_date_for_show
-          elsif g.respond_to?(:next_date)
-            g.next_date
-          elsif g.respond_to?(:date)
-            g.date
-          end
-        return nil unless d.present?
-
-        t =
-          if g.respond_to?(:next_time)
-            g.next_time
-          elsif g.respond_to?(:time)
-            g.time
-          end
-
-        date_str = d.respond_to?(:strftime) ? d.strftime("%Y-%m-%d") : d.to_s
-        time_str = format_time_hhmm_for_command(t)
-        time_str.present? ? "#{date_str} #{time_str}" : date_str
-      end
-
-      def self.format_time_hhmm_for_command(t)
-        return nil if t.nil?
-        return t.strftime("%H:%M") if t.respond_to?(:strftime)
-
-        s = t.to_s.strip
-        return nil if s.empty?
-        parts = s.split(":")
-        return nil if parts.size < 2
-
-        hh = parts[0].to_i.to_s.rjust(2, "0")
-        mm = parts[1].to_i.to_s.rjust(2, "0")
-        "#{hh}:#{mm}"
       end
     end
   end

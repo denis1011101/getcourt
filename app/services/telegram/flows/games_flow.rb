@@ -3,25 +3,20 @@ module Telegram
     class GamesFlow
       class << self
         def handle_callback(callback)
-          data = (callback["data"] || "").to_s
-          Rails.logger.debug "[Telegram::Flows::GamesFlow] enter handle_callback data=#{data.inspect}"
-          data = (callback["data"] || "").to_s
-          cb_id = callback["id"]
-          from = callback["from"] || {}
-          chat_id = (callback.dig("message","chat","id") || from["id"]).to_s
-          message_id = callback.dig("message","message_id")
+          cb = Telegram::Helpers::CallbackData.parse(callback)
+          Rails.logger.debug "[Telegram::Flows::GamesFlow] enter handle_callback data=#{cb.data.inspect}"
           poller = Telegram::Poller.new
 
           return true if Telegram::Flows::Games::InviteFlow.handle_callback(callback) rescue false
           return true if Telegram::Flows::Games::ParticipantsManageFlow.handle_callback(callback) rescue false
 
-          case data
+          case cb.data
           when /\Agame:show:(\d+):(\d+)\z/
             gid = $1.to_i
             page = $2.to_i
-            poller.send_api("answerCallbackQuery", { callback_query_id: cb_id }) rescue nil
+            poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id }) rescue nil
             begin
-              Telegram::Handlers::GamesHandler.show_game(chat_id, gid, page, message_id: message_id)
+              Telegram::Handlers::GamesHandler.show_game(cb.chat_id, gid, page, message_id: cb.message_id)
             rescue => e
                Rails.logger.error "[Telegram::Flows::GamesFlow] show_game error: #{e.class}: #{e.message}\n#{e.backtrace.first(8).join("\n")}"
                raise
@@ -33,7 +28,7 @@ module Telegram
             return handled
 
           when /\Agame:prebook/ , /\Aprebook:/
-            Rails.logger.debug "[Telegram::Flows::GamesFlow] delegating to Games::PrebookFlow data=#{data.inspect}"
+            Rails.logger.debug "[Telegram::Flows::GamesFlow] delegating to Games::PrebookFlow data=#{cb.data.inspect}"
             begin
               result = Telegram::Flows::Games::PrebookFlow.handle_callback(callback)
               Rails.logger.debug "[Telegram::Flows::GamesFlow] Games::PrebookFlow returned=#{result.inspect}"

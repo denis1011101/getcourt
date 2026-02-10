@@ -2,21 +2,19 @@ module Telegram
   module Handlers
     class ProfileHandler
       class << self
+        include Telegram::Handlers::ReplyHelpers
+
         def menu(chat_id, message_id: nil)
           buttons = [
             [{ text: "Edit profile", callback_data: "profile:edit" }],
             [{ text: "Main menu",  callback_data: "menu:main" }]
           ]
 
-          if message_id
-            Telegram::Api.edit_message_with_buttons(chat_id, message_id, "Profile:", buttons)
-          else
-            Telegram::Api.send_with_buttons(chat_id, "Profile:", buttons)
-          end
+          send_or_edit_with_buttons(chat_id, "Profile:", buttons, message_id: message_id)
         end
 
         def show_profile(chat_id, message_id: nil)
-          user = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
+          user = Telegram::Helpers::UserLookup.find_user(chat_id)
           return Telegram::Api.send_simple(chat_id, "No linked account. Send /start first.") unless user
 
           presenter = Telegram::Presenters::ProfilePresenter.new(user)
@@ -35,11 +33,7 @@ module Telegram
             [{ text: "Main menu",  callback_data: "menu:main" }]
           ]
 
-          if message_id
-            Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, buttons)
-          else
-            Telegram::Api.send_with_buttons(chat_id, text, buttons)
-          end
+          send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
         end
       end
     end

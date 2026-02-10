@@ -4,48 +4,44 @@ module Telegram
       class << self
         # Entry for callback_query handling related to courts
         def handle_callback(callback)
-          data = (callback["data"] || "").to_s
-          cb_id = callback["id"]
-          from = callback["from"] || {}
-          chat_id = (callback.dig("message", "chat", "id") || from["id"]).to_s
-          msg_id = callback.dig("message","message_id") || callback["inline_message_id"]
+          cb = Telegram::Helpers::CallbackData.parse(callback)
           poller = Telegram::Poller.new
 
-          case data
+          case cb.data
           when /\Acourt:games:(\d+):(\d+)\z/
             court_id = $1.to_i
             page = $2.to_i
-            Telegram::Handlers::CourtsHandler.list_games(chat_id, court_id, page, message_id: msg_id)
-            poller.send_api("answerCallbackQuery", { callback_query_id: cb_id }) rescue nil
+            Telegram::Handlers::CourtsHandler.list_games(cb.chat_id, court_id, page, message_id: cb.message_id)
+            poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id }) rescue nil
             nil
           when /\Amenu:courts(?:\:page:(\d+))?\z/
             page = ($1 || 1).to_i
-            Telegram::Handlers::CourtsHandler.list_page(chat_id, page)
-            poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Courts", show_alert: false }) rescue nil
+            Telegram::Handlers::CourtsHandler.list_page(cb.chat_id, page)
+            poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id, text: "Courts", show_alert: false }) rescue nil
             nil
           when /\Acourt:show:(\d+)(?::(\d+))?\z/
             court_id = $1.to_i
             page = ($2 || 1).to_i
-            Telegram::Handlers::CourtsHandler.show_court(chat_id, court_id, page, message_id: msg_id)
-            poller.send_api("answerCallbackQuery", { callback_query_id: cb_id }) rescue nil
+            Telegram::Handlers::CourtsHandler.show_court(cb.chat_id, court_id, page, message_id: cb.message_id)
+            poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id }) rescue nil
             nil
           when /\Acreate_game_from_court:(\d+)\z/
-            start_create_game_from_court(chat_id, $1.to_i, cb_id: cb_id, message_id: msg_id)
+            start_create_game_from_court(cb.chat_id, $1.to_i, cb_id: cb.cb_id, message_id: cb.message_id)
             nil
           when /\Acourt:edit:(\d+)\z/
-            start_edit_court(chat_id, $1.to_i, cb_id: cb_id)
+            start_edit_court(cb.chat_id, $1.to_i, cb_id: cb.cb_id)
             nil
           when /\Acourt:delete:(\d+)(?::(\d+))?\z/
             court_id = $1.to_i
             page = ($2 || 1).to_i
-            poller.send_api("answerCallbackQuery", { callback_query_id: cb_id }) rescue nil
-            delete_court(chat_id, court_id, page)
+            poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id }) rescue nil
+            delete_court(cb.chat_id, court_id, page)
             nil
           when /\Acourt:create\z/
-            start_create_court(chat_id, cb_id: cb_id)
+            start_create_court(cb.chat_id, cb_id: cb.cb_id)
             nil
           else
-            poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Unknown courts action", show_alert: false }) rescue nil
+            poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id, text: "Unknown courts action", show_alert: false }) rescue nil
             nil
           end
         rescue => e
@@ -56,7 +52,7 @@ module Telegram
         def start_create_game_from_court(chat_id, court_id, cb_id: nil, message_id: nil)
           poller = Telegram::Poller.new
           Rails.logger.debug "[Telegram::Flows::CourtsFlow] start_create_game_from_court called message_id=#{message_id.inspect} chat_id=#{chat_id} cb_id=#{cb_id.inspect}"
-          user = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
+          user = Telegram::Helpers::UserLookup.find_user(chat_id)
           unless user
             poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "No linked account. Send /start first.", show_alert: false }) rescue nil
             return
@@ -114,7 +110,7 @@ module Telegram
             poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Court not found", show_alert: false }) rescue nil
             return
           end
-          user = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
+          user = Telegram::Helpers::UserLookup.find_user(chat_id)
           unless user && (user.admin? || user.id == court.user_id)
             poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "No permission to edit", show_alert: true }) rescue nil
             return
@@ -131,7 +127,7 @@ module Telegram
         # Start create court flow (from menu)
         def start_create_court(chat_id, cb_id: nil)
           poller = Telegram::Poller.new
-          user = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
+          user = Telegram::Helpers::UserLookup.find_user(chat_id)
           if user
             poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Create court — reply with details", show_alert: false }) rescue nil
             poller.send_api("sendMessage", {
@@ -152,7 +148,7 @@ module Telegram
             poller.send_api("sendMessage", { chat_id: chat_id, text: "Court not found." }) rescue nil
             return
           end
-          user = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
+          user = Telegram::Helpers::UserLookup.find_user(chat_id)
           unless user && (user.admin? || user.id == court.user_id)
             poller.send_api("sendMessage", { chat_id: chat_id, text: "No permission to delete this court." }) rescue nil
             return

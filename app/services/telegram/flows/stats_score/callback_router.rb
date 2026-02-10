@@ -5,14 +5,14 @@ module Telegram
         module_function
 
         def call(callback_query)
-          data = (callback_query["data"] || "").to_s
-          cb_id = callback_query["id"]
-          from = callback_query["from"] || {}
-          chat_id = (callback_query.dig("message", "chat", "id") || from["id"]).to_s
-          message_id = callback_query.dig("message", "message_id") || callback_query["inline_message_id"]
-          return if chat_id.blank? || data.blank?
+          cb = Telegram::Helpers::CallbackData.parse(callback_query)
+          return if cb.chat_id.blank? || cb.data.blank?
 
-          case data
+          chat_id = cb.chat_id
+          message_id = cb.message_id
+          cb_id = cb.cb_id
+
+          case cb.data
           when /\Atg_score:(\d+)\z/
             Actions::Start.call(chat_id:, message_id:, cb_id:, game_id: Regexp.last_match(1).to_i)
           when /\Atg_score_pick:(\d+):(\d+)\z/
@@ -30,6 +30,7 @@ module Telegram
           nil
         rescue => e
           Rails.logger.error "[Telegram::Flows::StatsScore::CallbackRouter] error: #{e.class}: #{e.message}"
+          cb_id = callback_query["id"] rescue nil
           Telegram::Api.answer_callback(cb_id, "Error.", show_alert: true) rescue nil
           nil
         end
