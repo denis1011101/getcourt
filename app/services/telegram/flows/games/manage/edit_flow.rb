@@ -4,27 +4,25 @@ module Telegram
       module Manage
         module EditFlow
           class << self
+            include Telegram::Handlers::ReplyHelpers
+
             def handle_callback(callback)
-              data = (callback["data"] || "").to_s
-              cb_id = callback["id"]
-              from = callback["from"] || {}
-              chat_id = (callback.dig("message", "chat", "id") || from["id"]).to_s
-              message_id = callback.dig("message", "message_id")
+              cb = Telegram::Helpers::CallbackData.parse(callback)
               poller = Telegram::Poller.new
 
-              case data
+              case cb.data
               when /\Agame:edit:set:sport:(\d+):(.+):(\d+)\z/
                 require "cgi"
                 game_id = $1.to_i
                 sport = CGI.unescape($2.to_s)
                 msg_id = $3.to_i
                 game = Game.find_by(id: game_id)
-                poller.send_api("answerCallbackQuery", { callback_query_id: cb_id }) rescue nil
+                poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id }) rescue nil
                 if game
                   game.update(sport: sport) rescue nil
-                  Telegram::Flows::Games::EditPrompter.send_edit_prompts(chat_id, game.id, msg_id) rescue nil
+                  Telegram::Flows::Games::EditPrompter.send_edit_prompts(cb.chat_id, game.id, msg_id) rescue nil
                 else
-                  Telegram::Api.edit_message_text(chat_id, msg_id, "Game not found.") rescue nil
+                  Telegram::Api.edit_message_text(cb.chat_id, msg_id, "Game not found.") rescue nil
                 end
                 nil
 
@@ -33,12 +31,12 @@ module Telegram
                 court_id = $2.to_i
                 msg_id = $3.to_i
                 game = Game.find_by(id: game_id)
-                poller.send_api("answerCallbackQuery", { callback_query_id: cb_id }) rescue nil
+                poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id }) rescue nil
                 if game
                   game.update(court_id: court_id) rescue nil
-                  Telegram::Flows::Games::EditPrompter.send_edit_prompts(chat_id, game.id, msg_id) rescue nil
+                  Telegram::Flows::Games::EditPrompter.send_edit_prompts(cb.chat_id, game.id, msg_id) rescue nil
                 else
-                  Telegram::Api.edit_message_text(chat_id, msg_id, "Game not found.") rescue nil
+                  Telegram::Api.edit_message_text(cb.chat_id, msg_id, "Game not found.") rescue nil
                 end
                 nil
 
@@ -47,7 +45,7 @@ module Telegram
                 page = $2.to_i < 1 ? 1 : $2.to_i
                 msg_id = $3.to_i
                 per_page = Telegram::Handlers::CourtsHandler::PER_PAGE rescue 5
-                user = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
+                user = Telegram::Helpers::UserLookup.find_user(cb.chat_id)
                 scope = Court.visible_to(user)
                 total = scope.count
                 pages = (total.to_f / per_page).ceil
@@ -55,11 +53,7 @@ module Telegram
                 courts = scope.order("id ASC").offset(offset).limit(per_page)
                 header = "Choose court — page #{page}/#{[ pages, 1 ].max}"
                 if courts.empty?
-                  if msg_id && msg_id > 0
-                    Telegram::Api.edit_message_text(chat_id, msg_id, "#{header}\n\nNo courts on this page.") rescue nil
-                  else
-                    Telegram::Api.send_simple(chat_id, "#{header}\n\nNo courts on this page.") rescue nil
-                  end
+                  send_or_edit_text(cb.chat_id, "#{header}\n\nNo courts on this page.", message_id: msg_id > 0 ? msg_id : nil)
                   return
                 end
 
@@ -75,12 +69,8 @@ module Telegram
 
                 buttons << [ { text: "Back to edit", callback_data: "game:edit:show:#{game_id}:#{msg_id}" } ]
 
-                if msg_id && msg_id > 0
-                  Telegram::Api.edit_message_with_buttons(chat_id, msg_id, header, buttons) rescue nil
-                else
-                  Telegram::Api.send_with_buttons(chat_id, header, buttons) rescue nil
-                end
-                poller.send_api("answerCallbackQuery", { callback_query_id: cb_id }) rescue nil
+                send_or_edit_with_buttons(cb.chat_id, header, buttons, message_id: msg_id > 0 ? msg_id : nil)
+                poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id }) rescue nil
                 nil
 
               when /\Agame:edit:set:players_count:(\d+):(\d+):(\d+)\z/
@@ -88,12 +78,12 @@ module Telegram
                 value = $2.to_i
                 msg_id = $3.to_i
                 game = Game.find_by(id: game_id)
-                poller.send_api("answerCallbackQuery", { callback_query_id: cb_id }) rescue nil
+                poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id }) rescue nil
                 if game
                   game.update(players_count: value) rescue nil
-                  Telegram::Flows::Games::EditPrompter.send_edit_prompts(chat_id, game.id, msg_id) rescue nil
+                  Telegram::Flows::Games::EditPrompter.send_edit_prompts(cb.chat_id, game.id, msg_id) rescue nil
                 else
-                  Telegram::Api.edit_message_text(chat_id, msg_id, "Game not found.") rescue nil
+                  Telegram::Api.edit_message_text(cb.chat_id, msg_id, "Game not found.") rescue nil
                 end
                 nil
 
@@ -101,9 +91,9 @@ module Telegram
                 game_id = $1.to_i
                 field = $2.to_s
                 game = Game.find_by(id: game_id)
-                user = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
+                user = Telegram::Helpers::UserLookup.find_user(cb.chat_id)
                 unless game && user && (user.admin? || user.id == game.user_id)
-                  poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "No permission or game not found", show_alert: true }) rescue nil
+                  poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id, text: "No permission or game not found", show_alert: true }) rescue nil
                   return
                 end
 
@@ -117,11 +107,12 @@ module Telegram
                   else field
                   end
 
-                state = { game_id: game_id, field: field, step: "field", msg_id: message_id, chat_id: chat_id.to_s }
-                Rails.cache.write("telegram:edit:chat:#{chat_id}", state, expires_in: 30.minutes)
+                message_id = cb.message_id
+                state = { game_id: game_id, field: field, step: "field", msg_id: message_id, chat_id: cb.chat_id.to_s }
+                Rails.cache.write("telegram:edit:chat:#{cb.chat_id}", state, expires_in: 30.minutes)
                 Rails.cache.write("telegram:edit:msg:#{message_id}", state, expires_in: 30.minutes) if message_id
 
-                poller.send_api("answerCallbackQuery", { callback_query_id: cb_id }) rescue nil
+                poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id }) rescue nil
 
                 if field == "sport"
                   require "cgi"
@@ -129,48 +120,26 @@ module Telegram
                     row.map { |s| { text: s, callback_data: "game:edit:set:sport:#{game_id}:#{CGI.escape(s)}:#{message_id}" } }
                   end
                   buttons << [ { text: "Cancel", callback_data: "game:edit:cancel:#{game_id}:#{message_id}" } ]
-                  if message_id
-                    poller.send_api("editMessageText", {
-                      chat_id: chat_id,
-                      message_id: message_id,
-                      text: "Choose new sport:",
-                      reply_markup: { inline_keyboard: buttons }
-                    }) rescue nil
-                  else
-                    poller.send_api("sendMessage", { chat_id: chat_id, text: "Choose new sport:", reply_markup: { inline_keyboard: buttons } }) rescue nil
-                  end
+                  send_or_edit_with_buttons(cb.chat_id, "Choose new sport:", buttons, message_id: message_id)
                 elsif field == "players_count"
                   buttons = [
                     [ { text: "2", callback_data: "game:edit:set:players_count:#{game_id}:2:#{message_id}" } ],
                     [ { text: "4", callback_data: "game:edit:set:players_count:#{game_id}:4:#{message_id}" } ],
                     [ { text: "Cancel", callback_data: "game:edit:cancel:#{game_id}:#{message_id}" } ]
                   ]
-                  if message_id
-                    poller.send_api("editMessageText", {
-                      chat_id: chat_id,
-                      message_id: message_id,
-                      text: "Choose players count:",
-                      reply_markup: { inline_keyboard: buttons }
-                    }) rescue nil
-                  else
-                    poller.send_api("sendMessage", { chat_id: chat_id, text: "Choose players count:", reply_markup: { inline_keyboard: buttons } }) rescue nil
-                  end
+                  send_or_edit_with_buttons(cb.chat_id, "Choose players count:", buttons, message_id: message_id)
                 elsif field == "court_id"
                   page = 1
-                  poller.send_api("answerCallbackQuery", { callback_query_id: cb_id }) rescue nil
+                  poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id }) rescue nil
                   callback_page = { "data" => "game:edit:court:page:#{game_id}:#{page}:#{message_id}", "from" => callback["from"], "message" => callback["message"] }
                   handle_callback(callback_page) rescue nil
                 else
-                  if message_id
-                    poller.send_api("editMessageText", {
-                      chat_id: chat_id,
-                      message_id: message_id,
-                      text: "Send new value for #{label}:",
-                      reply_markup: { inline_keyboard: [ [ { text: "Cancel", callback_data: "game:edit:cancel:#{game_id}:#{message_id}" } ] ] }
-                    }) rescue nil
-                  else
-                    poller.send_api("sendMessage", { chat_id: chat_id, text: "Send new value for #{label}:" }) rescue nil
-                  end
+                  send_or_edit_with_buttons(
+                    cb.chat_id,
+                    "Send new value for #{label}:",
+                    [[ { text: "Cancel", callback_data: "game:edit:cancel:#{game_id}:#{message_id}" } ]],
+                    message_id: message_id
+                  )
                 end
                 nil
 
@@ -178,13 +147,13 @@ module Telegram
                 game_id = $1.to_i
                 msg_id = $2.to_i
                 game = Game.find_by(id: game_id)
-                user = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
+                user = Telegram::Helpers::UserLookup.find_user(cb.chat_id)
                 unless game && user && (user.admin? || user.id == game.user_id)
-                  poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "No permission or game not found", show_alert: true }) rescue nil
+                  poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id, text: "No permission or game not found", show_alert: true }) rescue nil
                   return
                 end
-                poller.send_api("answerCallbackQuery", { callback_query_id: cb_id }) rescue nil
-                Telegram::Flows::Games::EditPrompter.send_edit_prompts(chat_id, game.id, msg_id) rescue nil
+                poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id }) rescue nil
+                Telegram::Flows::Games::EditPrompter.send_edit_prompts(cb.chat_id, game.id, msg_id) rescue nil
                 nil
 
               when /\Agame:edit:cancel:(\d+):(\d+)\z/
@@ -193,8 +162,8 @@ module Telegram
 
               when /\Agame:edit:confirm:(\d+)\z/
                 gid = $1.to_i
-                poller.send_api("answerCallbackQuery", { callback_query_id: cb_id }) rescue nil
-                Telegram::Handlers::GamesHandler.show_game(chat_id, gid, 1, message_id: message_id) rescue nil
+                poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id }) rescue nil
+                Telegram::Handlers::GamesHandler.show_game(cb.chat_id, gid, 1, message_id: cb.message_id) rescue nil
                 nil
 
               else

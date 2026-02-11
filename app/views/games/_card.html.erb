@@ -1,4 +1,6 @@
-<div class="rounded-md border p-4 bg-white shadow-sm flex flex-col justify-between">
+<div class="relative rounded-md border p-4 bg-white shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+  <%= link_to "", game_path(game), class: "absolute inset-0 z-0" %>
+
   <div>
     <p class="text-sm text-gray-500">
       <%= game.display_date_for_show ? game.display_date_for_show.strftime("%B %d, %Y") : (game.date && game.date.strftime("%B %d, %Y")) %>
@@ -8,7 +10,7 @@
     </p>
 
     <p class="text-sm text-gray-600 mt-2">
-      <%= link_to game.court.name, court_path(game.court), class: "text-indigo-600 hover:underline" %>
+      <%= link_to game.court.name, court_path(game.court), class: "text-indigo-600 hover:underline relative z-10" %>
     </p>
 
     <p class="text-sm text-gray-700 mt-3">
@@ -24,10 +26,10 @@
     </p>
   </div>
 
-  <div class="mt-4 flex items-center justify-between">
-    <%= link_to "View", game_path(game), class: "text-sm font-medium text-indigo-600 hover:text-indigo-700" %>
+  <div class="mt-4 flex items-center justify-end gap-3">
+    <span class="text-sm font-medium text-indigo-600">View</span>
     <% if can_manage?(game) %>
-      <%= link_to "Edit", edit_game_path(game), class: "text-sm text-gray-600 hover:underline" %>
+      <%= link_to "Edit", edit_game_path(game), class: "text-sm text-gray-600 hover:underline relative z-10" %>
     <% end %>
   </div>
 </div>

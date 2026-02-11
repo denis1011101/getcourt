@@ -84,7 +84,7 @@
         <p class="text-sm text-gray-500">Contact</p>
         <p class="text-lg font-medium text-indigo-700">
           <% if href.present? %>
-            <%= link_to contact_text, href, class: "text-indigo-700 hover:text-indigo-800 underline", target: "_blank", rel: "noopener" %>
+            <% if @court.contact_label.present? %><span class="text-gray-900"><%= @court.contact_label %>:</span> <% end %><%= link_to contact_value, href, class: "text-indigo-700 hover:text-indigo-800 underline", target: "_blank", rel: "noopener" %>
           <% else %>
             <%= contact_text %>
           <% end %>
@@ -99,9 +99,13 @@
           <li class="rounded-md border p-3 flex items-center justify-between">
             <div>
               <p class="text-sm text-gray-500">
-                <% if game.date.present? || game.time.present? %>
-                  <%= game.date.present? ? game.date.strftime("%B %d, %Y") : "Date not set" %> — 
-                  <span class="font-medium text-gray-900"><%= game.time.present? ? game.time.strftime("%I:%M %p") : "—" %></span>
+                <% ui_date = game.display_date_for_show %>
+                <% ui_time = game.next_time || game.time %>
+                <% if ui_date.present? || ui_time.present? %>
+                  <%= ui_date.present? ? ui_date.strftime("%B %d, %Y") : "Date not set" %>
+                  <% if ui_time %>
+                    — <span class="font-medium text-gray-900"><%= ui_time.strftime("%I:%M %p") %></span>
+                  <% end %>
                 <% else %>
                   Not scheduled
                 <% end %>

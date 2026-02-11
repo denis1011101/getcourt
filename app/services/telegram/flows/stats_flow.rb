@@ -8,11 +8,11 @@ module Telegram
         end
 
         def handle_callback(callback_query)
-          data = (callback_query["data"] || "").to_s
-          cb_id = callback_query["id"]
-          from = callback_query["from"] || {}
-          chat_id = (callback_query.dig("message", "chat", "id") || from["id"]).to_s
-          message_id = callback_query.dig("message", "message_id") || callback_query["inline_message_id"]
+          cb = Telegram::Helpers::CallbackData.parse(callback_query)
+          data = cb.data
+          cb_id = cb.cb_id
+          chat_id = cb.chat_id
+          message_id = cb.message_id
           return if chat_id.blank? || data.blank?
 
           case data
@@ -131,7 +131,7 @@ module Telegram
             return
           end
 
-          user = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
+          user = Telegram::Helpers::UserLookup.find_user(chat_id)
           unless user && (user.admin? || user.id == game.user_id)
             Telegram::Api.answer_callback(cb_id, "Only the game creator or an admin can fill statistics.", show_alert: true) rescue nil
             return
@@ -270,7 +270,7 @@ module Telegram
             return
           end
 
-          actor = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
+          actor = Telegram::Helpers::UserLookup.find_user(chat_id)
           unless actor && (actor.admin? || actor.id == game.user_id)
             Telegram::Api.answer_callback(cb_id, "Only the game creator or an admin can fill statistics.", show_alert: true) rescue nil
             return

@@ -249,8 +249,8 @@ module Telegram
             rescue => e
               Rails.logger.error "[Telegram::Flows::Profile::FieldFlow] process_notify_callback: cache delete failed for chat=#{chat_id}: #{e.class}: #{e.message}"
             end
-            Telegram::Api.edit_message_with_buttons(chat_id, message_id, "*Edit profile*\nNotify nearby searches: #{val ? 'Yes' : 'No'}", [[{ text: "Edit profile", callback_data: "profile:edit" }]]) rescue nil
-            Telegram::Api.answer_callback(cb_id) rescue nil
+            Telegram::Flows::ProfileFlow.start_edit_profile(chat_id, message_id: message_id)
+            Telegram::Api.answer_callback(cb_id, "Notify: #{val ? 'Yes' : 'No'}") rescue nil
           else
             Rails.logger.error "[Telegram::Flows::Profile::FieldFlow] failed saving notify for user_id=#{user.id} errors=#{user.errors.full_messages.join(', ')}"
             Telegram::Api.answer_callback(cb_id, "Failed to save", show_alert: true) rescue nil
@@ -288,8 +288,8 @@ module Telegram
             rescue => e
               Rails.logger.error "[Telegram::Flows::Profile::FieldFlow] process_coach_callback: cache delete failed for chat=#{chat_id}: #{e.class}: #{e.message}"
             end
-            Telegram::Api.edit_message_with_buttons(chat_id, message_id, "*Edit profile*\nCoach: #{val ? 'Yes' : 'No'}", [[{ text: "Edit profile", callback_data: "profile:edit" }]]) rescue nil
-            Telegram::Api.answer_callback(cb_id) rescue nil
+            Telegram::Flows::ProfileFlow.start_edit_profile(chat_id, message_id: message_id)
+            Telegram::Api.answer_callback(cb_id, "Coach: #{val ? 'Yes' : 'No'}") rescue nil
           else
             Rails.logger.error "[Telegram::Flows::Profile::FieldFlow] failed saving coach for user_id=#{user.id} errors=#{user.errors.full_messages.join(', ')}"
             Telegram::Api.answer_callback(cb_id, "Failed to save", show_alert: true) rescue nil

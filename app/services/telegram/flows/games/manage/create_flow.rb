@@ -5,36 +5,32 @@ module Telegram
         module CreateFlow
           class << self
             def handle_callback(callback)
-              data = (callback["data"] || "").to_s
-              cb_id = callback["id"]
-              from = callback["from"] || {}
-              chat_id = (callback.dig("message", "chat", "id") || from["id"]).to_s
-              message_id = callback.dig("message", "message_id")
+              cb = Telegram::Helpers::CallbackData.parse(callback)
               poller = Telegram::Poller.new
 
-              case data
+              case cb.data
               when /\Agame:create:field:(\w+):(\d+)\z/
                 Telegram::Flows::Games::EditPrompter.handle_callback(callback) rescue nil
-                poller.send_api("answerCallbackQuery", { callback_query_id: cb_id }) rescue nil
+                poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id }) rescue nil
                 nil
 
               when /\Agame:create:confirm:(\d+)\z/
                 gid = $1.to_i
-                poller.send_api("answerCallbackQuery", { callback_query_id: cb_id }) rescue nil
-                Telegram::Handlers::GamesHandler.show_game(chat_id, gid, 1, message_id: message_id) rescue nil
+                poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id }) rescue nil
+                Telegram::Handlers::GamesHandler.show_game(cb.chat_id, gid, 1, message_id: cb.message_id) rescue nil
                 nil
 
               when /\Agame:create:cancel:(\d+)(?::(\d+))?\z/
                 gid = $1.to_i
                 orig_msg_id = $2 ? $2.to_i : nil
-                poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Create cancelled", show_alert: false }) rescue nil
+                poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id, text: "Create cancelled", show_alert: false }) rescue nil
                 begin
                   game = Game.find_by(id: gid)
                   if game
                     court_id = game.court_id
                     game.destroy rescue nil
                     if orig_msg_id && court_id
-                      Telegram::Handlers::CourtsHandler.show_court(chat_id, court_id, 1, message_id: orig_msg_id) rescue nil
+                      Telegram::Handlers::CourtsHandler.show_court(cb.chat_id, court_id, 1, message_id: orig_msg_id) rescue nil
                     end
                   end
                 rescue => e
@@ -43,7 +39,7 @@ module Telegram
                 nil
 
               when /\Agame:create\z/
-                start_create_game(chat_id, cb_id: cb_id)
+                start_create_game(cb.chat_id, cb_id: cb.cb_id)
                 nil
 
               else
@@ -56,7 +52,7 @@ module Telegram
 
             def start_create_game(chat_id, cb_id: nil)
               poller = Telegram::Poller.new
-              user = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
+              user = Telegram::Helpers::UserLookup.find_user(chat_id)
               if user
                 poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Create game — reply with details", show_alert: false }) rescue nil
                 poller.send_api("sendMessage", {

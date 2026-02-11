@@ -2,6 +2,8 @@ module Telegram
   module Handlers
     class MenuHandler
       class << self
+        include Telegram::Handlers::ReplyHelpers
+
         def menu(chat_id, message_id: nil)
           text = "Main menu:"
 
@@ -12,11 +14,7 @@ module Telegram
             [{ text: "Profile", callback_data: "profile:show" }]
           ]
 
-          if message_id
-            Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, buttons)
-          else
-            Telegram::Api.send_with_buttons(chat_id, text, buttons)
-          end
+          send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
         end
       end
     end

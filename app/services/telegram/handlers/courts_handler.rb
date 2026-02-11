@@ -4,7 +4,7 @@ module Telegram
       PER_PAGE = 5
 
       class << self
-        extend Telegram::Handlers::ReplyHelpers
+        include Telegram::Handlers::ReplyHelpers
 
         def menu(chat_id, message_id: nil)
           buttons = [
@@ -24,7 +24,7 @@ module Telegram
         # Send a page with list of courts
         def list_page(chat_id, page = 1, message_id: nil)
           page = page.to_i < 1 ? 1 : page.to_i
-          user = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
+          user = Telegram::Helpers::UserLookup.find_user(chat_id)
           scope = Court.visible_to(user)
           total = scope.count
           pages = (total.to_f / PER_PAGE).ceil
@@ -33,11 +33,8 @@ module Telegram
           header = "Courts — page #{page}/#{[pages, 1].max}"
 
           if courts.empty?
-            if message_id
-              Telegram::Api.edit_message_text(chat_id, message_id, "#{header}\n\nNo courts on this page.") and return
-            else
-              Telegram::Api.send_simple(chat_id, "#{header}\n\nNo courts on this page.") and return
-            end
+            send_or_edit_text(chat_id, "#{header}\n\nNo courts on this page.", message_id: message_id)
+            return
           end
 
           buttons = courts.map do |c|
@@ -50,7 +47,6 @@ module Telegram
           nav << [{ text: "Next ›", callback_data: "menu:courts:page:#{page + 1}" }] if page < pages
           buttons.concat(nav) unless nav.empty?
 
-          # + main menu
           buttons << [{ text: "Main menu", callback_data: "menu:main" }]
 
           send_or_edit_with_buttons(chat_id, header, buttons, message_id: message_id)
@@ -97,7 +93,7 @@ module Telegram
 
         # Show court card with action buttons (create game, edit if owner/admin, back)
         def show_court(chat_id, court_id, page = 1, message_id: nil)
-          user = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
+          user = Telegram::Helpers::UserLookup.find_user(chat_id)
           court = Court.visible_to(user).find_by(id: court_id)
           return Telegram::Api.send_simple(chat_id, "Court not found.") unless court
 
@@ -108,20 +104,9 @@ module Telegram
           buttons << [{ text: "Create game", callback_data: "create_game_from_court:#{court.id}" }]
           buttons << [{ text: "List of games", callback_data: "court:games:#{court.id}:1" }]
 
-          # NEW: navigation
           buttons << [{ text: "Back to courts", callback_data: "menu:courts:page:#{page}" }]
 
           send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
-        end
-
-        private
-
-        def send_or_edit_with_buttons(chat_id, text, buttons, message_id: nil)
-          if message_id
-            Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, buttons)
-          else
-            Telegram::Api.send_with_buttons(chat_id, text, buttons)
-          end
         end
       end
     end

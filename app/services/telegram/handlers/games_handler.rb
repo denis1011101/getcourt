@@ -4,7 +4,7 @@ module Telegram
       PER_PAGE = 5
 
       class << self
-        extend Telegram::Handlers::ReplyHelpers
+        include Telegram::Handlers::ReplyHelpers
 
         def menu(chat_id, message_id: nil)
           buttons = [
@@ -12,40 +12,18 @@ module Telegram
             [ { text: "Create game", callback_data: "game:create" } ],
             [ { text: "Main menu",  callback_data: "menu:main" } ]
           ]
-          if message_id
-            Telegram::Api.edit_message_with_buttons(chat_id, message_id, "Games menu:", buttons)
-          else
-            Telegram::Api.send_with_buttons(chat_id, "Games menu:", buttons)
-          end
+          send_or_edit_with_buttons(chat_id, "Games menu:", buttons, message_id: message_id)
         end
 
         def owner_display(user)
-          return nil unless user
-
-          # prefer telegram nick
-          if user.respond_to?(:telegram_username) && user.telegram_username.to_s.strip.present?
-            "@#{user.telegram_username.to_s.strip.delete_prefix('@')}"
-          elsif user.respond_to?(:username) && user.username.to_s.strip.present?
-            "@#{user.username.to_s.strip.delete_prefix('@')}"
-          else
-            user.name.to_s.strip.presence || "User"
-          end
+          Telegram::Helpers::UserLookup.display_name(user)
         end
 
         # Return label used in games lists (shared formatter used everywhere)
         # owner: override whose nick is shown (default: game.user)
         def game_label(g, owner: nil)
-          date = game_datetime_for_ui(g)
-
-          # safe title extraction: prefer title, then sport
-          title =
-            if g.respond_to?(:has_attribute?) && g.has_attribute?(:title)
-              g.title.to_s.strip.presence
-            elsif g.respond_to?(:sport)
-              g.sport.to_s.strip.presence
-            else
-              nil
-            end
+          date = Telegram::Helpers::GameFormatting.game_datetime(g)
+          title = Telegram::Helpers::GameFormatting.game_title(g)
 
           required = (g.respond_to?(:players_count) && g.players_count.to_i > 0) ? g.players_count.to_i : 4
           approved_count =
@@ -69,48 +47,32 @@ module Telegram
         def list_page(chat_id, page = 1, message_id: nil)
           page = page.to_i < 1 ? 1 : page.to_i
 
-          # Город текущего пользователя — игры в его городе будут показаны первыми
-          current_user = User.find_by(telegram_chat_id: chat_id)
-          user_city = current_user&.city_name.to_s.strip.downcase.presence
-
-          # 1. Загружаем повторяющиеся, будущие и недавние прошедшие игры.
-          all_games = Game.includes(:user, :court, :participations, :prebooking_cancellations)
-                          .where("recurring = ? OR date >= ?", true, 7.days.ago.to_date)
+          all_games = Game.includes(:user, :participations, :prebooking_cancellations)
+                          .where("recurring = ? OR date >= ?", true, Date.current)
                           .to_a
 
-          # 2. Предварительно вычисляем ключи сортировки (Дата и Время как число),
-          # чтобы не делать тяжелых вычислений внутри sort_by.
           today = Date.current
-          # Получаем текущее время как число HHMM (например, 2130 для 21:30)
           now = Time.zone.now
           now_hhmm = now.hour * 100 + now.min
 
-          # Преобразуем массив игр в массив хешей с готовыми ключами
           mapped_games = all_games.map do |g|
-            # display_date_for_show используем из модели (с оптимизацией cancelled_on?)
             d = g.display_date_for_show
-            # Если даты нет (всё отменено), кидаем в конец времен (9999 год)
             sort_date = d || Date.new(9999, 12, 31)
 
-            # Вычисляем время как число (integer), чтобы сравнение было мгновенным
-            # g.next_time может быть Time или String
-            t_obj = g.respond_to?(:next_time) ? g.next_time : g.time
+            t_obj = Telegram::Helpers::GameFormatting.resolve_time(g)
             hhmm = 0
             if t_obj.respond_to?(:strftime)
               hhmm = t_obj.strftime("%H%M").to_i
             elsif t_obj.to_s.include?(":")
               parts = t_obj.to_s.split(":")
-              # часы * 100 + минуты
               hhmm = parts[0].to_i * 100 + parts[1].to_i
             end
 
-            # Определяем, игра в будущем или прошлом (для разделения списков)
             is_future = if sort_date > today
                           true
                         elsif sort_date < today
                           false
                         else
-                          # Если сегодня — сравниваем время
                           hhmm >= now_hhmm
                         end
 
@@ -124,16 +86,13 @@ module Telegram
             { game: g, date: sort_date, time: hhmm, is_future: is_future, city_rank: same_city }
           end
 
-          # 3. Разделяем списки (Upcoming vs Past), используя булеан is_future
           future_items, past_items = mapped_games.partition { |item| item[:is_future] }
 
-          # 4. Сортируем: сначала свой город, потом по дате и времени.
-          sorter = ->(item) { [item[:city_rank], item[:date], item[:time]] }
+          sorter = ->(item) { [item[:date], item[:time]] }
 
           sorted_future = future_items.sort_by(&sorter)
           sorted_past   = past_items.sort_by(&sorter)
 
-          # 5. Собираем обратно объекты Game и применяем пагинацию
           sorted_games = (sorted_future + sorted_past).map { |item| item[:game] }
 
           total = sorted_games.size
@@ -159,11 +118,7 @@ module Telegram
 
           buttons << [ { text: "Main menu", callback_data: "menu:main" } ]
 
-          if message_id
-            Telegram::Api.edit_message_with_buttons(chat_id, message_id, header, buttons)
-          else
-            Telegram::Api.send_with_buttons(chat_id, header, buttons)
-          end
+          send_or_edit_with_buttons(chat_id, header, buttons, message_id: message_id)
         end
 
         # Show game card with action buttons (join, prebook, edit/delete if owner/admin, back)
@@ -182,30 +137,14 @@ module Telegram
           capacity = (game.respond_to?(:players_count) && game.players_count.to_i > 0) ? game.players_count.to_i : "?"
           players_line = "Players: #{participants_count}/#{capacity}"
           owner = User.find_by(id: game.user_id) rescue nil
-          owner_line =
-            if owner && owner.respond_to?(:telegram_username) && owner.telegram_username.present?
-              "Owner: @#{owner.telegram_username}"
-            elsif owner && owner.respond_to?(:username) && owner.username.present?
-              "Owner: @#{owner.username}"
-            elsif owner && owner.respond_to?(:name) && owner.name.present?
-              "Owner: #{owner.name}"
-            else
-              "Owner: #{owner&.telegram_chat_id || '—'}"
-            end
+          owner_name = Telegram::Helpers::UserLookup.display_name(owner, fallback: owner&.telegram_chat_id || "—")
+          owner_line = "Owner: #{owner_name}"
 
           host = ENV.fetch("APP_HOST", "https://getcourt.co")
           game_url = Rails.application.routes.url_helpers.game_url(game, host: host)
 
           lines = []
-          # safe title extraction: prefer title, then sport
-          title =
-            if game.respond_to?(:has_attribute?) && game.has_attribute?(:title)
-              game.title.to_s.strip.presence
-            elsif game.respond_to?(:sport)
-              game.sport.to_s.strip.presence
-            else
-              nil
-            end
+          title = Telegram::Helpers::GameFormatting.game_title(game)
 
           # always show either the title/sport or fallback to "Game", always with game id on the first line
           title_text = "#{title || 'Game'} ##{game.id}"
@@ -214,7 +153,7 @@ module Telegram
           coach = coach_badge_for(game)
           lines << "Coach: #{coach}" if coach.present?
 
-          when_str = game_datetime_for_ui(game)
+          when_str = Telegram::Helpers::GameFormatting.game_datetime(game)
           lines << "When: #{when_str}" if when_str.present?
 
           lines << players_line
@@ -224,7 +163,7 @@ module Telegram
 
           buttons = []
 
-          user = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
+          user = Telegram::Helpers::UserLookup.find_user(chat_id)
 
           participation = user ? game.participations.find_by(user_id: user.id) : nil
           direct_join = user && (user.admin? || user.id == game.user_id)
@@ -240,14 +179,12 @@ module Telegram
 
           row1 = [ join_btn ]
 
-          # показываем пребукинг только когда включён
           if game.prebooking_enabled? && (!game.respond_to?(:recurring?) || game.recurring?)
             row1 << { text: "Prebooking", callback_data: "game:prebook:#{game.id}" }
           end
 
           buttons << row1
 
-          # статистика: залочена до начала игры (по TZ создателя), после начала — открывает tg_fill
           can_fill_stats = user && (user.admin? || user.id == game.user_id)
 
           if game.started_for_ui?
@@ -271,11 +208,7 @@ module Telegram
 
           buttons << [ { text: "Back to games", callback_data: "menu:games:page:#{page}" } ]
 
-          if message_id
-            Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, buttons)
-          else
-            Telegram::Api.send_with_buttons(chat_id, text, buttons)
-          end
+          send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
         end
 
         private
@@ -283,7 +216,6 @@ module Telegram
         def coach_badge_for(game)
           return nil unless game
 
-          # mirror the same semantics used in [`GamesController#game_badges`](app/controllers/games_controller.rb)
           if game.respond_to?(:with_coach?) && game.with_coach?
             "With coach"
           elsif game.respond_to?(:needs_coach?) && game.needs_coach?
@@ -295,26 +227,13 @@ module Telegram
           end
         end
 
-        # Uses the same “occurrence” logic as UI: display_date_for_show -> next_date -> date
+        # Uses the same "occurrence" logic as UI: display_date_for_show -> next_date -> date
         # If time is missing, unlock at start of the day.
         def game_start_at_for_ui(g)
-          # IMPORTANT: this method relies on Time.zone (caller wraps Time.use_zone)
-          d =
-            if g.respond_to?(:display_date_for_show)
-              g.display_date_for_show
-            elsif g.respond_to?(:next_date)
-              g.next_date
-            elsif g.respond_to?(:date)
-              g.date
-            end
+          d = Telegram::Helpers::GameFormatting.resolve_date(g)
           return nil unless d.present?
 
-          t =
-            if g.respond_to?(:next_time)
-              g.next_time
-            elsif g.respond_to?(:time)
-              g.time
-            end
+          t = Telegram::Helpers::GameFormatting.resolve_time(g)
 
           date =
             if d.respond_to?(:to_date)
@@ -331,7 +250,7 @@ module Telegram
             hh = t.strftime("%H").to_i
             mm = t.strftime("%M").to_i
           else
-            s = format_time_hhmm(t)
+            s = Telegram::Helpers::GameFormatting.format_time_hhmm(t)
             if s.present?
               parts = s.split(":")
               hh = parts[0].to_i
@@ -340,48 +259,6 @@ module Telegram
           end
 
           Time.zone.local(date.year, date.month, date.day, hh, mm, 0)
-        end
-
-        # Prefer Game model occurrence logic: display_date_for_show -> next_date -> date.
-        # Keep output like "YYYY-MM-DD HH:MM" (as in the list now).
-        def game_datetime_for_ui(g)
-          d =
-            if g.respond_to?(:display_date_for_show)
-              g.display_date_for_show
-            elsif g.respond_to?(:next_date)
-              g.next_date
-            elsif g.respond_to?(:date)
-              g.date
-            end
-
-          return nil unless d.present?
-
-          t =
-            if g.respond_to?(:next_time)
-              g.next_time
-            elsif g.respond_to?(:time)
-              g.time
-            end
-
-          date_str = d.respond_to?(:strftime) ? d.strftime("%Y-%m-%d") : d.to_s
-          time_str = format_time_hhmm(t)
-
-          time_str.present? ? "#{date_str} #{time_str}" : date_str
-        end
-
-        def format_time_hhmm(t)
-          return nil if t.nil?
-          return t.strftime("%H:%M") if t.respond_to?(:strftime)
-
-          s = t.to_s.strip
-          return nil if s.empty?
-
-          parts = s.split(":")
-          return nil if parts.size < 2
-
-          hh = parts[0].to_i.to_s.rjust(2, "0")
-          mm = parts[1].to_i.to_s.rjust(2, "0")
-          "#{hh}:#{mm}"
         end
       end
     end
