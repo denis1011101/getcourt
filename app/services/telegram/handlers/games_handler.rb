@@ -47,6 +47,9 @@ module Telegram
         def list_page(chat_id, page = 1, message_id: nil)
           page = page.to_i < 1 ? 1 : page.to_i
 
+          user = Telegram::Helpers::UserLookup.find_user(chat_id)
+          user_city = user&.city_name.to_s.strip.downcase.presence
+
           all_games = Game.includes(:user, :participations, :prebooking_cancellations)
                           .where("recurring = ? OR date >= ?", true, Date.current)
                           .to_a
