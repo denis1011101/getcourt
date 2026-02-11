@@ -7,7 +7,12 @@ class GamesController < ApplicationController
   helper_method :display_date, :display_time, :game_badges
 
   def index
-    @games = Game.includes(:court, :tournament).order(:date, :time)
+    @games = Game.includes(:court, :tournament).order(:date, :time).to_a
+    if current_user&.city_name.present?
+      user_city = current_user.city_name.downcase
+      local, other = @games.partition { |g| g.court&.city_name.to_s.downcase == user_city }
+      @games = local + other
+    end
   end
 
   def show

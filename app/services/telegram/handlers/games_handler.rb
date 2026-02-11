@@ -76,7 +76,14 @@ module Telegram
                           hhmm >= now_hhmm
                         end
 
-            { game: g, date: sort_date, time: hhmm, is_future: is_future }
+            # Совпадает ли город корта с городом пользователя (0 = свой город, 1 = другой)
+            same_city = if user_city && g.court&.city_name.to_s.strip.downcase == user_city
+                          0
+                        else
+                          1
+                        end
+
+            { game: g, date: sort_date, time: hhmm, is_future: is_future, city_rank: same_city }
           end
 
           future_items, past_items = mapped_games.partition { |item| item[:is_future] }

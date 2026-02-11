@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_09_165303) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_10_060249) do
   create_table "cities", force: :cascade do |t|
     t.integer "geoname_id"
     t.string "name"
@@ -38,6 +38,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_09_165303) do
     t.string "contact_value"
     t.string "moderation_status", default: "pending", null: false
     t.datetime "approved_at"
+    t.string "city_name"
+    t.index ["city_name"], name: "index_courts_on_city_name"
     t.index ["moderation_status"], name: "index_courts_on_moderation_status"
     t.index ["user_id"], name: "index_courts_on_user_id"
   end

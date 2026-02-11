@@ -15,12 +15,13 @@ class Geocoding::FetchCourtAddressJob < ApplicationJob
     cache_key = "addr:#{lat},#{lng}"
 
     # try Google first, then Nominatim via resilient HTTP call
-    value = court.send(:geocode_google, lat, lng)
-    value ||= geocode_nominatim_http(lat, lng)
+    result = court.send(:geocode_google_full, lat, lng)
+    result ||= geocode_nominatim_structured(lat, lng)
 
-    if value.present?
-      Rails.cache.write(cache_key, value, expires_in: 1.day)
-      Rails.logger.info "[Geocoding] cached address for Court##{court.id} -> #{value}"
+    if result.is_a?(Hash) && result[:address].present?
+      Rails.cache.write(cache_key, result[:address], expires_in: 1.day)
+      court.update_column(:city_name, result[:city_name]) if result[:city_name].present?
+      Rails.logger.info "[Geocoding] cached address for Court##{court.id} -> #{result[:address]} (city: #{result[:city_name]})"
     else
       Rails.logger.warn "[Geocoding] no address resolved for Court##{court.id}"
     end
@@ -30,7 +31,7 @@ class Geocoding::FetchCourtAddressJob < ApplicationJob
 
   private
 
-  def geocode_nominatim_http(lat, lng)
+  def geocode_nominatim_structured(lat, lng)
     uri = URI.parse("https://nominatim.openstreetmap.org/reverse?format=json&lat=#{lat}&lon=#{lng}&accept-language=en")
     req = Net::HTTP::Get.new(uri)
     req['User-Agent'] = "GetCourt/1.0 (denisdenis9331@gmail.com)"
@@ -50,6 +51,11 @@ class Geocoding::FetchCourtAddressJob < ApplicationJob
 
     return nil unless res&.is_a?(Net::HTTPSuccess)
     data = JSON.parse(res.body) rescue nil
-    data && data['display_name']
+    return nil unless data
+
+    addr = data["address"]
+    city_name = addr && (addr["city"] || addr["town"] || addr["village"] || addr["municipality"])
+
+    { address: data["display_name"], city_name: city_name }
   end
 end

@@ -101,8 +101,14 @@ class Court < ApplicationRecord
   end
 
   def geocode_google(lat, lng)
+    result = geocode_google_full(lat, lng)
+    result&.dig(:address)
+  end
+
+  # Returns { address: "Street, City, Country", city_name: "City" }
+  def geocode_google_full(lat, lng)
     key = ENV["GOOGLE_GEOCODING_API_KEY"]
-    return nil if key.to_s.strip.empty? # нет серверного ключа — пропускаем
+    return nil if key.to_s.strip.empty?
 
     url = URI("https://maps.googleapis.com/maps/api/geocode/json?latlng=#{lat},#{lng}&key=#{key}&language=en")
     data = fetch_json(url)
@@ -115,7 +121,9 @@ class Court < ApplicationRecord
     country = gcomp(components, "country")
 
     street_line = [street, number].compact.join(" ").presence
-    [street_line, city, country].compact.join(", ").presence
+    address = [street_line, city, country].compact.join(", ").presence
+
+    { address: address, city_name: city }
   rescue => e
     Rails.logger.warn("Google geocoding error: #{e.message} (status=#{data&.dig('status')} msg=#{data&.dig('error_message')})")
     nil
