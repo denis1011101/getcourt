@@ -11,6 +11,12 @@ module Telegram
         nil
       end
 
+      # Find user and return their locale (shortcut for i18n)
+      def self.locale_for(chat_id)
+        user = find_user(chat_id)
+        Telegram::I18n.locale_for(user)
+      end
+
       # Returns the best display name for a user: @telegram_username > @username > name > fallback
       def self.display_name(user, fallback: "User")
         return fallback unless user

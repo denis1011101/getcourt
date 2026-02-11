@@ -5,32 +5,39 @@ module Telegram
         include Telegram::Handlers::ReplyHelpers
 
         def menu(chat_id, message_id: nil)
-          buttons = [
-            [{ text: "Edit profile", callback_data: "profile:edit" }],
-            [{ text: "Main menu",  callback_data: "menu:main" }]
-          ]
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
-          send_or_edit_with_buttons(chat_id, "Profile:", buttons, message_id: message_id)
+          buttons = [
+            [{ text: t.(:edit_profile), callback_data: "profile:edit" }],
+            [{ text: t.(:main_menu_btn), callback_data: "menu:main" }]
+          ]
+          send_or_edit_with_buttons(chat_id, "#{t.(:profile)}:", buttons, message_id: message_id)
         end
 
         def show_profile(chat_id, message_id: nil)
           user = Telegram::Helpers::UserLookup.find_user(chat_id)
-          return Telegram::Api.send_simple(chat_id, "No linked account. Send /start first.") unless user
+          locale = Telegram::I18n.locale_for(user)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+
+          return Telegram::Api.send_simple(chat_id, t.(:no_linked_account)) unless user
 
           presenter = Telegram::Presenters::ProfilePresenter.new(user)
+          lang_label = locale == "ru" ? "Русский" : "English"
 
           lines = []
-          lines << "*Profile:*"
-          lines << "Email: #{presenter.email_label}"
-          lines << "Sports: #{presenter.sports_label}"
-          lines << "City: #{presenter.city_label}"
-          lines << "Coach: #{presenter.coach_label}"
-          lines << "Notify nearby searches: #{presenter.notify_label}"
+          lines << t.(:profile_title)
+          lines << t.(:email_label, value: presenter.email_label)
+          lines << t.(:sports_label, value: presenter.sports_label)
+          lines << t.(:city_label, value: presenter.city_label)
+          lines << t.(:coach_label, value: presenter.coach_label)
+          lines << t.(:notify_label, value: presenter.notify_label)
+          lines << t.(:language_label, value: lang_label)
           text = lines.join("\n")
 
           buttons = [
-            [{ text: "Edit profile", callback_data: "profile:edit" }],
-            [{ text: "Main menu",  callback_data: "menu:main" }]
+            [{ text: t.(:edit_profile), callback_data: "profile:edit" }],
+            [{ text: t.(:main_menu_btn), callback_data: "menu:main" }]
           ]
 
           send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)

@@ -1,41 +1,41 @@
 module Telegram
   module Handlers
     class MessageHandler
-      # handle incoming Telegram "message" updates (force-reply flows etc.)
       def self.handle(message)
         message = message.to_h if message.respond_to?(:to_h)
         chat_id = message.dig("chat", "id") || message.dig("from", "id")
         return true unless chat_id
 
+        locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+        t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+
         return true if Telegram::Flows::Games::InviteFlow.handle_message(message) rescue false
 
-        # route edit-in-progress flow (started by EditPrompter) — handle ordinary messages first
         if Rails.cache.read("telegram:edit:chat:#{chat_id}")
           Telegram::Flows::Games::EditResponder.handle_message(message) rescue nil
           return
         end
 
-        # handle bot commands (/create_game, /create_court, /all_games, /my_games)
         text = message["text"].to_s
         if text.start_with?("/")
           case text.split.first
           when /\A\/create_game(@|$)/
-            Api.send_simple(chat_id, "TODO: /create_game flow (not implemented)")
+            Telegram::Flows::Games::Manage::CreateFlow.start_create_game(chat_id)
             return
           when /\A\/create_court(@|$)/
-            Api.send_simple(chat_id, "TODO: /create_court flow (not implemented)")
+            Api.send_simple(chat_id, t.(:create_court_prompt))
             return
           when /\A\/all_games(@|$)/
             list = Game.includes(:user).order(id: :desc).limit(20).map { |g| game_line_for_command(g) }.join("\n")
-            Api.send_simple(chat_id, list.presence || "No games found")
+            Api.send_simple(chat_id, list.presence || t.(:no_games_on_page))
             return
           when /\A\/my_games(@|$)/
             user = Telegram::Helpers::UserLookup.find_user(chat_id)
             if user
               list = user.games.includes(:user).order(id: :desc).limit(20).map { |g| game_line_for_command(g) }.join("\n")
-              Api.send_simple(chat_id, list.presence || "You have no games")
+              Api.send_simple(chat_id, list.presence || t.(:no_games_on_page))
             else
-              Api.send_simple(chat_id, "User not found")
+              Api.send_simple(chat_id, t.(:user_not_found))
             end
             return
           end
@@ -44,15 +44,13 @@ module Telegram
         key = "tg:conv:#{chat_id}"
         conv = Rails.cache.read(key) || {}
 
-        # conversational flow to collect full statistics
         if conv["step"]
           text = message["text"].to_s.strip
           if text.blank?
-            Api.send_force_reply(chat_id, conv["prompt"] || "Please reply.")
+            Api.send_force_reply(chat_id, conv["prompt"] || t.(:please_reply))
             return
           end
 
-          # allow skipping a step
           if text.downcase == "skip"
             conv["fields"] ||= {}
             conv["fields"][conv["step"]] = nil
@@ -60,33 +58,32 @@ module Telegram
             case conv["step"]
             when "singles_hours", "doubles_hours"
               unless text.match?(/\A\d+(\.\d+)?\z/)
-                Api.send_force_reply(chat_id, "Please reply with a number like 1.5 or type 'skip'.")
+                Api.send_force_reply(chat_id, t.(:stats_reply_number))
                 return
               end
               conv["fields"] ||= {}
               conv["fields"][conv["step"]] = text.to_f
             when "singles_games", "singles_wins", "doubles_games", "doubles_wins", "aces", "double_faults"
               unless text.match?(/\A\d+\z/)
-                Api.send_force_reply(chat_id, "Please reply with an integer (0,1,2...) or type 'skip'.")
+                Api.send_force_reply(chat_id, t.(:stats_reply_integer))
                 return
               end
               conv["fields"] ||= {}
               conv["fields"][conv["step"]] = text.to_i
             when "first_serve_pct"
               unless text.match?(/\A\d+(\.\d+)?\z/) && text.to_f.between?(0, 100)
-                Api.send_force_reply(chat_id, "Please reply with percent 0-100 (e.g. 62.5) or type 'skip'.")
+                Api.send_force_reply(chat_id, t.(:stats_reply_percent))
                 return
               end
               conv["fields"] ||= {}
               conv["fields"][conv["step"]] = text.to_f
             else
-              Api.send_simple(chat_id, "Unexpected step, aborting.")
+              Api.send_simple(chat_id, t.(:unexpected_step))
               Rails.cache.delete(key)
               return
             end
           end
 
-          # advance to next step sequence
           steps = %w[
             singles_hours doubles_hours
             singles_games singles_wins
@@ -98,23 +95,21 @@ module Telegram
 
           if next_step
             conv["step"] = next_step
-            conv["prompt"] = prompt_for(next_step)
+            conv["prompt"] = prompt_for(next_step, locale)
             Rails.cache.write(key, conv, expires_in: 2.hours)
             Api.send_force_reply(chat_id, conv["prompt"])
             return
           end
 
-          # finished collecting — persist into PlayerStatistic
           fields = conv["fields"] || {}
           user = Telegram::Helpers::UserLookup.find_user(chat_id)
           unless user
-            Api.send_simple(chat_id, "User not found — cannot record statistics.")
+            Api.send_simple(chat_id, t.(:stats_user_not_found))
             Rails.cache.delete(key)
             return
           end
 
           ps = user.player_statistic || user.create_player_statistic!
-          # accumulate / increment where appropriate
           ps.with_lock do
             ps.update!(
               singles_hours: (ps.singles_hours.to_f + (fields["singles_hours"].to_f)).round(2),
@@ -132,44 +127,33 @@ module Telegram
             )
           end
 
-          Api.send_simple(chat_id, "Statistics recorded. Thank you.")
+          Api.send_simple(chat_id, t.(:stats_recorded))
           Rails.cache.delete(key)
           return
         end
 
-        # no active flow — ignore or log
         Rails.logger.info("[Telegram::MessageHandler] Unhandled message from #{chat_id}: #{message.keys}")
       rescue => e
         Rails.logger.error("[Telegram::MessageHandler] #{e.class}: #{e.message}\n#{e.backtrace.first(8).join("\n")}")
-        Api.send_simple(chat_id, "Processing error.") rescue nil
+        Api.send_simple(chat_id, Telegram::I18n.t(:processing_error)) rescue nil
       end
 
-      def self.prompt_for(step)
-        case step
-        when "singles_hours"
-          "Please reply with singles hours (example: 1.5) or type 'skip'."
-        when "doubles_hours"
-          "Please reply with doubles hours (example: 1.5) or type 'skip'."
-        when "singles_games"
-          "How many singles games were played? (integer) or 'skip'."
-        when "singles_wins"
-          "How many singles wins? (integer) or 'skip'."
-        when "doubles_games"
-          "How many doubles games were played? (integer) or 'skip'."
-        when "doubles_wins"
-          "How many doubles wins? (integer) or 'skip'."
-        when "aces"
-          "Number of aces (integer) or 'skip'."
-        when "double_faults"
-          "Number of double faults (integer) or 'skip'."
-        when "first_serve_pct"
-          "First serve percent (0-100, e.g. 62.5) or 'skip'."
-        else
-          "Please reply."
-        end
+      def self.prompt_for(step, locale = "ru")
+        key = case step
+              when "singles_hours"  then :stats_reply_singles_hours
+              when "doubles_hours"  then :stats_reply_doubles_hours
+              when "singles_games"  then :stats_reply_singles_games
+              when "singles_wins"   then :stats_reply_singles_wins
+              when "doubles_games"  then :stats_reply_doubles_games
+              when "doubles_wins"   then :stats_reply_doubles_wins
+              when "aces"           then :stats_reply_aces
+              when "double_faults"  then :stats_reply_double_faults
+              when "first_serve_pct" then :stats_reply_first_serve_pct
+              else :please_reply
+              end
+        Telegram::I18n.t(key, locale: locale)
       end
 
-      # --- helpers for /all_games and /my_games ---
       def self.game_line_for_command(g)
         when_str = Telegram::Helpers::GameFormatting.game_datetime(g)
         sport = (g.respond_to?(:sport) ? g.sport.to_s.strip.presence : nil)

@@ -7,6 +7,8 @@ module Telegram
             def handle_callback(callback)
               cb = Telegram::Helpers::CallbackData.parse(callback)
               poller = Telegram::Poller.new
+              locale = Telegram::Helpers::UserLookup.locale_for(cb.chat_id)
+              t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
               case cb.data
               when /\Agame:create:field:(\w+):(\d+)\z/
@@ -23,7 +25,7 @@ module Telegram
               when /\Agame:create:cancel:(\d+)(?::(\d+))?\z/
                 gid = $1.to_i
                 orig_msg_id = $2 ? $2.to_i : nil
-                poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id, text: "Create cancelled", show_alert: false }) rescue nil
+                poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id, text: t.(:create_game_cancelled), show_alert: false }) rescue nil
                 begin
                   game = Game.find_by(id: gid)
                   if game
@@ -51,17 +53,20 @@ module Telegram
             end
 
             def start_create_game(chat_id, cb_id: nil)
+              locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+              t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+
               poller = Telegram::Poller.new
               user = Telegram::Helpers::UserLookup.find_user(chat_id)
               if user
-                poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Create game — reply with details", show_alert: false }) rescue nil
+                poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: t.(:create_game_reply), show_alert: false }) rescue nil
                 poller.send_api("sendMessage", {
                   chat_id: chat_id,
-                  text: "GAME_PROMPT\nReply with: date(YYYY-MM-DD) time(HH:MM) players_count sport [court_id]\nExample:\n2025-12-10 19:00 4 tennis 12",
+                  text: "GAME_PROMPT\n#{t.(:create_game_prompt)}",
                   reply_markup: { force_reply: true, selective: true }
                 }) rescue nil
               else
-                poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "No linked account. Send /start first.", show_alert: false }) rescue nil
+                poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: t.(:no_linked_account), show_alert: false }) rescue nil
               end
             rescue => e
               Rails.logger.error "[Telegram::Flows::Games::Manage::CreateFlow] start_create_game error: #{e.class} #{e.message}"

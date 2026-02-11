@@ -5,13 +5,18 @@ module Telegram
         include Telegram::Handlers::ReplyHelpers
 
         def menu(chat_id, message_id: nil)
-          text = "Main menu:"
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
+          text = t.(:main_menu)
           buttons = [
-            [{ text: "Courts",  callback_data: "menu:courts:page:1" }],
-            [{ text: "Games",   callback_data: "menu:games:page:1" }],
-            # [{ text: "Search",  callback_data: "menu:search" }],
-            [{ text: "Profile", callback_data: "profile:show" }]
+            [{ text: t.(:create_game),              callback_data: "game:create" }],
+            [{ text: t.(:find_game),                 callback_data: "menu:games:page:1" }],
+            [{ text: t.(:create_court),              callback_data: "court:create" }],
+            [{ text: t.(:find_coach),                callback_data: "menu:find_coach:page:1" }],
+            [{ text: t.(:games_looking_for_player),  callback_data: "menu:games_need_players:page:1" }],
+            [{ text: t.(:tennis_life),               callback_data: "menu:tennis_life" }],
+            [{ text: t.(:profile),                   callback_data: "profile:show" }]
           ]
 
           send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)

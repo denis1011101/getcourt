@@ -16,6 +16,15 @@ module Telegram
           return true
         end
 
+        # Coach card
+        if data.match?(/\Acoach:show:/)
+          cb = Telegram::Helpers::CallbackData.parse(callback_query)
+          coach_id = data.split(":")[2].to_i
+          Telegram::Api.answer_callback(cb.cb_id, "") rescue nil
+          Telegram::Handlers::FindCoachHandler.show_coach(cb.chat_id, coach_id, message_id: cb.message_id)
+          return true
+        end
+
         # TG statistics flow (callbacks)
         if data.match?(/\Atg_fill(?::|_)/)
           Telegram::Flows::StatsFlow.handle_callback(callback_query)

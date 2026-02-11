@@ -16,6 +16,23 @@ module Telegram
           Telegram::Handlers::SearchHandler.menu(cb.chat_id) rescue nil
           true
 
+        when /\Amenu:find_coach(?::page:(\d+))?\z/
+          page = ($1 || 1).to_i
+          Telegram::Api.answer_callback(cb.cb_id, "") rescue nil
+          Telegram::Handlers::FindCoachHandler.list_page(cb.chat_id, page, message_id: cb.message_id) rescue nil
+          true
+
+        when /\Amenu:games_need_players(?::page:(\d+))?\z/
+          page = ($1 || 1).to_i
+          Telegram::Api.answer_callback(cb.cb_id, "") rescue nil
+          Telegram::Handlers::GamesNeedPlayersHandler.list_page(cb.chat_id, page, message_id: cb.message_id) rescue nil
+          true
+
+        when "menu:tennis_life"
+          Telegram::Api.answer_callback(cb.cb_id, "") rescue nil
+          Telegram::Handlers::TennisLifeMenuHandler.show(cb.chat_id, message_id: cb.message_id) rescue nil
+          true
+
         else
           false
         end
