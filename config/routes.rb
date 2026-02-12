@@ -46,7 +46,7 @@ Rails.application.routes.draw do
       post :reject
     end
   end
-  root "courts#index"
+  root "games#index"
   resources :games do
     collection do
       get :prebooking_fragment

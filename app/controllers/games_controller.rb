@@ -7,7 +7,28 @@ class GamesController < ApplicationController
   helper_method :display_date, :display_time, :game_badges
 
   def index
-    @games = Game.includes(:court, :tournament).order(:date, :time).to_a
+    @sports = Game.where.not(sport: [ nil, "" ]).distinct.order(:sport).pluck(:sport)
+    @skill_levels = Game.where.not(skill_level: [ nil, "" ]).distinct.order(:skill_level).pluck(:skill_level)
+    @cities = Court.where.not(city_name: [ nil, "" ]).distinct.order(:city_name).pluck(:city_name)
+
+    scoped_games = Game.includes(:court, :tournament, :participations).order(:date, :time)
+    scoped_games = scoped_games.where(sport: params[:sport]) if params[:sport].present?
+    scoped_games = scoped_games.where(skill_level: params[:skill_level]) if params[:skill_level].present?
+
+    if params[:city].present?
+      scoped_games = scoped_games.joins(:court).where("LOWER(courts.city_name) = ?", params[:city].downcase)
+    end
+
+    @games = scoped_games.to_a
+
+    if params[:with_spots].present?
+      @games = @games.select do |game|
+        required = game.players_count.to_i > 0 ? game.players_count.to_i : 4
+        approved_participations = game.participations.respond_to?(:approved) ? game.participations.approved : game.participations
+        approved_participations.size < required
+      end
+    end
+
     if current_user&.city_name.present?
       user_city = current_user.city_name.downcase
       local, other = @games.partition { |g| g.court&.city_name.to_s.downcase == user_city }
