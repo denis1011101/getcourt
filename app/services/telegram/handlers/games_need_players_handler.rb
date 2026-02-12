@@ -50,7 +50,7 @@ module Telegram
           end
 
           buttons = games.map do |g|
-            label = Telegram::Handlers::GamesHandler.game_label(g)
+            label = Telegram::Handlers::GamesHandler.game_label(g, locale: locale)
             [{ text: label, callback_data: "game:show:#{g.id}:1" }]
           end
 

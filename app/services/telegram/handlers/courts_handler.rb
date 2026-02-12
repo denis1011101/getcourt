@@ -18,8 +18,8 @@ module Telegram
           send_or_edit_with_buttons(chat_id, t.(:courts_menu), buttons, message_id: message_id)
         end
 
-        def game_label(g)
-          Telegram::Handlers::GamesHandler.game_label(g)
+        def game_label(g, locale: Telegram::I18n::DEFAULT_LOCALE)
+          Telegram::Handlers::GamesHandler.game_label(g, locale: locale)
         end
 
         def list_page(chat_id, page = 1, message_id: nil)
@@ -82,7 +82,7 @@ module Telegram
           end
 
           buttons = games.map do |g|
-            label = Telegram::Handlers::GamesHandler.game_label(g)
+            label = Telegram::Handlers::GamesHandler.game_label(g, locale: locale)
             [{ text: label, callback_data: "game:show:#{g.id}:1" }]
           end
 

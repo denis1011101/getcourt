@@ -23,8 +23,8 @@ module Telegram
         end
 
         # Return label used in games lists (shared formatter used everywhere)
-        # owner: override whose nick is shown (default: game.user)
-        def game_label(g, owner: nil)
+        # locale: pass the active locale so spots-left text is correctly localised
+        def game_label(g, owner: nil, locale: Telegram::I18n::DEFAULT_LOCALE)
           date = Telegram::Helpers::GameFormatting.game_datetime(g)
           title = Telegram::Helpers::GameFormatting.game_title(g)
 
@@ -38,7 +38,7 @@ module Telegram
           taken = approved_count
           spots_left = required - taken
           spots_left = 0 if spots_left.negative?
-          spots_text = Telegram::I18n.spots_left_text(spots_left)
+          spots_text = Telegram::I18n.spots_left_text(spots_left, locale: locale)
 
           # Always add game ID to title/sport
           title_with_id = "#{title || (g.respond_to?(:title) && g.title.to_s.presence) || 'Game'} ##{g.id}"
@@ -116,7 +116,7 @@ module Telegram
           end
 
           buttons = games.map do |g|
-            [ { text: game_label(g), callback_data: "game:show:#{g.id}:#{page}" } ]
+            [ { text: game_label(g, locale: locale), callback_data: "game:show:#{g.id}:#{page}" } ]
           end
 
           nav = []
@@ -161,7 +161,7 @@ module Telegram
           lines << "*#{title_text}*"
 
           coach = coach_badge_for(game, locale)
-          lines << "#{t.(:coach_label, name: '')}#{coach}" if coach.present?
+          lines << t.(:coach_label, value: coach) if coach.present?
 
           when_str = Telegram::Helpers::GameFormatting.game_datetime(game)
           lines << t.(:when_label, datetime: when_str) if when_str.present?
