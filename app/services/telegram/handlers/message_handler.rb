@@ -23,7 +23,7 @@ module Telegram
             Telegram::Flows::Games::Manage::CreateFlow.start_create_game(chat_id)
             return
           when /\A\/create_court(@|$)/
-            Api.send_simple(chat_id, t.(:create_court_prompt))
+            Telegram::Flows::CourtCreateFlow.start(chat_id)
             return
           when /\A\/all_games(@|$)/
             list = Game.includes(:user).order(id: :desc).limit(20).map { |g| game_line_for_command(g) }.join("\n")

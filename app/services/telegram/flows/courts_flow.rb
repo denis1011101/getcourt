@@ -124,23 +124,10 @@ module Telegram
           })
         end
 
-        # Start create court flow (from menu)
+        # Start create court flow (from menu) — delegates to new step-by-step flow
         def start_create_court(chat_id, cb_id: nil)
-          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
-          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
-
-          poller = Telegram::Poller.new
-          user = Telegram::Helpers::UserLookup.find_user(chat_id)
-          if user
-            poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: t.(:create_court_reply), show_alert: false }) rescue nil
-            poller.send_api("sendMessage", {
-              chat_id: chat_id,
-              text: "COURT_PROMPT\n#{t.(:create_court_prompt)}",
-              reply_markup: { force_reply: true, selective: true }
-            })
-          else
-            poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: t.(:no_linked_account), show_alert: false }) rescue nil
-          end
+          Telegram::Api.answer_callback(cb_id, "") rescue nil
+          Telegram::Flows::CourtCreateFlow.start(chat_id)
         end
 
         # Delete a court (permission check)

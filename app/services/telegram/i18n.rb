@@ -37,6 +37,7 @@ module Telegram
       games_looking_for_player: "Игры ищут игрока",
       tennis_life: "Теннис лайф",
       profile: "Профиль",
+      rating: "Рейтинг",
 
       # Games
       games_menu: "Меню игр:",
@@ -83,14 +84,54 @@ module Telegram
       no_games_on_court_page: "Нет игр на этой странице.",
       back_to_court: "Назад к корту",
 
-      # Create game
+      # Create game — step-by-step
       create_game_prompt: "Ответьте с данными: дата(ГГГГ-ММ-ДД) время(ЧЧ:ММ) кол-во_игроков вид_спорта [id_корта]\nПример:\n2025-12-10 19:00 4 tennis 12",
       create_game_reply: "Создание игры — ответьте с деталями",
-      create_game_cancelled: "Создание отменено",
+      create_game_cancelled: "Создание игры отменено.",
+      create_game_step: "Создание игры (шаг %{step}/%{total})",
+      create_game_date: "Введите дату игры (ГГГГ-ММ-ДД):",
+      create_game_date_invalid: "Неверный формат даты. Используйте ГГГГ-ММ-ДД (например, 2026-03-15).",
+      create_game_date_past: "Нельзя создать игру в прошлом. Введите будущую дату.",
+      create_game_time: "Введите время начала (ЧЧ:ММ):",
+      create_game_time_invalid: "Неверный формат времени. Используйте ЧЧ:ММ (например, 19:00).",
+      create_game_players: "Сколько игроков нужно?",
+      create_game_players_invalid: "Введите число от 2 до 30.",
+      create_game_court: "Выберите корт:",
+      create_game_court_new: "Создать новый корт",
+      create_game_no_courts: "У вас нет кортов. Создайте первый.",
+      create_game_recurring: "Повторять еженедельно?",
+      create_game_prebooking: "Включить предбронирование?",
+      create_game_with_coach: "С тренером?",
+      create_game_sport: "Выберите вид спорта:",
+      create_game_skill: "Выберите требуемый уровень:",
+      create_game_any_level: "Любой уровень",
+      create_game_success: "Игра создана!",
+      create_game_error: "Не удалось создать игру: %{error}",
+      cancel_btn: "Отмена",
+      skip_btn: "Пропустить",
 
-      # Create court
+      # Create court — step-by-step
       create_court_prompt: "Ответьте с информацией о корте:\nНазвание; широта,долгота; тип_контакта:контакт\nПример:\nЦентральный корт; 55.7558,37.6173; telegram:ivan123",
       create_court_reply: "Создание корта — ответьте с деталями",
+      create_court_cancelled: "Создание корта отменено.",
+      create_court_step: "Создание корта (шаг %{step}/%{total})",
+      create_court_name: "Введите название корта:",
+      create_court_name_invalid: "Название не может быть пустым.",
+      create_court_location: "Отправьте локацию корта (кнопка ниже) или введите координаты (широта,долгота):",
+      create_court_location_btn: "Отправить локацию",
+      create_court_location_invalid: "Не удалось определить координаты. Отправьте локацию или введите широта,долгота.",
+      create_court_contact_type: "Выберите тип контакта:",
+      create_court_contact_value: "Введите контактные данные (номер, юзернейм и т.д.):",
+      create_court_success: "Корт создан!",
+      create_court_error: "Не удалось создать корт: %{error}",
+
+      # Rating
+      rating_title: "Рейтинг игроков:",
+      rating_page: "Рейтинг — стр. %{page}/%{pages}",
+      no_rating_data: "Пока нет данных для рейтинга.",
+      rating_row: "%{rank}. %{name} — %{games} игр, %{wins} побед (%{pct}%)",
+      rating_games: "игр",
+      rating_wins: "побед",
 
       # Profile
       profile_title: "*Профиль:*",
@@ -219,6 +260,7 @@ module Telegram
       games_looking_for_player: "Games looking for player",
       tennis_life: "Tennis life",
       profile: "Profile",
+      rating: "Rating",
 
       # Games
       games_menu: "Games menu:",
@@ -265,14 +307,54 @@ module Telegram
       no_games_on_court_page: "No games on this page.",
       back_to_court: "Back to court",
 
-      # Create game
+      # Create game — step-by-step
       create_game_prompt: "Reply with: date(YYYY-MM-DD) time(HH:MM) players_count sport [court_id]\nExample:\n2025-12-10 19:00 4 tennis 12",
       create_game_reply: "Create game — reply with details",
-      create_game_cancelled: "Create cancelled",
+      create_game_cancelled: "Game creation cancelled.",
+      create_game_step: "Create game (step %{step}/%{total})",
+      create_game_date: "Enter game date (YYYY-MM-DD):",
+      create_game_date_invalid: "Invalid date format. Use YYYY-MM-DD (e.g. 2026-03-15).",
+      create_game_date_past: "Cannot create a game in the past. Enter a future date.",
+      create_game_time: "Enter start time (HH:MM):",
+      create_game_time_invalid: "Invalid time format. Use HH:MM (e.g. 19:00).",
+      create_game_players: "How many players?",
+      create_game_players_invalid: "Enter a number from 2 to 30.",
+      create_game_court: "Select a court:",
+      create_game_court_new: "Create new court",
+      create_game_no_courts: "You have no courts. Create your first one.",
+      create_game_recurring: "Repeat weekly?",
+      create_game_prebooking: "Enable prebooking?",
+      create_game_with_coach: "With coach?",
+      create_game_sport: "Select sport:",
+      create_game_skill: "Select required level:",
+      create_game_any_level: "Any level",
+      create_game_success: "Game created!",
+      create_game_error: "Failed to create game: %{error}",
+      cancel_btn: "Cancel",
+      skip_btn: "Skip",
 
-      # Create court
+      # Create court — step-by-step
       create_court_prompt: "Reply with court info:\nName; lat,lon; contact_type:contact_value\nExample:\nCentral Court; 55.7558,37.6173; telegram:ivan123",
       create_court_reply: "Create court — reply with details",
+      create_court_cancelled: "Court creation cancelled.",
+      create_court_step: "Create court (step %{step}/%{total})",
+      create_court_name: "Enter court name:",
+      create_court_name_invalid: "Name cannot be empty.",
+      create_court_location: "Send court location (button below) or enter coordinates (lat,lon):",
+      create_court_location_btn: "Send location",
+      create_court_location_invalid: "Could not determine coordinates. Send a location or enter lat,lon.",
+      create_court_contact_type: "Select contact type:",
+      create_court_contact_value: "Enter contact details (phone number, username, etc.):",
+      create_court_success: "Court created!",
+      create_court_error: "Failed to create court: %{error}",
+
+      # Rating
+      rating_title: "Player rating:",
+      rating_page: "Rating — page %{page}/%{pages}",
+      no_rating_data: "No rating data yet.",
+      rating_row: "%{rank}. %{name} — %{games} games, %{wins} wins (%{pct}%)",
+      rating_games: "games",
+      rating_wins: "wins",
 
       # Profile
       profile_title: "*Profile:*",

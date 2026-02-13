@@ -28,6 +28,12 @@ module Telegram
           Telegram::Handlers::GamesNeedPlayersHandler.list_page(cb.chat_id, page, message_id: cb.message_id) rescue nil
           true
 
+        when /\Amenu:rating(?::page:(\d+))?\z/
+          page = ($1 || 1).to_i
+          Telegram::Api.answer_callback(cb.cb_id, "") rescue nil
+          Telegram::Handlers::RatingHandler.list_page(cb.chat_id, page, message_id: cb.message_id) rescue nil
+          true
+
         when "menu:tennis_life"
           Telegram::Api.answer_callback(cb.cb_id, "") rescue nil
           Telegram::Handlers::TennisLifeMenuHandler.show(cb.chat_id, message_id: cb.message_id) rescue nil
