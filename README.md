@@ -1,13 +1,23 @@
 # GetCourt
 
+## Status
+
+![Tests](https://img.shields.io/badge/tests-minitest-16a34a)
+![Coverage](https://img.shields.io/badge/coverage-enabled-blue)
+![Ruby](https://img.shields.io/badge/ruby-3.4-red)
+![Rails](https://img.shields.io/badge/rails-8.0-red)
+
 Website: https://getcourt.co/
 
 GetCourt is a simple app to bring together the community of people who play tennis.  
 Create and join court games, manage courts, invite players, and receive Telegram reminders and notifications.
 
 Main features
-- Create and manage courts with coordinates and contact info
-- Create recurring or one-off games and manage participants
+- Create and manage recurring or one-off games
+- Discover and open new local courts
+- Collect match statistics and calculate overall player ratings
+- Search for coaches and launch urgent player searches
+- Find suitable opponents with AI-based matching
 - Telegram bot integration for notifications and registration tokens
 - Mobile-friendly UI with map integration and simple search
 
@@ -18,6 +28,14 @@ Main technologies
 - SQLite for development and production
 - Background jobs for notifications (ActiveJob / queue adapter)
 - Google / Nominatim geocoding for addresses
+
+## Tests and coverage
+
+```bash
+bundle exec rails test
+```
+
+Coverage is generated during Minitest runs and saved to `coverage/summary.txt`.
 
 ## License
 
