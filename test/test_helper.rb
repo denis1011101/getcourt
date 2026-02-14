@@ -23,7 +23,8 @@ end
 
 module ActiveSupport
   class TestCase
-    parallelize(workers: :number_of_processors)
+    workers = ENV["COVERAGE"] == "0" ? :number_of_processors : 1
+    parallelize(workers: workers)
     fixtures :all
   end
 end
