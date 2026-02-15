@@ -31,12 +31,20 @@ class NotifyPrebookingOwnerJob < ApplicationJob
     dates_text = pending_prebookings.map { |pb| pb.date.strftime("%Y-%m-%d") }.sort.join(", ")
     host = ENV.fetch("APP_HOST", ENV.fetch("HOSTNAME", "https://getcourt.co"))
     game_url = "#{host}/games/#{game.id}"
-    text = "Prebooking request for Game ##{game.id} from #{requester}\nDates: #{dates_text}\n\n#{game_url}"
+    locale = Telegram::I18n.locale_for(owner)
+    text = Telegram::I18n.t(
+      :prebooking_request_message,
+      locale: locale,
+      game_id: game.id,
+      requester: requester,
+      dates: dates_text,
+      url: game_url
+    )
 
     buttons = [
       [
-        { text: "Approve All", callback_data: "game:approve_all_prebookings:#{game.id}:#{user.id}" },
-        { text: "Reject All",  callback_data: "game:reject_all_prebookings:#{game.id}:#{user.id}" }
+        { text: Telegram::I18n.t(:approve_all_btn, locale: locale), callback_data: "game:approve_all_prebookings:#{game.id}:#{user.id}" },
+        { text: Telegram::I18n.t(:reject_all_btn, locale: locale),  callback_data: "game:reject_all_prebookings:#{game.id}:#{user.id}" }
       ]
     ]
 
