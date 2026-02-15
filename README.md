@@ -2,10 +2,9 @@
 
 ## Status
 
-![Tests](https://img.shields.io/badge/tests-minitest-16a34a)
-![Coverage](https://img.shields.io/badge/coverage-enabled-blue)
+![CI](https://github.com/denis1011101/getcourt/actions/workflows/ci.yml/badge.svg?branch=main)
 ![Ruby](https://img.shields.io/badge/ruby-3.4-red)
-![Rails](https://img.shields.io/badge/rails-8.0-red)
+![Rails](https://img.shields.io/badge/rails-8.1-red)
 
 Website: https://getcourt.co/
 
