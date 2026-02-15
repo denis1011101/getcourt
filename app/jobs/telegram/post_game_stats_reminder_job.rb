@@ -5,6 +5,11 @@ module Telegram
     def perform(game_id)
       game = Game.find_by(id: game_id)
       return unless game
+
+      # For recurring games we need to enqueue the next occurrence reminder,
+      # because no model update is guaranteed after the current reminder fires.
+      game.schedule_post_game_stats_reminder if game.recurring?
+
       creator = game.user
       return unless creator&.telegram_chat_id
 
