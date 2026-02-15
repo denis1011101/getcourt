@@ -1,0 +1,5 @@
+<h1>Reset geocoding quota</h1>
+
+<%= form_with url: geocoding_reset_path, method: :post, local: true do |f| %>
+  <%= f.submit "Reset quota" %>
+<% end %>

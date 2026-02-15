@@ -6,8 +6,8 @@ class GeocodingControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "should get reset" do
-    get geocoding_reset_url
+  test "should get reset form" do
+    get geocoding_reset_form_url
     assert_response :success
   end
 end

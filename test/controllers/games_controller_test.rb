@@ -38,7 +38,14 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     owner = User.find_by!(email: "owner_update@example.com")
     game = Game.create!(court: courts(:one), user: owner, date: Date.current + 2.days, time: "10:00")
 
-    patch game_url(game), params: { game: { players_count: "6" } }
+    patch game_url(game), params: {
+      game: {
+        court_id: game.court_id,
+        date: game.date,
+        time: "10:00",
+        players_count: "6"
+      }
+    }
 
     assert_redirected_to game_path(game)
     assert_equal 6, game.reload.players_count

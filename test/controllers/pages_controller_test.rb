@@ -2,12 +2,12 @@ require "test_helper"
 
 class PagesControllerTest < ActionDispatch::IntegrationTest
   test "should get contacts" do
-    get pages_contacts_url
+    get contacts_url
     assert_response :success
   end
 
-  test "should get about" do
-    get pages_about_url
+  test "should get mission" do
+    get mission_url
     assert_response :success
   end
 end
