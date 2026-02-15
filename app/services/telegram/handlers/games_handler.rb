@@ -7,12 +7,15 @@ module Telegram
         include Telegram::Handlers::ReplyHelpers
 
         def menu(chat_id, message_id: nil)
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+
           buttons = [
-            [ { text: "All games",   callback_data: "menu:games:page:1" } ],
-            [ { text: "Create game", callback_data: "game:create" } ],
-            [ { text: "Main menu",  callback_data: "menu:main" } ]
+            [ { text: t.(:all_games),    callback_data: "menu:games:page:1" } ],
+            [ { text: t.(:create_game),  callback_data: "game:create" } ],
+            [ { text: t.(:main_menu_btn), callback_data: "menu:main" } ]
           ]
-          send_or_edit_with_buttons(chat_id, "Games menu:", buttons, message_id: message_id)
+          send_or_edit_with_buttons(chat_id, t.(:games_menu), buttons, message_id: message_id)
         end
 
         def owner_display(user)
@@ -20,8 +23,8 @@ module Telegram
         end
 
         # Return label used in games lists (shared formatter used everywhere)
-        # owner: override whose nick is shown (default: game.user)
-        def game_label(g, owner: nil)
+        # locale: pass the active locale so spots-left text is correctly localised
+        def game_label(g, owner: nil, locale: Telegram::I18n::DEFAULT_LOCALE)
           date = Telegram::Helpers::GameFormatting.game_datetime(g)
           title = Telegram::Helpers::GameFormatting.game_title(g)
 
@@ -35,7 +38,7 @@ module Telegram
           taken = approved_count
           spots_left = required - taken
           spots_left = 0 if spots_left.negative?
-          spots_text = "#{spots_left} spot#{'s' if spots_left != 1} left"
+          spots_text = Telegram::I18n.spots_left_text(spots_left, locale: locale)
 
           # Always add game ID to title/sport
           title_with_id = "#{title || (g.respond_to?(:title) && g.title.to_s.presence) || 'Game'} ##{g.id}"
@@ -45,6 +48,9 @@ module Telegram
 
         # Send a page with list of games
         def list_page(chat_id, page = 1, message_id: nil)
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+
           page = page.to_i < 1 ? 1 : page.to_i
 
           user = Telegram::Helpers::UserLookup.find_user(chat_id)
@@ -79,7 +85,6 @@ module Telegram
                           hhmm >= now_hhmm
                         end
 
-            # Совпадает ли город корта с городом пользователя (0 = свой город, 1 = другой)
             same_city = if user_city && g.court&.city_name.to_s.strip.downcase == user_city
                           0
                         else
@@ -99,36 +104,39 @@ module Telegram
           sorted_games = (sorted_future + sorted_past).map { |item| item[:game] }
 
           total = sorted_games.size
-          pages = (total.to_f / PER_PAGE).ceil
+          pages = [(total.to_f / PER_PAGE).ceil, 1].max
           offset = (page - 1) * PER_PAGE
           games = sorted_games.slice(offset, PER_PAGE) || []
 
-          header = "Games — page #{page}/#{[ pages, 1 ].max}"
+          header = t.(:games_page, page: page, pages: pages)
 
           if games.empty?
-            send_or_edit_text(chat_id, "#{header}\n\nNo games on this page.", message_id: message_id)
+            send_or_edit_text(chat_id, "#{header}\n\n#{t.(:no_games_on_page)}", message_id: message_id)
             return
           end
 
           buttons = games.map do |g|
-            [ { text: game_label(g), callback_data: "game:show:#{g.id}:#{page}" } ]
+            [ { text: game_label(g, locale: locale), callback_data: "game:show:#{g.id}:#{page}" } ]
           end
 
           nav = []
-          nav << [ { text: "‹ Prev", callback_data: "menu:games:page:#{page - 1}" } ] if page > 1
-          nav << [ { text: "Next ›", callback_data: "menu:games:page:#{page + 1}" } ] if page < pages
+          nav << [ { text: t.(:prev_page), callback_data: "menu:games:page:#{page - 1}" } ] if page > 1
+          nav << [ { text: t.(:next_page), callback_data: "menu:games:page:#{page + 1}" } ] if page < pages
           buttons.concat(nav) unless nav.empty?
 
-          buttons << [ { text: "Main menu", callback_data: "menu:main" } ]
+          buttons << [ { text: t.(:main_menu_btn), callback_data: "menu:main" } ]
 
           send_or_edit_with_buttons(chat_id, header, buttons, message_id: message_id)
         end
 
         # Show game card with action buttons (join, prebook, edit/delete if owner/admin, back)
         def show_game(chat_id, game_id, page = 1, message_id: nil)
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+
           Rails.logger.debug "[Telegram::Handlers::GamesHandler] show_game chat=#{chat_id} game_id=#{game_id} page=#{page} msg_id=#{message_id}"
           game = Game.find_by(id: game_id)
-          return Telegram::Api.send_simple(chat_id, "Game not found.") unless game
+          return Telegram::Api.send_simple(chat_id, t.(:game_not_found)) unless game
 
           # participants / owner info
           participants_count =
@@ -138,10 +146,10 @@ module Telegram
               0
             end
           capacity = (game.respond_to?(:players_count) && game.players_count.to_i > 0) ? game.players_count.to_i : "?"
-          players_line = "Players: #{participants_count}/#{capacity}"
+          players_line = t.(:players, count: participants_count, capacity: capacity)
           owner = User.find_by(id: game.user_id) rescue nil
           owner_name = Telegram::Helpers::UserLookup.display_name(owner, fallback: owner&.telegram_chat_id || "—")
-          owner_line = "Owner: #{owner_name}"
+          owner_line = t.(:owner, name: owner_name)
 
           host = ENV.fetch("APP_HOST", "https://getcourt.co")
           game_url = Rails.application.routes.url_helpers.game_url(game, host: host)
@@ -149,18 +157,17 @@ module Telegram
           lines = []
           title = Telegram::Helpers::GameFormatting.game_title(game)
 
-          # always show either the title/sport or fallback to "Game", always with game id on the first line
           title_text = "#{title || 'Game'} ##{game.id}"
           lines << "*#{title_text}*"
 
-          coach = coach_badge_for(game)
-          lines << "Coach: #{coach}" if coach.present?
+          coach = coach_badge_for(game, locale)
+          lines << t.(:coach_label, value: coach) if coach.present?
 
           when_str = Telegram::Helpers::GameFormatting.game_datetime(game)
-          lines << "When: #{when_str}" if when_str.present?
+          lines << t.(:when_label, datetime: when_str) if when_str.present?
 
           lines << players_line
-          lines << ("Court: #{game.court&.name}") if game.respond_to?(:court) && game.court
+          lines << t.(:court_label, name: game.court&.name) if game.respond_to?(:court) && game.court
           lines << owner_line
           text = lines.compact.join("\n")
 
@@ -172,18 +179,18 @@ module Telegram
           direct_join = user && (user.admin? || user.id == game.user_id)
           join_btn =
             if participation && participation.respond_to?(:pending?) && participation.pending?
-              { text: "Request sent", callback_data: "game:join_pending:#{game.id}" }
+              { text: t.(:request_sent), callback_data: "game:join_pending:#{game.id}" }
             elsif participation
-              { text: "Leave", callback_data: "game:leave:#{game.id}" }
+              { text: t.(:leave), callback_data: "game:leave:#{game.id}" }
             else
-              label = direct_join ? "Join" : "Request to join"
+              label = direct_join ? t.(:join) : t.(:request_to_join)
               { text: label, callback_data: "game:join:#{game.id}" }
             end
 
           row1 = [ join_btn ]
 
           if game.prebooking_enabled? && (!game.respond_to?(:recurring?) || game.recurring?)
-            row1 << { text: "Prebooking", callback_data: "game:prebook:#{game.id}" }
+            row1 << { text: t.(:prebooking), callback_data: "game:prebook:#{game.id}" }
           end
 
           buttons << row1
@@ -192,46 +199,45 @@ module Telegram
 
           if game.started_for_ui?
             if can_fill_stats
-              buttons << [ { text: "Statistics", callback_data: "tg_fill:#{game.id}:#{page}" } ]
+              buttons << [ { text: t.(:statistics), callback_data: "tg_fill:#{game.id}:#{page}" } ]
             else
-              buttons << [ { text: "Statistics", callback_data: "tg_stats_unauthorized:#{game.id}" } ]
+              buttons << [ { text: t.(:statistics), callback_data: "tg_stats_unauthorized:#{game.id}" } ]
             end
           else
-            buttons << [ { text: "Statistics (locked)", callback_data: "tg_stats_locked:#{game.id}" } ]
+            buttons << [ { text: t.(:statistics_locked), callback_data: "tg_stats_locked:#{game.id}" } ]
           end
 
           if user && (user.admin? || user.id == game.user_id)
-            buttons << [ { text: "Invite players", callback_data: "game:invite:#{game.id}" } ]
-            buttons << [ { text: "Manage players", callback_data: "game:manage:#{game.id}:#{page}" } ]
-            buttons << [ { text: "Edit", callback_data: "game:edit:#{game.id}" } ]
-            buttons << [ { text: "Delete", callback_data: "game:delete:#{game.id}:#{page}" } ]
+            buttons << [ { text: t.(:invite_players), callback_data: "game:invite:#{game.id}" } ]
+            buttons << [ { text: t.(:manage_players), callback_data: "game:manage:#{game.id}:#{page}" } ]
+            buttons << [ { text: t.(:edit), callback_data: "game:edit:#{game.id}" } ]
+            buttons << [ { text: t.(:delete), callback_data: "game:delete:#{game.id}:#{page}" } ]
           end
 
-          buttons << [ { text: "Open game in browser", url: game_url } ] unless host.to_s.include?("localhost")
+          buttons << [ { text: t.(:open_in_browser), url: game_url } ] unless host.to_s.include?("localhost")
 
-          buttons << [ { text: "Back to games", callback_data: "menu:games:page:#{page}" } ]
+          buttons << [ { text: t.(:back_to_games), callback_data: "menu:games:page:#{page}" } ]
 
           send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
         end
 
         private
 
-        def coach_badge_for(game)
+        def coach_badge_for(game, locale = "ru")
           return nil unless game
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
           if game.respond_to?(:with_coach?) && game.with_coach?
-            "With coach"
+            t.(:coach_with)
           elsif game.respond_to?(:needs_coach?) && game.needs_coach?
-            "Need coach"
+            t.(:coach_need)
           elsif game.respond_to?(:with_coach?) || game.respond_to?(:needs_coach?)
-            "No coach"
+            t.(:coach_no)
           else
             nil
           end
         end
 
-        # Uses the same "occurrence" logic as UI: display_date_for_show -> next_date -> date
-        # If time is missing, unlock at start of the day.
         def game_start_at_for_ui(g)
           d = Telegram::Helpers::GameFormatting.resolve_date(g)
           return nil unless d.present?

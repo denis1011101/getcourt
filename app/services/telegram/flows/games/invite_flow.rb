@@ -162,7 +162,8 @@ module Telegram
               label =
                 if Telegram::Handlers::GamesHandler.respond_to?(:game_label)
                   # IMPORTANT: show inviter nick (not game owner) in the label
-                  Telegram::Handlers::GamesHandler.game_label(game, owner: inviter)
+                  target_locale = Telegram::Helpers::UserLookup.locale_for(user.telegram_chat_id)
+                  Telegram::Handlers::GamesHandler.game_label(game, owner: inviter, locale: target_locale)
                 else
                   "Game ##{game.id}"
                 end

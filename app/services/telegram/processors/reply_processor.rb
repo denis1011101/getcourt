@@ -5,6 +5,16 @@ module Telegram
         def process(message)
           chat = message["chat"] || {}
           chat_id = (chat["id"] || message.dig("from","id")).to_s
+
+          # Handle location messages for court creation
+          if message["location"]
+            conv = Telegram::Helpers::Conversation.get(chat_id) rescue {}
+            if conv["flow"] == "create_court"
+              return Telegram::Flows::CourtCreateFlow.process_location(message)
+            end
+            return false
+          end
+
           text = message["text"].to_s.strip
           return false unless chat_id.present? && text.present?
 
@@ -23,6 +33,10 @@ module Telegram
             return true
           when "game_stats_input"
             return Telegram::Flows::StatsFlow.process_text(message)
+          when "create_game"
+            return Telegram::Flows::Games::Manage::CreateFlow.process_text(message)
+          when "create_court"
+            return Telegram::Flows::CourtCreateFlow.process_text(message)
           else
             return false
           end

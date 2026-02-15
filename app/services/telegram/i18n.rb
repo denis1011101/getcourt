@@ -1,0 +1,495 @@
+module Telegram
+  module I18n
+    LOCALES = %w[ru en].freeze
+    DEFAULT_LOCALE = "ru".freeze
+
+    # Return the locale for a user (from DB field or default)
+    def self.locale_for(user)
+      return DEFAULT_LOCALE unless user
+      loc = user.respond_to?(:telegram_locale) ? user.telegram_locale.to_s.strip : ""
+      LOCALES.include?(loc) ? loc : DEFAULT_LOCALE
+    end
+
+    # Main translation method
+    # Usage: Telegram::I18n.t(:main_menu, locale: "ru")
+    def self.t(key, locale: DEFAULT_LOCALE, **args)
+      locale = DEFAULT_LOCALE unless LOCALES.include?(locale.to_s)
+      dict = (locale.to_s == "en") ? EN : RU
+      template = dict[key.to_sym] || EN[key.to_sym] || key.to_s
+      if args.any? && template.is_a?(String)
+        args.each { |k, v| template = template.gsub("%{#{k}}", v.to_s) }
+      end
+      template
+    end
+
+    # Shortcut: translate with user object
+    def self.for_user(user)
+      locale_for(user)
+    end
+
+    RU = {
+      # Main menu
+      main_menu: "Главное меню:",
+      create_game: "Создать игру",
+      find_game: "Найти игру",
+      create_court: "Создать корт",
+      find_coach: "Найти тренера",
+      games_looking_for_player: "Игры ищут игрока",
+      tennis_life: "Теннис лайф",
+      profile: "Профиль",
+      rating: "Рейтинг",
+
+      # Games
+      games_menu: "Меню игр:",
+      all_games: "Все игры",
+      games_page: "Игры — стр. %{page}/%{pages}",
+      no_games_on_page: "Нет игр на этой странице.",
+      game_not_found: "Игра не найдена.",
+      players: "Игроки: %{count}/%{capacity}",
+      owner: "Организатор: %{name}",
+      when_label: "Когда: %{datetime}",
+      court_label: "Корт: %{name}",
+      coach_with: "С тренером",
+      coach_need: "Нужен тренер",
+      coach_no: "Без тренера",
+      join: "Присоединиться",
+      request_to_join: "Запросить участие",
+      request_sent: "Запрос отправлен",
+      leave: "Покинуть",
+      prebooking: "Предбронирование",
+      statistics: "Статистика",
+      statistics_locked: "Статистика (заблокирована)",
+      invite_players: "Пригласить игроков",
+      manage_players: "Управление игроками",
+      edit: "Редактировать",
+      delete: "Удалить",
+      open_in_browser: "Открыть в браузере",
+      back_to_games: "Назад к играм",
+      back_to_courts: "Назад к кортам",
+      main_menu_btn: "Главное меню",
+      prev_page: "‹ Назад",
+      next_page: "Далее ›",
+      spots_left: "%{count} мест свободно",
+      spot_left: "%{count} место свободно",
+      spots_left_few: "%{count} места свободно",
+
+      # Courts
+      courts_menu: "Меню кортов:",
+      all_courts: "Все корты",
+      courts_page: "Корты — стр. %{page}/%{pages}",
+      no_courts_on_page: "Нет кортов на этой странице.",
+      court_not_found: "Корт не найден.",
+      list_of_games: "Список игр",
+      games_on_court_page: "Игры на корте #%{court_id} — стр. %{page}/%{pages}",
+      no_games_on_court_page: "Нет игр на этой странице.",
+      back_to_court: "Назад к корту",
+
+      # Create game — step-by-step
+      create_game_prompt: "Ответьте с данными: дата(ГГГГ-ММ-ДД) время(ЧЧ:ММ) кол-во_игроков вид_спорта [id_корта]\nПример:\n2025-12-10 19:00 4 tennis 12",
+      create_game_reply: "Создание игры — ответьте с деталями",
+      create_game_cancelled: "Создание игры отменено.",
+      create_game_step: "Создание игры (шаг %{step}/%{total})",
+      create_game_date: "Введите дату игры (ГГГГ-ММ-ДД):",
+      create_game_date_invalid: "Неверный формат даты. Используйте ГГГГ-ММ-ДД (например, 2026-03-15).",
+      create_game_date_past: "Нельзя создать игру в прошлом. Введите будущую дату.",
+      create_game_time: "Введите время начала (ЧЧ:ММ):",
+      create_game_time_invalid: "Неверный формат времени. Используйте ЧЧ:ММ (например, 19:00).",
+      create_game_players: "Сколько игроков нужно?",
+      create_game_players_invalid: "Введите число от 2 до 30.",
+      create_game_court: "Выберите корт:",
+      create_game_court_new: "Создать новый корт",
+      create_game_no_courts: "У вас нет кортов. Создайте первый.",
+      create_game_recurring: "Повторять еженедельно?",
+      create_game_prebooking: "Включить предбронирование?",
+      create_game_with_coach: "С тренером?",
+      create_game_sport: "Выберите вид спорта:",
+      create_game_skill: "Выберите требуемый уровень:",
+      create_game_any_level: "Любой уровень",
+      create_game_success: "Игра создана!",
+      create_game_error: "Не удалось создать игру: %{error}",
+      cancel_btn: "Отмена",
+      skip_btn: "Пропустить",
+
+      # Create court — step-by-step
+      create_court_prompt: "Ответьте с информацией о корте:\nНазвание; широта,долгота; тип_контакта:контакт\nПример:\nЦентральный корт; 55.7558,37.6173; telegram:ivan123",
+      create_court_reply: "Создание корта — ответьте с деталями",
+      create_court_cancelled: "Создание корта отменено.",
+      create_court_step: "Создание корта (шаг %{step}/%{total})",
+      create_court_name: "Введите название корта:",
+      create_court_name_invalid: "Название не может быть пустым.",
+      create_court_location: "Отправьте локацию корта (кнопка ниже) или введите координаты (широта,долгота):",
+      create_court_location_btn: "Отправить локацию",
+      create_court_location_invalid: "Не удалось определить координаты. Отправьте локацию или введите широта,долгота.",
+      create_court_contact_type: "Выберите тип контакта:",
+      create_court_contact_value: "Введите контактные данные (номер, юзернейм и т.д.):",
+      create_court_success: "Корт создан!",
+      create_court_error: "Не удалось создать корт: %{error}",
+
+      # Rating
+      rating_title: "Рейтинг игроков:",
+      rating_page: "Рейтинг — стр. %{page}/%{pages}",
+      no_rating_data: "Пока нет данных для рейтинга.",
+      rating_row: "%{rank}. %{name} — %{games} игр, %{wins} побед (%{pct}%)",
+      rating_games: "игр",
+      rating_wins: "побед",
+
+      # Profile
+      profile_title: "*Профиль:*",
+      edit_profile_title: "*Редактирование профиля*",
+      email_label: "Email: %{value}",
+      sports_label: "Виды спорта: %{value}",
+      city_label: "Город: %{value}",
+      coach_label: "Тренер: %{value}",
+      notify_label: "Уведомления о поиске рядом: %{value}",
+      language_label: "Язык: %{value}",
+      edit_profile: "Редактировать профиль",
+      select_field_to_edit: "Выберите поле для редактирования:",
+      field_email: "Email",
+      field_sports: "Виды спорта",
+      field_city: "Город",
+      field_coach: "Тренер",
+      field_notify: "Уведомления",
+      field_language: "Язык",
+      back: "Назад",
+      yes_label: "Да",
+      no_label: "Нет",
+      field_updated: "Поле обновлено.",
+      edit_cancelled: "Редактирование отменено.",
+      no_linked_account: "Нет привязанного аккаунта. Отправьте /start.",
+      no_pending_edit: "Нет активного редактирования поля.",
+      email_already_taken: "Этот email уже используется другим аккаунтом.",
+      field_update_failed: "Не удалось обновить поле: %{errors}",
+      validation_failed: "Не удалось обновить поле: ошибка валидации",
+      unique_constraint: "Значение конфликтует с другой записью (уникальное ограничение).",
+      unknown_field: "Неизвестное поле.",
+      send_new_value: "Отправьте новое значение или нажмите Назад для отмены.",
+      editing_field: "Редактирование: %{field}\nТекущее значение: %{current}\n%{hint}",
+
+      # Sports editing
+      sports_editing_prompt: "Выберите виды спорта (можно несколько) и нажмите Сохранить или Назад.",
+      save: "Сохранить",
+      skill_level_prompt: "Выберите уровень для %{sport}:",
+      none_level: "Без уровня",
+      skip: "Пропустить",
+      done: "Готово",
+      sports_saved: "Виды спорта сохранены.",
+      select_at_least_one: "Выберите хотя бы один вид спорта.",
+
+      # Language selection
+      select_language: "Выберите язык:",
+      language_russian: "Русский",
+      language_english: "English",
+      language_changed: "Язык изменён на русский.",
+
+      # Search
+      search_title: "Поиск:",
+      find_courts_by_name: "Найти корт по названию",
+      find_nearby_courts: "Найти корты рядом",
+      search_results: "Результаты для \"%{query}\" — стр. %{page}/%{pages}",
+      no_results: "Ничего не найдено.",
+      send_search_query: "Введите поисковый запрос (название корта):",
+
+      # Find coach
+      find_coach_title: "Тренеры в вашем городе:",
+      find_coach_no_city: "Укажите город в профиле, чтобы искать тренеров рядом.",
+      no_coaches_found: "Тренеры не найдены в вашем городе.",
+      coach_card: "%{name}\nВиды спорта: %{sports}\nГород: %{city}",
+      all_coaches: "Все тренеры",
+      coaches_page: "Тренеры — стр. %{page}/%{pages}",
+
+      # Games looking for player
+      games_need_players_title: "Игры, которые ищут игроков:",
+      no_games_need_players: "Сейчас нет игр, которым нужны игроки.",
+
+      # Tennis life (placeholder)
+      tennis_life_title: "Теннис лайф",
+      tennis_life_text: "Раздел в разработке. Здесь скоро появятся новости, советы и интересные материалы о теннисе.",
+
+      # Survey / onboarding
+      greeting: "Добро пожаловать в GetCourt! Я помогу настроить ваш профиль для поиска соперников.",
+      ask_city: "В каком городе вы находитесь? Введите название города (или напишите 'skip').",
+      ask_sports: "Какими видами спорта вы занимаетесь? Выберите все подходящие (нажмите для переключения), затем нажмите Готово (или Пропустить).",
+      ask_skill: "Какой у вас уровень в %{sport}? Выберите один (или нажмите Пропустить):",
+      ask_notifications: "Хотите получать уведомления, когда рядом ищут соперников? (или нажмите Пропустить)",
+      survey_completion: "Спасибо — ваши предпочтения сохранены. Вы будете получать уведомления, если включили их.",
+
+      # Statistics flow
+      stats_reply_singles_hours: "Ответьте количеством часов одиночных игр (например: 1.5) или напишите 'skip'.",
+      stats_reply_doubles_hours: "Ответьте количеством часов парных игр (например: 1.5) или напишите 'skip'.",
+      stats_reply_singles_games: "Сколько одиночных игр было сыграно? (целое число) или 'skip'.",
+      stats_reply_singles_wins: "Сколько побед в одиночных играх? (целое число) или 'skip'.",
+      stats_reply_doubles_games: "Сколько парных игр было сыграно? (целое число) или 'skip'.",
+      stats_reply_doubles_wins: "Сколько побед в парных играх? (целое число) или 'skip'.",
+      stats_reply_aces: "Количество эйсов (целое число) или 'skip'.",
+      stats_reply_double_faults: "Количество двойных ошибок (целое число) или 'skip'.",
+      stats_reply_first_serve_pct: "Процент первой подачи (0-100, например 62.5) или 'skip'.",
+      stats_reply_number: "Ответьте числом (например: 1.5) или напишите 'skip'.",
+      stats_reply_integer: "Ответьте целым числом (0,1,2...) или напишите 'skip'.",
+      stats_reply_percent: "Ответьте процентом 0-100 (например: 62.5) или напишите 'skip'.",
+      stats_recorded: "Статистика записана. Спасибо.",
+      stats_user_not_found: "Пользователь не найден — не удаётся записать статистику.",
+      stats_locked_msg: "Статистика будет доступна после начала игры: %{time} (%{tz})",
+      stats_locked_no_time: "Время начала ещё не установлено.",
+      stats_unauthorized: "Только создатель игры или администратор может заполнять статистику.",
+      stats_will_be_available: "Статистика будет доступна после начала игры.",
+      unexpected_step: "Неожиданный шаг, прерывание.",
+      please_reply: "Пожалуйста, ответьте.",
+      please_use_buttons: "Пожалуйста, используйте кнопки для продолжения.",
+      processing_error: "Ошибка обработки.",
+      callback_error: "Ошибка обработки запроса.",
+      unknown_action: "Неизвестное действие.",
+
+      # Game management
+      not_happened_btn: "Отметить как несостоявшуюся",
+      mark_not_happened: "Отметить игру как несостоявшуюся (используйте кнопку):",
+      unauthorized_or_not_found: "Нет доступа или игра не найдена.",
+
+      # Misc
+      no_permission: "Нет прав для редактирования",
+      court_not_found_short: "Корт не найден",
+      user_not_found: "Пользователь не найден",
+    }.freeze
+
+    EN = {
+      # Main menu
+      main_menu: "Main menu:",
+      create_game: "Create game",
+      find_game: "Find game",
+      create_court: "Create court",
+      find_coach: "Find coach",
+      games_looking_for_player: "Games looking for player",
+      tennis_life: "Tennis life",
+      profile: "Profile",
+      rating: "Rating",
+
+      # Games
+      games_menu: "Games menu:",
+      all_games: "All games",
+      games_page: "Games — page %{page}/%{pages}",
+      no_games_on_page: "No games on this page.",
+      game_not_found: "Game not found.",
+      players: "Players: %{count}/%{capacity}",
+      owner: "Owner: %{name}",
+      when_label: "When: %{datetime}",
+      court_label: "Court: %{name}",
+      coach_with: "With coach",
+      coach_need: "Need coach",
+      coach_no: "No coach",
+      join: "Join",
+      request_to_join: "Request to join",
+      request_sent: "Request sent",
+      leave: "Leave",
+      prebooking: "Prebooking",
+      statistics: "Statistics",
+      statistics_locked: "Statistics (locked)",
+      invite_players: "Invite players",
+      manage_players: "Manage players",
+      edit: "Edit",
+      delete: "Delete",
+      open_in_browser: "Open in browser",
+      back_to_games: "Back to games",
+      back_to_courts: "Back to courts",
+      main_menu_btn: "Main menu",
+      prev_page: "‹ Prev",
+      next_page: "Next ›",
+      spots_left: "%{count} spots left",
+      spot_left: "%{count} spot left",
+      spots_left_few: "%{count} spots left",
+
+      # Courts
+      courts_menu: "Courts menu:",
+      all_courts: "All courts",
+      courts_page: "Courts — page %{page}/%{pages}",
+      no_courts_on_page: "No courts on this page.",
+      court_not_found: "Court not found.",
+      list_of_games: "List of games",
+      games_on_court_page: "Games on court #%{court_id} — page %{page}/%{pages}",
+      no_games_on_court_page: "No games on this page.",
+      back_to_court: "Back to court",
+
+      # Create game — step-by-step
+      create_game_prompt: "Reply with: date(YYYY-MM-DD) time(HH:MM) players_count sport [court_id]\nExample:\n2025-12-10 19:00 4 tennis 12",
+      create_game_reply: "Create game — reply with details",
+      create_game_cancelled: "Game creation cancelled.",
+      create_game_step: "Create game (step %{step}/%{total})",
+      create_game_date: "Enter game date (YYYY-MM-DD):",
+      create_game_date_invalid: "Invalid date format. Use YYYY-MM-DD (e.g. 2026-03-15).",
+      create_game_date_past: "Cannot create a game in the past. Enter a future date.",
+      create_game_time: "Enter start time (HH:MM):",
+      create_game_time_invalid: "Invalid time format. Use HH:MM (e.g. 19:00).",
+      create_game_players: "How many players?",
+      create_game_players_invalid: "Enter a number from 2 to 30.",
+      create_game_court: "Select a court:",
+      create_game_court_new: "Create new court",
+      create_game_no_courts: "You have no courts. Create your first one.",
+      create_game_recurring: "Repeat weekly?",
+      create_game_prebooking: "Enable prebooking?",
+      create_game_with_coach: "With coach?",
+      create_game_sport: "Select sport:",
+      create_game_skill: "Select required level:",
+      create_game_any_level: "Any level",
+      create_game_success: "Game created!",
+      create_game_error: "Failed to create game: %{error}",
+      cancel_btn: "Cancel",
+      skip_btn: "Skip",
+
+      # Create court — step-by-step
+      create_court_prompt: "Reply with court info:\nName; lat,lon; contact_type:contact_value\nExample:\nCentral Court; 55.7558,37.6173; telegram:ivan123",
+      create_court_reply: "Create court — reply with details",
+      create_court_cancelled: "Court creation cancelled.",
+      create_court_step: "Create court (step %{step}/%{total})",
+      create_court_name: "Enter court name:",
+      create_court_name_invalid: "Name cannot be empty.",
+      create_court_location: "Send court location (button below) or enter coordinates (lat,lon):",
+      create_court_location_btn: "Send location",
+      create_court_location_invalid: "Could not determine coordinates. Send a location or enter lat,lon.",
+      create_court_contact_type: "Select contact type:",
+      create_court_contact_value: "Enter contact details (phone number, username, etc.):",
+      create_court_success: "Court created!",
+      create_court_error: "Failed to create court: %{error}",
+
+      # Rating
+      rating_title: "Player rating:",
+      rating_page: "Rating — page %{page}/%{pages}",
+      no_rating_data: "No rating data yet.",
+      rating_row: "%{rank}. %{name} — %{games} games, %{wins} wins (%{pct}%)",
+      rating_games: "games",
+      rating_wins: "wins",
+
+      # Profile
+      profile_title: "*Profile:*",
+      edit_profile_title: "*Edit profile*",
+      email_label: "Email: %{value}",
+      sports_label: "Sports: %{value}",
+      city_label: "City: %{value}",
+      coach_label: "Coach: %{value}",
+      notify_label: "Notify nearby searches: %{value}",
+      language_label: "Language: %{value}",
+      edit_profile: "Edit profile",
+      select_field_to_edit: "Select field to edit:",
+      field_email: "Email",
+      field_sports: "Sports",
+      field_city: "City",
+      field_coach: "Coach",
+      field_notify: "Notify",
+      field_language: "Language",
+      back: "Back",
+      yes_label: "Yes",
+      no_label: "No",
+      field_updated: "Field updated.",
+      edit_cancelled: "Edit cancelled.",
+      no_linked_account: "No linked account. Send /start first.",
+      no_pending_edit: "No pending field edit.",
+      email_already_taken: "This email is already used by another account.",
+      field_update_failed: "Failed to update field: %{errors}",
+      validation_failed: "Failed to update field: Validation failed",
+      unique_constraint: "Value conflicts with another record (unique constraint).",
+      unknown_field: "Unknown field.",
+      send_new_value: "Send new value or press Back to cancel.",
+      editing_field: "Editing: %{field}\nCurrent: %{current}\n%{hint}",
+
+      # Sports editing
+      sports_editing_prompt: "Select sports (multiple) and press Save or Back.",
+      save: "Save",
+      skill_level_prompt: "What is your skill level in %{sport}?",
+      none_level: "None",
+      skip: "Skip",
+      done: "Done",
+      sports_saved: "Sports saved.",
+      select_at_least_one: "Please select at least one sport.",
+
+      # Language selection
+      select_language: "Select language:",
+      language_russian: "Русский",
+      language_english: "English",
+      language_changed: "Language changed to English.",
+
+      # Search
+      search_title: "Search:",
+      find_courts_by_name: "Find courts by name",
+      find_nearby_courts: "Find nearby courts",
+      search_results: "Results for \"%{query}\" — page %{page}/%{pages}",
+      no_results: "No results.",
+      send_search_query: "Send search query (court name):",
+
+      # Find coach
+      find_coach_title: "Coaches in your city:",
+      find_coach_no_city: "Set your city in profile to find coaches nearby.",
+      no_coaches_found: "No coaches found in your city.",
+      coach_card: "%{name}\nSports: %{sports}\nCity: %{city}",
+      all_coaches: "All coaches",
+      coaches_page: "Coaches — page %{page}/%{pages}",
+
+      # Games looking for player
+      games_need_players_title: "Games looking for players:",
+      no_games_need_players: "No games currently looking for players.",
+
+      # Tennis life (placeholder)
+      tennis_life_title: "Tennis life",
+      tennis_life_text: "Section under development. News, tips, and interesting tennis content coming soon.",
+
+      # Survey / onboarding
+      greeting: "Welcome to GetCourt! I will help set up your profile to find opponents.",
+      ask_city: "Which city are you located in? Please type the city name (or type 'skip').",
+      ask_sports: "Which sports do you play? Select all that apply (tap to toggle), then press Done (or press Skip).",
+      ask_skill: "What is your skill level in %{sport}? Choose one (or press Skip):",
+      ask_notifications: "Do you want to enable notifications when opponents are searched in your city? (or press Skip)",
+      survey_completion: "Thanks — your preferences have been saved. You will receive notifications if enabled.",
+
+      # Statistics flow
+      stats_reply_singles_hours: "Please reply with singles hours (example: 1.5) or type 'skip'.",
+      stats_reply_doubles_hours: "Please reply with doubles hours (example: 1.5) or type 'skip'.",
+      stats_reply_singles_games: "How many singles games were played? (integer) or 'skip'.",
+      stats_reply_singles_wins: "How many singles wins? (integer) or 'skip'.",
+      stats_reply_doubles_games: "How many doubles games were played? (integer) or 'skip'.",
+      stats_reply_doubles_wins: "How many doubles wins? (integer) or 'skip'.",
+      stats_reply_aces: "Number of aces (integer) or 'skip'.",
+      stats_reply_double_faults: "Number of double faults (integer) or 'skip'.",
+      stats_reply_first_serve_pct: "First serve percent (0-100, e.g. 62.5) or 'skip'.",
+      stats_reply_number: "Please reply with a number like 1.5 or type 'skip'.",
+      stats_reply_integer: "Please reply with an integer (0,1,2...) or type 'skip'.",
+      stats_reply_percent: "Please reply with percent 0-100 (e.g. 62.5) or type 'skip'.",
+      stats_recorded: "Statistics recorded. Thank you.",
+      stats_user_not_found: "User not found — cannot record statistics.",
+      stats_locked_msg: "Statistics will be available after the game starts: %{time} (%{tz})",
+      stats_locked_no_time: "Start time is not set yet.",
+      stats_unauthorized: "Only the game creator or an admin can fill statistics.",
+      stats_will_be_available: "Statistics will be available after the game starts.",
+      unexpected_step: "Unexpected step, aborting.",
+      please_reply: "Please reply.",
+      please_use_buttons: "Please use the buttons to continue.",
+      processing_error: "Processing error.",
+      callback_error: "Callback processing error.",
+      unknown_action: "Unknown action.",
+
+      # Game management
+      not_happened_btn: "Mark as not happened",
+      mark_not_happened: "Mark game as not happened (use the button):",
+      unauthorized_or_not_found: "Unauthorized or game not found.",
+
+      # Misc
+      no_permission: "No permission to edit",
+      court_not_found_short: "Court not found",
+      user_not_found: "User not found",
+    }.freeze
+
+    # Helper for spots left with Russian pluralization
+    def self.spots_left_text(count, locale: DEFAULT_LOCALE)
+      if locale == "ru"
+        n = count.abs % 100
+        n1 = n % 10
+        if n > 10 && n < 20
+          t(:spots_left, locale: locale, count: count)
+        elsif n1 > 1 && n1 < 5
+          t(:spots_left_few, locale: locale, count: count)
+        elsif n1 == 1
+          t(:spot_left, locale: locale, count: count)
+        else
+          t(:spots_left, locale: locale, count: count)
+        end
+      else
+        count == 1 ? t(:spot_left, locale: locale, count: count) : t(:spots_left, locale: locale, count: count)
+      end
+    end
+  end
+end

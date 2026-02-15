@@ -28,6 +28,12 @@ module Telegram
           Telegram::Api.answer_callback(cb.cb_id, "") rescue nil
           Telegram::Flows::CourtsFlow.handle_callback(callback_query) rescue nil
 
+        when /\Acourt:create\z/
+          Telegram::Flows::CourtCreateFlow.handle_callback(callback_query) rescue nil
+
+        when /\Acourt:create:/
+          Telegram::Flows::CourtCreateFlow.handle_callback(callback_query) rescue nil
+
         else
           Rails.logger.info "[Telegram::Handlers::CourtsCallbackHandler] unknown courts callback: #{cb.data.inspect}"
           Telegram::Api.answer_callback(cb.cb_id, "Unknown courts action.", show_alert: true) rescue nil

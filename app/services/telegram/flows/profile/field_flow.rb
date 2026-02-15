@@ -5,6 +5,9 @@ module Telegram
         module_function
 
         def start_edit_field(chat_id, field, cb_id: nil, message_id: nil)
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+
           begin
             user = User.find_by(telegram_chat_id: chat_id.to_s)
           rescue => e
@@ -12,8 +15,7 @@ module Telegram
             return Telegram::Api.answer_callback(cb_id, "Internal error", show_alert: true)
           end
           unless user
-            Rails.logger.info "[Telegram::Flows::Profile::FieldFlow] start_edit_field: no linked user for chat=#{chat_id}"
-            return Telegram::Api.answer_callback(cb_id, "No linked account", show_alert: false)
+            return Telegram::Api.answer_callback(cb_id, t.(:no_linked_account), show_alert: false)
           end
 
           presenter = Telegram::Presenters::ProfilePresenter.new(user)
@@ -32,9 +34,9 @@ module Telegram
               label = selections.include?(s) ? "✓ #{s}" : s
               [{ text: label, callback_data: "profile:sports:toggle:#{CGI.escape(s)}" }]
             end
-            buttons << [{ text: "Save", callback_data: "profile:sports:save" }, { text: "Back", callback_data: "profile:sports:cancel" }]
+            buttons << [{ text: t.(:save), callback_data: "profile:sports:save" }, { text: t.(:back), callback_data: "profile:sports:cancel" }]
 
-            text = "PROFILE_FIELD_PROMPT:sports\nEditing: sports\nCurrent: #{selections.any? ? selections.join(', ') : '—'}\nSelect sports (multiple) and press Save or Back."
+            text = t.(:editing_field, field: t.(:field_sports), current: (selections.any? ? selections.join(", ") : "—"), hint: t.(:sports_editing_prompt))
 
             if message_id
               Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, buttons) rescue nil
@@ -58,11 +60,11 @@ module Telegram
 
             current = presenter.current_value_for("notify")
             buttons = [
-              [{ text: "Yes", callback_data: "profile:field:notify:yes" }],
-              [{ text: "No",  callback_data: "profile:field:notify:no"  }],
-              [{ text: "Back", callback_data: "profile:field:cancel" }]
+              [{ text: t.(:yes_label), callback_data: "profile:field:notify:yes" }],
+              [{ text: t.(:no_label),  callback_data: "profile:field:notify:no"  }],
+              [{ text: t.(:back),      callback_data: "profile:field:cancel" }]
             ]
-            text = "PROFILE_FIELD_PROMPT:notify\nEditing: notify\nCurrent: #{current}\nChoose Yes or No or press Back."
+            text = t.(:editing_field, field: t.(:field_notify), current: current, hint: "")
 
             if message_id
               Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, buttons) rescue nil
@@ -75,7 +77,7 @@ module Telegram
             return
           end
 
-          # handle coach as inline checkbox (Yes/No) — same UX as notify
+          # handle coach as inline checkbox (Yes/No)
           if field.to_s == "coach"
             conv = { "flow" => "profile_field", "field" => "coach", "created_at" => Time.current }
             begin
@@ -86,11 +88,11 @@ module Telegram
 
             current = presenter.current_value_for("coach")
             buttons = [
-              [{ text: "Yes", callback_data: "profile:field:coach:yes" }],
-              [{ text: "No",  callback_data: "profile:field:coach:no"  }],
-              [{ text: "Back", callback_data: "profile:field:cancel" }]
+              [{ text: t.(:yes_label), callback_data: "profile:field:coach:yes" }],
+              [{ text: t.(:no_label),  callback_data: "profile:field:coach:no"  }],
+              [{ text: t.(:back),      callback_data: "profile:field:cancel" }]
             ]
-            text = "PROFILE_FIELD_PROMPT:coach\nEditing: coach\nCurrent: #{current}\nChoose Yes or No or press Back."
+            text = t.(:editing_field, field: t.(:field_coach), current: current, hint: "")
 
             if message_id
               Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, buttons) rescue nil
@@ -110,10 +112,10 @@ module Telegram
             Rails.logger.error "[Telegram::Flows::Profile::FieldFlow] start_edit_field: cache write failed for chat=#{chat_id}: #{e.class}: #{e.message}"
           end
           current = presenter.current_value_for(field)
-          text = "PROFILE_FIELD_PROMPT:#{field}\nEditing: #{field}\nCurrent: #{current}\nSend new value or press Back to cancel."
+          text = t.(:editing_field, field: field, current: current, hint: t.(:send_new_value))
 
           if message_id
-            buttons = [[{ text: "Back", callback_data: "profile:field:cancel" }]]
+            buttons = [[{ text: t.(:back), callback_data: "profile:field:cancel" }]]
             Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, buttons) rescue nil
             Telegram::Api.answer_callback(cb_id) rescue nil
           else
@@ -124,10 +126,12 @@ module Telegram
 
         def process_profile_field_reply(message)
           chat = message["chat"] || {}
-          chat_id = (chat["id"] || message.dig("from","id")).to_s
+          chat_id = (chat["id"] || message.dig("from", "id")).to_s
           text = message["text"].to_s.strip
-          Rails.logger.info "[Telegram::Flows::Profile::FieldFlow] process_profile_field_reply chat_id=#{chat_id} text=#{text.inspect} reply_to=#{message.dig('reply_to_message','text').to_s.inspect}"
           return unless text.present?
+
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
           begin
             conv = Rails.cache.read("tg:conv:#{chat_id}") || {}
@@ -137,8 +141,7 @@ module Telegram
           end
           field = conv && conv["field"]
           unless field
-            Rails.logger.info "[Telegram::Flows::Profile::FieldFlow] no conv field for chat #{chat_id}"
-            return Telegram::Api.send_simple(chat_id, "No pending field edit.")
+            return Telegram::Api.send_simple(chat_id, t.(:no_pending_edit))
           end
 
           if text.downcase == "back"
@@ -147,11 +150,11 @@ module Telegram
             rescue => e
               Rails.logger.error "[Telegram::Flows::Profile::FieldFlow] process_profile_field_reply: cache delete failed for chat=#{chat_id}: #{e.class}: #{e.message}"
             end
-            return Telegram::Api.send_simple(chat_id, "Edit cancelled.")
+            return Telegram::Api.send_simple(chat_id, t.(:edit_cancelled))
           end
 
           user = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
-          return Telegram::Api.send_simple(chat_id, "No linked account.") unless user
+          return Telegram::Api.send_simple(chat_id, t.(:no_linked_account)) unless user
 
           case field
           when "email"
@@ -160,29 +163,25 @@ module Telegram
                           .where.not(id: user.id)
                           .exists?
               if taken
-                Rails.logger.info "[Telegram::Flows::Profile::FieldFlow] email already taken chat_id=#{chat_id} email=#{text}"
-                return Telegram::Api.send_simple(chat_id, "This email is already used by another account.")
+                return Telegram::Api.send_simple(chat_id, t.(:email_already_taken))
               end
             end
 
             user.email = text if user.respond_to?(:email=)
             user.timezone = nil if user.respond_to?(:timezone=)
           when "city"
-            # persist the user-visible city name immediately (transliterate for plain text)
             translit_input = translit_str(text)
             user.city_name = translit_input if user.respond_to?(:city_name=)
             user.location = text if user.respond_to?(:location=)
-            # clear timezone so ResolveUserCityJob can recompute it
             if user.respond_to?(:timezone=)
               user.timezone = nil
-              Rails.logger.info "[Telegram::Flows::Profile::FieldFlow] cleared timezone for user_id=#{user.id} to allow async resolution"
             end
           when "notify"
-            val = (text.downcase == 'yes' || text == '1' || text.downcase == 'true')
+            val = (text.downcase == "yes" || text == "1" || text.downcase == "true" || text.downcase == "да")
             user.notify_nearby = val if user.respond_to?(:notify_nearby=)
             user.notify = val if user.respond_to?(:notify=)
           else
-            return Telegram::Api.send_simple(chat_id, "Unknown field.")
+            return Telegram::Api.send_simple(chat_id, t.(:unknown_field))
           end
 
           begin
@@ -192,31 +191,30 @@ module Telegram
               rescue => e
                 Rails.logger.error "[Telegram::Flows::Profile::FieldFlow] process_profile_field_reply: cache delete failed for chat=#{chat_id}: #{e.class}: #{e.message}"
               end
-              Rails.logger.info "[Telegram::Flows::Profile::FieldFlow] field #{field} updated user_id=#{user.id}"
               ResolveUserCityJob.perform_later(user.id, text) if field == "city" && text.present?
-              Telegram::Api.send_simple(chat_id, "Field updated.")
-              # immediately refresh profile view so user sees new city
+              Telegram::Api.send_simple(chat_id, t.(:field_updated))
               Telegram::Handlers::ProfileHandler.show_profile(chat_id) rescue nil
             else
               if user.errors.any?
                 msgs = user.errors.full_messages.join(", ")
-                Rails.logger.error "[Telegram::Flows::Profile::FieldFlow] profile field validation failed user_id=#{user.id} errors=#{msgs.inspect} details=#{user.errors.details.inspect}"
-                Telegram::Api.send_simple(chat_id, "Failed to update field: #{msgs}")
+                Telegram::Api.send_simple(chat_id, t.(:field_update_failed, errors: msgs))
               else
-                Rails.logger.error "[Telegram::Flows::Profile::FieldFlow] profile field validation failed user_id=#{user.id} (no validation messages)"
-                Telegram::Api.send_simple(chat_id, "Failed to update field: Validation failed")
+                Telegram::Api.send_simple(chat_id, t.(:validation_failed))
               end
             end
           rescue ActiveRecord::RecordNotUnique => e
-            Rails.logger.error "[Telegram::Flows::Profile::FieldFlow] DB unique constraint failed: #{e.class}: #{e.message}\n#{e.backtrace.first(8).join("\n")}"
-            Telegram::Api.send_simple(chat_id, "Value conflicts with another record (unique constraint).")
+            Rails.logger.error "[Telegram::Flows::Profile::FieldFlow] DB unique constraint failed: #{e.class}: #{e.message}"
+            Telegram::Api.send_simple(chat_id, t.(:unique_constraint))
           rescue => e
-            Rails.logger.error "[Telegram::Flows::Profile::FieldFlow] profile field save exception user_id=#{user&.id} #{e.class}: #{e.message}\n#{e.backtrace.first(8).join("\n")}\nuser_errors=#{user&.errors&.full_messages&.inspect} details=#{user&.errors&.details&.inspect}"
-            Telegram::Api.send_simple(chat_id, "Failed to update field: #{(user&.errors&.full_messages&.join(', ').presence || "#{e.class}: #{e.message}")}")
+            Rails.logger.error "[Telegram::Flows::Profile::FieldFlow] profile field save exception user_id=#{user&.id} #{e.class}: #{e.message}"
+            Telegram::Api.send_simple(chat_id, t.(:field_update_failed, errors: e.message))
           end
         end
 
         def process_notify_callback(chat_id, action, cb_id: nil, message_id: nil)
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+
           begin
             user = User.find_by(telegram_chat_id: chat_id.to_s)
           rescue => e
@@ -224,8 +222,7 @@ module Telegram
             return Telegram::Api.answer_callback(cb_id, "Internal error", show_alert: true)
           end
           unless user
-            Rails.logger.info "[Telegram::Flows::Profile::FieldFlow] process_notify_callback: no linked user for chat=#{chat_id}"
-            return Telegram::Api.answer_callback(cb_id, "No linked account", show_alert: false)
+            return Telegram::Api.answer_callback(cb_id, t.(:no_linked_account), show_alert: false)
           end
 
           if action == "cancel"
@@ -234,7 +231,7 @@ module Telegram
             rescue => e
               Rails.logger.error "[Telegram::Flows::Profile::FieldFlow] process_notify_callback: cache delete failed for chat=#{chat_id}: #{e.class}: #{e.message}"
             end
-            Telegram::Api.edit_message_with_buttons(chat_id, message_id, "Edit cancelled.", [[{ text: "Edit profile", callback_data: "profile:edit" }]]) rescue nil
+            Telegram::Api.edit_message_with_buttons(chat_id, message_id, t.(:edit_cancelled), [[{ text: t.(:edit_profile), callback_data: "profile:edit" }]]) rescue nil
             Telegram::Api.answer_callback(cb_id) rescue nil
             return
           end
@@ -250,14 +247,16 @@ module Telegram
               Rails.logger.error "[Telegram::Flows::Profile::FieldFlow] process_notify_callback: cache delete failed for chat=#{chat_id}: #{e.class}: #{e.message}"
             end
             Telegram::Flows::ProfileFlow.start_edit_profile(chat_id, message_id: message_id)
-            Telegram::Api.answer_callback(cb_id, "Notify: #{val ? 'Yes' : 'No'}") rescue nil
+            Telegram::Api.answer_callback(cb_id, "#{t.(:field_notify)}: #{val ? t.(:yes_label) : t.(:no_label)}") rescue nil
           else
-            Rails.logger.error "[Telegram::Flows::Profile::FieldFlow] failed saving notify for user_id=#{user.id} errors=#{user.errors.full_messages.join(', ')}"
             Telegram::Api.answer_callback(cb_id, "Failed to save", show_alert: true) rescue nil
           end
         end
 
         def process_coach_callback(chat_id, action, cb_id: nil, message_id: nil)
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+
           begin
             user = User.find_by(telegram_chat_id: chat_id.to_s)
           rescue => e
@@ -265,8 +264,7 @@ module Telegram
             return Telegram::Api.answer_callback(cb_id, "Internal error", show_alert: true)
           end
           unless user
-            Rails.logger.info "[Telegram::Flows::Profile::FieldFlow] process_coach_callback: no linked user for chat=#{chat_id}"
-            return Telegram::Api.answer_callback(cb_id, "No linked account", show_alert: false)
+            return Telegram::Api.answer_callback(cb_id, t.(:no_linked_account), show_alert: false)
           end
 
           if action == "cancel"
@@ -275,7 +273,7 @@ module Telegram
             rescue => e
               Rails.logger.error "[Telegram::Flows::Profile::FieldFlow] process_coach_callback: cache delete failed for chat=#{chat_id}: #{e.class}: #{e.message}"
             end
-            Telegram::Api.edit_message_with_buttons(chat_id, message_id, "Edit cancelled.", [[{ text: "Edit profile", callback_data: "profile:edit" }]]) rescue nil
+            Telegram::Api.edit_message_with_buttons(chat_id, message_id, t.(:edit_cancelled), [[{ text: t.(:edit_profile), callback_data: "profile:edit" }]]) rescue nil
             Telegram::Api.answer_callback(cb_id) rescue nil
             return
           end
@@ -289,9 +287,8 @@ module Telegram
               Rails.logger.error "[Telegram::Flows::Profile::FieldFlow] process_coach_callback: cache delete failed for chat=#{chat_id}: #{e.class}: #{e.message}"
             end
             Telegram::Flows::ProfileFlow.start_edit_profile(chat_id, message_id: message_id)
-            Telegram::Api.answer_callback(cb_id, "Coach: #{val ? 'Yes' : 'No'}") rescue nil
+            Telegram::Api.answer_callback(cb_id, "#{t.(:field_coach)}: #{val ? t.(:yes_label) : t.(:no_label)}") rescue nil
           else
-            Rails.logger.error "[Telegram::Flows::Profile::FieldFlow] failed saving coach for user_id=#{user.id} errors=#{user.errors.full_messages.join(', ')}"
             Telegram::Api.answer_callback(cb_id, "Failed to save", show_alert: true) rescue nil
           end
         end

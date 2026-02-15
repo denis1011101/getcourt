@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_10_060249) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_11_120000) do
   create_table "cities", force: :cascade do |t|
     t.integer "geoname_id"
     t.string "name"
@@ -263,6 +263,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_10_060249) do
     t.string "timezone", default: "Asia/Yekaterinburg"
     t.string "city_name"
     t.boolean "notify_nearby", default: false, null: false
+    t.string "telegram_locale", default: "ru", null: false
     t.index ["email"], name: "index_users_on_email", unique: true, where: "email IS NOT NULL"
     t.index ["login_code"], name: "index_users_on_login_code"
     t.index ["registration_source"], name: "index_users_on_registration_source"

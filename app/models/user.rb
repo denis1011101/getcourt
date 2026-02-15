@@ -35,6 +35,10 @@ class User < ApplicationRecord
   attribute :preferred_sports, :json, default: []
   attribute :skill_levels, :json, default: {}
   attribute :timezone, :string
+  attribute :telegram_locale, :string, default: "ru"
+
+  TELEGRAM_LOCALES = %w[ru en].freeze
+  validates :telegram_locale, inclusion: { in: TELEGRAM_LOCALES }, allow_blank: true
 
   # возвращает уровень для спорта (строка или nil)
   def skill_level_for(sport)
