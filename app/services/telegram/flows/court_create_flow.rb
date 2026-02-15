@@ -15,7 +15,7 @@ module Telegram
       TOTAL_STEPS = ALL_STEPS.size
 
       class << self
-        def start(chat_id, return_to: nil)
+        def start(chat_id, return_to: nil, message_id: nil)
           locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
           t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
@@ -29,10 +29,11 @@ module Telegram
             "flow" => "create_court",
             "step" => "name",
             "fields" => {},
-            "return_to" => return_to
+            "return_to" => return_to,
+            "wizard_message_id" => message_id
           })
 
-          send_step_prompt(chat_id, "name")
+          send_step_prompt(chat_id, "name", message_id: message_id)
         rescue => e
           Rails.logger.error "[CourtCreateFlow] start error: #{e.class} #{e.message}"
         end
@@ -41,25 +42,21 @@ module Telegram
           cb = Telegram::Helpers::CallbackData.parse(callback)
           locale = Telegram::Helpers::UserLookup.locale_for(cb.chat_id)
           t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+          sync_wizard_message_id(cb.chat_id, cb.message_id)
 
           case cb.data
           when /\Acourt:create\z/
             Telegram::Api.answer_callback(cb.cb_id, "") rescue nil
-            start(cb.chat_id)
+            start(cb.chat_id, message_id: cb.message_id)
             nil
 
           when /\Acourt:create:cancel\z/
             Telegram::Api.answer_callback(cb.cb_id, t.(:create_court_cancelled)) rescue nil
             conv = Telegram::Helpers::Conversation.get(cb.chat_id)
             return_to = conv["return_to"]
+            remove_location_prompt_message(cb.chat_id, conv: conv)
             Telegram::Helpers::Conversation.finish(cb.chat_id)
-
-            # Remove reply keyboard if it was shown
-            Telegram::Api.send_api("sendMessage", {
-              chat_id: cb.chat_id,
-              text: ".",
-              reply_markup: { remove_keyboard: true }
-            }) rescue nil
+            remove_reply_keyboard_silently(cb.chat_id)
 
             if return_to == "game_create"
               # Restore saved game fields and return to court selection step
@@ -68,9 +65,10 @@ module Telegram
               Telegram::Helpers::Conversation.start(cb.chat_id, {
                 "flow" => "create_game",
                 "step" => "court",
-                "fields" => saved_fields
+                "fields" => saved_fields,
+                "wizard_message_id" => cb.message_id
               })
-              Telegram::Flows::Games::Manage::CreateFlow.send(:send_court_selection, cb.chat_id, 1)
+              Telegram::Flows::Games::Manage::CreateFlow.send(:send_court_selection, cb.chat_id, 1, message_id: cb.message_id)
             else
               Telegram::Handlers::MenuHandler.menu(cb.chat_id, message_id: cb.message_id)
             end
@@ -78,7 +76,7 @@ module Telegram
 
           when /\Acourt:create:skip\z/
             Telegram::Api.answer_callback(cb.cb_id, "") rescue nil
-            handle_skip(cb.chat_id)
+            handle_skip(cb.chat_id, cb.message_id)
             nil
 
           when /\Acourt:create:contact_type:(.+)\z/
@@ -105,11 +103,12 @@ module Telegram
           step = conv["step"]
           locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
           t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+          consume_user_text_message(chat_id, message)
 
           case step
           when "name"
             if text.blank?
-              Telegram::Api.send_simple(chat_id, t.(:create_court_name_invalid))
+              re_prompt_with_error(chat_id, conv, step, t.(:create_court_name_invalid))
               return true
             end
             conv["fields"]["name"] = text
@@ -119,7 +118,7 @@ module Telegram
             # Try to parse as coordinates "lat,lon"
             coords = parse_coordinates(text)
             unless coords
-              Telegram::Api.send_simple(chat_id, t.(:create_court_location_invalid))
+              re_prompt_with_error(chat_id, conv, step, t.(:create_court_location_invalid))
               return true
             end
             conv["fields"]["coordinates"] = "#{coords[0]},#{coords[1]}"
@@ -130,7 +129,7 @@ module Telegram
             save_and_advance(chat_id, conv, "contact_value")
 
           else
-            Telegram::Api.send_simple(chat_id, t.(:please_use_buttons))
+            re_prompt_with_error(chat_id, conv, step, t.(:please_use_buttons))
           end
 
           true
@@ -164,25 +163,28 @@ module Telegram
           ALL_STEPS.index(step).to_i + 1
         end
 
-        def send_step_prompt(chat_id, step)
+        def send_step_prompt(chat_id, step, message_id: nil)
           locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
           t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+          message_id ||= Telegram::Helpers::Conversation.get(chat_id)["wizard_message_id"]
+          entered_text = entered_fields_text(chat_id, locale: locale)
 
           header = t.(:create_court_step, step: step_number(step), total: TOTAL_STEPS)
           cancel_row = [{ text: t.(:cancel_btn), callback_data: "court:create:cancel" }]
 
           case step
           when "name"
-            text = "#{header}\n\n#{t.(:create_court_name)}"
+            text = build_step_text(header, t.(:create_court_name), nil, entered_text: entered_text)
             buttons = [cancel_row]
-            Telegram::Api.send_with_buttons(chat_id, text, buttons)
+            send_or_edit_step_prompt(chat_id, text, buttons, message_id: message_id)
 
           when "location"
-            text = "#{header}\n\n#{t.(:create_court_location)}"
-            # Request location via reply keyboard
-            Telegram::Api.send_api("sendMessage", {
+            text = build_step_text(header, t.(:create_court_location), nil, entered_text: entered_text)
+            buttons = [cancel_row]
+            send_or_edit_step_prompt(chat_id, text, buttons, message_id: message_id)
+            resp = Telegram::Api.send_api("sendMessage", {
               chat_id: chat_id,
-              text: text,
+              text: t.(:create_court_location_btn),
               reply_markup: {
                 keyboard: [
                   [{ text: t.(:create_court_location_btn), request_location: true }]
@@ -191,11 +193,17 @@ module Telegram
                 one_time_keyboard: true
               }
             })
-            # Also send inline cancel button
-            Telegram::Api.send_with_buttons(chat_id, t.(:cancel_btn), [cancel_row])
+            location_prompt_message_id = resp.dig("result", "message_id")
+            if location_prompt_message_id
+              conv = Telegram::Helpers::Conversation.get(chat_id)
+              conv["location_prompt_message_id"] = location_prompt_message_id
+              Telegram::Helpers::Conversation.set(chat_id, conv)
+            end
 
           when "contact_type"
-            text = "#{header}\n\n#{t.(:create_court_contact_type)}"
+            remove_location_prompt_message(chat_id)
+            remove_reply_keyboard_silently(chat_id)
+            text = build_step_text(header, t.(:create_court_contact_type), nil, entered_text: entered_text)
             ct_buttons = Court::CONTACT_TYPES.map do |ct|
               [{ text: ct.capitalize, callback_data: "court:create:contact_type:#{ct}" }]
             end
@@ -203,26 +211,21 @@ module Telegram
               [{ text: t.(:skip_btn), callback_data: "court:create:skip" }],
               cancel_row
             ]
-            # Remove the reply keyboard
-            Telegram::Api.send_api("sendMessage", {
-              chat_id: chat_id,
-              text: ".",
-              reply_markup: { remove_keyboard: true }
-            }) rescue nil
-            Telegram::Api.send_with_buttons(chat_id, text, buttons)
+            send_or_edit_step_prompt(chat_id, text, buttons, message_id: message_id)
 
           when "contact_value"
-            text = "#{header}\n\n#{t.(:create_court_contact_value)}"
+            text = build_step_text(header, t.(:create_court_contact_value), nil, entered_text: entered_text)
             buttons = [
               [{ text: t.(:skip_btn), callback_data: "court:create:skip" }],
               cancel_row
             ]
-            Telegram::Api.send_with_buttons(chat_id, text, buttons)
+            send_or_edit_step_prompt(chat_id, text, buttons, message_id: message_id)
           end
         end
 
-        def handle_skip(chat_id)
+        def handle_skip(chat_id, message_id)
           conv = Telegram::Helpers::Conversation.get(chat_id)
+          conv["wizard_message_id"] ||= message_id
           step = conv["step"]
           if OPTIONAL_STEPS.include?(step)
             save_and_advance(chat_id, conv, step)
@@ -242,10 +245,135 @@ module Telegram
           if next_step
             conv["step"] = next_step
             Telegram::Helpers::Conversation.set(chat_id, conv)
-            send_step_prompt(chat_id, next_step)
+            send_step_prompt(chat_id, next_step, message_id: conv["wizard_message_id"])
           else
             finalize_court(chat_id, conv)
           end
+        end
+
+        def send_or_edit_step_prompt(chat_id, text, buttons, message_id: nil)
+          if message_id
+            begin
+              Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, buttons)
+            rescue
+              Telegram::Api.send_with_buttons(chat_id, text, buttons)
+            end
+          else
+            Telegram::Api.send_with_buttons(chat_id, text, buttons)
+          end
+        end
+
+        def re_prompt_with_error(chat_id, conv, step, error_text)
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+          header = t.(:create_court_step, step: step_number(step), total: TOTAL_STEPS)
+          entered_text = entered_fields_text(chat_id, locale: locale)
+          prompt_key = case step
+                       when "name" then :create_court_name
+                       when "location" then :create_court_location
+                       when "contact_type" then :create_court_contact_type
+                       when "contact_value" then :create_court_contact_value
+                       else :please_use_buttons
+                       end
+          prompt_text = t.(prompt_key)
+          text = build_step_text(header, prompt_text, error_text, entered_text: entered_text)
+
+          cancel_row = [{ text: t.(:cancel_btn), callback_data: "court:create:cancel" }]
+          buttons = case step
+                    when "contact_type"
+                      Court::CONTACT_TYPES.map { |ct| [{ text: ct.capitalize, callback_data: "court:create:contact_type:#{ct}" }] } + [
+                        [{ text: t.(:skip_btn), callback_data: "court:create:skip" }],
+                        cancel_row
+                      ]
+                    when "contact_value"
+                      [
+                        [{ text: t.(:skip_btn), callback_data: "court:create:skip" }],
+                        cancel_row
+                      ]
+                    else
+                      [cancel_row]
+                    end
+          send_or_edit_step_prompt(chat_id, text, buttons, message_id: conv["wizard_message_id"])
+        end
+
+        def build_step_text(header, prompt_text, error_text = nil, entered_text: nil)
+          parts = [header]
+          parts << entered_text unless entered_text.to_s.empty?
+          parts << prompt_text
+          base = parts.join("\n\n")
+          return base if error_text.to_s.empty?
+          "#{error_text}\n\n#{base}"
+        end
+
+        def entered_fields_text(chat_id, locale:)
+          conv = Telegram::Helpers::Conversation.get(chat_id)
+          fields = conv["fields"] || {}
+          return nil if fields.empty?
+
+          ru = locale.to_s.start_with?("ru")
+          labels = if ru
+            {
+              name: "Название",
+              coordinates: "Координаты",
+              contact_type: "Тип контакта",
+              contact_value: "Контакт"
+            }
+          else
+            {
+              name: "Name",
+              coordinates: "Coordinates",
+              contact_type: "Contact type",
+              contact_value: "Contact"
+            }
+          end
+
+          lines = []
+          lines << "#{labels[:name]}: #{fields["name"]}" if fields["name"].present?
+          lines << "#{labels[:coordinates]}: #{fields["coordinates"]}" if fields["coordinates"].present?
+          lines << "#{labels[:contact_type]}: #{fields["contact_type"]}" if fields["contact_type"].present?
+          lines << "#{labels[:contact_value]}: #{fields["contact_value"]}" if fields["contact_value"].present?
+          lines.any? ? lines.join("\n") : nil
+        end
+
+        def consume_user_text_message(chat_id, message)
+          message_id = message["message_id"]
+          return unless message_id
+          Telegram::Api.post("deleteMessage", { "chat_id" => chat_id.to_s, "message_id" => message_id.to_i })
+        rescue => e
+          Rails.logger.debug "[CourtCreateFlow] consume_user_text_message error: #{e.class} #{e.message}"
+        end
+
+        def sync_wizard_message_id(chat_id, message_id)
+          return unless message_id
+          conv = Telegram::Helpers::Conversation.get(chat_id)
+          return unless conv["flow"] == "create_court"
+          return if conv["wizard_message_id"] == message_id
+          conv["wizard_message_id"] = message_id
+          Telegram::Helpers::Conversation.set(chat_id, conv)
+        end
+
+        def remove_location_prompt_message(chat_id, conv: nil)
+          conv ||= Telegram::Helpers::Conversation.get(chat_id)
+          msg_id = conv["location_prompt_message_id"]
+          return unless msg_id
+          Telegram::Api.post("deleteMessage", { "chat_id" => chat_id.to_s, "message_id" => msg_id.to_i })
+          conv.delete("location_prompt_message_id")
+          Telegram::Helpers::Conversation.set(chat_id, conv)
+        rescue => e
+          Rails.logger.debug "[CourtCreateFlow] remove_location_prompt_message error: #{e.class} #{e.message}"
+        end
+
+        def remove_reply_keyboard_silently(chat_id)
+          resp = Telegram::Api.send_api("sendMessage", {
+            chat_id: chat_id,
+            text: ".",
+            reply_markup: { remove_keyboard: true }
+          })
+          msg_id = resp.dig("result", "message_id")
+          return unless msg_id
+          Telegram::Api.post("deleteMessage", { "chat_id" => chat_id.to_s, "message_id" => msg_id.to_i })
+        rescue => e
+          Rails.logger.debug "[CourtCreateFlow] remove_reply_keyboard_silently error: #{e.class} #{e.message}"
         end
 
         def finalize_court(chat_id, conv)
@@ -255,15 +383,11 @@ module Telegram
           user = Telegram::Helpers::UserLookup.find_user(chat_id)
           fields = conv["fields"] || {}
           return_to = conv["return_to"]
+          wizard_message_id = conv["wizard_message_id"]
 
+          remove_location_prompt_message(chat_id, conv: conv)
           Telegram::Helpers::Conversation.finish(chat_id)
-
-          # Remove reply keyboard if it was shown
-          Telegram::Api.send_api("sendMessage", {
-            chat_id: chat_id,
-            text: ".",
-            reply_markup: { remove_keyboard: true }
-          }) rescue nil
+          remove_reply_keyboard_silently(chat_id)
 
           court = Court.new(
             name: fields["name"],
@@ -275,8 +399,6 @@ module Telegram
           )
 
           if court.save
-            Telegram::Api.send_simple(chat_id, t.(:create_court_success))
-
             if return_to == "game_create"
               # Restore saved game creation fields and resume at court step
               saved_fields = Rails.cache.read("tg:game_create_fields:#{chat_id}") || {}
@@ -284,10 +406,11 @@ module Telegram
               Telegram::Helpers::Conversation.start(chat_id, {
                 "flow" => "create_game",
                 "step" => "court",
-                "fields" => saved_fields
+                "fields" => saved_fields,
+                "wizard_message_id" => wizard_message_id
               })
               # Let user re-pick from courts including the new one
-              Telegram::Flows::Games::Manage::CreateFlow.send(:send_court_selection, chat_id, 1)
+              Telegram::Flows::Games::Manage::CreateFlow.send(:send_court_selection, chat_id, 1, message_id: wizard_message_id)
             else
               Telegram::Handlers::MenuHandler.menu(chat_id)
             end

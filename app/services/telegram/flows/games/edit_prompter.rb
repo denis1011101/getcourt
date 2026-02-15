@@ -9,7 +9,8 @@ module Telegram
           end
 
           # Build unified buttons for :create and :edit flows
-          def build_buttons(mode, game_id, message_id = nil)
+          def build_buttons(mode, game_id, message_id = nil, locale: "ru")
+            t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
             case mode
             when :create
               [
@@ -25,33 +26,38 @@ module Telegram
             when :edit
               # mirror create layout for edit mode (use edit callbacks)
               kb = [
-                [{ text: "Date", callback_data: "game:edit:field:#{game_id}:date" }],
-                [{ text: "Time", callback_data: "game:edit:field:#{game_id}:time" }],
-                [{ text: "Players", callback_data: "game:edit:field:#{game_id}:players_count" }],
-                [{ text: "Sport / Title", callback_data: "game:edit:field:#{game_id}:sport" }],
-                [{ text: "Court", callback_data: "game:edit:field:#{game_id}:court_id" }],
-                [{ text: "Preview / Confirm", callback_data: "game:edit:confirm:#{game_id}" }]
+                [{ text: t.(:edit_field_date), callback_data: "game:edit:field:#{game_id}:date" }],
+                [{ text: t.(:edit_field_time), callback_data: "game:edit:field:#{game_id}:time" }],
+                [{ text: t.(:edit_field_players), callback_data: "game:edit:field:#{game_id}:players_count" }],
+                [{ text: t.(:edit_field_sport), callback_data: "game:edit:field:#{game_id}:sport" }],
+                [{ text: t.(:edit_field_court), callback_data: "game:edit:field:#{game_id}:court_id" }],
+                [{ text: t.(:edit_preview_confirm), callback_data: "game:edit:confirm:#{game_id}" }]
               ]
               cb = "game:edit:cancel:#{game_id}"
               cb += ":#{message_id}" if message_id
-              kb << [{ text: "Cancel", callback_data: cb }]
+              kb << [{ text: t.(:cancel_btn), callback_data: cb }]
               kb
             else
               []
             end
           end
 
-          def prompt_text(mode, game_id = nil)
-            mode == :create ? "CREATE GAME — use buttons below to fill fields. Click a field to enter value. When ready — press Preview / Confirm." : "Edit game ##{game_id} — choose field to edit:"
+          def prompt_text(mode, game_id = nil, locale: "ru")
+            return "CREATE GAME — use buttons below to fill fields. Click a field to enter value. When ready — press Preview / Confirm." if mode == :create
+            Telegram::I18n.t(:edit_game_prompt, locale: locale, game_id: game_id)
           end
 
           def send_edit_prompts(chat_id, game_id, original_message_id = nil)
             poller = Telegram::Poller.new
             chat_id = chat_id.to_s
+            locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
             state = nil
             # use unified prompt text + buttons for edit mode
-            initial = prompt_text(:edit, game_id)
-            kb = build_buttons(:edit, game_id, original_message_id)
+            game = Game.find_by(id: game_id)
+            initial = prompt_text(:edit, game_id, locale: locale)
+            current_values = current_values_text(game, locale: locale)
+            initial = [initial, current_values].compact.join("\n\n")
+            kb = build_buttons(:edit, game_id, original_message_id, locale: locale)
 
             if original_message_id
               resp = poller.send_api("editMessageText", {
@@ -86,6 +92,26 @@ module Telegram
 
             state
           end
+
+          def current_values_text(game, locale: "ru")
+            return nil unless game
+
+            t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+            lines = []
+            lines << "#{t.(:edit_field_date)}: #{game.date}" if game.date.present?
+            lines << "#{t.(:edit_field_time)}: #{game.time}" if game.time.present?
+            lines << "#{t.(:edit_field_players)}: #{game.players_count}" if game.players_count.present?
+            lines << "#{t.(:edit_field_sport)}: #{game.sport}" if game.sport.present?
+
+            court_name = game.court&.name
+            if court_name.present?
+              lines << "#{t.(:edit_field_court)}: #{court_name}"
+            elsif game.court_id.present?
+              lines << "#{t.(:edit_field_court)}: ##{game.court_id}"
+            end
+
+            lines.any? ? lines.join("\n") : nil
+          end
         end
 
         # Instance handler for create/edit field callbacks delegated from ManageFlow
@@ -96,6 +122,8 @@ module Telegram
           chat_id = (callback.dig("message","chat","id") || from["id"]).to_s
           message_id = callback.dig("message","message_id") || callback["inline_message_id"]
           poller = Telegram::Poller.new
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
           # support both create and edit field callbacks
           if data =~ /\Agame:create:field:(\w+):(\d+)\z/ || data =~ /\Agame:edit:field:(\d+):([a-z_]+)\z/
@@ -109,11 +137,11 @@ module Telegram
 
             label =
               case field
-              when "date" then "date (YYYY-MM-DD)"
-              when "time" then "time (HH:MM)"
-              when "players_count" then "players count (integer)"
-              when "sport" then "sport"
-              when "court_id" then "court id (integer)"
+              when "date" then t.(:edit_field_label_date)
+              when "time" then t.(:edit_field_label_time)
+              when "players_count" then t.(:edit_field_label_players)
+              when "sport" then t.(:edit_field_label_sport)
+              when "court_id" then t.(:edit_field_label_court)
               else field
               end
 
@@ -128,23 +156,23 @@ module Telegram
               buttons = User::SPORTS.each_slice(2).map do |row|
                 row.map { |s| { text: s, callback_data: "game:edit:set:sport:#{game_id}:#{CGI.escape(s)}:#{message_id}" } }
               end
-              buttons << [{ text: "Cancel", callback_data: "game:edit:cancel:#{game_id}:#{message_id}" }]
+              buttons << [{ text: t.(:cancel_btn), callback_data: "game:edit:cancel:#{game_id}:#{message_id}" }]
               if message_id
-                poller.send_api("editMessageText", { chat_id: chat_id, message_id: message_id, text: "Choose new sport:", reply_markup: { inline_keyboard: buttons } }) rescue nil
+                poller.send_api("editMessageText", { chat_id: chat_id, message_id: message_id, text: t.(:edit_choose_new_sport), reply_markup: { inline_keyboard: buttons } }) rescue nil
               else
-                poller.send_api("sendMessage", { chat_id: chat_id, text: "Choose new sport:", reply_markup: { inline_keyboard: buttons } }) rescue nil
+                poller.send_api("sendMessage", { chat_id: chat_id, text: t.(:edit_choose_new_sport), reply_markup: { inline_keyboard: buttons } }) rescue nil
               end
 
             elsif field == "players_count"
               buttons = [
                 [{ text: "2", callback_data: "game:edit:set:players_count:#{game_id}:2:#{message_id}" }],
                 [{ text: "4", callback_data: "game:edit:set:players_count:#{game_id}:4:#{message_id}" }],
-                [{ text: "Cancel", callback_data: "game:edit:cancel:#{game_id}:#{message_id}" }]
+                [{ text: t.(:cancel_btn), callback_data: "game:edit:cancel:#{game_id}:#{message_id}" }]
               ]
               if message_id
-                poller.send_api("editMessageText", { chat_id: chat_id, message_id: message_id, text: "Choose players count:", reply_markup: { inline_keyboard: buttons } }) rescue nil
+                poller.send_api("editMessageText", { chat_id: chat_id, message_id: message_id, text: t.(:edit_choose_players_count), reply_markup: { inline_keyboard: buttons } }) rescue nil
               else
-                poller.send_api("sendMessage", { chat_id: chat_id, text: "Choose players count:", reply_markup: { inline_keyboard: buttons } }) rescue nil
+                poller.send_api("sendMessage", { chat_id: chat_id, text: t.(:edit_choose_players_count), reply_markup: { inline_keyboard: buttons } }) rescue nil
               end
 
             elsif field == "court_id"
@@ -157,11 +185,11 @@ module Telegram
                 poller.send_api("editMessageText", {
                   chat_id: chat_id,
                   message_id: message_id,
-                  text: "Send new value for #{label}:",
-                  reply_markup: { inline_keyboard: [[{ text: "Cancel", callback_data: "game:edit:cancel:#{game_id}:#{message_id}" }]] }
+                  text: t.(:edit_send_new_value_for, label: label),
+                  reply_markup: { inline_keyboard: [[{ text: t.(:cancel_btn), callback_data: "game:edit:cancel:#{game_id}:#{message_id}" }]] }
                 }) rescue nil
               else
-                poller.send_api("sendMessage", { chat_id: chat_id, text: "Send new value for #{label}:" }) rescue nil
+                poller.send_api("sendMessage", { chat_id: chat_id, text: t.(:edit_send_new_value_for, label: label) }) rescue nil
               end
             end
           end

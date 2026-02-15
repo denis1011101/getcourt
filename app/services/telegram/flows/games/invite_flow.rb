@@ -158,11 +158,11 @@ module Telegram
               end
 
               next unless user.telegram_chat_id.present?
+              target_locale = Telegram::Helpers::UserLookup.locale_for(user.telegram_chat_id)
 
               label =
                 if Telegram::Handlers::GamesHandler.respond_to?(:game_label)
                   # IMPORTANT: show inviter nick (not game owner) in the label
-                  target_locale = Telegram::Helpers::UserLookup.locale_for(user.telegram_chat_id)
                   Telegram::Handlers::GamesHandler.game_label(game, owner: inviter, locale: target_locale)
                 else
                   "Game ##{game.id}"
@@ -173,7 +173,7 @@ module Telegram
 
               poller.send_api("sendMessage", {
                 chat_id: user.telegram_chat_id.to_s,
-                text: "You are invited to join:\n#{label}\n\n#{game_url}",
+                text: Telegram::I18n.t(:invite_message, locale: target_locale, label: label, url: game_url),
                 reply_markup: {
                   inline_keyboard: [[
                     { text: "Join ##{game.id}", callback_data: "game:join_invited:#{game.id}" },
@@ -183,14 +183,16 @@ module Telegram
               }) rescue nil
             end
 
+            locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+            ru = locale.to_s.start_with?("ru")
             summary =
               if not_found.empty? && skipped_self.empty?
-                "Invitations sent."
+                ru ? "Приглашения отправлены." : "Invitations sent."
               else
                 parts = []
-                parts << "Not found: #{not_found.join(', ')}" if not_found.any?
-                parts << "Skipped self: #{skipped_self.join(', ')}" if skipped_self.any?
-                "Invitations processed. #{parts.join('. ')}"
+                parts << (ru ? "Не найдено: #{not_found.join(', ')}" : "Not found: #{not_found.join(', ')}") if not_found.any?
+                parts << (ru ? "Себя пропустили: #{skipped_self.join(', ')}" : "Skipped self: #{skipped_self.join(', ')}") if skipped_self.any?
+                "#{ru ? 'Приглашения обработаны' : 'Invitations processed'}. #{parts.join('. ')}"
               end
 
             Rails.cache.delete(invite_cache_key(chat_id))

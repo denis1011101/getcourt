@@ -21,10 +21,11 @@ module Telegram
               cb = Telegram::Helpers::CallbackData.parse(callback)
               locale = Telegram::Helpers::UserLookup.locale_for(cb.chat_id)
               t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+              sync_wizard_message_id(cb.chat_id, cb.message_id)
 
               case cb.data
               when /\Agame:create\z/
-                start_create_game(cb.chat_id, cb_id: cb.cb_id)
+                start_create_game(cb.chat_id, cb_id: cb.cb_id, message_id: cb.message_id)
                 nil
 
               when /\Agame:create:cancel\z/
@@ -51,7 +52,7 @@ module Telegram
                 game_fields = conv["fields"] || {}
                 # Store game fields in a separate cache key so they survive the court creation
                 Rails.cache.write("tg:game_create_fields:#{cb.chat_id}", game_fields, expires_in: 2.hours)
-                Telegram::Flows::CourtCreateFlow.start(cb.chat_id, return_to: "game_create")
+                Telegram::Flows::CourtCreateFlow.start(cb.chat_id, return_to: "game_create", message_id: cb.message_id)
                 nil
 
               when /\Agame:create:court_page:(\d+)\z/
@@ -82,6 +83,10 @@ module Telegram
                 count = $1.to_i
                 Telegram::Api.answer_callback(cb.cb_id, "") rescue nil
                 conv = Telegram::Helpers::Conversation.get(cb.chat_id)
+                unless [2, 4].include?(count)
+                  re_prompt_with_error(cb.chat_id, conv, "players_count", t.(:create_game_players_invalid))
+                  return nil
+                end
                 conv["fields"] ||= {}
                 conv["fields"]["players_count"] = count
                 save_and_advance(cb.chat_id, conv, "players_count")
@@ -137,7 +142,7 @@ module Telegram
               nil
             end
 
-            def start_create_game(chat_id, cb_id: nil)
+            def start_create_game(chat_id, cb_id: nil, message_id: nil)
               locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
               t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
@@ -153,10 +158,11 @@ module Telegram
               Telegram::Helpers::Conversation.start(chat_id, {
                 "flow" => "create_game",
                 "step" => "date",
-                "fields" => {}
+                "fields" => {},
+                "wizard_message_id" => message_id
               })
 
-              send_step_prompt(chat_id, "date")
+              send_step_prompt(chat_id, "date", message_id: message_id)
             rescue => e
               Rails.logger.error "[CreateFlow] start_create_game error: #{e.class} #{e.message}"
               nil
@@ -172,16 +178,17 @@ module Telegram
               step = conv["step"]
               locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
               t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+              consume_user_text_message(chat_id, message)
 
               case step
               when "date"
                 date = begin; Date.parse(text); rescue; nil; end
                 unless date
-                  Telegram::Api.send_simple(chat_id, t.(:create_game_date_invalid))
+                  re_prompt_with_error(chat_id, conv, step, t.(:create_game_date_invalid))
                   return true
                 end
                 if date < Date.current
-                  Telegram::Api.send_simple(chat_id, t.(:create_game_date_past))
+                  re_prompt_with_error(chat_id, conv, step, t.(:create_game_date_past))
                   return true
                 end
                 conv["fields"]["date"] = date.to_s
@@ -189,12 +196,12 @@ module Telegram
 
               when "time"
                 unless text.match?(/\A\d{1,2}:\d{2}\z/)
-                  Telegram::Api.send_simple(chat_id, t.(:create_game_time_invalid))
+                  re_prompt_with_error(chat_id, conv, step, t.(:create_game_time_invalid))
                   return true
                 end
                 h, m = text.split(":").map(&:to_i)
                 unless h.between?(0, 23) && m.between?(0, 59)
-                  Telegram::Api.send_simple(chat_id, t.(:create_game_time_invalid))
+                  re_prompt_with_error(chat_id, conv, step, t.(:create_game_time_invalid))
                   return true
                 end
                 conv["fields"]["time"] = text
@@ -202,8 +209,8 @@ module Telegram
 
               when "players_count"
                 count = text.to_i
-                unless count.between?(2, 30)
-                  Telegram::Api.send_simple(chat_id, t.(:create_game_players_invalid))
+                unless [2, 4].include?(count)
+                  re_prompt_with_error(chat_id, conv, step, t.(:create_game_players_invalid))
                   return true
                 end
                 conv["fields"]["players_count"] = count
@@ -211,7 +218,7 @@ module Telegram
 
               else
                 # Unexpected text input for this step — remind user to use buttons
-                Telegram::Api.send_simple(chat_id, t.(:please_use_buttons))
+                re_prompt_with_error(chat_id, conv, step, t.(:please_use_buttons))
               end
 
               true
@@ -226,36 +233,38 @@ module Telegram
               ALL_STEPS.index(step).to_i + 1
             end
 
-            def send_step_prompt(chat_id, step)
+            def send_step_prompt(chat_id, step, message_id: nil, error_text: nil)
               locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
               t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+              message_id ||= Telegram::Helpers::Conversation.get(chat_id)["wizard_message_id"]
+              entered_text = entered_fields_text(chat_id, locale: locale)
 
               header = t.(:create_game_step, step: step_number(step), total: TOTAL_STEPS)
               cancel_row = [{ text: t.(:cancel_btn), callback_data: "game:create:cancel" }]
 
               case step
               when "date"
-                text = "#{header}\n\n#{t.(:create_game_date)}"
+                text = build_step_text(header, t.(:create_game_date), error_text, entered_text: entered_text)
                 buttons = [cancel_row]
-                Telegram::Api.send_with_buttons(chat_id, text, buttons)
+                send_or_edit_step_prompt(chat_id, text, buttons, message_id: message_id)
 
               when "time"
-                text = "#{header}\n\n#{t.(:create_game_time)}"
+                text = build_step_text(header, t.(:create_game_time), error_text, entered_text: entered_text)
                 buttons = [cancel_row]
-                Telegram::Api.send_with_buttons(chat_id, text, buttons)
+                send_or_edit_step_prompt(chat_id, text, buttons, message_id: message_id)
 
               when "players_count"
-                text = "#{header}\n\n#{t.(:create_game_players)}"
+                text = build_step_text(header, t.(:create_game_players), error_text, entered_text: entered_text)
                 # Quick-pick buttons for common counts
-                row1 = [2, 4, 6, 8].map { |n| { text: n.to_s, callback_data: "game:create:players:#{n}" } }
+                row1 = [2, 4].map { |n| { text: n.to_s, callback_data: "game:create:players:#{n}" } }
                 buttons = [row1, cancel_row]
-                Telegram::Api.send_with_buttons(chat_id, text, buttons)
+                send_or_edit_step_prompt(chat_id, text, buttons, message_id: message_id)
 
               when "court"
-                send_court_selection(chat_id, 1)
+                send_court_selection(chat_id, 1, message_id: message_id, error_text: error_text)
 
               when "recurring"
-                text = "#{header}\n\n#{t.(:create_game_recurring)}"
+                text = build_step_text(header, t.(:create_game_recurring), error_text, entered_text: entered_text)
                 buttons = [
                   [
                     { text: t.(:yes_label), callback_data: "game:create:recurring:yes" },
@@ -264,7 +273,7 @@ module Telegram
                   [{ text: t.(:skip_btn), callback_data: "game:create:skip" }],
                   cancel_row
                 ]
-                Telegram::Api.send_with_buttons(chat_id, text, buttons)
+                send_or_edit_step_prompt(chat_id, text, buttons, message_id: message_id)
 
               when "prebooking"
                 # Only show if recurring was set to true
@@ -273,7 +282,7 @@ module Telegram
                   save_and_advance(chat_id, conv, "prebooking")
                   return
                 end
-                text = "#{header}\n\n#{t.(:create_game_prebooking)}"
+                text = build_step_text(header, t.(:create_game_prebooking), error_text, entered_text: entered_text)
                 buttons = [
                   [
                     { text: t.(:yes_label), callback_data: "game:create:prebooking:yes" },
@@ -282,10 +291,10 @@ module Telegram
                   [{ text: t.(:skip_btn), callback_data: "game:create:skip" }],
                   cancel_row
                 ]
-                Telegram::Api.send_with_buttons(chat_id, text, buttons)
+                send_or_edit_step_prompt(chat_id, text, buttons, message_id: message_id)
 
               when "with_coach"
-                text = "#{header}\n\n#{t.(:create_game_with_coach)}"
+                text = build_step_text(header, t.(:create_game_with_coach), error_text, entered_text: entered_text)
                 buttons = [
                   [
                     { text: t.(:yes_label), callback_data: "game:create:with_coach:yes" },
@@ -294,33 +303,34 @@ module Telegram
                   [{ text: t.(:skip_btn), callback_data: "game:create:skip" }],
                   cancel_row
                 ]
-                Telegram::Api.send_with_buttons(chat_id, text, buttons)
+                send_or_edit_step_prompt(chat_id, text, buttons, message_id: message_id)
 
               when "sport"
-                text = "#{header}\n\n#{t.(:create_game_sport)}"
+                text = build_step_text(header, t.(:create_game_sport), error_text, entered_text: entered_text)
                 sport_buttons = User::SPORTS.map { |s| [{ text: s, callback_data: "game:create:sport:#{s}" }] }
                 buttons = sport_buttons + [
                   [{ text: t.(:skip_btn), callback_data: "game:create:skip" }],
                   cancel_row
                 ]
-                Telegram::Api.send_with_buttons(chat_id, text, buttons)
+                send_or_edit_step_prompt(chat_id, text, buttons, message_id: message_id)
 
               when "skill_level"
-                text = "#{header}\n\n#{t.(:create_game_skill)}"
+                text = build_step_text(header, t.(:create_game_skill), error_text, entered_text: entered_text)
                 level_buttons = User::SKILL_LEVELS.map { |l| [{ text: l.titleize, callback_data: "game:create:skill:#{l}" }] }
                 buttons = level_buttons + [
                   [{ text: t.(:create_game_any_level), callback_data: "game:create:skill:any" }],
                   [{ text: t.(:skip_btn), callback_data: "game:create:skip" }],
                   cancel_row
                 ]
-                Telegram::Api.send_with_buttons(chat_id, text, buttons)
+                send_or_edit_step_prompt(chat_id, text, buttons, message_id: message_id)
               end
             end
 
-            def send_court_selection(chat_id, page, message_id: nil)
+            def send_court_selection(chat_id, page, message_id: nil, error_text: nil)
               locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
               t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
               user = Telegram::Helpers::UserLookup.find_user(chat_id)
+              entered_text = entered_fields_text(chat_id, locale: locale)
 
               courts = Court.visible_to(user).order(:name).to_a
               per_page = 5
@@ -331,11 +341,11 @@ module Telegram
 
               step_num = step_number("court")
               header = t.(:create_game_step, step: step_num, total: TOTAL_STEPS)
-              text = "#{header}\n\n#{t.(:create_game_court)}"
+              text = build_step_text(header, t.(:create_game_court), error_text, entered_text: entered_text)
               cancel_row = [{ text: t.(:cancel_btn), callback_data: "game:create:cancel" }]
 
               if courts.empty?
-                text = "#{header}\n\n#{t.(:create_game_no_courts)}"
+                text = build_step_text(header, t.(:create_game_no_courts), error_text, entered_text: entered_text)
                 buttons = [
                   [{ text: t.(:create_game_court_new), callback_data: "game:create:court_new" }],
                   cancel_row
@@ -384,6 +394,7 @@ module Telegram
 
             def handle_skip(chat_id, message_id)
               conv = Telegram::Helpers::Conversation.get(chat_id)
+              conv["wizard_message_id"] ||= message_id
               step = conv["step"]
               # Can only skip optional steps
               if OPTIONAL_STEPS.include?(step)
@@ -397,11 +408,115 @@ module Telegram
               if next_step
                 conv["step"] = next_step
                 Telegram::Helpers::Conversation.set(chat_id, conv)
-                send_step_prompt(chat_id, next_step)
+                send_step_prompt(chat_id, next_step, message_id: conv["wizard_message_id"])
               else
                 # All steps done — create the game
                 finalize_game(chat_id, conv)
               end
+            end
+
+            def send_or_edit_step_prompt(chat_id, text, buttons, message_id: nil)
+              if message_id
+                Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, buttons)
+              else
+                Telegram::Api.send_with_buttons(chat_id, text, buttons)
+              end
+            end
+
+            def re_prompt_with_error(chat_id, conv, step, error_text)
+              send_step_prompt(chat_id, step, message_id: conv["wizard_message_id"], error_text: error_text)
+            end
+
+            def build_step_text(header, prompt_text, error_text = nil, entered_text: nil)
+              parts = [header]
+              parts << entered_text unless entered_text.to_s.empty?
+              parts << prompt_text
+              base = parts.join("\n\n")
+              return base if error_text.to_s.empty?
+              "#{error_text}\n\n#{base}"
+            end
+
+            def entered_fields_text(chat_id, locale:)
+              conv = Telegram::Helpers::Conversation.get(chat_id)
+              fields = conv["fields"] || {}
+              return nil if fields.empty?
+
+              ru = locale.to_s.start_with?("ru")
+              yes = ru ? "Да" : "Yes"
+              no = ru ? "Нет" : "No"
+              labels = if ru
+                {
+                  date: "Дата",
+                  time: "Время",
+                  players_count: "Игроки",
+                  court: "Корт",
+                  recurring: "Повторение",
+                  prebooking: "Предбронирование",
+                  with_coach: "Тренер",
+                  sport: "Спорт",
+                  skill_level: "Уровень"
+                }
+              else
+                {
+                  date: "Date",
+                  time: "Time",
+                  players_count: "Players",
+                  court: "Court",
+                  recurring: "Recurring",
+                  prebooking: "Prebooking",
+                  with_coach: "Coach",
+                  sport: "Sport",
+                  skill_level: "Level"
+                }
+              end
+
+              lines = []
+              lines << "#{labels[:date]}: #{fields["date"]}" if fields["date"].present?
+              lines << "#{labels[:time]}: #{fields["time"]}" if fields["time"].present?
+              lines << "#{labels[:players_count]}: #{fields["players_count"]}" if fields["players_count"].present?
+
+              if fields["court_id"].present?
+                court_name = Court.find_by(id: fields["court_id"])&.name || "##{fields["court_id"]}"
+                lines << "#{labels[:court]}: #{court_name}"
+              end
+
+              if fields.key?("recurring")
+                lines << "#{labels[:recurring]}: #{fields["recurring"] ? yes : no}"
+              end
+
+              if fields.key?("prebooking")
+                lines << "#{labels[:prebooking]}: #{fields["prebooking"] ? yes : no}"
+              end
+
+              if fields.key?("with_coach")
+                lines << "#{labels[:with_coach]}: #{fields["with_coach"] ? yes : no}"
+              end
+
+              lines << "#{labels[:sport]}: #{fields["sport"]}" if fields["sport"].present?
+
+              if fields.key?("skill_level")
+                skill = fields["skill_level"].presence || (ru ? "Любой" : "Any")
+                lines << "#{labels[:skill_level]}: #{skill}"
+              end
+
+              lines.any? ? lines.join("\n") : nil
+            end
+
+            def consume_user_text_message(chat_id, message)
+              message_id = message["message_id"]
+              return unless message_id
+              Telegram::Api.post("deleteMessage", { "chat_id" => chat_id.to_s, "message_id" => message_id.to_i })
+            rescue => e
+              Rails.logger.debug "[CreateFlow] consume_user_text_message error: #{e.class} #{e.message}"
+            end
+
+            def sync_wizard_message_id(chat_id, message_id)
+              return unless message_id
+              conv = Telegram::Helpers::Conversation.get(chat_id)
+              return unless conv["flow"] == "create_game"
+              return if conv["wizard_message_id"] == message_id
+              conv["wizard_message_id"] = message_id
+              Telegram::Helpers::Conversation.set(chat_id, conv)
             end
 
             def next_step_after(current, conv)
@@ -425,6 +540,7 @@ module Telegram
 
               user = Telegram::Helpers::UserLookup.find_user(chat_id)
               fields = conv["fields"] || {}
+              wizard_message_id = conv["wizard_message_id"]
 
               Telegram::Helpers::Conversation.finish(chat_id)
 
@@ -442,11 +558,10 @@ module Telegram
               )
 
               if game.save
-                Telegram::Api.send_simple(chat_id, t.(:create_game_success))
-                Telegram::Handlers::GamesHandler.show_game(chat_id, game.id, 1) rescue nil
+                Telegram::Handlers::GamesHandler.show_game(chat_id, game.id, 1, message_id: wizard_message_id) rescue nil
               else
                 Telegram::Api.send_simple(chat_id, t.(:create_game_error, error: game.errors.full_messages.join(", ")))
-                Telegram::Handlers::MenuHandler.menu(chat_id)
+                Telegram::Handlers::MenuHandler.menu(chat_id, message_id: wizard_message_id)
               end
             rescue => e
               Rails.logger.error "[CreateFlow] finalize_game error: #{e.class} #{e.message}"

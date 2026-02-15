@@ -6,6 +6,8 @@ module Telegram
           # Handle ordinary user messages (not reply-to). Call from your message processor.
           def handle_message(message)
             chat_id = (message.dig("chat","id") || message.dig("from","id")).to_s
+            locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+            t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
             state = Rails.cache.read("telegram:edit:chat:#{chat_id}")
             Rails.logger.info "[EditResponder] handle_message chat_id=#{chat_id} state=#{state.inspect}"
             begin
@@ -100,7 +102,7 @@ module Telegram
                   poller.send_api("editMessageText", { chat_id: chat_id, message_id: msg_id, text: "Failed to update: #{e.message}" }) rescue nil
                 end
               else
-                poller.send_api("editMessageText", { chat_id: chat_id, message_id: msg_id, text: "Game not found." }) rescue nil
+                poller.send_api("editMessageText", { chat_id: chat_id, message_id: msg_id, text: t.(:edit_game_not_found) }) rescue nil
               end
 
               Rails.cache.delete("telegram:edit:chat:#{chat_id}")
@@ -109,7 +111,7 @@ module Telegram
               field = state[:field].to_s
               game = Game.find_by(id: state[:game_id])
               unless game
-                poller.send_api("sendMessage", { chat_id: chat_id, text: "Game not found." }) rescue nil
+                poller.send_api("sendMessage", { chat_id: chat_id, text: t.(:edit_game_not_found) }) rescue nil
                 Rails.cache.delete("telegram:edit:chat:#{chat_id}")
                 return
               end
@@ -171,6 +173,8 @@ module Telegram
             data = (callback["data"] || "").to_s
             chat_id = (callback.dig("message","chat","id") || callback["from"] && callback["from"]["id"]).to_s
             message_id = callback.dig("message","message_id")
+            locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+            t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
             # clear both chat and message keyed state
             Rails.cache.delete("telegram:edit:chat:#{chat_id}")
             Rails.cache.delete("telegram:edit:msg:#{message_id}")
@@ -181,10 +185,10 @@ module Telegram
               begin
                 Telegram::Handlers::GamesHandler.show_game(chat_id, game_id, 1, message_id: message_id)
               rescue => _
-                Telegram::Api.edit_message_text(chat_id, message_id, "Edit cancelled.") rescue nil
+                Telegram::Api.edit_message_text(chat_id, message_id, t.(:edit_cancelled)) rescue nil
               end
             else
-              Telegram::Api.edit_message_text(chat_id, message_id, "Edit cancelled.") rescue nil
+              Telegram::Api.edit_message_text(chat_id, message_id, t.(:edit_cancelled)) rescue nil
             end
 
             Telegram::Poller.new.send_api("answerCallbackQuery", { callback_query_id: cb_id }) rescue nil
