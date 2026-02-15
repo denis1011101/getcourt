@@ -16,7 +16,7 @@ class GamesController < ApplicationController
     scoped_games = scoped_games.where(skill_level: params[:skill_level]) if params[:skill_level].present?
 
     if params[:city].present?
-      scoped_games = scoped_games.joins(:court).where("LOWER(courts.city_name) = ?", params[:city].downcase)
+      scoped_games = scoped_games.joins(:court).where(courts: { city_name: params[:city] })
     end
 
     @games = scoped_games.to_a
