@@ -52,7 +52,7 @@
               elsif user&.name.present?
                 user.name
               else
-                user&.email.presence || "User ##{user&.id}"
+                user&.id.present? ? "User ##{user.id}" : "Anonymous player"
               end %>
               <li class="flex items-start justify-between gap-2 border-b border-gray-100 pb-2">
                 <div>
