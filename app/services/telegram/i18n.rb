@@ -247,7 +247,7 @@ module Telegram
       # Misc
       no_permission: "Нет прав для редактирования",
       court_not_found_short: "Корт не найден",
-      user_not_found: "Пользователь не найден",
+      user_not_found: "Пользователь не найден"
     }.freeze
 
     EN = {
@@ -470,7 +470,7 @@ module Telegram
       # Misc
       no_permission: "No permission to edit",
       court_not_found_short: "Court not found",
-      user_not_found: "User not found",
+      user_not_found: "User not found"
     }.freeze
 
     # Helper for spots left with Russian pluralization

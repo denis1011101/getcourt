@@ -37,7 +37,7 @@ Minitest.after_run do
         entry = (merged[file] ||= { lines: [], branches: {} })
 
         lines = payload[:lines] || []
-        max_len = [entry[:lines].length, lines.length].max
+        max_len = [ entry[:lines].length, lines.length ].max
         entry[:lines] = Array.new(max_len) do |idx|
           a = entry[:lines][idx]
           b = lines[idx]
@@ -67,7 +67,7 @@ Minitest.after_run do
     end
 
     percent = total.zero? ? 0.0 : ((covered.to_f / total) * 100).round(2)
-    workers_count = [run_files.size, EXPECTED_COVERAGE_WORKERS].min
+    workers_count = [ run_files.size, EXPECTED_COVERAGE_WORKERS ].min
 
     summary = <<~TXT
       Lines: #{percent}% (#{covered}/#{total})

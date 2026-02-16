@@ -15,27 +15,27 @@ module Telegram
           when /\Aprofile:field:coach:(yes|no|cancel)\z/
             action = Regexp.last_match(1)
             Profile::FieldFlow.process_coach_callback(cb.chat_id, action, cb_id: cb.cb_id, message_id: cb.message_id)
-            return
+            nil
           when /\Aprofile:field:notify:(yes|no|cancel)\z/
             action = Regexp.last_match(1)
             Profile::FieldFlow.process_notify_callback(cb.chat_id, action, cb_id: cb.cb_id, message_id: cb.message_id)
-            return
+            nil
           when /\Aprofile:sports:(toggle|save|cancel|level|level_set|save_levels)(?::(.+))?\z/
             action = Regexp.last_match(1)
             arg = Regexp.last_match(2)
             Profile::SportsFlow.process_sports_callback(cb.chat_id, action, (arg && CGI.unescape(arg)), cb_id: cb.cb_id, message_id: cb.message_id)
-            return
+            nil
           when /\Aprofile:lang:(ru|en)\z/
             new_locale = Regexp.last_match(1)
             process_language_change(cb.chat_id, new_locale, cb_id: cb.cb_id, message_id: cb.message_id)
-            return
+            nil
           when /\Aprofile:show\z/
             Telegram::Handlers::ProfileHandler.show_profile(cb.chat_id, message_id: cb.message_id)
             poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id }) rescue nil
-            return
+            nil
           when /\Aprofile:edit\z/
             start_edit_profile(cb.chat_id, cb_id: cb.cb_id, message_id: cb.message_id)
-            return
+            nil
           when /\Aprofile:field:(\w+)\z/
             field = Regexp.last_match(1)
 
@@ -45,7 +45,7 @@ module Telegram
                 cb.chat_id,
                 cb.message_id,
                 t.(:edit_cancelled),
-                [[{ text: t.(:edit_profile), callback_data: "profile:edit" }]]
+                [ [ { text: t.(:edit_profile), callback_data: "profile:edit" } ] ]
               ) rescue nil
               Telegram::Api.answer_callback(cb.cb_id) rescue nil
               return
@@ -57,10 +57,10 @@ module Telegram
             end
 
             Profile::FieldFlow.start_edit_field(cb.chat_id, field, cb_id: cb.cb_id, message_id: cb.message_id)
-            return
+            nil
           else
             poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id, text: t.(:unknown_action), show_alert: false }) rescue nil
-            return
+            nil
           end
         rescue => e
           Rails.logger.error "[Telegram::Flows::ProfileFlow] callback error: #{e.class}: #{e.message}\n#{e.backtrace.first(6).join("\n")}"
@@ -91,13 +91,13 @@ module Telegram
           ].join("\n")
 
           buttons = [
-            [{ text: t.(:field_email),    callback_data: "profile:field:email" }],
-            [{ text: t.(:field_sports),   callback_data: "profile:field:sports" }],
-            [{ text: t.(:field_city),     callback_data: "profile:field:city" }],
-            [{ text: t.(:field_coach),    callback_data: "profile:field:coach" }],
-            [{ text: t.(:field_notify),   callback_data: "profile:field:notify" }],
-            [{ text: t.(:field_language), callback_data: "profile:field:language" }],
-            [{ text: t.(:back),           callback_data: "profile:show" }]
+            [ { text: t.(:field_email),    callback_data: "profile:field:email" } ],
+            [ { text: t.(:field_sports),   callback_data: "profile:field:sports" } ],
+            [ { text: t.(:field_city),     callback_data: "profile:field:city" } ],
+            [ { text: t.(:field_coach),    callback_data: "profile:field:coach" } ],
+            [ { text: t.(:field_notify),   callback_data: "profile:field:notify" } ],
+            [ { text: t.(:field_language), callback_data: "profile:field:language" } ],
+            [ { text: t.(:back),           callback_data: "profile:show" } ]
           ]
 
           send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
@@ -116,9 +116,9 @@ module Telegram
 
           text = t.(:select_language)
           buttons = [
-            [{ text: "🇷🇺 #{t.(:language_russian)}", callback_data: "profile:lang:ru" }],
-            [{ text: "🇬🇧 #{t.(:language_english)}", callback_data: "profile:lang:en" }],
-            [{ text: t.(:back), callback_data: "profile:edit" }]
+            [ { text: "🇷🇺 #{t.(:language_russian)}", callback_data: "profile:lang:ru" } ],
+            [ { text: "🇬🇧 #{t.(:language_english)}", callback_data: "profile:lang:en" } ],
+            [ { text: t.(:back), callback_data: "profile:edit" } ]
           ]
 
           if message_id

@@ -14,7 +14,7 @@ module Telegram
           tokens.each do |tok|
             m = tok.match(/\A(\d{1,2})\s*[-:]\s*(\d{1,2})\z/)
             return nil unless m
-            sets << [m[1].to_i, m[2].to_i]
+            sets << [ m[1].to_i, m[2].to_i ]
           end
 
           return nil if sets.empty?

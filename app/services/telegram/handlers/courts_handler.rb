@@ -11,8 +11,8 @@ module Telegram
           t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
           buttons = [
-            [{ text: t.(:all_courts),    callback_data: "menu:courts:page:1" }],
-            [{ text: t.(:main_menu_btn), callback_data: "menu:main" }]
+            [ { text: t.(:all_courts),    callback_data: "menu:courts:page:1" } ],
+            [ { text: t.(:main_menu_btn), callback_data: "menu:main" } ]
           ]
 
           send_or_edit_with_buttons(chat_id, t.(:courts_menu), buttons, message_id: message_id)
@@ -30,7 +30,7 @@ module Telegram
           user = Telegram::Helpers::UserLookup.find_user(chat_id)
           scope = Court.visible_to(user)
           total = scope.count
-          pages = [(total.to_f / PER_PAGE).ceil, 1].max
+          pages = [ (total.to_f / PER_PAGE).ceil, 1 ].max
           offset = (page - 1) * PER_PAGE
           courts = scope.order("id ASC").offset(offset).limit(PER_PAGE)
           header = t.(:courts_page, page: page, pages: pages)
@@ -42,15 +42,15 @@ module Telegram
 
           buttons = courts.map do |c|
             label = (c.respond_to?(:name) && c.name.present?) ? c.name : "Court ##{c.id}"
-            [{ text: label, callback_data: "court:show:#{c.id}:#{page}" }]
+            [ { text: label, callback_data: "court:show:#{c.id}:#{page}" } ]
           end
 
           nav = []
-          nav << [{ text: t.(:prev_page), callback_data: "menu:courts:page:#{page - 1}" }] if page > 1
-          nav << [{ text: t.(:next_page), callback_data: "menu:courts:page:#{page + 1}" }] if page < pages
+          nav << [ { text: t.(:prev_page), callback_data: "menu:courts:page:#{page - 1}" } ] if page > 1
+          nav << [ { text: t.(:next_page), callback_data: "menu:courts:page:#{page + 1}" } ] if page < pages
           buttons.concat(nav) unless nav.empty?
 
-          buttons << [{ text: t.(:main_menu_btn), callback_data: "menu:main" }]
+          buttons << [ { text: t.(:main_menu_btn), callback_data: "menu:main" } ]
 
           send_or_edit_with_buttons(chat_id, header, buttons, message_id: message_id)
         end
@@ -61,15 +61,15 @@ module Telegram
 
           page = page.to_i < 1 ? 1 : page.to_i
           total = Game.where(court_id: court_id).count
-          pages = [(total.to_f / PER_PAGE).ceil, 1].max
+          pages = [ (total.to_f / PER_PAGE).ceil, 1 ].max
           offset = (page - 1) * PER_PAGE
           games = Game.where(court_id: court_id).order(date: :desc).offset(offset).limit(PER_PAGE)
           header = t.(:games_on_court_page, court_id: court_id, page: page, pages: pages)
 
           if games.empty?
             buttons = [
-              [{ text: t.(:back_to_court), callback_data: "court:show:#{court_id}:#{page}" }],
-              [{ text: t.(:main_menu_btn), callback_data: "menu:main" }]
+              [ { text: t.(:back_to_court), callback_data: "court:show:#{court_id}:#{page}" } ],
+              [ { text: t.(:main_menu_btn), callback_data: "menu:main" } ]
             ]
 
             send_or_edit_with_buttons(
@@ -83,15 +83,15 @@ module Telegram
 
           buttons = games.map do |g|
             label = Telegram::Handlers::GamesHandler.game_label(g, locale: locale)
-            [{ text: label, callback_data: "game:show:#{g.id}:1" }]
+            [ { text: label, callback_data: "game:show:#{g.id}:1" } ]
           end
 
           nav = []
-          nav << [{ text: t.(:prev_page), callback_data: "court:games:#{court_id}:#{page - 1}" }] if page > 1
-          nav << [{ text: t.(:next_page), callback_data: "court:games:#{court_id}:#{page + 1}" }] if page < pages
+          nav << [ { text: t.(:prev_page), callback_data: "court:games:#{court_id}:#{page - 1}" } ] if page > 1
+          nav << [ { text: t.(:next_page), callback_data: "court:games:#{court_id}:#{page + 1}" } ] if page < pages
           buttons.concat(nav) unless nav.empty?
 
-          buttons << [{ text: t.(:back_to_court), callback_data: "court:show:#{court_id}:#{page}" }]
+          buttons << [ { text: t.(:back_to_court), callback_data: "court:show:#{court_id}:#{page}" } ]
 
           send_or_edit_with_buttons(chat_id, header, buttons, message_id: message_id)
         end
@@ -105,12 +105,12 @@ module Telegram
           return Telegram::Api.send_simple(chat_id, t.(:court_not_found)) unless court
 
           header = "Court ##{court.id}"
-          text = "#{header}\n\n#{court.name.to_s}"
+          text = "#{header}\n\n#{court.name}"
 
           buttons = []
-          buttons << [{ text: t.(:create_game), callback_data: "create_game_from_court:#{court.id}" }]
-          buttons << [{ text: t.(:list_of_games), callback_data: "court:games:#{court.id}:1" }]
-          buttons << [{ text: t.(:back_to_courts), callback_data: "menu:courts:page:#{page}" }]
+          buttons << [ { text: t.(:create_game), callback_data: "create_game_from_court:#{court.id}" } ]
+          buttons << [ { text: t.(:list_of_games), callback_data: "court:games:#{court.id}:1" } ]
+          buttons << [ { text: t.(:back_to_courts), callback_data: "menu:courts:page:#{page}" } ]
 
           send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
         end

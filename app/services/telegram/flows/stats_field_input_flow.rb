@@ -209,11 +209,11 @@ module Telegram
             ps.with_lock do
               if training_key
                 ps[training_key] = ps[training_key].to_i + 1
-                ps[training_key] = [ps[training_key].to_i, 0].max
+                ps[training_key] = [ ps[training_key].to_i, 0 ].max
               else
                 games_key = mode == :doubles ? :doubles_games : :singles_games
                 ps[games_key] = ps[games_key].to_i + 1
-                ps[games_key] = [ps[games_key].to_i, 0].max
+                ps[games_key] = [ ps[games_key].to_i, 0 ].max
               end
               ps.save!
             end

@@ -33,7 +33,7 @@ module Telegram
           if state["skills"].is_a?(Hash) && state["skills"].any?
             if user_has_column?(user, :telegram_skills)
               col = safe_column(user, "telegram_skills")
-              if col && [:json, :jsonb].include?(col.type)
+              if col && [ :json, :jsonb ].include?(col.type)
                 attrs[:telegram_skills] = state["skills"]
               else
                 attrs[:telegram_skills] = state["skills"].to_json

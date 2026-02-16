@@ -169,12 +169,12 @@ module Telegram
           t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
           header = t.(:create_court_step, step: step_number(step), total: TOTAL_STEPS)
-          cancel_row = [{ text: t.(:cancel_btn), callback_data: "court:create:cancel" }]
+          cancel_row = [ { text: t.(:cancel_btn), callback_data: "court:create:cancel" } ]
 
           case step
           when "name"
             text = "#{header}\n\n#{t.(:create_court_name)}"
-            buttons = [cancel_row]
+            buttons = [ cancel_row ]
             Telegram::Api.send_with_buttons(chat_id, text, buttons)
 
           when "location"
@@ -185,22 +185,22 @@ module Telegram
               text: text,
               reply_markup: {
                 keyboard: [
-                  [{ text: t.(:create_court_location_btn), request_location: true }]
+                  [ { text: t.(:create_court_location_btn), request_location: true } ]
                 ],
                 resize_keyboard: true,
                 one_time_keyboard: true
               }
             })
             # Also send inline cancel button
-            Telegram::Api.send_with_buttons(chat_id, t.(:cancel_btn), [cancel_row])
+            Telegram::Api.send_with_buttons(chat_id, t.(:cancel_btn), [ cancel_row ])
 
           when "contact_type"
             text = "#{header}\n\n#{t.(:create_court_contact_type)}"
             ct_buttons = Court::CONTACT_TYPES.map do |ct|
-              [{ text: ct.capitalize, callback_data: "court:create:contact_type:#{ct}" }]
+              [ { text: ct.capitalize, callback_data: "court:create:contact_type:#{ct}" } ]
             end
             buttons = ct_buttons + [
-              [{ text: t.(:skip_btn), callback_data: "court:create:skip" }],
+              [ { text: t.(:skip_btn), callback_data: "court:create:skip" } ],
               cancel_row
             ]
             # Remove the reply keyboard
@@ -214,7 +214,7 @@ module Telegram
           when "contact_value"
             text = "#{header}\n\n#{t.(:create_court_contact_value)}"
             buttons = [
-              [{ text: t.(:skip_btn), callback_data: "court:create:skip" }],
+              [ { text: t.(:skip_btn), callback_data: "court:create:skip" } ],
               cancel_row
             ]
             Telegram::Api.send_with_buttons(chat_id, text, buttons)
@@ -308,7 +308,7 @@ module Telegram
           lon = Float(parts[1]) rescue nil
           return nil unless lat && lon
           return nil unless lat.between?(-90, 90) && lon.between?(-180, 180)
-          [lat, lon]
+          [ lat, lon ]
         end
       end
     end

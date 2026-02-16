@@ -96,12 +96,12 @@ module Telegram
 
             buttons = []
             if others.empty?
-              buttons << [{ text: "Back to game", callback_data: "game:show:#{game.id}:#{page}" }]
+              buttons << [ { text: "Back to game", callback_data: "game:show:#{game.id}:#{page}" } ]
             else
               others.each do |u|
-                buttons << [{ text: "Remove #{target_label(u)}", callback_data: "game:remove:#{game.id}:#{u.id}:#{page}" }]
+                buttons << [ { text: "Remove #{target_label(u)}", callback_data: "game:remove:#{game.id}:#{u.id}:#{page}" } ]
               end
-              buttons << [{ text: "Back to game", callback_data: "game:show:#{game.id}:#{page}" }]
+              buttons << [ { text: "Back to game", callback_data: "game:show:#{game.id}:#{page}" } ]
             end
 
             Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, buttons) rescue nil

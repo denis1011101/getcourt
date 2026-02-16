@@ -11,9 +11,9 @@ class DailyTelegramNotificationsJob < ApplicationJob
     scope.find_each do |game|
       occurrence_date = if game.recurring
                           game.date && game.date >= Date.current ? game.date : game.next_date
-                        else
+      else
                           game.date
-                        end
+      end
       next unless occurrence_date == target_date
 
       # Отправляем всем участникам (Participation)

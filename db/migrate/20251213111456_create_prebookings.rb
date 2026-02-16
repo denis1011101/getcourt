@@ -9,6 +9,6 @@ class CreatePrebookings < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :prebookings, [:game_id, :date, :slot_index], unique: true, name: "index_prebookings_on_game_date_slot"
+    add_index :prebookings, [ :game_id, :date, :slot_index ], unique: true, name: "index_prebookings_on_game_date_slot"
   end
 end

@@ -10,7 +10,7 @@ module Telegram
           locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
           t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
-          page = [page.to_i, 1].max
+          page = [ page.to_i, 1 ].max
 
           # Build rating from player_statistics + participations
           stats = PlayerStatistic
@@ -27,17 +27,17 @@ module Telegram
             { user: ps.user, games: total_games, wins: total_wins, pct: pct }
           end
 
-          ranked.sort_by! { |r| [-r[:pct], -r[:wins], -r[:games]] }
+          ranked.sort_by! { |r| [ -r[:pct], -r[:wins], -r[:games] ] }
 
           total = ranked.size
-          pages = [(total.to_f / PER_PAGE).ceil, 1].max
-          page = [page, pages].min
+          pages = [ (total.to_f / PER_PAGE).ceil, 1 ].max
+          page = [ page, pages ].min
           offset = (page - 1) * PER_PAGE
           slice = ranked.slice(offset, PER_PAGE) || []
 
           if slice.empty?
             text = "#{t.(:rating_title)}\n\n#{t.(:no_rating_data)}"
-            buttons = [[{ text: t.(:main_menu_btn), callback_data: "menu:main" }]]
+            buttons = [ [ { text: t.(:main_menu_btn), callback_data: "menu:main" } ] ]
             send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
             return
           end
@@ -56,7 +56,7 @@ module Telegram
           nav << { text: t.(:prev_page), callback_data: "menu:rating:page:#{page - 1}" } if page > 1
           nav << { text: t.(:next_page), callback_data: "menu:rating:page:#{page + 1}" } if page < pages
           buttons << nav unless nav.empty?
-          buttons << [{ text: t.(:main_menu_btn), callback_data: "menu:main" }]
+          buttons << [ { text: t.(:main_menu_btn), callback_data: "menu:main" } ]
 
           send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
         end

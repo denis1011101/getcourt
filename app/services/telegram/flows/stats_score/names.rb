@@ -11,7 +11,7 @@ module Telegram
         end
 
         def team_names(conv, ids)
-          players = Array(conv["players"]).map { |h| [h["id"].to_i, h["name"].to_s] }.to_h
+          players = Array(conv["players"]).map { |h| [ h["id"].to_i, h["name"].to_s ] }.to_h
           Array(ids).map { |id| players[id.to_i] || "##{id}" }.join(" + ")
         end
       end

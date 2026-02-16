@@ -10,8 +10,8 @@ module Telegram
           t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
           buttons = [
-            [{ text: t.(:find_courts_by_name), callback_data: "menu:search:by_name" }],
-            [{ text: t.(:find_nearby_courts),  callback_data: "menu:search:nearby" }]
+            [ { text: t.(:find_courts_by_name), callback_data: "menu:search:by_name" } ],
+            [ { text: t.(:find_nearby_courts),  callback_data: "menu:search:nearby" } ]
           ]
           Telegram::Api.send_with_buttons(chat_id, t.(:search_title), buttons)
         end
@@ -47,18 +47,18 @@ module Telegram
           offset = (page - 1) * PER_PAGE
           scope = Court.where("name ILIKE ?", "%#{query}%")
           total = scope.count
-          pages = [(total.to_f / PER_PAGE).ceil, 1].max
+          pages = [ (total.to_f / PER_PAGE).ceil, 1 ].max
           courts = scope.order("id ASC").offset(offset).limit(PER_PAGE)
 
           header = t.(:search_results, query: query, page: page, pages: pages)
           body = courts.each_with_index.map { |c, i| "#{offset + i + 1}. #{c.name}" }.join("\n")
           body = t.(:no_results) if body.empty?
 
-          buttons = courts.map { |c| [{ text: c.name, callback_data: "court:show:#{c.id}:#{page}" }] }
+          buttons = courts.map { |c| [ { text: c.name, callback_data: "court:show:#{c.id}:#{page}" } ] }
 
           nav = []
-          nav << [{ text: t.(:prev_page), callback_data: "search:by_name:#{CGI.escape(query)}:#{page - 1}" }] if page > 1
-          nav << [{ text: t.(:next_page), callback_data: "search:by_name:#{CGI.escape(query)}:#{page + 1}" }] if page < pages
+          nav << [ { text: t.(:prev_page), callback_data: "search:by_name:#{CGI.escape(query)}:#{page - 1}" } ] if page > 1
+          nav << [ { text: t.(:next_page), callback_data: "search:by_name:#{CGI.escape(query)}:#{page + 1}" } ] if page < pages
           buttons << nav unless nav.empty?
 
           Telegram::Api.send_with_buttons(chat_id, header + "\n\n" + body, buttons)

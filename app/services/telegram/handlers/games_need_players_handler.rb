@@ -23,9 +23,9 @@ module Telegram
             required = (g.respond_to?(:players_count) && g.players_count.to_i > 0) ? g.players_count.to_i : 4
             approved = if g.participations.loaded?
                          g.participations.count { |p| p.respond_to?(:approved?) ? p.approved? : (p.status == "approved") }
-                       else
+            else
                          g.participations.respond_to?(:approved) ? g.participations.approved.count : g.participations.count
-                       end
+            end
             approved < required
           end
 
@@ -36,7 +36,7 @@ module Telegram
           end
 
           total = open_games.size
-          pages = [(total.to_f / PER_PAGE).ceil, 1].max
+          pages = [ (total.to_f / PER_PAGE).ceil, 1 ].max
           offset = (page - 1) * PER_PAGE
           games = open_games.slice(offset, PER_PAGE) || []
 
@@ -44,21 +44,21 @@ module Telegram
 
           if games.empty?
             text = "#{header}\n\n#{t.(:no_games_need_players)}"
-            buttons = [[{ text: t.(:main_menu_btn), callback_data: "menu:main" }]]
+            buttons = [ [ { text: t.(:main_menu_btn), callback_data: "menu:main" } ] ]
             send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
             return
           end
 
           buttons = games.map do |g|
             label = Telegram::Handlers::GamesHandler.game_label(g, locale: locale)
-            [{ text: label, callback_data: "game:show:#{g.id}:1" }]
+            [ { text: label, callback_data: "game:show:#{g.id}:1" } ]
           end
 
           nav = []
-          nav << [{ text: t.(:prev_page), callback_data: "menu:games_need_players:page:#{page - 1}" }] if page > 1
-          nav << [{ text: t.(:next_page), callback_data: "menu:games_need_players:page:#{page + 1}" }] if page < pages
+          nav << [ { text: t.(:prev_page), callback_data: "menu:games_need_players:page:#{page - 1}" } ] if page > 1
+          nav << [ { text: t.(:next_page), callback_data: "menu:games_need_players:page:#{page + 1}" } ] if page < pages
           buttons.concat(nav) unless nav.empty?
-          buttons << [{ text: t.(:main_menu_btn), callback_data: "menu:main" }]
+          buttons << [ { text: t.(:main_menu_btn), callback_data: "menu:main" } ]
 
           send_or_edit_with_buttons(chat_id, header, buttons, message_id: message_id)
         end

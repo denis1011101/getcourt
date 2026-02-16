@@ -42,8 +42,8 @@ class GeocodingController < ApplicationController
 
   def authorize_admin!
     return if Rails.env.development?
-    token = request.headers['X-ADMIN-TOKEN'] || params[:token]
-    expected = ENV['ADMIN_TOKEN'].to_s
+    token = request.headers["X-ADMIN-TOKEN"] || params[:token]
+    expected = ENV["ADMIN_TOKEN"].to_s
     unless token.present? && ActiveSupport::SecurityUtils.secure_compare(token, expected)
       head :unauthorized
     end

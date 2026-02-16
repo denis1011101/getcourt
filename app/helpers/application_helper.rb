@@ -8,7 +8,7 @@ module ApplicationHelper
   end
 
   def nearby_courts_link
-    link_to 'Find nearby courts', searches_path, class: 'btn btn-primary'
+    link_to "Find nearby courts", searches_path, class: "btn btn-primary"
   end
 
   # SEO helpers (English defaults). Use content_for(:meta_title)/:meta_description/:meta_image to override per page.

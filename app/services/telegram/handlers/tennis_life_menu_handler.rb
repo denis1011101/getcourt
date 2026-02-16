@@ -11,7 +11,7 @@ module Telegram
           # Show recent posts from tracked Telegram channels
           posts = fetch_recent_posts(limit: 5)
 
-          lines = ["*#{t.(:tennis_life_title)}*", ""]
+          lines = [ "*#{t.(:tennis_life_title)}*", "" ]
 
           if posts.any?
             posts.each do |post|
@@ -27,7 +27,7 @@ module Telegram
           end
 
           text = lines.join("\n")
-          buttons = [[{ text: t.(:main_menu_btn), callback_data: "menu:main" }]]
+          buttons = [ [ { text: t.(:main_menu_btn), callback_data: "menu:main" } ] ]
 
           send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
         end

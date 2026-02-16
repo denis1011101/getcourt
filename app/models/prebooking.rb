@@ -6,7 +6,7 @@ class Prebooking < ApplicationRecord
 
   validates :slot_index, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validates :date, presence: true
-  validates :game_id, uniqueness: { scope: [:date, :slot_index] }
+  validates :game_id, uniqueness: { scope: [ :date, :slot_index ] }
 
   validate :single_booking_per_user
 

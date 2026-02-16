@@ -7,7 +7,7 @@ namespace :geocoding do
 
   desc "Backfill city_name for courts that have coordinates but no city"
   task backfill_court_cities: :environment do
-    courts = Court.where(city_name: [nil, ""]).where.not(coordinates: [nil, ""])
+    courts = Court.where(city_name: [ nil, "" ]).where.not(coordinates: [ nil, "" ])
     total = courts.count
     puts "Courts to backfill: #{total}"
 

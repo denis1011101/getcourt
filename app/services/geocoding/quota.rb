@@ -39,7 +39,7 @@ module Geocoding
     end
 
     def self.remaining
-      [DAILY_LIMIT - current, 0].max
+      [ DAILY_LIMIT - current, 0 ].max
     end
 
     def self.exceeded?

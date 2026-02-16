@@ -9,7 +9,7 @@ class CourtsController < ApplicationController
       local, other = @courts.partition { |c| c.city_name.to_s.downcase == user_city }
       @courts = local + other
     end
-    Rails.logger.info "Courts#index current_user_id=#{current_user&.id} courts=#{@courts.map { |c| [c.id, c.user_id] }.inspect}"
+    Rails.logger.info "Courts#index current_user_id=#{current_user&.id} courts=#{@courts.map { |c| [ c.id, c.user_id ] }.inspect}"
   end
 
   def show
@@ -70,7 +70,7 @@ class CourtsController < ApplicationController
     end
 
     @court.destroy
-    redirect_to courts_path, notice: 'Court was successfully destroyed.'
+    redirect_to courts_path, notice: "Court was successfully destroyed."
   end
 
   private

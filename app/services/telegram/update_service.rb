@@ -11,10 +11,10 @@ module Telegram
 
     def process
       if message
-        @logger.info "[Telegram::UpdateService] message from #{message.dig('from','id')}: #{message['text'].to_s.inspect}"
+        @logger.info "[Telegram::UpdateService] message from #{message.dig('from', 'id')}: #{message['text'].to_s.inspect}"
         Telegram::Processors::MainMenuProcessor.process_update(@update)
-      elsif @update['callback_query']
-        @logger.info "[Telegram::UpdateService] callback from #{callback.dig('from','id')}: #{callback['data'].inspect}"
+      elsif @update["callback_query"]
+        @logger.info "[Telegram::UpdateService] callback from #{callback.dig('from', 'id')}: #{callback['data'].inspect}"
         Telegram::Handlers::CallbackHandler.process(callback)
       else
         @logger.debug "[Telegram::UpdateService] unsupported update types: #{@update.keys.inspect}"
@@ -26,11 +26,11 @@ module Telegram
     private
 
     def message
-      @update['message'] || @update['edited_message']
+      @update["message"] || @update["edited_message"]
     end
 
     def callback
-      @update['callback_query']
+      @update["callback_query"]
     end
   end
 end

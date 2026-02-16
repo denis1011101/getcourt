@@ -16,7 +16,7 @@ module Telegram
       updates = fetch_updates(@offset)
       Array(updates).each do |u|
         begin
-          @offset = [@offset.to_i, u["update_id"].to_i + 1].max
+          @offset = [ @offset.to_i, u["update_id"].to_i + 1 ].max
           Telegram::UpdateService.process(u)
         rescue => e
           @logger.error "[Telegram::Poller] dispatch error: #{e.class}: #{e.message}\n#{e.backtrace.first(6).join("\n")}"

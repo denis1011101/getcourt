@@ -15,7 +15,7 @@ class CreateTelegramPosts < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :telegram_posts, [:telegram_channel_id, :message_id], unique: true
+    add_index :telegram_posts, [ :telegram_channel_id, :message_id ], unique: true
     add_index :telegram_posts, :published_at
   end
 end

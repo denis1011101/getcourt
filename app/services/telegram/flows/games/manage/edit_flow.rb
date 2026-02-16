@@ -137,7 +137,7 @@ module Telegram
                   send_or_edit_with_buttons(
                     cb.chat_id,
                     "Send new value for #{label}:",
-                    [[ { text: "Cancel", callback_data: "game:edit:cancel:#{game_id}:#{message_id}" } ]],
+                    [ [ { text: "Cancel", callback_data: "game:edit:cancel:#{game_id}:#{message_id}" } ] ],
                     message_id: message_id
                   )
                 end

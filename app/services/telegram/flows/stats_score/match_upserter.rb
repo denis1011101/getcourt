@@ -13,16 +13,16 @@ module Telegram
           by_id = users.index_by(&:id)
 
           outcome_for_a = case result
-                          when :a then "win"
-                          when :b then "loss"
-                          else "draw"
-                          end
+          when :a then "win"
+          when :b then "loss"
+          else "draw"
+          end
 
           outcome_for_b = case result
-                          when :a then "loss"
-                          when :b then "win"
-                          else "draw"
-                          end
+          when :a then "loss"
+          when :b then "win"
+          else "draw"
+          end
 
           team_a_ids.each do |uid|
             user = by_id[uid]
@@ -59,8 +59,8 @@ module Telegram
             "entered_by" => actor.id,
             "team_a_ids" => team_a_ids,
             "team_b_ids" => team_b_ids,
-            "partner_id" => (mode == "doubles" ? (my_team - [uid]).first : nil),
-            "opponent_ids" => (mode == "doubles" ? opp_team : [opp_team.first].compact)
+            "partner_id" => (mode == "doubles" ? (my_team - [ uid ]).first : nil),
+            "opponent_ids" => (mode == "doubles" ? opp_team : [ opp_team.first ].compact)
           }.compact
         end
       end

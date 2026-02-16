@@ -7,8 +7,8 @@ module Telegram
             data = (callback["data"] || "").to_s
             cb_id = callback["id"]
             from = callback["from"] || {}
-            chat_id = (callback.dig("message","chat","id") || from["id"]).to_s
-            message_id = callback.dig("message","message_id")
+            chat_id = (callback.dig("message", "chat", "id") || from["id"]).to_s
+            message_id = callback.dig("message", "message_id")
             poller = Telegram::Poller.new
 
             Rails.logger.debug "[Telegram::Flows::Games::PrebookFlow] enter handle_callback data=#{data.inspect} chat_id=#{chat_id} cb_id=#{cb_id} msg_id=#{message_id}"
@@ -59,7 +59,7 @@ module Telegram
                   reply_markup: { inline_keyboard: keyboard }
                 }) rescue nil
               end
-              return
+              nil
 
             when /\Aprebook:toggle:(\d+):(\d+)\z/
               game_id = $1.to_i
@@ -115,18 +115,18 @@ module Telegram
               if booked_now
                 # toggle cancel
                 if state[:cancel].include?(key)
-                  state[:cancel] = state[:cancel] - [key]
+                  state[:cancel] = state[:cancel] - [ key ]
                 else
-                  state[:cancel] = (state[:cancel] + [key]).uniq
-                  state[:book] = state[:book] - [key]
+                  state[:cancel] = (state[:cancel] + [ key ]).uniq
+                  state[:book] = state[:book] - [ key ]
                 end
               else
                 # toggle book
                 if state[:book].include?(key)
-                  state[:book] = state[:book] - [key]
+                  state[:book] = state[:book] - [ key ]
                 else
-                  state[:book] = (state[:book] + [key]).uniq
-                  state[:cancel] = state[:cancel] - [key]
+                  state[:book] = (state[:book] + [ key ]).uniq
+                  state[:cancel] = state[:cancel] - [ key ]
                 end
               end
 
@@ -138,7 +138,7 @@ module Telegram
               pending = user_pending_keys(game, user, dates)
               keyboard = build_keyboard(game.id, date_keys, state, user_booked, user_pending: pending)
 
-              message_id = callback.dig("message","message_id")
+              message_id = callback.dig("message", "message_id")
               poller.send_api("answerCallbackQuery", { callback_query_id: cb_id }) rescue nil
               poller.send_api("editMessageText", {
                 chat_id: chat_id,
@@ -146,7 +146,7 @@ module Telegram
                 text: "Select dates (click to mark):",
                 reply_markup: { inline_keyboard: keyboard }
               }) rescue nil
-              return
+              nil
 
             when /\Aprebook:confirm:(\d+)\z/
               game_id = $1.to_i
@@ -231,12 +231,12 @@ module Telegram
               }) rescue nil
 
               Telegram::Handlers::GamesHandler.show_game(chat_id, game.id, 1, message_id: message_id) rescue (Rails.logger.error "[Telegram::Flows::Games::PrebookFlow] show_game refresh failed: #{$!.class} #{$!.message}")
-              return
+              nil
 
             else
               Rails.logger.warn "[Telegram::Flows::Games::PrebookFlow] unknown prebook action data=#{data}"
               poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Unknown prebook action", show_alert: false }) rescue nil
-              return
+              nil
             end
           rescue => e
             Rails.logger.error "[Telegram::Flows::Games::PrebookFlow] callback error: #{e.class} #{e.message}\n#{e.backtrace.first(6).join("\n")}"
@@ -276,15 +276,15 @@ module Telegram
                 else
                   checked = state[:cancel].include?(key) ? "☐" : "☑"
                 end
-                [{ text: "#{checked} #{key}", callback_data: "prebook:toggle:#{game_id}:#{i}" }]
+                [ { text: "#{checked} #{key}", callback_data: "prebook:toggle:#{game_id}:#{i}" } ]
               else
                 checked = state[:book].include?(key) ? "☑" : "☐"
-                [{ text: "#{checked} #{key}", callback_data: "prebook:toggle:#{game_id}:#{i}" }]
+                [ { text: "#{checked} #{key}", callback_data: "prebook:toggle:#{game_id}:#{i}" } ]
               end
             end
 
-            rows << [{ text: "Confirm", callback_data: "prebook:confirm:#{game_id}" }]
-            rows << [{ text: "Back to game", callback_data: "game:show:#{game_id}:#{page}" }]
+            rows << [ { text: "Confirm", callback_data: "prebook:confirm:#{game_id}" } ]
+            rows << [ { text: "Back to game", callback_data: "game:show:#{game_id}:#{page}" } ]
             rows
           end
 
@@ -294,11 +294,11 @@ module Telegram
 
             requester = if user.respond_to?(:telegram_username) && user.telegram_username.present?
                           "@#{user.telegram_username}"
-                        elsif user.respond_to?(:username) && user.username.present?
+            elsif user.respond_to?(:username) && user.username.present?
                           "@#{user.username}"
-                        else
+            else
                           user.name.presence || user.email.presence || "User"
-                        end
+            end
 
             dates_text = prebookings.map { |pb| pb.date.strftime("%Y-%m-%d") }.sort.join(", ")
             host = ENV.fetch("APP_HOST", ENV.fetch("HOSTNAME", "https://getcourt.co"))
