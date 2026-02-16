@@ -2,7 +2,7 @@ require "test_helper"
 
 class GamesControllerTest < ActionDispatch::IntegrationTest
   test "index is available without authentication" do
-    get games_url
+    get root_url
 
     assert_response :success
   end
