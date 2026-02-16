@@ -2,9 +2,10 @@
 
 ## Status
 
-![CI](https://github.com/denis1011101/getcourt/actions/workflows/ci.yml/badge.svg?branch=main)
-![Ruby](https://img.shields.io/badge/ruby-3.4-red)
-![Rails](https://img.shields.io/badge/rails-8.1-red)
+[![CI](https://github.com/denis1011101/getcourt/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/denis1011101/getcourt/actions/workflows/ci.yml)
+![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/denis1011101/72e5fc03477a6808b5feb024041ade22/raw/coverage.json)
+![Ruby](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/denis1011101/72e5fc03477a6808b5feb024041ade22/raw/ruby.json)
+![Rails](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/denis1011101/72e5fc03477a6808b5feb024041ade22/raw/rails.json)
 
 Website: https://getcourt.co/
 
@@ -21,7 +22,7 @@ Main features
 - Mobile-friendly UI with map integration and simple search
 
 Main technologies
-- Ruby 3.4 / Ruby on Rails 8.0
+- Ruby 3.4 / Ruby on Rails 8.1
 - Hotwire (Turbo + Stimulus) for interactivity
 - Tailwind CSS for styling
 - SQLite for development and production

@@ -88,3 +88,59 @@ jobs:
           name: screenshots
           path: ${{ github.workspace }}/tmp/screenshots
           if-no-files-found: ignore
+
+      - name: Extract coverage percentage
+        if: success() && github.ref == 'refs/heads/main'
+        id: coverage
+        run: |
+          COVERAGE=$(grep -oP '[\d.]+(?=%)' coverage/summary.txt | head -1)
+          echo "percent=$COVERAGE" >> "$GITHUB_OUTPUT"
+
+      - name: Extract Ruby version
+        if: success() && github.ref == 'refs/heads/main'
+        id: ruby
+        run: |
+          RUBY_VER=$(cat .ruby-version | sed 's/ruby-//')
+          echo "version=$RUBY_VER" >> "$GITHUB_OUTPUT"
+
+      - name: Extract Rails version
+        if: success() && github.ref == 'refs/heads/main'
+        id: rails
+        run: |
+          RAILS_VER=$(grep -A1 '^\s*rails ' Gemfile.lock | grep -oP '[\d.]+' | head -1)
+          echo "version=$RAILS_VER" >> "$GITHUB_OUTPUT"
+
+      - name: Update coverage badge
+        if: success() && github.ref == 'refs/heads/main'
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: ${{ vars.BADGE_GIST_ID }}
+          filename: coverage.json
+          label: coverage
+          message: "${{ steps.coverage.outputs.percent }}%"
+          valColorRange: ${{ steps.coverage.outputs.percent }}
+          minColorRange: 0
+          maxColorRange: 100
+
+      - name: Update Ruby badge
+        if: success() && github.ref == 'refs/heads/main'
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: ${{ vars.BADGE_GIST_ID }}
+          filename: ruby.json
+          label: ruby
+          message: "${{ steps.ruby.outputs.version }}"
+          color: CC342D
+
+      - name: Update Rails badge
+        if: success() && github.ref == 'refs/heads/main'
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: ${{ vars.BADGE_GIST_ID }}
+          filename: rails.json
+          label: rails
+          message: "${{ steps.rails.outputs.version }}"
+          color: D30001
