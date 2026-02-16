@@ -43,7 +43,7 @@ module Telegram
 
       with_stubbed_singleton_method(Telegram::PostGameStatsReminderJob, :set, ->(wait_until:) { wait_until_seen = wait_until; setter }) do
         with_stubbed_singleton_method(game, :cancel_post_game_stats_reminder, true) do
-          with_stubbed_singleton_method(Telegram::Api, :send_with_buttons, ->(*) {}) do
+          with_stubbed_singleton_method(Telegram::Api, :send_with_buttons, ->(*) { }) do
             PostGameStatsReminderJob.perform_now(game.id)
           end
         end
