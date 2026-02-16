@@ -69,5 +69,9 @@ module Telegram
     def self.edit_message_text(chat_id, message_id, text, parse_mode: "Markdown")
       post("editMessageText", { "chat_id" => chat_id.to_s, "message_id" => message_id.to_i, "text" => text.to_s, "parse_mode" => parse_mode })
     end
+
+    def self.delete_message(chat_id, message_id)
+      post("deleteMessage", { "chat_id" => chat_id.to_s, "message_id" => message_id.to_i })
+    end
   end
 end

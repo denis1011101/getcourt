@@ -85,6 +85,7 @@ module Telegram
       back_to_court: "Назад к корту",
 
       # Create game — step-by-step
+      create_game_start_options: "Выберите способ создания игры:",
       create_game_prompt: "Ответьте с данными: дата(ГГГГ-ММ-ДД) время(ЧЧ:ММ) кол-во_игроков вид_спорта [id_корта]\nПример:\n2025-12-10 19:00 4 tennis 12",
       create_game_reply: "Создание игры — ответьте с деталями",
       create_game_cancelled: "Создание игры отменено.",
@@ -95,7 +96,7 @@ module Telegram
       create_game_time: "Введите время начала (ЧЧ:ММ):",
       create_game_time_invalid: "Неверный формат времени. Используйте ЧЧ:ММ (например, 19:00).",
       create_game_players: "Сколько игроков нужно?",
-      create_game_players_invalid: "Введите число от 2 до 30.",
+      create_game_players_invalid: "Введите число 2 или 4",
       create_game_court: "Выберите корт:",
       create_game_court_new: "Создать новый корт",
       create_game_no_courts: "У вас нет кортов. Создайте первый.",
@@ -109,15 +110,18 @@ module Telegram
       create_game_error: "Не удалось создать игру: %{error}",
       cancel_btn: "Отмена",
       skip_btn: "Пропустить",
+      create_in_bot: "Создать в Telegram боте",
+      create_on_website: "Создать на сайте",
 
       # Create court — step-by-step
+      create_court_start_options: "Выберите способ создания корта:",
       create_court_prompt: "Ответьте с информацией о корте:\nНазвание; широта,долгота; тип_контакта:контакт\nПример:\nЦентральный корт; 55.7558,37.6173; telegram:ivan123",
       create_court_reply: "Создание корта — ответьте с деталями",
       create_court_cancelled: "Создание корта отменено.",
       create_court_step: "Создание корта (шаг %{step}/%{total})",
       create_court_name: "Введите название корта:",
       create_court_name_invalid: "Название не может быть пустым.",
-      create_court_location: "Отправьте локацию корта (кнопка ниже) или введите координаты (широта,долгота):",
+      create_court_location: "Отправьте локацию корта (кнопка ниже) или введите координаты (широта,долгота), например: `55.7558,37.6173`",
       create_court_location_btn: "Отправить локацию",
       create_court_location_invalid: "Не удалось определить координаты. Отправьте локацию или введите широта,долгота.",
       create_court_contact_type: "Выберите тип контакта:",
@@ -140,7 +144,7 @@ module Telegram
       sports_label: "Виды спорта: %{value}",
       city_label: "Город: %{value}",
       coach_label: "Тренер: %{value}",
-      notify_label: "Уведомления о поиске рядом: %{value}",
+      notify_label: "Уведомлениять о поиске рядом: %{value}",
       language_label: "Язык: %{value}",
       edit_profile: "Редактировать профиль",
       select_field_to_edit: "Выберите поле для редактирования:",
@@ -308,6 +312,7 @@ module Telegram
       back_to_court: "Back to court",
 
       # Create game — step-by-step
+      create_game_start_options: "Choose how to create a game:",
       create_game_prompt: "Reply with: date(YYYY-MM-DD) time(HH:MM) players_count sport [court_id]\nExample:\n2025-12-10 19:00 4 tennis 12",
       create_game_reply: "Create game — reply with details",
       create_game_cancelled: "Game creation cancelled.",
@@ -318,7 +323,7 @@ module Telegram
       create_game_time: "Enter start time (HH:MM):",
       create_game_time_invalid: "Invalid time format. Use HH:MM (e.g. 19:00).",
       create_game_players: "How many players?",
-      create_game_players_invalid: "Enter a number from 2 to 30.",
+      create_game_players_invalid: "Enter a number 2 or 4.",
       create_game_court: "Select a court:",
       create_game_court_new: "Create new court",
       create_game_no_courts: "You have no courts. Create your first one.",
@@ -332,8 +337,11 @@ module Telegram
       create_game_error: "Failed to create game: %{error}",
       cancel_btn: "Cancel",
       skip_btn: "Skip",
+      create_in_bot: "Create in Telegram bot",
+      create_on_website: "Create on website",
 
       # Create court — step-by-step
+      create_court_start_options: "Choose how to create a court:",
       create_court_prompt: "Reply with court info:\nName; lat,lon; contact_type:contact_value\nExample:\nCentral Court; 55.7558,37.6173; telegram:ivan123",
       create_court_reply: "Create court — reply with details",
       create_court_cancelled: "Court creation cancelled.",
