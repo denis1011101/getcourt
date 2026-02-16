@@ -31,4 +31,42 @@ class GameTest < ActiveSupport::TestCase
     game.players_count = 0
     assert_equal 4, game.prebooking_required_players
   end
+
+  test "next_date skips cancelled recurring occurrence" do
+    game = Game.create!(
+      court: courts(:one),
+      user: users(:one),
+      date: Date.current,
+      recurring: true
+    )
+
+    PrebookingCancellation.create!(game: game, user: users(:one), date: Date.current)
+
+    assert_equal Date.current + 7.days, game.next_date
+  end
+
+  test "display_date_for_show returns previous occurrence when participations were reset there" do
+    game = Game.create!(
+      court: courts(:one),
+      user: users(:one),
+      date: Date.current - 21.days,
+      recurring: true
+    )
+
+    next_date = game.next_date
+    previous_date = next_date - 7.days
+    game.update_column(:last_participations_reset_at, previous_date)
+
+    assert_equal previous_date, game.display_date_for_show
+  end
+
+  test "prebooking_candidate_dates returns weekly date sequence" do
+    game = Game.new(court: courts(:one), user: users(:one), date: Date.current - 14.days, recurring: true)
+
+    dates = game.prebooking_candidate_dates(3)
+
+    assert_equal 3, dates.size
+    assert_equal 7, (dates[1] - dates[0]).to_i
+    assert_equal 7, (dates[2] - dates[1]).to_i
+  end
 end
