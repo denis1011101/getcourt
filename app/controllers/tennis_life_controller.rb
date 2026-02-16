@@ -2,8 +2,9 @@ class TennisLifeController < ApplicationController
   skip_before_action :authenticate_user!, only: [ :index ]
 
   TELEGRAM_CHANNELS = [
+    { name: "ТенниСММ", username: "@tennisnewsmm", url: "https://t.me/tennisnewsmm" },
     { name: "Ноги Руне 🎾🎾🎾", username: "@nogirune", url: "https://t.me/nogirune" },
-    { name: "Теннисология", username: "@getcourt", url: "https://t.me/tennisologia" },
+    { name: "Теннисология", username: "@tennisologia", url: "https://t.me/tennisologia" },
     { name: "Теннис+", username: "@tennispls", url: "https://t.me/tennispls" },
     { name: "ТеннисДрот", username: "@tennisdrot", url: "https://t.me/tennisdrot" }
   ].freeze
@@ -12,11 +13,14 @@ class TennisLifeController < ApplicationController
   RATING_LIMIT = 10
 
   def index
+    allowed_usernames = TELEGRAM_CHANNELS.map { |c| c[:username].to_s.delete_prefix("@").downcase }
+
     @feed_posts = TelegramPost
       .includes(:telegram_channel)
       .joins(:telegram_channel)
       .where.not(message_id: nil)
       .where.not(telegram_channels: { username: [ nil, "" ] })
+      .where("LOWER(telegram_channels.username) IN (?)", allowed_usernames)
       .order(published_at: :desc)
       .limit(FEED_LIMIT)
 
