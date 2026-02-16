@@ -31,7 +31,7 @@ module Telegram
           required = (g.respond_to?(:players_count) && g.players_count.to_i > 0) ? g.players_count.to_i : 4
           approved_count =
             if g.participations.loaded?
-              g.participations.select { |p| p.respond_to?(:approved?) ? p.approved? : (p.status == 'approved') }.size
+              g.participations.select { |p| p.respond_to?(:approved?) ? p.approved? : (p.status == "approved") }.size
             else
               g.participations.respond_to?(:approved) ? g.participations.approved.count : g.participations.count
             end
@@ -79,24 +79,24 @@ module Telegram
 
             is_future = if sort_date > today
                           true
-                        elsif sort_date < today
+            elsif sort_date < today
                           false
-                        else
+            else
                           hhmm >= now_hhmm
-                        end
+            end
 
             same_city = if user_city && g.court&.city_name.to_s.strip.downcase == user_city
                           0
-                        else
+            else
                           1
-                        end
+            end
 
             { game: g, date: sort_date, time: hhmm, is_future: is_future, city_rank: same_city }
           end
 
           future_items, past_items = mapped_games.partition { |item| item[:is_future] }
 
-          sorter = ->(item) { [item[:date], item[:time]] }
+          sorter = ->(item) { [ item[:date], item[:time] ] }
 
           sorted_future = future_items.sort_by(&sorter)
           sorted_past   = past_items.sort_by(&sorter)
@@ -104,7 +104,7 @@ module Telegram
           sorted_games = (sorted_future + sorted_past).map { |item| item[:game] }
 
           total = sorted_games.size
-          pages = [(total.to_f / PER_PAGE).ceil, 1].max
+          pages = [ (total.to_f / PER_PAGE).ceil, 1 ].max
           offset = (page - 1) * PER_PAGE
           games = sorted_games.slice(offset, PER_PAGE) || []
 

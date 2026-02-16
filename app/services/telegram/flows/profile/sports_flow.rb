@@ -37,7 +37,7 @@ module Telegram
             render_levels_overview(chat_id, conv["selections"], conv["levels"], message_id, cb_id)
           when "cancel"
             Rails.cache.delete(key) rescue nil
-            Telegram::Api.edit_message_with_buttons(chat_id, message_id, "Edit cancelled.", [[{ text: "Edit profile", callback_data: "profile:edit" }]]) rescue nil
+            Telegram::Api.edit_message_with_buttons(chat_id, message_id, "Edit cancelled.", [ [ { text: "Edit profile", callback_data: "profile:edit" } ] ]) rescue nil
             Telegram::Api.answer_callback(cb_id) rescue nil
           when "level"
             sport = arg
@@ -65,7 +65,7 @@ module Telegram
             user.skill_levels = (levels || {})
             if user.save
               Rails.cache.delete(key) rescue nil
-              Telegram::Api.edit_message_with_buttons(chat_id, message_id, "*Edit profile*\nSports saved: #{selections.any? ? selections.join(', ') : '—'}", [[{ text: "Edit profile", callback_data: "profile:edit" }]]) rescue nil
+              Telegram::Api.edit_message_with_buttons(chat_id, message_id, "*Edit profile*\nSports saved: #{selections.any? ? selections.join(', ') : '—'}", [ [ { text: "Edit profile", callback_data: "profile:edit" } ] ]) rescue nil
               Telegram::Api.answer_callback(cb_id) rescue nil
             else
               Rails.logger.error "[Telegram::Flows::Profile::SportsFlow] failed saving sports for user=#{user.id} errors=#{user.errors.full_messages.join(', ')}"
@@ -82,9 +82,9 @@ module Telegram
         def render_levels_overview(chat_id, selections, levels, message_id, cb_id)
           buttons = selections.map do |s|
             label = "#{s}#{levels[s].present? ? " (#{levels[s].titleize})" : ""}"
-            [{ text: label, callback_data: "profile:sports:level:#{CGI.escape(s)}" }]
+            [ { text: label, callback_data: "profile:sports:level:#{CGI.escape(s)}" } ]
           end
-          buttons << [{ text: "Save", callback_data: "profile:sports:save_levels" }, { text: "Back", callback_data: "profile:sports:cancel" }]
+          buttons << [ { text: "Save", callback_data: "profile:sports:save_levels" }, { text: "Back", callback_data: "profile:sports:cancel" } ]
           text = "Set levels for selected sports:\n#{selections.any? ? selections.map { |s| "- #{s}#{levels[s].present? ? " (#{levels[s].titleize})" : ''}" }.join("\n") : '—'}"
           if message_id
             Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, buttons) rescue nil
@@ -98,11 +98,11 @@ module Telegram
         # render skill level options for one sport
         def render_level_options(chat_id, sport, message_id, cb_id)
           buttons = SKILL_LEVELS.map do |lvl|
-            [{ text: lvl.titleize, callback_data: "profile:sports:level_set:#{CGI.escape("#{sport}|#{lvl}")}" }]
+            [ { text: lvl.titleize, callback_data: "profile:sports:level_set:#{CGI.escape("#{sport}|#{lvl}")}" } ]
           end
           # option to clear
-          buttons << [{ text: "None", callback_data: "profile:sports:level_set:#{CGI.escape("#{sport}|")}" }]
-          buttons << [{ text: "Back", callback_data: "profile:sports:save_levels" }]
+          buttons << [ { text: "None", callback_data: "profile:sports:level_set:#{CGI.escape("#{sport}|")}" } ]
+          buttons << [ { text: "Back", callback_data: "profile:sports:save_levels" } ]
           text = "Select level for #{sport}:"
           if message_id
             Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, buttons) rescue nil
@@ -117,9 +117,9 @@ module Telegram
         def render_sports_menu(chat_id, selections, message_id, cb_id)
           buttons = User::SPORTS.map do |s|
             label = selections.include?(s) ? "✓ #{s}" : s
-            [{ text: label, callback_data: "profile:sports:toggle:#{CGI.escape(s)}" }]
+            [ { text: label, callback_data: "profile:sports:toggle:#{CGI.escape(s)}" } ]
           end
-          buttons << [{ text: "Save", callback_data: "profile:sports:save" }, { text: "Back", callback_data: "profile:sports:cancel" }]
+          buttons << [ { text: "Save", callback_data: "profile:sports:save" }, { text: "Back", callback_data: "profile:sports:cancel" } ]
           text = "Select sports (multiple):\nCurrent: #{selections.any? ? selections.join(', ') : '—'}"
           if message_id
             Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, buttons) rescue nil

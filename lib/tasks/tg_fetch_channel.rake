@@ -7,10 +7,10 @@ namespace :tg do
   end
 
   desc "Fetch a single channel immediately. Usage: rake tg:fetch[username] or CHANNEL=username rake tg:fetch"
-  task :fetch, [:username] => :environment do |t, args|
-    username = (args[:username] || ENV['CHANNEL']).to_s.strip
+  task :fetch, [ :username ] => :environment do |t, args|
+    username = (args[:username] || ENV["CHANNEL"]).to_s.strip
     raise "Provide channel username (e.g. nogirune)" if username.blank?
-    username = username.sub(/^@/, '')
+    username = username.sub(/^@/, "")
     ch = TelegramChannel.find_or_create_by!(username: username) do |c|
       c.url = "https://t.me/#{username}"
       c.title = username
@@ -20,8 +20,8 @@ namespace :tg do
   end
 
   desc "Enqueue fetch for a channel by id. Usage: rake tg:enqueue[ID]"
-  task :enqueue, [:id] => :environment do |t, args|
-    id = (args[:id] || ENV['CHANNEL_ID']).to_i
+  task :enqueue, [ :id ] => :environment do |t, args|
+    id = (args[:id] || ENV["CHANNEL_ID"]).to_i
     raise "Provide channel id" if id <= 0
     FetchTelegramChannelJob.perform_later(id)
     puts "Enqueued FetchTelegramChannelJob for channel id=#{id}"

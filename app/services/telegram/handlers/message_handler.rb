@@ -140,17 +140,17 @@ module Telegram
 
       def self.prompt_for(step, locale = "ru")
         key = case step
-              when "singles_hours"  then :stats_reply_singles_hours
-              when "doubles_hours"  then :stats_reply_doubles_hours
-              when "singles_games"  then :stats_reply_singles_games
-              when "singles_wins"   then :stats_reply_singles_wins
-              when "doubles_games"  then :stats_reply_doubles_games
-              when "doubles_wins"   then :stats_reply_doubles_wins
-              when "aces"           then :stats_reply_aces
-              when "double_faults"  then :stats_reply_double_faults
-              when "first_serve_pct" then :stats_reply_first_serve_pct
-              else :please_reply
-              end
+        when "singles_hours"  then :stats_reply_singles_hours
+        when "doubles_hours"  then :stats_reply_doubles_hours
+        when "singles_games"  then :stats_reply_singles_games
+        when "singles_wins"   then :stats_reply_singles_wins
+        when "doubles_games"  then :stats_reply_doubles_games
+        when "doubles_wins"   then :stats_reply_doubles_wins
+        when "aces"           then :stats_reply_aces
+        when "double_faults"  then :stats_reply_double_faults
+        when "first_serve_pct" then :stats_reply_first_serve_pct
+        else :please_reply
+        end
         Telegram::I18n.t(key, locale: locale)
       end
 

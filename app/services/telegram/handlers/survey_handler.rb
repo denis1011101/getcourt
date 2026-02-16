@@ -136,10 +136,10 @@ module Telegram
           selected = (state["selected_sports"] || []).map(&:to_s)
           buttons = sports_list.map do |label, key|
             checked = selected.include?(key) ? " ✓" : ""
-            [{ text: "#{label}#{checked}", callback_data: "sport:toggle:#{key}" }]
+            [ { text: "#{label}#{checked}", callback_data: "sport:toggle:#{key}" } ]
           end
-          buttons << [{ text: t.(:done), callback_data: "sport:done" }]
-          buttons << [{ text: t.(:skip), callback_data: "sport:skip_all" }]
+          buttons << [ { text: t.(:done), callback_data: "sport:done" } ]
+          buttons << [ { text: t.(:skip), callback_data: "sport:skip_all" } ]
           Telegram::Api.send_with_buttons(chat_id, t.(:ask_sports), buttons)
           Telegram::Api.answer_callback(answer) if answer
         end
@@ -149,17 +149,17 @@ module Telegram
           queue = (Conversation.get(chat_id)["skill_queue"] || [])
           sport = queue.first
           sport_label = sports_list.find { |l, k| k == sport }&.first || sport.to_s.humanize
-          buttons = skill_levels_list.map { |label, key| [{ text: label, callback_data: "skill:set:#{sport}:#{key}" }] }
-          buttons << [{ text: t.(:skip), callback_data: "skill:skip:#{sport}" }]
+          buttons = skill_levels_list.map { |label, key| [ { text: label, callback_data: "skill:set:#{sport}:#{key}" } ] }
+          buttons << [ { text: t.(:skip), callback_data: "skill:skip:#{sport}" } ]
           Telegram::Api.send_with_buttons(chat_id, t.(:ask_skill, sport: sport_label), buttons)
         end
 
         def send_notifications_picker(chat_id, locale: "ru")
           t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
           buttons = [
-            [{ text: t.(:yes_label), callback_data: "notifications:set:yes" }],
-            [{ text: t.(:no_label),  callback_data: "notifications:set:no" }],
-            [{ text: t.(:skip),      callback_data: "notifications:skip" }]
+            [ { text: t.(:yes_label), callback_data: "notifications:set:yes" } ],
+            [ { text: t.(:no_label),  callback_data: "notifications:set:no" } ],
+            [ { text: t.(:skip),      callback_data: "notifications:skip" } ]
           ]
           Telegram::Api.send_with_buttons(chat_id, t.(:ask_notifications), buttons)
         end
@@ -167,12 +167,12 @@ module Telegram
         def sports_list
           User::SPORTS.map do |label|
             key = label.to_s.downcase.gsub(/\s+/, "_")
-            [label, key]
+            [ label, key ]
           end
         end
 
         def skill_levels_list
-          User::SKILL_LEVELS.map { |lvl| [lvl.to_s.titleize, lvl.to_s] }
+          User::SKILL_LEVELS.map { |lvl| [ lvl.to_s.titleize, lvl.to_s ] }
         end
 
         def find_user_by_chat(chat_id)

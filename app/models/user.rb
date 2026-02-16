@@ -6,7 +6,7 @@ class User < ApplicationRecord
   after_create :ensure_player_statistic
 
   SKILL_LEVELS = %w[beginner intermediate advanced pro].freeze
-  SPORTS = ["Tennis", "Padel", "Squash", "Table Tennis"].freeze
+  SPORTS = [ "Tennis", "Padel", "Squash", "Table Tennis" ].freeze
 
   TIMEZONES = (
     TZInfo::Timezone.all_identifiers + ActiveSupport::TimeZone.all.map(&:name)
@@ -73,7 +73,7 @@ class User < ApplicationRecord
 
   # return stored timezone or default (Yekaterinburg)
   def timezone_or_default
-    read_attribute(:timezone).presence || 'Asia/Yekaterinburg'
+    read_attribute(:timezone).presence || "Asia/Yekaterinburg"
   end
 
   def admin?

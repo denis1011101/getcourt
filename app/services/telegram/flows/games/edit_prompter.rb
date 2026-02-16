@@ -13,28 +13,28 @@ module Telegram
             case mode
             when :create
               [
-                [{ text: "Date", callback_data: "game:create:field:date:#{game_id}" }],
-                [{ text: "Time", callback_data: "game:create:field:time:#{game_id}" }],
-                [{ text: "Players", callback_data: "game:create:field:players_count:#{game_id}" }],
-                [{ text: "Sport / Title", callback_data: "game:create:field:sport:#{game_id}" }],
-                [{ text: "Court (prefilled)", callback_data: "game:create:field:court_id:#{game_id}" }],
-                [{ text: "Preview / Confirm", callback_data: "game:create:confirm:#{game_id}" }],
+                [ { text: "Date", callback_data: "game:create:field:date:#{game_id}" } ],
+                [ { text: "Time", callback_data: "game:create:field:time:#{game_id}" } ],
+                [ { text: "Players", callback_data: "game:create:field:players_count:#{game_id}" } ],
+                [ { text: "Sport / Title", callback_data: "game:create:field:sport:#{game_id}" } ],
+                [ { text: "Court (prefilled)", callback_data: "game:create:field:court_id:#{game_id}" } ],
+                [ { text: "Preview / Confirm", callback_data: "game:create:confirm:#{game_id}" } ],
                 # include original message_id when present so cancel can restore previous view
-                [{ text: "Cancel (delete draft)", callback_data: "game:create:cancel:#{game_id}" + (message_id ? ":#{message_id}" : "") }]
+                [ { text: "Cancel (delete draft)", callback_data: "game:create:cancel:#{game_id}" + (message_id ? ":#{message_id}" : "") } ]
               ]
             when :edit
               # mirror create layout for edit mode (use edit callbacks)
               kb = [
-                [{ text: "Date", callback_data: "game:edit:field:#{game_id}:date" }],
-                [{ text: "Time", callback_data: "game:edit:field:#{game_id}:time" }],
-                [{ text: "Players", callback_data: "game:edit:field:#{game_id}:players_count" }],
-                [{ text: "Sport / Title", callback_data: "game:edit:field:#{game_id}:sport" }],
-                [{ text: "Court", callback_data: "game:edit:field:#{game_id}:court_id" }],
-                [{ text: "Preview / Confirm", callback_data: "game:edit:confirm:#{game_id}" }]
+                [ { text: "Date", callback_data: "game:edit:field:#{game_id}:date" } ],
+                [ { text: "Time", callback_data: "game:edit:field:#{game_id}:time" } ],
+                [ { text: "Players", callback_data: "game:edit:field:#{game_id}:players_count" } ],
+                [ { text: "Sport / Title", callback_data: "game:edit:field:#{game_id}:sport" } ],
+                [ { text: "Court", callback_data: "game:edit:field:#{game_id}:court_id" } ],
+                [ { text: "Preview / Confirm", callback_data: "game:edit:confirm:#{game_id}" } ]
               ]
               cb = "game:edit:cancel:#{game_id}"
               cb += ":#{message_id}" if message_id
-              kb << [{ text: "Cancel", callback_data: cb }]
+              kb << [ { text: "Cancel", callback_data: cb } ]
               kb
             else
               []
@@ -72,7 +72,7 @@ module Telegram
                 text: initial,
                  reply_markup: { inline_keyboard: kb }
                }) rescue nil
-               msg_id = resp.dig("result","message_id") rescue nil
+               msg_id = resp.dig("result", "message_id") rescue nil
             end
 
             if msg_id
@@ -93,8 +93,8 @@ module Telegram
           data = (callback["data"] || "").to_s
           cb_id = callback["id"]
           from = callback["from"] || {}
-          chat_id = (callback.dig("message","chat","id") || from["id"]).to_s
-          message_id = callback.dig("message","message_id") || callback["inline_message_id"]
+          chat_id = (callback.dig("message", "chat", "id") || from["id"]).to_s
+          message_id = callback.dig("message", "message_id") || callback["inline_message_id"]
           poller = Telegram::Poller.new
 
           # support both create and edit field callbacks
@@ -124,11 +124,11 @@ module Telegram
             poller.send_api("answerCallbackQuery", { callback_query_id: cb_id }) rescue nil
 
             if field == "sport"
-              require 'cgi'
+              require "cgi"
               buttons = User::SPORTS.each_slice(2).map do |row|
                 row.map { |s| { text: s, callback_data: "game:edit:set:sport:#{game_id}:#{CGI.escape(s)}:#{message_id}" } }
               end
-              buttons << [{ text: "Cancel", callback_data: "game:edit:cancel:#{game_id}:#{message_id}" }]
+              buttons << [ { text: "Cancel", callback_data: "game:edit:cancel:#{game_id}:#{message_id}" } ]
               if message_id
                 poller.send_api("editMessageText", { chat_id: chat_id, message_id: message_id, text: "Choose new sport:", reply_markup: { inline_keyboard: buttons } }) rescue nil
               else
@@ -137,9 +137,9 @@ module Telegram
 
             elsif field == "players_count"
               buttons = [
-                [{ text: "2", callback_data: "game:edit:set:players_count:#{game_id}:2:#{message_id}" }],
-                [{ text: "4", callback_data: "game:edit:set:players_count:#{game_id}:4:#{message_id}" }],
-                [{ text: "Cancel", callback_data: "game:edit:cancel:#{game_id}:#{message_id}" }]
+                [ { text: "2", callback_data: "game:edit:set:players_count:#{game_id}:2:#{message_id}" } ],
+                [ { text: "4", callback_data: "game:edit:set:players_count:#{game_id}:4:#{message_id}" } ],
+                [ { text: "Cancel", callback_data: "game:edit:cancel:#{game_id}:#{message_id}" } ]
               ]
               if message_id
                 poller.send_api("editMessageText", { chat_id: chat_id, message_id: message_id, text: "Choose players count:", reply_markup: { inline_keyboard: buttons } }) rescue nil
@@ -158,7 +158,7 @@ module Telegram
                   chat_id: chat_id,
                   message_id: message_id,
                   text: "Send new value for #{label}:",
-                  reply_markup: { inline_keyboard: [[{ text: "Cancel", callback_data: "game:edit:cancel:#{game_id}:#{message_id}" }]] }
+                  reply_markup: { inline_keyboard: [ [ { text: "Cancel", callback_data: "game:edit:cancel:#{game_id}:#{message_id}" } ] ] }
                 }) rescue nil
               else
                 poller.send_api("sendMessage", { chat_id: chat_id, text: "Send new value for #{label}:" }) rescue nil

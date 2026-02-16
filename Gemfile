@@ -49,7 +49,7 @@ gem "dotenv-rails"
 gem "russian"
 
 # For fething tg channels
-gem 'tdlib-ruby'
+gem "tdlib-ruby"
 
 # For counting google map request
 gem "google-cloud-monitoring", require: false

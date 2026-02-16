@@ -1,9 +1,9 @@
 class Geocoding::FetchCourtAddressJob < ApplicationJob
   queue_as :default
 
-  require 'net/http'
-  require 'uri'
-  require 'json'
+  require "net/http"
+  require "uri"
+  require "json"
 
   def perform(court_id, lat = nil, lng = nil)
     court = Court.find_by(id: court_id)
@@ -34,7 +34,7 @@ class Geocoding::FetchCourtAddressJob < ApplicationJob
   def geocode_nominatim_structured(lat, lng)
     uri = URI.parse("https://nominatim.openstreetmap.org/reverse?format=json&lat=#{lat}&lon=#{lng}&accept-language=en")
     req = Net::HTTP::Get.new(uri)
-    req['User-Agent'] = "GetCourt/1.0 (denisdenis9331@gmail.com)"
+    req["User-Agent"] = "GetCourt/1.0 (denisdenis9331@gmail.com)"
     res = nil
     tries = 0
 

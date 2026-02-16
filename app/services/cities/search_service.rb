@@ -1,9 +1,9 @@
 module Cities
   class SearchService
     RUSSIAN_MAP = {
-      'а'=>'a','б'=>'b','в'=>'v','г'=>'g','д'=>'d','е'=>'e','ё'=>'e','ж'=>'zh','з'=>'z','и'=>'i','й'=>'y',
-      'к'=>'k','л'=>'l','м'=>'m','н'=>'n','о'=>'o','п'=>'p','р'=>'r','с'=>'s','т'=>'t','у'=>'u','ф'=>'f',
-      'х'=>'kh','ц'=>'ts','ч'=>'ch','ш'=>'sh','щ'=>'shch','ъ'=>'','ы'=>'y','ь'=>'','э'=>'e','ю'=>'yu','я'=>'ya'
+      "\u0430"=>"a", "\u0431"=>"b", "\u0432"=>"v", "\u0433"=>"g", "\u0434"=>"d", "\u0435"=>"e", "\u0451"=>"e", "\u0436"=>"zh", "\u0437"=>"z", "\u0438"=>"i", "\u0439"=>"y",
+      "\u043A"=>"k", "\u043B"=>"l", "\u043C"=>"m", "\u043D"=>"n", "\u043E"=>"o", "\u043F"=>"p", "\u0440"=>"r", "\u0441"=>"s", "\u0442"=>"t", "\u0443"=>"u", "\u0444"=>"f",
+      "\u0445"=>"kh", "\u0446"=>"ts", "\u0447"=>"ch", "\u0448"=>"sh", "\u0449"=>"shch", "\u044A"=>"", "\u044B"=>"y", "\u044C"=>"", "\u044D"=>"e", "\u044E"=>"yu", "\u044F"=>"ya"
     }.freeze
 
     def initialize(query:, country: nil, limit: 20)
@@ -36,7 +36,7 @@ module Cities
       s = s.encode("UTF-8", invalid: :replace, undef: :replace, replace: "") rescue s.force_encoding("UTF-8")
       begin
         t = I18n.transliterate(s)
-        return t unless t.include?('?')
+        return t unless t.include?("?")
       rescue
       end
 

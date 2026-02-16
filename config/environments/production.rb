@@ -92,6 +92,6 @@ Rails.application.configure do
   config.hosts << "localhost"
 
   # Allow Rails to serve precompiled assets if you don't use nginx to serve /public
-  config.public_file_server.enabled = ENV['RAILS_SERVE_STATIC_FILES'].present?
+  config.public_file_server.enabled = ENV["RAILS_SERVE_STATIC_FILES"].present?
   config.force_ssl = true
 end

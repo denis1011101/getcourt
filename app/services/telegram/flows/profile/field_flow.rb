@@ -32,9 +32,9 @@ module Telegram
 
             buttons = User::SPORTS.map do |s|
               label = selections.include?(s) ? "✓ #{s}" : s
-              [{ text: label, callback_data: "profile:sports:toggle:#{CGI.escape(s)}" }]
+              [ { text: label, callback_data: "profile:sports:toggle:#{CGI.escape(s)}" } ]
             end
-            buttons << [{ text: t.(:save), callback_data: "profile:sports:save" }, { text: t.(:back), callback_data: "profile:sports:cancel" }]
+            buttons << [ { text: t.(:save), callback_data: "profile:sports:save" }, { text: t.(:back), callback_data: "profile:sports:cancel" } ]
 
             text = t.(:editing_field, field: t.(:field_sports), current: (selections.any? ? selections.join(", ") : "—"), hint: t.(:sports_editing_prompt))
 
@@ -60,9 +60,9 @@ module Telegram
 
             current = presenter.current_value_for("notify")
             buttons = [
-              [{ text: t.(:yes_label), callback_data: "profile:field:notify:yes" }],
-              [{ text: t.(:no_label),  callback_data: "profile:field:notify:no"  }],
-              [{ text: t.(:back),      callback_data: "profile:field:cancel" }]
+              [ { text: t.(:yes_label), callback_data: "profile:field:notify:yes" } ],
+              [ { text: t.(:no_label),  callback_data: "profile:field:notify:no"  } ],
+              [ { text: t.(:back),      callback_data: "profile:field:cancel" } ]
             ]
             text = t.(:editing_field, field: t.(:field_notify), current: current, hint: "")
 
@@ -88,9 +88,9 @@ module Telegram
 
             current = presenter.current_value_for("coach")
             buttons = [
-              [{ text: t.(:yes_label), callback_data: "profile:field:coach:yes" }],
-              [{ text: t.(:no_label),  callback_data: "profile:field:coach:no"  }],
-              [{ text: t.(:back),      callback_data: "profile:field:cancel" }]
+              [ { text: t.(:yes_label), callback_data: "profile:field:coach:yes" } ],
+              [ { text: t.(:no_label),  callback_data: "profile:field:coach:no"  } ],
+              [ { text: t.(:back),      callback_data: "profile:field:cancel" } ]
             ]
             text = t.(:editing_field, field: t.(:field_coach), current: current, hint: "")
 
@@ -115,7 +115,7 @@ module Telegram
           text = t.(:editing_field, field: field, current: current, hint: t.(:send_new_value))
 
           if message_id
-            buttons = [[{ text: t.(:back), callback_data: "profile:field:cancel" }]]
+            buttons = [ [ { text: t.(:back), callback_data: "profile:field:cancel" } ] ]
             Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, buttons) rescue nil
             Telegram::Api.answer_callback(cb_id) rescue nil
           else
@@ -231,7 +231,7 @@ module Telegram
             rescue => e
               Rails.logger.error "[Telegram::Flows::Profile::FieldFlow] process_notify_callback: cache delete failed for chat=#{chat_id}: #{e.class}: #{e.message}"
             end
-            Telegram::Api.edit_message_with_buttons(chat_id, message_id, t.(:edit_cancelled), [[{ text: t.(:edit_profile), callback_data: "profile:edit" }]]) rescue nil
+            Telegram::Api.edit_message_with_buttons(chat_id, message_id, t.(:edit_cancelled), [ [ { text: t.(:edit_profile), callback_data: "profile:edit" } ] ]) rescue nil
             Telegram::Api.answer_callback(cb_id) rescue nil
             return
           end
@@ -273,7 +273,7 @@ module Telegram
             rescue => e
               Rails.logger.error "[Telegram::Flows::Profile::FieldFlow] process_coach_callback: cache delete failed for chat=#{chat_id}: #{e.class}: #{e.message}"
             end
-            Telegram::Api.edit_message_with_buttons(chat_id, message_id, t.(:edit_cancelled), [[{ text: t.(:edit_profile), callback_data: "profile:edit" }]]) rescue nil
+            Telegram::Api.edit_message_with_buttons(chat_id, message_id, t.(:edit_cancelled), [ [ { text: t.(:edit_profile), callback_data: "profile:edit" } ] ]) rescue nil
             Telegram::Api.answer_callback(cb_id) rescue nil
             return
           end

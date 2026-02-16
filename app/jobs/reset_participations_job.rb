@@ -30,7 +30,7 @@ class ResetParticipationsJob < ApplicationJob
     # collect sorted future prebooking dates starting with nd
     dates = game.prebookings.where("date >= ?", nd).distinct.pluck(:date).sort
     # ensure current nd is present in dates (if no prebookings at nd, still include it)
-    dates = [nd] | dates
+    dates = [ nd ] | dates
 
     ActiveRecord::Base.transaction do
       # 1) create participations from prebookings on nd (up to players_needed)

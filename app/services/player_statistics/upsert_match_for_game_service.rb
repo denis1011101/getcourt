@@ -94,12 +94,12 @@ module PlayerStatistics
           end
         end
 
-        ps[games_key] = [ps[games_key].to_i, 0].max
+        ps[games_key] = [ ps[games_key].to_i, 0 ].max
         if training_key
-          ps[training_key] = [ps[training_key].to_i, 0].max
+          ps[training_key] = [ ps[training_key].to_i, 0 ].max
         end
-        ps[wins_key] = [ps[wins_key].to_i, 0].max
-        ps[losses_key] = [ps[losses_key].to_i, 0].max
+        ps[wins_key] = [ ps[wins_key].to_i, 0 ].max
+        ps[losses_key] = [ ps[losses_key].to_i, 0 ].max
 
         ps.save!
       end

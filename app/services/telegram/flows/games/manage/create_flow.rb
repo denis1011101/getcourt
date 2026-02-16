@@ -231,24 +231,24 @@ module Telegram
               t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
               header = t.(:create_game_step, step: step_number(step), total: TOTAL_STEPS)
-              cancel_row = [{ text: t.(:cancel_btn), callback_data: "game:create:cancel" }]
+              cancel_row = [ { text: t.(:cancel_btn), callback_data: "game:create:cancel" } ]
 
               case step
               when "date"
                 text = "#{header}\n\n#{t.(:create_game_date)}"
-                buttons = [cancel_row]
+                buttons = [ cancel_row ]
                 Telegram::Api.send_with_buttons(chat_id, text, buttons)
 
               when "time"
                 text = "#{header}\n\n#{t.(:create_game_time)}"
-                buttons = [cancel_row]
+                buttons = [ cancel_row ]
                 Telegram::Api.send_with_buttons(chat_id, text, buttons)
 
               when "players_count"
                 text = "#{header}\n\n#{t.(:create_game_players)}"
                 # Quick-pick buttons for common counts
-                row1 = [2, 4, 6, 8].map { |n| { text: n.to_s, callback_data: "game:create:players:#{n}" } }
-                buttons = [row1, cancel_row]
+                row1 = [ 2, 4, 6, 8 ].map { |n| { text: n.to_s, callback_data: "game:create:players:#{n}" } }
+                buttons = [ row1, cancel_row ]
                 Telegram::Api.send_with_buttons(chat_id, text, buttons)
 
               when "court"
@@ -261,7 +261,7 @@ module Telegram
                     { text: t.(:yes_label), callback_data: "game:create:recurring:yes" },
                     { text: t.(:no_label),  callback_data: "game:create:recurring:no" }
                   ],
-                  [{ text: t.(:skip_btn), callback_data: "game:create:skip" }],
+                  [ { text: t.(:skip_btn), callback_data: "game:create:skip" } ],
                   cancel_row
                 ]
                 Telegram::Api.send_with_buttons(chat_id, text, buttons)
@@ -279,7 +279,7 @@ module Telegram
                     { text: t.(:yes_label), callback_data: "game:create:prebooking:yes" },
                     { text: t.(:no_label),  callback_data: "game:create:prebooking:no" }
                   ],
-                  [{ text: t.(:skip_btn), callback_data: "game:create:skip" }],
+                  [ { text: t.(:skip_btn), callback_data: "game:create:skip" } ],
                   cancel_row
                 ]
                 Telegram::Api.send_with_buttons(chat_id, text, buttons)
@@ -291,26 +291,26 @@ module Telegram
                     { text: t.(:yes_label), callback_data: "game:create:with_coach:yes" },
                     { text: t.(:no_label),  callback_data: "game:create:with_coach:no" }
                   ],
-                  [{ text: t.(:skip_btn), callback_data: "game:create:skip" }],
+                  [ { text: t.(:skip_btn), callback_data: "game:create:skip" } ],
                   cancel_row
                 ]
                 Telegram::Api.send_with_buttons(chat_id, text, buttons)
 
               when "sport"
                 text = "#{header}\n\n#{t.(:create_game_sport)}"
-                sport_buttons = User::SPORTS.map { |s| [{ text: s, callback_data: "game:create:sport:#{s}" }] }
+                sport_buttons = User::SPORTS.map { |s| [ { text: s, callback_data: "game:create:sport:#{s}" } ] }
                 buttons = sport_buttons + [
-                  [{ text: t.(:skip_btn), callback_data: "game:create:skip" }],
+                  [ { text: t.(:skip_btn), callback_data: "game:create:skip" } ],
                   cancel_row
                 ]
                 Telegram::Api.send_with_buttons(chat_id, text, buttons)
 
               when "skill_level"
                 text = "#{header}\n\n#{t.(:create_game_skill)}"
-                level_buttons = User::SKILL_LEVELS.map { |l| [{ text: l.titleize, callback_data: "game:create:skill:#{l}" }] }
+                level_buttons = User::SKILL_LEVELS.map { |l| [ { text: l.titleize, callback_data: "game:create:skill:#{l}" } ] }
                 buttons = level_buttons + [
-                  [{ text: t.(:create_game_any_level), callback_data: "game:create:skill:any" }],
-                  [{ text: t.(:skip_btn), callback_data: "game:create:skip" }],
+                  [ { text: t.(:create_game_any_level), callback_data: "game:create:skill:any" } ],
+                  [ { text: t.(:skip_btn), callback_data: "game:create:skip" } ],
                   cancel_row
                 ]
                 Telegram::Api.send_with_buttons(chat_id, text, buttons)
@@ -324,29 +324,29 @@ module Telegram
 
               courts = Court.visible_to(user).order(:name).to_a
               per_page = 5
-              total_pages = [(courts.size.to_f / per_page).ceil, 1].max
-              page = [[page, 1].max, total_pages].min
+              total_pages = [ (courts.size.to_f / per_page).ceil, 1 ].max
+              page = [ [ page, 1 ].max, total_pages ].min
               offset = (page - 1) * per_page
               slice = courts.slice(offset, per_page) || []
 
               step_num = step_number("court")
               header = t.(:create_game_step, step: step_num, total: TOTAL_STEPS)
               text = "#{header}\n\n#{t.(:create_game_court)}"
-              cancel_row = [{ text: t.(:cancel_btn), callback_data: "game:create:cancel" }]
+              cancel_row = [ { text: t.(:cancel_btn), callback_data: "game:create:cancel" } ]
 
               if courts.empty?
                 text = "#{header}\n\n#{t.(:create_game_no_courts)}"
                 buttons = [
-                  [{ text: t.(:create_game_court_new), callback_data: "game:create:court_new" }],
+                  [ { text: t.(:create_game_court_new), callback_data: "game:create:court_new" } ],
                   cancel_row
                 ]
               else
-                buttons = slice.map { |c| [{ text: c.name, callback_data: "game:create:court:#{c.id}" }] }
+                buttons = slice.map { |c| [ { text: c.name, callback_data: "game:create:court:#{c.id}" } ] }
                 nav = []
                 nav << { text: t.(:prev_page), callback_data: "game:create:court_page:#{page - 1}" } if page > 1
                 nav << { text: t.(:next_page), callback_data: "game:create:court_page:#{page + 1}" } if page < total_pages
                 buttons << nav unless nav.empty?
-                buttons << [{ text: t.(:create_game_court_new), callback_data: "game:create:court_new" }]
+                buttons << [ { text: t.(:create_game_court_new), callback_data: "game:create:court_new" } ]
                 buttons << cancel_row
               end
 

@@ -21,13 +21,13 @@ module Telegram
                Rails.logger.error "[Telegram::Flows::GamesFlow] show_game error: #{e.class}: #{e.message}\n#{e.backtrace.first(8).join("\n")}"
                raise
             end
-            return
+            nil
 
           when /\Agame:invite:/, /\Agame:invite_decline:/
             handled = Telegram::Flows::Games::InviteFlow.handle_callback(callback) rescue false
-            return handled
+            handled
 
-          when /\Agame:prebook/ , /\Aprebook:/
+          when /\Agame:prebook/, /\Aprebook:/
             Rails.logger.debug "[Telegram::Flows::GamesFlow] delegating to Games::PrebookFlow data=#{cb.data.inspect}"
             begin
               result = Telegram::Flows::Games::PrebookFlow.handle_callback(callback)
@@ -36,11 +36,11 @@ module Telegram
               Rails.logger.error "[Telegram::Flows::GamesFlow] prebook flow error: #{e.class}: #{e.message}\n#{e.backtrace.first(8).join("\n")}"
               result = nil
             end
-            return result
+            result
 
           when /\Agame:/
             Telegram::Flows::Games::ManageFlow.handle_callback(callback) rescue nil
-            return
+            nil
 
           else
             # other actions handled elsewhere

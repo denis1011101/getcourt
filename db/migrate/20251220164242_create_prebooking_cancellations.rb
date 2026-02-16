@@ -9,6 +9,6 @@ class CreatePrebookingCancellations < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :prebooking_cancellations, [:game_id, :date], unique: true
+    add_index :prebooking_cancellations, [ :game_id, :date ], unique: true
   end
 end

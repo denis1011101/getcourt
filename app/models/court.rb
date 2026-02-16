@@ -53,7 +53,7 @@ class Court < ApplicationRecord
     return nil if str.empty?
 
     if str.match?(/\A-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?\z/)
-      parts = str.split(',').map { |s| (Float(s.strip) rescue nil) }
+      parts = str.split(",").map { |s| (Float(s.strip) rescue nil) }
       return nil if parts.any?(&:nil?)
       return parts
     end
@@ -120,8 +120,8 @@ class Court < ApplicationRecord
     city    = gcomp(components, "locality", "postal_town", "administrative_area_level_2")
     country = gcomp(components, "country")
 
-    street_line = [street, number].compact.join(" ").presence
-    address = [street_line, city, country].compact.join(", ").presence
+    street_line = [ street, number ].compact.join(" ").presence
+    address = [ street_line, city, country ].compact.join(", ").presence
 
     { address: address, city_name: city }
   rescue => e
@@ -138,7 +138,7 @@ class Court < ApplicationRecord
     return nil unless data && data["status"] == "OK" && data["results"].any?
 
     loc = data["results"].first["geometry"]["location"]
-    [loc["lat"], loc["lng"]]
+    [ loc["lat"], loc["lng"] ]
   rescue => e
     Rails.logger.warn("Google text geocoding error: #{e.message} (status=#{data&.dig('status')} msg=#{data&.dig('error_message')})")
     nil
@@ -155,8 +155,8 @@ class Court < ApplicationRecord
     city    = addr["city"] || addr["town"] || addr["village"] || addr["municipality"] || addr["county"]
     country = addr["country"]
 
-    street_line = [street, number].compact.join(" ").presence
-    [street_line, city, country].compact.join(", ").presence
+    street_line = [ street, number ].compact.join(" ").presence
+    [ street_line, city, country ].compact.join(", ").presence
   rescue => e
     Rails.logger.warn("Nominatim error: #{e.message}")
     nil
@@ -192,6 +192,6 @@ class Court < ApplicationRecord
   def self.parse_pair(str)
     parts = str.to_s.split(",").map { |s| (Float(s) rescue nil) }
     return nil if parts.length < 2 || parts.any?(&:nil?)
-    [parts[0], parts[1]]
+    [ parts[0], parts[1] ]
   end
 end

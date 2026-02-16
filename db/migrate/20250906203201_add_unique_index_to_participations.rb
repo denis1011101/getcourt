@@ -11,7 +11,7 @@ class AddUniqueIndexToParticipations < ActiveRecord::Migration[8.0]
       )
     SQL
 
-    add_index :participations, [:user_id, :game_id], unique: true, name: 'index_participations_on_user_and_game'
+    add_index :participations, [ :user_id, :game_id ], unique: true, name: 'index_participations_on_user_and_game'
   end
 
   def down

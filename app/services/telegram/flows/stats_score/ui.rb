@@ -42,7 +42,7 @@ module Telegram
             players.each do |p|
               pid = p["id"].to_i
               next if picked.include?(pid)
-              keyboard << [{ text: p["name"].to_s, callback_data: "tg_score_pick:#{game_id}:#{pid}" }]
+              keyboard << [ { text: p["name"].to_s, callback_data: "tg_score_pick:#{game_id}:#{pid}" } ]
             end
           end
 
@@ -52,10 +52,10 @@ module Telegram
               { text: "Enter score", callback_data: "tg_score_enter:#{game_id}" }
             ]
           elsif ids.size >= 4
-            keyboard << [{ text: "Reset", callback_data: "tg_score_reset:#{game_id}" }]
+            keyboard << [ { text: "Reset", callback_data: "tg_score_reset:#{game_id}" } ]
           end
 
-          keyboard << [{ text: "Back", callback_data: "tg_score_cancel:#{game_id}" }]
+          keyboard << [ { text: "Back", callback_data: "tg_score_cancel:#{game_id}" } ]
 
           edit_or_send(chat_id:, message_id:, text: text.join("\n"), keyboard:)
         end
@@ -92,7 +92,7 @@ module Telegram
           text << ""
           text << "Invalid score format, try again." if invalid
 
-          keyboard = [[{ text: "Back", callback_data: "tg_score_cancel:#{game_id}" }]]
+          keyboard = [ [ { text: "Back", callback_data: "tg_score_cancel:#{game_id}" } ] ]
 
           edit_or_send(chat_id:, message_id:, text: text.join("\n"), keyboard:)
           Telegram::Api.answer_callback(cb_id) rescue nil if cb_id

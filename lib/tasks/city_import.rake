@@ -1,14 +1,14 @@
 namespace :import do
   desc "Import GeoNames cities file. Usage: rake import:geonames FILE=./cities1000.txt"
   task geonames: :environment do
-    file = ENV['FILE'] || './cities1000.txt'
+    file = ENV["FILE"] || "./cities1000.txt"
     raise "Specify FILE=path" unless File.exist?(file)
 
     batch = []
     batch_size = 1000
     cols = %i[geonameid name asciiname alternatenames latitude longitude feature_class feature_code country_code cc2 admin1 admin2 admin3 admin4 population elevation dem timezone mod_date]
 
-    File.open(file, 'r:UTF-8').each_with_index do |line, i|
+    File.open(file, "r:UTF-8").each_with_index do |line, i|
       fields = line.chomp.split("\t")
       tz = fields[17] # timezone column per GeoNames format
       batch << {

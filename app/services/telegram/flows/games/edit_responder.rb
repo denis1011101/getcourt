@@ -5,7 +5,7 @@ module Telegram
         class << self
           # Handle ordinary user messages (not reply-to). Call from your message processor.
           def handle_message(message)
-            chat_id = (message.dig("chat","id") || message.dig("from","id")).to_s
+            chat_id = (message.dig("chat", "id") || message.dig("from", "id")).to_s
             state = Rails.cache.read("telegram:edit:chat:#{chat_id}")
             Rails.logger.info "[EditResponder] handle_message chat_id=#{chat_id} state=#{state.inspect}"
             begin
@@ -41,7 +41,7 @@ module Telegram
                 chat_id: chat_id,
                 message_id: msg_id,
                 text: next_text,
-                reply_markup: { inline_keyboard: [[{ text: "Cancel", callback_data: "game:edit:cancel:#{game_id}:#{msg_id}" }]] }
+                reply_markup: { inline_keyboard: [ [ { text: "Cancel", callback_data: "game:edit:cancel:#{game_id}:#{msg_id}" } ] ] }
               }) rescue nil
 
               written = Rails.cache.write("telegram:edit:chat:#{chat_id}", state.merge(step: 2, date: d), expires_in: 30.minutes)
@@ -63,12 +63,12 @@ module Telegram
                 chat_id: chat_id,
                 message_id: msg_id,
                 text: next_text,
-                reply_markup: { inline_keyboard: [[{ text: "Cancel", callback_data: "game:edit:cancel:#{game_id}:#{msg_id}" }]] }
+                reply_markup: { inline_keyboard: [ [ { text: "Cancel", callback_data: "game:edit:cancel:#{game_id}:#{msg_id}" } ] ] }
               }) rescue nil
 
               Rails.cache.write("telegram:edit:chat:#{chat_id}", state.merge(step: 3, time: text), expires_in: 30.minutes)
 
-           when 3
+            when 3
               parts = text.split
               players = parts[0].to_i rescue 0
               sport = parts[1]
@@ -169,8 +169,8 @@ module Telegram
           def handle_cancel(callback)
             cb_id = callback["id"]
             data = (callback["data"] || "").to_s
-            chat_id = (callback.dig("message","chat","id") || callback["from"] && callback["from"]["id"]).to_s
-            message_id = callback.dig("message","message_id")
+            chat_id = (callback.dig("message", "chat", "id") || callback["from"] && callback["from"]["id"]).to_s
+            message_id = callback.dig("message", "message_id")
             # clear both chat and message keyed state
             Rails.cache.delete("telegram:edit:chat:#{chat_id}")
             Rails.cache.delete("telegram:edit:msg:#{message_id}")

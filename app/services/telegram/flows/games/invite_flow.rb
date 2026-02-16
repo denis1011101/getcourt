@@ -37,9 +37,9 @@ module Telegram
                   message_id: message_id,
                   text: "Send usernames to invite (e.g. @alice @bob).\nSend /cancel to abort.",
                   reply_markup: {
-                    inline_keyboard: [[
+                    inline_keyboard: [ [
                       { text: "Cancel", callback_data: "game:invite_cancel:#{game_id}" }
-                    ]]
+                    ] ]
                   }
                 }) rescue nil
               else
@@ -47,9 +47,9 @@ module Telegram
                   chat_id: chat_id,
                   text: "Send usernames to invite (e.g. @alice @bob).\nSend /cancel to abort.",
                   reply_markup: {
-                    inline_keyboard: [[
+                    inline_keyboard: [ [
                       { text: "Cancel", callback_data: "game:invite_cancel:#{game_id}" }
-                    ]]
+                    ] ]
                   }
                 }) rescue nil
               end
@@ -175,10 +175,10 @@ module Telegram
                 chat_id: user.telegram_chat_id.to_s,
                 text: "You are invited to join:\n#{label}\n\n#{game_url}",
                 reply_markup: {
-                  inline_keyboard: [[
+                  inline_keyboard: [ [
                     { text: "Join ##{game.id}", callback_data: "game:join_invited:#{game.id}" },
                     { text: "Decline ##{game.id}", callback_data: "game:invite_decline:#{game.id}" }
-                  ]]
+                  ] ]
                 }
               }) rescue nil
             end

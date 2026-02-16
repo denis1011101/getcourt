@@ -37,8 +37,8 @@ module Telegram
             }
 
             if players.size == 2
-              state["team_a_ids"] = [players[0].id]
-              state["team_b_ids"] = [players[1].id]
+              state["team_a_ids"] = [ players[0].id ]
+              state["team_b_ids"] = [ players[1].id ]
             else
               state["team_a_ids"] = []
               state["team_b_ids"] = []

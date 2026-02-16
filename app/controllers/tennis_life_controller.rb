@@ -1,5 +1,5 @@
 class TennisLifeController < ApplicationController
-  skip_before_action :authenticate_user!, only: [:index]
+  skip_before_action :authenticate_user!, only: [ :index ]
 
   TELEGRAM_CHANNELS = [
     { name: "Ноги Руне 🎾🎾🎾", username: "@nogirune", url: "https://t.me/nogirune" },

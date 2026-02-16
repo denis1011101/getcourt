@@ -27,7 +27,7 @@ module Telegram
           end
 
           total = coaches.count
-          pages = [(total.to_f / PER_PAGE).ceil, 1].max
+          pages = [ (total.to_f / PER_PAGE).ceil, 1 ].max
           offset = (page - 1) * PER_PAGE
           items = coaches.offset(offset).limit(PER_PAGE).to_a
 
@@ -35,7 +35,7 @@ module Telegram
 
           if items.empty?
             text = "#{header}\n\n#{t.(:no_coaches_found)}"
-            buttons = [[{ text: t.(:main_menu_btn), callback_data: "menu:main" }]]
+            buttons = [ [ { text: t.(:main_menu_btn), callback_data: "menu:main" } ] ]
             send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
             return
           end
@@ -47,14 +47,14 @@ module Telegram
             label = "#{name} · #{sports} · #{city}"
             # Truncate label for Telegram button limit (64 chars)
             label = label[0..60] + "..." if label.length > 63
-            [{ text: label, callback_data: "coach:show:#{coach.id}" }]
+            [ { text: label, callback_data: "coach:show:#{coach.id}" } ]
           end
 
           nav = []
-          nav << [{ text: t.(:prev_page), callback_data: "menu:find_coach:page:#{page - 1}" }] if page > 1
-          nav << [{ text: t.(:next_page), callback_data: "menu:find_coach:page:#{page + 1}" }] if page < pages
+          nav << [ { text: t.(:prev_page), callback_data: "menu:find_coach:page:#{page - 1}" } ] if page > 1
+          nav << [ { text: t.(:next_page), callback_data: "menu:find_coach:page:#{page + 1}" } ] if page < pages
           buttons.concat(nav) unless nav.empty?
-          buttons << [{ text: t.(:main_menu_btn), callback_data: "menu:main" }]
+          buttons << [ { text: t.(:main_menu_btn), callback_data: "menu:main" } ]
 
           send_or_edit_with_buttons(chat_id, header, buttons, message_id: message_id)
         end
@@ -76,8 +76,8 @@ module Telegram
           text = t.(:coach_card, name: name, sports: sports, city: city)
 
           buttons = [
-            [{ text: t.(:back), callback_data: "menu:find_coach:page:1" }],
-            [{ text: t.(:main_menu_btn), callback_data: "menu:main" }]
+            [ { text: t.(:back), callback_data: "menu:find_coach:page:1" } ],
+            [ { text: t.(:main_menu_btn), callback_data: "menu:main" } ]
           ]
 
           send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)

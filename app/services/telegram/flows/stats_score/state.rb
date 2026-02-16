@@ -16,7 +16,7 @@ module Telegram
         def fields_and_page_from(conv)
           fields = (conv.is_a?(Hash) && conv["fields"].is_a?(Hash)) ? conv["fields"] : {}
           page = (conv.is_a?(Hash) && conv["page"].to_i > 0) ? conv["page"].to_i : 1
-          [fields, page]
+          [ fields, page ]
         end
       end
     end

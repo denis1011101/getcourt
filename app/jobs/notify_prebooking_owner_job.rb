@@ -22,11 +22,11 @@ class NotifyPrebookingOwnerJob < ApplicationJob
 
     requester = if user.respond_to?(:telegram_username) && user.telegram_username.present?
                   "@#{user.telegram_username}"
-                elsif user.respond_to?(:username) && user.username.present?
+    elsif user.respond_to?(:username) && user.username.present?
                   "@#{user.username}"
-                else
+    else
                   user.name.presence || user.email.presence || "User"
-                end
+    end
 
     dates_text = pending_prebookings.map { |pb| pb.date.strftime("%Y-%m-%d") }.sort.join(", ")
     host = ENV.fetch("APP_HOST", ENV.fetch("HOSTNAME", "https://getcourt.co"))

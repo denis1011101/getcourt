@@ -45,9 +45,9 @@ module Geocoding
 
       key = if period == "hour"
               "geocoding:google:count:#{end_time.utc.strftime('%Y-%m-%d-%H')}"
-            else
+      else
               "geocoding:google:count:#{end_time.utc.to_date}"
-            end
+      end
 
       expiry = defined?(Geocoding::Quota) && defined?(Geocoding::Quota::EXPIRY) ? Geocoding::Quota::EXPIRY : (period == "hour" ? 2.hours : 2.days)
       Rails.cache.write(key, total, expires_in: expiry)

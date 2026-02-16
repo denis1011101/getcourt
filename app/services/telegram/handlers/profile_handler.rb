@@ -9,8 +9,8 @@ module Telegram
           t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
           buttons = [
-            [{ text: t.(:edit_profile), callback_data: "profile:edit" }],
-            [{ text: t.(:main_menu_btn), callback_data: "menu:main" }]
+            [ { text: t.(:edit_profile), callback_data: "profile:edit" } ],
+            [ { text: t.(:main_menu_btn), callback_data: "menu:main" } ]
           ]
           send_or_edit_with_buttons(chat_id, "#{t.(:profile)}:", buttons, message_id: message_id)
         end
@@ -36,8 +36,8 @@ module Telegram
           text = lines.join("\n")
 
           buttons = [
-            [{ text: t.(:edit_profile), callback_data: "profile:edit" }],
-            [{ text: t.(:main_menu_btn), callback_data: "menu:main" }]
+            [ { text: t.(:edit_profile), callback_data: "profile:edit" } ],
+            [ { text: t.(:main_menu_btn), callback_data: "menu:main" } ]
           ]
 
           send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)

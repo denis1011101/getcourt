@@ -24,7 +24,7 @@ class TournamentsController < ApplicationController
   def options
     @tournament ||= Tournament.new(tournament_params_from_params)
     cached = @tournament.persisted? && Rails.cache.read("tournament:#{@tournament.id}:bracket")
-    @variants = cached ? [cached] : generate_bracket_variants(@tournament)
+    @variants = cached ? [ cached ] : generate_bracket_variants(@tournament)
   end
 
   def show
@@ -136,7 +136,7 @@ class TournamentsController < ApplicationController
         name: "Standard bracket (#{size} slots)",
         size: size,
         byes: byes,
-        rounds: [pairings]
+        rounds: [ pairings ]
       }
     ]
   end
