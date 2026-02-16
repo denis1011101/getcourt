@@ -1,3 +1,12 @@
 @import "tailwindcss";
 
 @import "../stylesheets/player_statistics.css";
+
+/* Hide scrollbar for horizontal filter chips */
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
