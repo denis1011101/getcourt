@@ -4,17 +4,17 @@ require "ostruct"
 module Telegram
   class PostGameStatsReminderJobTest < ActiveJob::TestCase
     test "does nothing when game is missing" do
-      Telegram::Api.stub(:send_with_buttons, ->(*) { flunk "should not send message" }) do
+      with_stubbed_singleton_method(Telegram::Api, :send_with_buttons, ->(*) { flunk "should not send message" }) do
         PostGameStatsReminderJob.perform_now(-1)
       end
     end
 
     test "sends reminder with action buttons to game creator" do
       game = games(:one)
-      game.user.update!(telegram_chat_id: 123_456)
+      game.user.update_column(:telegram_chat_id, 123_456)
       sent = nil
 
-      Telegram::Api.stub(:send_with_buttons, ->(*args) { sent = args }) do
+      with_stubbed_singleton_method(Telegram::Api, :send_with_buttons, ->(*args) { sent = args }) do
         PostGameStatsReminderJob.perform_now(game.id)
       end
 
@@ -34,16 +34,16 @@ module Telegram
         time: "10:30",
         post_game_stats_reminder_job_id: "old-job-id"
       )
-      game.user.update!(telegram_chat_id: 123_456)
+      game.user.update_column(:telegram_chat_id, 123_456)
 
       wait_until_seen = nil
       enqueued = OpenStruct.new(provider_job_id: "new-job-id")
       setter = Object.new
       setter.define_singleton_method(:perform_later) { |_game_id| enqueued }
 
-      Telegram::PostGameStatsReminderJob.stub(:set, ->(wait_until:) { wait_until_seen = wait_until; setter }) do
-        game.stub(:cancel_post_game_stats_reminder, true) do
-          Telegram::Api.stub(:send_with_buttons, ->(*) {}) do
+      with_stubbed_singleton_method(Telegram::PostGameStatsReminderJob, :set, ->(wait_until:) { wait_until_seen = wait_until; setter }) do
+        with_stubbed_singleton_method(game, :cancel_post_game_stats_reminder, true) do
+          with_stubbed_singleton_method(Telegram::Api, :send_with_buttons, ->(*) {}) do
             PostGameStatsReminderJob.perform_now(game.id)
           end
         end
@@ -56,10 +56,31 @@ module Telegram
 
     test "does not send reminder when creator has no telegram chat id" do
       game = games(:one)
-      game.user.update!(telegram_chat_id: nil)
+      game.user.update_column(:telegram_chat_id, nil)
 
-      Telegram::Api.stub(:send_with_buttons, ->(*) { flunk "should not send message" }) do
+      with_stubbed_singleton_method(Telegram::Api, :send_with_buttons, ->(*) { flunk "should not send message" }) do
         PostGameStatsReminderJob.perform_now(game.id)
+      end
+    end
+
+    private
+
+    def with_stubbed_singleton_method(target, method_name, replacement)
+      singleton = target.singleton_class
+      had_method = singleton.method_defined?(method_name) || singleton.private_method_defined?(method_name)
+      original = singleton.instance_method(method_name) if had_method
+      callable = replacement.respond_to?(:call) ? replacement : ->(*) { replacement }
+
+      singleton.define_method(method_name) do |*args, **kwargs, &block|
+        callable.call(*args, **kwargs, &block)
+      end
+
+      yield
+    ensure
+      if had_method
+        singleton.define_method(method_name, original)
+      else
+        singleton.remove_method(method_name)
       end
     end
   end
