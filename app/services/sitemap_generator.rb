@@ -54,7 +54,7 @@ class SitemapGenerator
   end
 
   def games_url
-    "#{@host}#{Rails.application.routes.url_helpers.games_path}"
+    "#{@host}#{Rails.application.routes.url_helpers.root_path}"
   end
 
   def game_url(game)

@@ -47,7 +47,7 @@ Rails.application.routes.draw do
     end
   end
   root "games#index"
-  resources :games do
+  resources :games, except: [ :index ] do
     collection do
       get :prebooking_fragment
     end

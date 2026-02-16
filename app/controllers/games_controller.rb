@@ -7,7 +7,7 @@ class GamesController < ApplicationController
   helper_method :display_date, :display_time, :game_badges
 
   def index
-    @sports = Game.where.not(sport: [ nil, "" ]).distinct.order(:sport).pluck(:sport)
+    @sports = User::SPORTS
     @skill_levels = Game.where.not(skill_level: [ nil, "" ]).distinct.order(:skill_level).pluck(:skill_level)
     @cities = Court.where.not(city_name: [ nil, "" ]).distinct.order(:city_name).pluck(:city_name)
 

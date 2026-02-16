@@ -108,7 +108,7 @@
     <div class="mt-6 flex items-center gap-3">
       <%= form.submit (game.persisted? ? "Update Game" : "Create Game"),
             class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition" %>
-      <%= link_to "Cancel", games_path, class: "block inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition" %>
+      <%= link_to "Cancel", root_path, class: "block inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition" %>
     </div>
   </div>
 <% end %>

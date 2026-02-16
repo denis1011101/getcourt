@@ -6,7 +6,7 @@
 
     <!-- Inline search bar -->
     <div class="mt-5 flex flex-col sm:flex-row gap-2 max-w-2xl">
-      <%= form_with url: games_path, method: :get, local: true, class: "flex flex-col sm:flex-row gap-2 w-full" do |f| %>
+      <%= form_with url: root_path, method: :get, local: true, class: "flex flex-col sm:flex-row gap-2 w-full" do |f| %>
         <div class="relative flex-1">
           <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
@@ -22,7 +22,7 @@
   <!-- Horizontal filter chips -->
   <div class="mb-5 -mx-4 px-4">
     <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-      <%= form_with url: games_path, method: :get, local: true, id: "filter-form", class: "contents" do |f| %>
+      <%= form_with url: root_path, method: :get, local: true, id: "filter-form", class: "contents" do |f| %>
         <!-- Hidden fields to preserve other filters -->
         <% if params[:city].present? %>
           <%= f.hidden_field :city, value: params[:city] %>
@@ -74,7 +74,7 @@
       <% end %>
 
       <% if params[:sport].present? || params[:skill_level].present? || params[:city].present? || params[:with_spots].present? %>
-        <%= link_to games_path, class: "flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition" do %>
+        <%= link_to root_path, class: "flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition" do %>
           <span class="inline-flex items-center gap-1">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
