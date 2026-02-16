@@ -27,6 +27,15 @@
         <% if params[:city].present? %>
           <%= f.hidden_field :city, value: params[:city] %>
         <% end %>
+        <% if params[:sport].present? %>
+          <%= f.hidden_field :sport, value: params[:sport] %>
+        <% end %>
+        <% if params[:skill_level].present? %>
+          <%= f.hidden_field :skill_level, value: params[:skill_level] %>
+        <% end %>
+        <% if params[:with_spots].present? %>
+          <%= f.hidden_field :with_spots, value: params[:with_spots] %>
+        <% end %>
 
         <!-- Sport chips -->
         <% sports_list = @sports.present? ? @sports : [] %>
@@ -87,7 +96,7 @@
   <div class="flex items-center justify-between mb-4">
     <div>
       <% if active_filters.any? %>
-        <p class="text-sm text-gray-500"><%= @games.size %> game<%= @games.size == 1 ? '' : 's' %> &middot; <%= active_filters.join(' &middot; ').html_safe %></p>
+        <p class="text-sm text-gray-500"><%= @games.size %> game<%= @games.size == 1 ? '' : 's' %> &middot; <%= safe_join(active_filters, ' &middot; '.html_safe) %></p>
       <% else %>
         <p class="text-sm text-gray-500"><%= @games.size %> game<%= @games.size == 1 ? '' : 's' %> available</p>
       <% end %>
