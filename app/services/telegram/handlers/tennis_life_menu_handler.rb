@@ -1,6 +1,8 @@
 module Telegram
   module Handlers
     class TennisLifeMenuHandler
+      RATING_LIMIT = 5
+
       class << self
         include Telegram::Handlers::ReplyHelpers
 
@@ -8,18 +10,37 @@ module Telegram
           locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
           t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
-          # Show recent posts from tracked Telegram channels
           posts = fetch_recent_posts(limit: 5)
+          rating_rows = fetch_rating_rows(limit: RATING_LIMIT)
+          stats = fetch_stats
 
           lines = [ "*#{t.(:tennis_life_title)}*", "" ]
 
+          lines.concat(stats_lines(stats, locale: locale))
+          lines << ""
+
+          lines << "*#{t.(:rating_title)}*"
+          if rating_rows.any?
+            rating_rows.each_with_index do |row, idx|
+              lines << t.(:rating_row, rank: idx + 1, name: display_name_for(row[:user]), games: row[:games], wins: row[:wins], pct: row[:pct])
+            end
+          else
+            lines << t.(:no_rating_data)
+          end
+
+          lines << ""
+          lines << "*Telegram*"
           if posts.any?
             posts.each do |post|
               channel = post.telegram_channel
-              preview = post.text.to_s.strip.truncate(120)
+              channel_name = channel&.username.to_s.delete_prefix("@").presence || "channel"
               date = post.published_at&.strftime("%d.%m.%Y") || "—"
-              lines << "#{date} — @#{channel.username}"
-              lines << preview
+              link = "https://t.me/#{channel_name}/#{post.message_id}"
+              preview = post.text.to_s.strip.gsub(/\s+/, " ").truncate(110)
+
+              lines << "#{date} — @#{channel_name}"
+              lines << preview if preview.present?
+              lines << link
               lines << ""
             end
           else
@@ -34,9 +55,69 @@ module Telegram
 
         private
 
+        def fetch_stats
+          {
+            games: Game.count,
+            courts: Court.count,
+            participations: Participation.count
+          }
+        end
+
+        def stats_lines(stats, locale: :ru)
+          if locale.to_s.start_with?("ru")
+            [
+              "*Статистика GetCourt*",
+              "• Игр: #{stats[:games]}",
+              "• Кортов: #{stats[:courts]}",
+              "• Участий: #{stats[:participations]}"
+            ]
+          else
+            [
+              "*GetCourt stats*",
+              "• Games: #{stats[:games]}",
+              "• Courts: #{stats[:courts]}",
+              "• Participations: #{stats[:participations]}"
+            ]
+          end
+        end
+
+        def fetch_rating_rows(limit:)
+          stats = PlayerStatistic
+            .joins(:user)
+            .includes(:user)
+            .where("COALESCE(player_statistics.singles_games, 0) + COALESCE(player_statistics.doubles_games, 0) > 0")
+
+          stats.map do |ps|
+            games = ps.singles_games.to_i + ps.doubles_games.to_i
+            wins = ps.singles_wins.to_i + ps.doubles_wins.to_i
+            pct = games.positive? ? (wins.to_f / games * 100).round(1) : 0.0
+
+            { user: ps.user, games: games, wins: wins, pct: pct }
+          end
+          .sort_by { |row| [ -row[:pct], -row[:wins], -row[:games] ] }
+          .first(limit)
+        end
+
+        def display_name_for(user)
+          return "Unknown" unless user
+
+          if user.telegram_username.present?
+            "@#{user.telegram_username.delete_prefix('@')}"
+          elsif user.name.present?
+            user.name
+          elsif user.email.present?
+            user.email
+          else
+            "User ##{user.id}"
+          end
+        end
+
         def fetch_recent_posts(limit: 5)
           if defined?(TelegramPost)
             TelegramPost.includes(:telegram_channel)
+                        .joins(:telegram_channel)
+                        .where.not(message_id: nil)
+                        .where.not(telegram_channels: { username: [ nil, "" ] })
                         .order(published_at: :desc)
                         .limit(limit)
                         .to_a
