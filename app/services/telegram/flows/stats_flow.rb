@@ -152,7 +152,15 @@ module Telegram
 
           conv = safe_conv_get(chat_id)
 
-          saved_entry = PlayerStatisticEntry.find_by(user: game.user, game: game, source: "telegram")
+          last_reset = game.last_participations_reset_at
+          saved_entry =
+            if last_reset.present?
+              PlayerStatisticEntry.where(user: game.user, game: game, source: "telegram")
+                                 .where("recorded_at >= ?", last_reset.beginning_of_day)
+                                 .first
+            else
+              PlayerStatisticEntry.find_by(user: game.user, game: game, source: "telegram")
+            end
           saved_fields = (saved_entry&.data || {}).stringify_keys
 
           entered =

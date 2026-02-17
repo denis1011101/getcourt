@@ -23,7 +23,7 @@ module PlayerStatistics
       played_at = @played_at || default_played_at
 
       Match.transaction do
-        match = Match.lock.find_or_initialize_by(user: @user, game: @game, mode: @mode)
+        match = find_or_init_match(played_at)
         new_record = match.new_record?
         old_outcome = match.persisted? ? match.outcome.to_s : nil
 
@@ -41,6 +41,16 @@ module PlayerStatistics
     end
 
     private
+
+    def find_or_init_match(played_at)
+      played_date = played_at.to_date
+      existing = Match.lock
+                      .where(user: @user, game: @game, mode: @mode)
+                      .where(played_at: played_date.beginning_of_day..played_date.end_of_day)
+                      .first
+
+      existing || Match.new(user: @user, game: @game, mode: @mode)
+    end
 
     def default_played_at
       start = @game.respond_to?(:start_at_for_ui) ? @game.start_at_for_ui : nil

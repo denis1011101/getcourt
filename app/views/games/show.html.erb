@@ -58,7 +58,7 @@
       <% last_reset = @game.last_participations_reset_at %>
       <% stats_filled =
            if last_reset.present?
-             PlayerStatisticEntry.where(game: @game).where("created_at >= ?", last_reset.beginning_of_day).exists? ||
+             PlayerStatisticEntry.where(game: @game).where("recorded_at >= ?", last_reset.beginning_of_day).exists? ||
                Match.where(game_id: @game.id).where("played_at >= ?", last_reset.beginning_of_day).exists?
            else
              PlayerStatisticEntry.where(game: @game).exists? || Match.where(game_id: @game.id).exists?

@@ -14,13 +14,7 @@ module PlayerStatistics
       patch = @data.slice(*allowed) # НЕ compact — nil нужен, чтобы уметь "снимать" значение
 
       PlayerStatisticEntry.transaction do
-        entry =
-          PlayerStatisticEntry.lock.find_or_initialize_by(
-            user: @user,
-            game: @game,
-            source: @source
-          )
-
+        entry = find_or_init_entry
         old_data = (entry.persisted? ? (entry.data || {}) : {}).stringify_keys
         new_data = old_data.merge(patch)
         new_data.delete_if { |_k, v| v.nil? } # nil = удалить ключ из source of truth
@@ -51,6 +45,23 @@ module PlayerStatistics
         end
 
         entry
+      end
+    end
+
+    private
+
+    def find_or_init_entry
+      last_reset = @game.respond_to?(:last_participations_reset_at) ? @game.last_participations_reset_at : nil
+
+      if last_reset.present?
+        PlayerStatisticEntry.lock
+          .where(user: @user, game: @game, source: @source)
+          .where("recorded_at >= ?", last_reset.beginning_of_day)
+          .first ||
+          PlayerStatisticEntry.new(user: @user, game: @game, source: @source)
+      else
+        PlayerStatisticEntry.lock
+          .find_or_initialize_by(user: @user, game: @game, source: @source)
       end
     end
   end
