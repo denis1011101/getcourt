@@ -197,6 +197,9 @@ module Telegram
 
           can_fill_stats = user && (user.admin? || user.id == game.user_id)
 
+          # inline players list (same message)
+          buttons << [ { text: t.(:players_list_btn), callback_data: "game:players:#{game.id}:#{page}" } ]
+
           if game.started_for_ui?
             if can_fill_stats
               buttons << [ { text: t.(:statistics), callback_data: "tg_fill:#{game.id}:#{page}" } ]
@@ -217,6 +220,52 @@ module Telegram
           buttons << [ { text: t.(:open_in_browser), url: game_url } ] unless host.to_s.include?("localhost")
 
           buttons << [ { text: t.(:back_to_games), callback_data: "menu:games:page:#{page}" } ]
+
+          send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
+        end
+
+        # Show players list with brief stats, inline (same message)
+        def show_players(chat_id, game_id, page = 1, message_id: nil)
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+
+          game = Game.find_by(id: game_id)
+          return Telegram::Api.send_simple(chat_id, t.(:game_not_found)) unless game
+
+          users = []
+          users << game.user if game.respond_to?(:user)
+          if game.respond_to?(:participations)
+            scope = game.participations.respond_to?(:approved) ? game.participations.approved : game.participations
+            users.concat(scope.includes(:user).map(&:user))
+          end
+          users = users.compact.uniq { |u| u.id }
+
+          lines = []
+          lines << "*#{t.(:players_list_title, game_id: game.id)}*"
+          lines << ""
+
+          if users.empty?
+            lines << t.(:players_list_empty)
+          else
+            rows = users.map do |u|
+              ps = u.player_statistic
+              total_games = ps&.singles_games.to_i + ps&.doubles_games.to_i
+              total_wins  = ps&.singles_wins.to_i + ps&.doubles_wins.to_i
+              pct = total_games > 0 ? (total_wins.to_f / total_games * 100).round(1) : 0.0
+              name = u.telegram_username.present? ? "@#{u.telegram_username.delete_prefix('@')}" : (u.name.presence || u.email.presence || "User ##{u.id}")
+              { name: name, games: total_games, wins: total_wins, pct: pct }
+            end
+            rows.sort_by! { |r| [ -r[:pct], -r[:wins], -r[:games] ] }
+            rows.each do |r|
+              lines << t.(:player_stats_row, name: r[:name], games: r[:games], wins: r[:wins], pct: r[:pct])
+            end
+          end
+
+          text = lines.join("\n")
+
+          buttons = [
+            [ { text: t.(:back_to_game), callback_data: "game:show:#{game.id}:#{page}" } ]
+          ]
 
           send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
         end

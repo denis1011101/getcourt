@@ -11,6 +11,19 @@ module Telegram
               poller = Telegram::Poller.new
 
               case cb.data
+              when /\Agame:edit:(\d+)\z/
+                game_id = $1.to_i
+                game = Game.find_by(id: game_id)
+                user = Telegram::Helpers::UserLookup.find_user(cb.chat_id)
+                unless game && user && (user.admin? || user.id == game.user_id)
+                  poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id, text: "No permission or game not found", show_alert: true }) rescue nil
+                  return
+                end
+
+                poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id }) rescue nil
+                Telegram::Flows::Games::EditPrompter.send_edit_prompts(cb.chat_id, game.id, cb.message_id) rescue nil
+                nil
+
               when /\Agame:edit:set:sport:(\d+):(.+):(\d+)\z/
                 require "cgi"
                 game_id = $1.to_i

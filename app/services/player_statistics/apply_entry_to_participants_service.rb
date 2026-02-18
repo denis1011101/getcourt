@@ -17,7 +17,7 @@ module PlayerStatistics
 
       users = users.compact.uniq { |u| u.id }
 
-      users.map do |u|
+      result = users.map do |u|
         ApplyEntryService.new(
           user: u,
           game: @game,
@@ -27,6 +27,10 @@ module PlayerStatistics
           recorded_at: @recorded_at
         ).call
       end
+
+      @game.cancel_post_game_stats_reminder if !@game.recurring? && @game.post_game_stats_reminder_job_id.present?
+
+      result
     end
   end
 end

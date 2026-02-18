@@ -8,6 +8,8 @@ module Telegram
 
       reschedule_recurring_reminder(game) if game.recurring?
 
+      return if stats_already_filled?(game)
+
       creator = game.user
       return unless creator&.telegram_chat_id
 
@@ -33,6 +35,13 @@ module Telegram
     end
 
     private
+
+    def stats_already_filled?(game)
+      last_reset = game.last_participations_reset_at
+      query = PlayerStatisticEntry.where(user_id: game.user_id, game_id: game.id)
+      query = query.where("recorded_at >= ?", last_reset.beginning_of_day) if last_reset.present?
+      query.exists?
+    end
 
     def reschedule_recurring_reminder(game)
       reminder_at = next_recurring_reminder_at(game)

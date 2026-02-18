@@ -23,6 +23,13 @@ module Telegram
             end
             nil
 
+          when /\Agame:players:(\d+):(\d+)\z/
+            gid = $1.to_i
+            page = $2.to_i
+            poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id }) rescue nil
+            Telegram::Handlers::GamesHandler.show_players(cb.chat_id, gid, page, message_id: cb.message_id) rescue nil
+            nil
+
           when /\Agame:invite:/, /\Agame:invite_decline:/
             handled = Telegram::Flows::Games::InviteFlow.handle_callback(callback) rescue false
             handled

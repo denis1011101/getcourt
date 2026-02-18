@@ -150,7 +150,7 @@
             </div>
           </div>
 
-          <!-- Additional Stats in Collapsible -->
+          <% if false %>
           <details class="border rounded p-3 bg-gray-50">
             <summary class="cursor-pointer text-sm font-medium text-gray-700 hover:text-indigo-600">
               Additional match statistics
@@ -165,6 +165,7 @@
               <% end %>
             </div>
           </details>
+          <% end %>
 
           <div class="pt-2">
             <%= submit_tag "Save statistics", class: "inline-flex items-center rounded bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700" %>

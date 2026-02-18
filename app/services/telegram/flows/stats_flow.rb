@@ -26,6 +26,12 @@ module Telegram
             game_id = Regexp.last_match(1).to_i
             field = Regexp.last_match(2)
 
+            # Only basic fields are enabled; additional stats are temporarily disabled
+            unless %w[hours].include?(field)
+              Telegram::Api.answer_callback(cb_id, "This field is not available.", show_alert: true) rescue nil
+              return
+            end
+
             Telegram::Flows::StatsFieldInputFlow.start(
               chat_id: chat_id,
               message_id: message_id,
@@ -35,12 +41,13 @@ module Telegram
             )
             return
 
-          when /\Atg_fill_more:(\d+)\z/
-            game_id = Regexp.last_match(1).to_i
-            ensure_menu_flow(chat_id, message_id, game_id)
-            render_additional_menu(chat_id)
-            Telegram::Api.answer_callback(cb_id) rescue nil
-            return
+          # tg_fill_more — temporarily disabled
+          # when /\Atg_fill_more:(\d+)\z/
+          #   game_id = Regexp.last_match(1).to_i
+          #   ensure_menu_flow(chat_id, message_id, game_id)
+          #   render_additional_menu(chat_id)
+          #   Telegram::Api.answer_callback(cb_id) rescue nil
+          #   return
 
           when /\Atg_fill_skip:(\d+):([a-z_]+)\z/
             game_id = Regexp.last_match(1).to_i
@@ -207,24 +214,33 @@ module Telegram
                 .limit(1)
                 .pick(:score)
             end
-
           shown_score = score.to_s.strip.presence || "—"
           lines << "• Score: #{shown_score}"
 
-          fields.each do |f|
-            key = f[:key].to_s
-            label = f[:label].to_s
-            v = entered.key?(key) ? entered[key] : nil
-            shown = v.nil? ? "—" : v.to_s
-            lines << "• #{label}: #{shown}"
+          game = game_id > 0 ? Game.find_by(id: game_id) : nil
+          doubles_mode = game && StatisticsPresenter.hours_field_for_game(game) == :doubles_hours
+          player_statistic = game&.user&.player_statistic
+
+          hours_key = doubles_mode ? "doubles_hours" : "singles_hours"
+          hours_label = doubles_mode ? "Doubles hours" : "Singles hours"
+          games_label = doubles_mode ? "Doubles games" : "Singles games"
+
+          hours_value = entered[hours_key] || entered[hours_key.to_sym]
+          games_value = doubles_mode ? player_statistic&.doubles_games : player_statistic&.singles_games
+
+          if hours_value.present?
+            lines << "• #{hours_label}: #{hours_value}"
+          else
+            shown_games = games_value.nil? ? "—" : games_value
+            lines << "• #{games_label}: #{shown_games}"
           end
 
           text = lines.join("\n")
 
           field_buttons = [
             [ { text: "Enter score", callback_data: "tg_score:#{game_id}" } ],
-            [ { text: "Enter hours", callback_data: "tg_fill_field:#{game_id}:hours" } ],
-            [ { text: "Additional match statistics", callback_data: "tg_fill_more:#{game_id}" } ]
+            [ { text: "Enter hours", callback_data: "tg_fill_field:#{game_id}:hours" } ]
+            # [ { text: "Additional match statistics", callback_data: "tg_fill_more:#{game_id}" } ]
           ]
 
           footer = [

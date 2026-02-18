@@ -243,6 +243,13 @@ module Telegram
       callback_error: "Ошибка обработки запроса.",
       unknown_action: "Неизвестное действие.",
 
+      # Players list
+      players_list_btn: "Список игроков",
+      players_list_title: "Список игроков (Game #%{game_id})",
+      players_list_empty: "Пока нет игроков.",
+      player_stats_row: "%{name} — %{games} игр, %{wins} побед (%{pct}%)",
+      back_to_game: "Назад к игре",
+
       # Game management
       not_happened_btn: "Отметить как несостоявшуюся",
       mark_not_happened: "Отметить игру как несостоявшуюся (используйте кнопку):",
@@ -469,6 +476,13 @@ module Telegram
       processing_error: "Processing error.",
       callback_error: "Callback processing error.",
       unknown_action: "Unknown action.",
+
+      # Players list
+      players_list_btn: "Players list",
+      players_list_title: "Players list (Game #%{game_id})",
+      players_list_empty: "No players yet.",
+      player_stats_row: "%{name} — %{games} games, %{wins} wins (%{pct}%)",
+      back_to_game: "Back to game",
 
       # Game management
       not_happened_btn: "Mark as not happened",
