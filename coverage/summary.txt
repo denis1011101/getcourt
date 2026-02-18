@@ -1,2 +1,0 @@
-Lines: 46.13% (43863/95081)
-Workers merged: 1

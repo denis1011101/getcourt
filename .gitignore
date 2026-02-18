@@ -43,3 +43,6 @@ vendor/bundle/
 README-INTERNAL.md
 
 public/sitemap.xml
+
+# Coverage artifacts (SimpleCov)
+/coverage/
