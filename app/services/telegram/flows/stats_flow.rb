@@ -238,6 +238,11 @@ module Telegram
                 PlayerStatisticEntry.find_by(user: game.user, game: game, source: "telegram")
               end
             hours_value = saved_entry&.data&.dig(hours_key)
+            # Fallback without date filter if still nil
+            if hours_value.nil?
+              any_entry = PlayerStatisticEntry.find_by(user: game.user, game: game, source: "telegram")
+              hours_value = any_entry&.data&.dig(hours_key)
+            end
           end
 
           display_hours =

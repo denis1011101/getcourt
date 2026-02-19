@@ -130,13 +130,7 @@ module Telegram
 
           label =
             if auto_hours
-              game = Game.find_by(id: game_id)
-              if game
-                hours_field = StatisticsPresenter.hours_field_for_game(game)
-                t.call(hours_field == :doubles_hours ? :stats_hours_doubles : :stats_hours_singles)
-              else
-                t.call(:stats_enter_hours_btn)
-              end
+              "Game time"
             else
               f[:label]
             end
