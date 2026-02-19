@@ -255,6 +255,18 @@ module Telegram
       mark_not_happened: "Отметить игру как несостоявшуюся (используйте кнопку):",
       unauthorized_or_not_found: "Нет доступа или игра не найдена.",
 
+      # Statistics menu (новый интерактивный flow)
+      stats_game_label: "Игра #%{id}",
+      stats_entered_section: "Введённые значения (сохраняются сразу):",
+      stats_score_line: "Счёт: %{score}",
+      stats_hours_doubles: "Часы (пары)",
+      stats_hours_singles: "Часы (одиночные)",
+      stats_games_doubles: "Игр (пары)",
+      stats_games_singles: "Игр (одиночные)",
+      stats_enter_score_btn: "Ввести счёт",
+      stats_enter_hours_btn: "Ввести часы",
+      stats_field_enter_value: "Введите значение для: *%{label}*\nПример: `%{example}`\n\nОтправьте число в чат или нажмите кнопку ниже.",
+
       # Misc
       no_permission: "Нет прав для редактирования",
       court_not_found_short: "Корт не найден",
@@ -488,6 +500,18 @@ module Telegram
       not_happened_btn: "Mark as not happened",
       mark_not_happened: "Mark game as not happened (use the button):",
       unauthorized_or_not_found: "Unauthorized or game not found.",
+
+      # Statistics menu (interactive stats flow)
+      stats_game_label: "Game #%{id}",
+      stats_entered_section: "Entered values (saved immediately):",
+      stats_score_line: "Score: %{score}",
+      stats_hours_doubles: "Doubles hours",
+      stats_hours_singles: "Singles hours",
+      stats_games_doubles: "Doubles games",
+      stats_games_singles: "Singles games",
+      stats_enter_score_btn: "Enter score",
+      stats_enter_hours_btn: "Enter hours",
+      stats_field_enter_value: "Enter value for: *%{label}*\nExample: `%{example}`\n\nSend a number in chat or use buttons below.",
 
       # Misc
       no_permission: "No permission to edit",

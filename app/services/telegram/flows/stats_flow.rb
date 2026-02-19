@@ -200,11 +200,14 @@ module Telegram
 
           game_id = game_id.to_i
 
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+
           lines = []
-          lines << "*Statistics*"
+          lines << "*#{t.call(:statistics)}*"
           lines << "Game ##{game_id}"
           lines << ""
-          lines << "Entered values (saved immediately):"
+          lines << t.call(:stats_entered_section)
 
           score =
             if game_id > 0
@@ -215,36 +218,46 @@ module Telegram
                 .pick(:score)
             end
           shown_score = score.to_s.strip.presence || "—"
-          lines << "• Score: #{shown_score}"
+          lines << "• #{t.call(:stats_score_line, score: shown_score)}"
 
           game = game_id > 0 ? Game.find_by(id: game_id) : nil
           doubles_mode = game && StatisticsPresenter.hours_field_for_game(game) == :doubles_hours
-          player_statistic = game&.user&.player_statistic
 
           hours_key = doubles_mode ? "doubles_hours" : "singles_hours"
-          hours_label = doubles_mode ? "Doubles hours" : "Singles hours"
-          games_label = doubles_mode ? "Doubles games" : "Singles games"
 
           hours_value = entered[hours_key] || entered[hours_key.to_sym]
-          games_value = doubles_mode ? player_statistic&.doubles_games : player_statistic&.singles_games
 
-          if hours_value.present?
-            lines << "• #{hours_label}: #{hours_value}"
-          else
-            shown_games = games_value.nil? ? "—" : games_value
-            lines << "• #{games_label}: #{shown_games}"
+          if hours_value.nil? && game
+            last_reset = game.respond_to?(:last_participations_reset_at) ? game.last_participations_reset_at : nil
+            saved_entry =
+              if last_reset.present?
+                PlayerStatisticEntry.where(user: game.user, game: game, source: "telegram")
+                                   .where("recorded_at >= ?", last_reset.beginning_of_day)
+                                   .first
+              else
+                PlayerStatisticEntry.find_by(user: game.user, game: game, source: "telegram")
+              end
+            hours_value = saved_entry&.data&.dig(hours_key)
           end
+
+          display_hours =
+            if hours_value.present?
+              v = hours_value.to_f
+              v % 1 == 0 ? v.to_i : v
+            end
+
+          lines << "• Game time: #{display_hours || "—"}"
 
           text = lines.join("\n")
 
           field_buttons = [
-            [ { text: "Enter score", callback_data: "tg_score:#{game_id}" } ],
-            [ { text: "Enter hours", callback_data: "tg_fill_field:#{game_id}:hours" } ]
+            [ { text: t.call(:stats_enter_score_btn), callback_data: "tg_score:#{game_id}" } ],
+            [ { text: t.call(:stats_enter_hours_btn), callback_data: "tg_fill_field:#{game_id}:hours" } ]
             # [ { text: "Additional match statistics", callback_data: "tg_fill_more:#{game_id}" } ]
           ]
 
           footer = [
-            [ { text: "Back to game", callback_data: "tg_fill_cancel:#{game_id}" } ]
+            [ { text: t.call(:back_to_game), callback_data: "tg_fill_cancel:#{game_id}" } ]
           ]
 
           if message_id.present?

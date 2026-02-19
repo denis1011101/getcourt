@@ -125,23 +125,29 @@ module Telegram
           f = StatisticsPresenter.field_def(field)
           example = StatisticsPresenter.field_example(field)
 
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+
           label =
             if auto_hours
               game = Game.find_by(id: game_id)
-              game ? StatisticsPresenter.hours_label_for_game(game) : "Hours"
+              if game
+                hours_field = StatisticsPresenter.hours_field_for_game(game)
+                t.call(hours_field == :doubles_hours ? :stats_hours_doubles : :stats_hours_singles)
+              else
+                t.call(:stats_enter_hours_btn)
+              end
             else
               f[:label]
             end
 
           text =
-            "*Statistics*\n" \
-            "Game ##{game_id}\n\n" \
-            "Enter value for: *#{label}*\n" \
-            "Example: `#{example}`\n\n" \
-            "Send a number in chat or use buttons below."
+            "*#{t.call(:statistics)}*\n" \
+            "#{t.call(:stats_game_label, id: game_id)}\n\n" \
+            t.call(:stats_field_enter_value, label: label, example: example)
 
           keyboard = [
-            [ { text: "Back", callback_data: "tg_fill_back:#{game_id}" } ]
+            [ { text: t.call(:back), callback_data: "tg_fill_back:#{game_id}" } ]
           ]
 
           if message_id.present?
