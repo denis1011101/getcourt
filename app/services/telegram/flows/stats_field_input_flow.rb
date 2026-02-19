@@ -142,8 +142,8 @@ module Telegram
             end
 
           text =
-            "*#{t.call(:statistics)}*\n" \
-            "#{t.call(:stats_game_label, id: game_id)}\n\n" \
+            "*#{t.call(:statistics)}*\n" +
+            "Game ##{game_id}\n\n" +
             t.call(:stats_field_enter_value, label: label, example: example)
 
           keyboard = [
