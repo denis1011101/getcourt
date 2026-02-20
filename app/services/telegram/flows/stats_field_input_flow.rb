@@ -130,7 +130,7 @@ module Telegram
 
           label =
             if auto_hours
-              "Game time"
+              t.call(:game_time_label)
             else
               f[:label]
             end

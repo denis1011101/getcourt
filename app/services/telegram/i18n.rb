@@ -257,7 +257,7 @@ module Telegram
 
       # Statistics menu (новый интерактивный flow)
       stats_game_label: "Игра #%{id}",
-      stats_entered_section: "Введённые значения (сохраняются сразу):",
+      stats_entered_section: "Введённые значения:",
       stats_score_line: "Счёт: %{score}",
       stats_hours_doubles: "Часы (пары)",
       stats_hours_singles: "Часы (одиночные)",
@@ -265,6 +265,8 @@ module Telegram
       stats_games_singles: "Игр (одиночные)",
       stats_enter_score_btn: "Ввести счёт",
       stats_enter_hours_btn: "Ввести часы",
+      game_time_label: "Игровое время",
+      hours_short: "ч",
       stats_field_enter_value: "Введите значение для: *%{label}*\nПример: `%{example}`\n\nОтправьте число в чат или нажмите кнопку ниже.",
 
       # Misc
@@ -503,7 +505,7 @@ module Telegram
 
       # Statistics menu (interactive stats flow)
       stats_game_label: "Game #%{id}",
-      stats_entered_section: "Entered values (saved immediately):",
+      stats_entered_section: "Entered values:",
       stats_score_line: "Score: %{score}",
       stats_hours_doubles: "Doubles hours",
       stats_hours_singles: "Singles hours",
@@ -511,6 +513,8 @@ module Telegram
       stats_games_singles: "Singles games",
       stats_enter_score_btn: "Enter score",
       stats_enter_hours_btn: "Enter hours",
+      game_time_label: "Game time",
+      hours_short: "h",
       stats_field_enter_value: "Enter value for: *%{label}*\nExample: `%{example}`\n\nSend a number in chat or use buttons below.",
 
       # Misc

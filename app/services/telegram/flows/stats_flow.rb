@@ -251,7 +251,7 @@ module Telegram
               v % 1 == 0 ? v.to_i : v
             end
 
-          lines << "• Game time: #{display_hours || "—"}"
+          lines << "• #{t.call(:game_time_label)}: #{display_hours ? "#{display_hours} #{t.call(:hours_short)}" : "—"}"
 
           text = lines.join("\n")
 
