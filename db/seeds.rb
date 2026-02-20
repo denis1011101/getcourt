@@ -10,4 +10,3 @@ users.map! do |attrs|
   u.save!
   u
 end
-
