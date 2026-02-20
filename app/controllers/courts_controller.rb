@@ -25,6 +25,7 @@ class CourtsController < ApplicationController
 
   def create
     @court = Court.new(court_params)
+    normalize_contact_type!(@court)
     @court.user = current_user if current_user.present?
     @court.moderation_status = "pending"
     @court.approved_at = nil
@@ -43,7 +44,9 @@ class CourtsController < ApplicationController
   end
 
   def update
-    if @court.update(court_params.merge(moderation_status: "pending", approved_at: nil))
+    @court.assign_attributes(court_params)
+    normalize_contact_type!(@court)
+    if @court.update(moderation_status: "pending", approved_at: nil)
       Telegram::AdminNotifier.notify_court_pending(@court, base_url: request.base_url, action: "updated")
       redirect_to courts_path, notice: "Your changes are under moderation. We will publish them after approval."
     else
@@ -82,5 +85,17 @@ class CourtsController < ApplicationController
 
   def court_params
     params.require(:court).permit(:name, :coordinates, :user_id, :contact_type, :contact_value)
+  end
+
+  def normalize_contact_type!(court)
+    court.contact_type =
+      case court.contact_type.to_s
+      when "other", "site"
+        "website"
+      when "mail"
+        "email"
+      else
+        court.contact_type
+      end
   end
 end

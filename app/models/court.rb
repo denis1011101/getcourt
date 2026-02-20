@@ -12,7 +12,7 @@ class Court < ApplicationRecord
 
   MODERATION_STATUSES = %w[pending approved rejected].freeze
   validates :moderation_status, inclusion: { in: MODERATION_STATUSES }
-  CONTACT_TYPES = %w[phone whatsapp telegram viber other].freeze
+  CONTACT_TYPES = %w[phone whatsapp telegram viber website email other].freeze
 
   scope :approved, -> { where(moderation_status: "approved") }
   scope :visible_to, ->(user) { user&.admin? ? all : approved }

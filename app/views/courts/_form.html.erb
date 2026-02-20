@@ -42,16 +42,19 @@
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4 items-center">
         <div class="sm:col-span-1">
           <label class="block text-sm text-gray-600">Contact type</label>
+          <% base_contact_types = (Court::CONTACT_TYPES rescue %w[phone whatsapp telegram viber other]) %>
+          <% contact_types = (base_contact_types + %w[website email]).uniq %>
           <%= form.select :contact_type,
-                (Court::CONTACT_TYPES rescue %w[phone whatsapp telegram viber other]).map { |t| [t.capitalize, t] },
+                contact_types.map { |t| [t.capitalize, t] },
                 { include_blank: "Select" },
+                onchange: "const v=this.value;const i=document.getElementById('court_contact_value');if(!i)return;const p={phone:'Phone number',email:'name@example.com',website:'example.com',telegram:'@username or https://t.me/username',whatsapp:'+123456789',viber:'+123456789',other:'Link or contact'};i.placeholder=p[v]||'Phone, website, email or messenger';",
                 class: "mt-1 block w-full rounded-md border-gray-300" %>
         </div>
 
         <div class="sm:col-span-2">
           <label class="block text-sm text-gray-600">Contact</label>
           <%= form.text_field :contact_value,
-                placeholder: "Phone number or messenger handle",
+                placeholder: "Phone, website, email or messenger",
                 class: "mt-1 block w-full rounded-md border-gray-300" %>
           <p class="text-xs text-gray-500 mt-1">Enter phone, username or link.</p>
         </div>

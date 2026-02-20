@@ -15,12 +15,12 @@ module ApplicationHelper
   # SEO helpers (English defaults). Use content_for(:meta_title)/:meta_description/:meta_image to override per page.
   def meta_title
     (content_for?(:meta_title) && content_for(:meta_title).to_s.presence) ||
-      "GetCourt — easily create court games and invite friends"
+      "GetCourt — easily create games and invite friends"
   end
 
   def meta_description
     (content_for?(:meta_description) && content_for(:meta_description).to_s.presence) ||
-      "GetCourt — create events and invite friends for tennis, table tennis, squash and padel. Quick setup, participant management and Telegram reminders."
+      "GetCourt — create games and invite friends for tennis, table tennis, squash and padel. Quick setup, participant management and Telegram reminders."
   end
 
   def meta_image

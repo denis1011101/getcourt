@@ -83,6 +83,20 @@
               case contact_type
               when "phone"
                 digits.present? ? "tel:+#{digits}" : nil
+              when "email"
+                contact_value.present? ? "mailto:#{contact_value}" : nil
+              when "website"
+                if contact_value.match?(/\Ahttps?:\/\//)
+                  contact_value
+                elsif contact_value.present?
+                  "https://#{contact_value}"
+                end
+              when "other"
+                if contact_value.match?(/\Ahttps?:\/\//)
+                  contact_value
+                elsif contact_value.present?
+                  "https://#{contact_value}"
+                end
               when "telegram"
                 if contact_value.match?(/\Ahttps?:\/\//)
                   contact_value
