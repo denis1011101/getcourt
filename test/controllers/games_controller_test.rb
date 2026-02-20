@@ -33,6 +33,49 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to game_path(Game.order(:id).last)
   end
 
+  # ---- pagination ---------------------------------------------------------
+
+  test "index assigns @pagy" do
+    get root_url
+
+    assert_not_nil assigns(:pagy)
+  end
+
+  test "index shows at most 12 games per page" do
+    # 2 fixture games + 11 new = 13 total → page 1 must have ≤ 12
+    11.times { |i| Game.create!(court: courts(:one), user: users(:one), date: Date.current + (i + 3).days, time: "10:00") }
+
+    get root_url
+
+    assert_response :success
+    assert assigns(:games).size <= 12
+  end
+
+  test "index page 2 returns overflow games" do
+    11.times { |i| Game.create!(court: courts(:one), user: users(:one), date: Date.current + (i + 3).days, time: "10:00") }
+
+    get root_url, params: { page: 2 }
+
+    assert_response :success
+    assert assigns(:games).size >= 1
+  end
+
+  test "index with_spots filter still paginates" do
+    get root_url, params: { with_spots: "1" }
+
+    assert_response :success
+    assert_not_nil assigns(:pagy)
+  end
+
+  test "index city filter still paginates" do
+    Court.create!(name: "London Court", moderation_status: "approved", city_name: "London")
+
+    get root_url, params: { city: "London" }
+
+    assert_response :success
+    assert_not_nil assigns(:pagy)
+  end
+
   test "owner can update own game" do
     post session_url, params: { email: "owner_update@example.com" }
     owner = User.find_by!(email: "owner_update@example.com")

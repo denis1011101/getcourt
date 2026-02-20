@@ -1,8 +1,10 @@
+<% content_for :meta_title, "Tennis & Padel Courts — GetCourt" %>
+<% content_for :meta_description, "Browse tennis, padel and squash courts. Find a court near you, see upcoming games and join the community." %>
 <div class="max-w-6xl mx-auto">
   <div class="flex items-center justify-between mb-6">
     <div>
-      <h1 class="text-2xl font-bold text-gray-900">Courts</h1>
-      <p class="text-sm text-gray-500 mt-1">Find a court and join or create games.</p>
+      <h1 class="text-2xl font-bold text-gray-900">Tennis & Padel Courts</h1>
+      <p class="text-sm text-gray-500 mt-1">Find a court near you and join or create games.</p>
     </div>
     <% sign_in_path = (respond_to?(:new_session_path) && new_session_path) || '/sign_in' rescue '/sign_in' %>
     <% if user_signed_in? %>
@@ -63,4 +65,6 @@
       <% end %>
     </div>
   <% end %>
+
+  <%= render "shared/pagy", pagy: @pagy %>
 </div>

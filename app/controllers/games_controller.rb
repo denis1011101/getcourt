@@ -19,10 +19,10 @@ class GamesController < ApplicationController
       scoped_games = scoped_games.joins(:court).where(courts: { city_name: params[:city] })
     end
 
-    @games = scoped_games.to_a
+    games = scoped_games.to_a
 
     if params[:with_spots].present?
-      @games = @games.select do |game|
+      games = games.select do |game|
         required = game.players_count.to_i > 0 ? game.players_count.to_i : 4
         approved_participations = game.participations.respond_to?(:approved) ? game.participations.approved : game.participations
         approved_participations.size < required
@@ -31,9 +31,11 @@ class GamesController < ApplicationController
 
     if current_user&.city_name.present?
       user_city = current_user.city_name.downcase
-      local, other = @games.partition { |g| g.court&.city_name.to_s.downcase == user_city }
-      @games = local + other
+      local, other = games.partition { |g| g.court&.city_name.to_s.downcase == user_city }
+      games = local + other
     end
+
+    @pagy, @games = pagy_array(games)
   end
 
   def show

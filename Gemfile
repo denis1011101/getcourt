@@ -45,6 +45,9 @@ gem "image_processing", "~> 1.2"
 # For env
 gem "dotenv-rails"
 
+# Pagination
+gem "pagy", "~> 9.3"
+
 # Russian transliteration support
 gem "russian"
 
@@ -75,4 +78,5 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"
+  gem "rails-controller-testing"
 end

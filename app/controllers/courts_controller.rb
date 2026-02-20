@@ -3,13 +3,14 @@ class CourtsController < ApplicationController
   skip_before_action :authenticate_user!, only: %i[index show]
 
   def index
-    @courts = Court.visible_to(current_user).to_a
+    courts = Court.visible_to(current_user).to_a
     if current_user&.city_name.present?
       user_city = current_user.city_name.downcase
-      local, other = @courts.partition { |c| c.city_name.to_s.downcase == user_city }
-      @courts = local + other
+      local, other = courts.partition { |c| c.city_name.to_s.downcase == user_city }
+      courts = local + other
     end
-    Rails.logger.info "Courts#index current_user_id=#{current_user&.id} courts=#{@courts.map { |c| [ c.id, c.user_id ] }.inspect}"
+    Rails.logger.info "Courts#index current_user_id=#{current_user&.id} courts=#{courts.map { |c| [ c.id, c.user_id ] }.inspect}"
+    @pagy, @courts = pagy_array(courts)
   end
 
   def show
