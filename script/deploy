@@ -34,6 +34,7 @@ BRANCH="${BRANCH:-main}"
 SERVICE="${SERVICE:-getcourt-web}"
 LOG_FILE="$APP_DIR/log/deploy.log"
 LOCK_FILE="/tmp/getcourt-deploy.lock"
+CI_FAIL_FILE="/tmp/getcourt-last-ci-fail"
 RAILS_ENV="${RAILS_ENV:-production}"
 HEALTHCHECK_URL="${HEALTHCHECK_URL:-https://getcourt.co/up}"
 TELEGRAM_BOT_TOKEN="${TELEGRAM_BOT_TOKEN:-}"
@@ -144,9 +145,47 @@ if [[ "$FORCE" == false ]]; then
 
   CI_STATUS=$(echo "$CI_JSON" | python3 -c "import sys,json; runs=json.load(sys.stdin).get('workflow_runs',[]); print(runs[0]['conclusion'] if runs else 'none')" 2>/dev/null || echo "error")
   CI_HEAD_SHA=$(echo "$CI_JSON" | python3 -c "import sys,json; runs=json.load(sys.stdin).get('workflow_runs',[]); print(runs[0]['head_sha'] if runs else '')" 2>/dev/null || echo "")
+  CI_RUN_ID=$(echo "$CI_JSON" | python3 -c "import sys,json; runs=json.load(sys.stdin).get('workflow_runs',[]); print(runs[0]['id'] if runs else '')" 2>/dev/null || echo "")
 
   if [[ "$CI_STATUS" != "success" ]]; then
     log "CI status: $CI_STATUS. Skipping deploy (CI must pass)."
+
+    # Fetch failed job names and error messages
+    CI_ERRORS=""
+    if [[ -n "$CI_RUN_ID" ]]; then
+      JOBS_JSON=$(curl -sf --max-time 10 -H "Accept: application/vnd.github.v3+json" \
+        "https://api.github.com/repos/$GITHUB_REPO/actions/runs/$CI_RUN_ID/jobs" 2>/dev/null || echo "")
+      if [[ -n "$JOBS_JSON" ]]; then
+        CI_ERRORS=$(echo "$JOBS_JSON" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+failed = []
+for j in data.get('jobs', []):
+    if j.get('conclusion') == 'failure':
+        steps = [s['name'] for s in j.get('steps', []) if s.get('conclusion') == 'failure']
+        entry = j['name']
+        if steps:
+            entry += ': ' + ', '.join(steps)
+        failed.append(entry)
+print('\n'.join(failed) if failed else '')
+" 2>/dev/null || echo "")
+      fi
+    fi
+
+    # Notify only once per failed run (avoid spam every cron cycle)
+    LAST_NOTIFIED=$(cat "$CI_FAIL_FILE" 2>/dev/null || echo "")
+    if [[ "$CI_RUN_ID" != "$LAST_NOTIFIED" ]]; then
+      CI_URL="https://github.com/$GITHUB_REPO/actions/runs/$CI_RUN_ID"
+      tg_notify "CI FAILED — deploy blocked
+Repo: $GITHUB_REPO
+Branch: $BRANCH
+Commit: ${CI_HEAD_SHA:0:8}
+Status: $CI_STATUS
+${CI_ERRORS:+Failed jobs:
+$CI_ERRORS
+}$CI_URL"
+      echo "$CI_RUN_ID" > "$CI_FAIL_FILE"
+    fi
     exit 0
   fi
 
