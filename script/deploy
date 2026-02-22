@@ -1,0 +1,256 @@
+#!/bin/bash
+# =============================================================================
+# GetCourt auto-deploy script
+# Pulls latest code from GitHub, checks CI, runs build steps, restarts the app.
+#
+# Usage:
+#   script/deploy           # normal deploy (checks CI)
+#   script/deploy --force   # skip CI check
+#
+# Configuration is read from .env (see .env-example for all variables).
+# See README-INTERNAL.md for server setup and cron instructions.
+# =============================================================================
+
+set -euo pipefail
+
+# ---- Load .env (optional) ---------------------------------------------------
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DEFAULT_APP_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+ENV_FILE="${ENV_FILE:-$DEFAULT_APP_DIR/.env}"
+
+if [[ -f "$ENV_FILE" ]]; then
+  set -a
+  # shellcheck disable=SC1090
+  source "$ENV_FILE"
+  set +a
+fi
+
+# ---- Configuration ----------------------------------------------------------
+APP_DIR="${APP_DIR:-$DEFAULT_APP_DIR}"
+APP_USER="${APP_USER:-www-data}"
+RVM_SCRIPT="${RVM_SCRIPT:-/usr/local/rvm/scripts/rvm}"
+GITHUB_REPO="${GITHUB_REPO:-denis1011101/getcourt}"
+BRANCH="${BRANCH:-main}"
+SERVICE="${SERVICE:-getcourt-web}"
+LOG_FILE="$APP_DIR/log/deploy.log"
+LOCK_FILE="/tmp/getcourt-deploy.lock"
+RAILS_ENV="${RAILS_ENV:-production}"
+HEALTHCHECK_URL="${HEALTHCHECK_URL:-https://getcourt.co/up}"
+TELEGRAM_BOT_TOKEN="${TELEGRAM_BOT_TOKEN:-}"
+TELEGRAM_CHAT_ID="${TELEGRAM_CHAT_ID:-}"
+# -----------------------------------------------------------------------------
+
+FORCE=false
+if [[ "${1:-}" == "--force" ]]; then
+  FORCE=true
+fi
+
+log() {
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
+}
+
+# Telegram is optional. If token/chat_id are not set, notifications are skipped.
+tg_notify() {
+  local text="$1"
+  if [[ -z "$TELEGRAM_BOT_TOKEN" || -z "$TELEGRAM_CHAT_ID" ]]; then
+    return 0
+  fi
+
+  curl -sS --max-time 10 -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+    --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+    --data-urlencode "text=${text}" \
+    > /dev/null || true
+}
+
+tail_log_for_telegram() {
+  tail -n 20 "$LOG_FILE" 2>/dev/null | tail -c 2000
+}
+
+# Helper: run a command as APP_USER with RVM and Rails env loaded
+run_as_app() {
+  sudo -u "$APP_USER" bash -lc "source $RVM_SCRIPT && cd $APP_DIR && export RAILS_MASTER_KEY=\$(cat config/master.key) && RAILS_ENV=$RAILS_ENV $1"
+}
+
+DEPLOY_STARTED=false
+DEPLOY_FAILED=false
+DEPLOY_START_TS=$(date +%s)
+DEPLOY_OLD_HEAD=""
+DEPLOY_NEW_HEAD=""
+
+on_error() {
+  local line="$1"
+  local cmd="$2"
+  DEPLOY_FAILED=true
+  log "Deploy failed at line $line: $cmd"
+
+  if [[ "$DEPLOY_STARTED" == true ]]; then
+    tg_notify "DEPLOY FAILED
+Repo: $GITHUB_REPO
+Branch: $BRANCH
+From: ${DEPLOY_OLD_HEAD:-unknown}
+To: ${DEPLOY_NEW_HEAD:-unknown}
+Error: line $line: $cmd
+Log tail:
+$(tail_log_for_telegram)"
+  fi
+}
+
+trap 'on_error "${LINENO}" "${BASH_COMMAND}"' ERR
+
+# Ensure log directory exists
+mkdir -p "$(dirname "$LOG_FILE")"
+
+# ---- Lock (prevent concurrent deploys) --------------------------------------
+exec 200>"$LOCK_FILE"
+if ! flock -n 200; then
+  log "Another deploy is already running. Exiting."
+  exit 0
+fi
+
+# ---- Change to app directory ------------------------------------------------
+cd "$APP_DIR"
+
+# ---- Check for updates ------------------------------------------------------
+log "Fetching origin/$BRANCH..."
+sudo -u "$APP_USER" git fetch origin "$BRANCH" --quiet
+
+LOCAL_HEAD=$(git rev-parse HEAD)
+REMOTE_HEAD=$(git rev-parse "origin/$BRANCH")
+
+if [[ "$LOCAL_HEAD" == "$REMOTE_HEAD" ]]; then
+  log "Already up to date ($LOCAL_HEAD). Nothing to deploy."
+  exit 0
+fi
+
+log "Update available: $LOCAL_HEAD -> $REMOTE_HEAD"
+DEPLOY_OLD_HEAD="$LOCAL_HEAD"
+DEPLOY_NEW_HEAD="$REMOTE_HEAD"
+
+# ---- Check GitHub Actions CI ------------------------------------------------
+if [[ "$FORCE" == false ]]; then
+  log "Checking GitHub Actions CI status..."
+
+  if ! CI_JSON=$(curl -sf --max-time 10 -H "Accept: application/vnd.github.v3+json" \
+    "https://api.github.com/repos/$GITHUB_REPO/actions/runs?branch=$BRANCH&per_page=1&status=completed"); then
+    log "GitHub API unreachable. Skipping deploy (will retry next run)."
+    exit 0
+  fi
+
+  CI_STATUS=$(echo "$CI_JSON" | python3 -c "import sys,json; runs=json.load(sys.stdin).get('workflow_runs',[]); print(runs[0]['conclusion'] if runs else 'none')" 2>/dev/null || echo "error")
+  CI_HEAD_SHA=$(echo "$CI_JSON" | python3 -c "import sys,json; runs=json.load(sys.stdin).get('workflow_runs',[]); print(runs[0]['head_sha'] if runs else '')" 2>/dev/null || echo "")
+
+  if [[ "$CI_STATUS" != "success" ]]; then
+    log "CI status: $CI_STATUS. Skipping deploy (CI must pass)."
+    exit 0
+  fi
+
+  if [[ "$CI_HEAD_SHA" != "$REMOTE_HEAD" ]]; then
+    log "CI ran for $CI_HEAD_SHA but remote is $REMOTE_HEAD. Waiting for CI to finish."
+    exit 0
+  fi
+
+  log "CI passed for $REMOTE_HEAD."
+fi
+
+# ---- Deploy starts here (CI passed, we're committed to deploying) -----------
+DEPLOY_STARTED=true
+tg_notify "DEPLOY STARTED
+Repo: $GITHUB_REPO
+Branch: $BRANCH
+From: $LOCAL_HEAD
+To: $REMOTE_HEAD"
+
+# ---- Pull latest code -------------------------------------------------------
+log "Pulling origin/$BRANCH..."
+sudo -u "$APP_USER" git pull origin "$BRANCH" --quiet
+
+# ---- Detect what changed ----------------------------------------------------
+CHANGED_FILES=$(git diff --name-only "$LOCAL_HEAD" "$REMOTE_HEAD")
+
+NEED_BUNDLE=false
+NEED_MIGRATE=false
+NEED_ASSETS=false
+
+if echo "$CHANGED_FILES" | grep -q "^Gemfile"; then
+  NEED_BUNDLE=true
+fi
+
+if echo "$CHANGED_FILES" | grep -q "^db/migrate/"; then
+  NEED_MIGRATE=true
+fi
+
+if echo "$CHANGED_FILES" | grep -qE "^(app/assets/|app/views/|app/javascript/|config/tailwind|app/helpers/)"; then
+  NEED_ASSETS=true
+fi
+
+# ---- Bundle install ----------------------------------------------------------
+if [[ "$NEED_BUNDLE" == true ]]; then
+  log "Gemfile changed. Running bundle install..."
+  run_as_app "bundle install --deployment --without development test"
+  log "Bundle install done."
+else
+  log "Gemfile unchanged. Skipping bundle install."
+fi
+
+# ---- Database migrations -----------------------------------------------------
+if [[ "$NEED_MIGRATE" == true ]]; then
+  log "New migrations detected. Running db:migrate..."
+  run_as_app "bundle exec rails db:migrate"
+  log "Migrations done."
+else
+  log "No new migrations. Skipping db:migrate."
+fi
+
+# ---- Asset precompilation ----------------------------------------------------
+if [[ "$NEED_ASSETS" == true ]]; then
+  log "Asset-related files changed. Running assets:precompile..."
+  run_as_app "bundle exec rails assets:precompile"
+  log "Asset precompilation done."
+else
+  log "No asset changes. Skipping assets:precompile."
+fi
+
+# ---- Fix permissions (only new/changed files, not full recursive scan) -------
+if [[ "$NEED_BUNDLE" == true ]]; then
+  chown -R "$APP_USER":"$APP_USER" "$APP_DIR/vendor/bundle" 2>/dev/null || true
+fi
+if [[ "$NEED_ASSETS" == true ]]; then
+  chown -R "$APP_USER":"$APP_USER" "$APP_DIR/public/assets" 2>/dev/null || true
+fi
+
+# ---- Restart application -----------------------------------------------------
+log "Restarting $SERVICE..."
+systemctl restart "$SERVICE"
+log "Service restarted."
+
+# ---- Application health check (with warmup) ---------------------------------
+log "Waiting for Puma to boot..."
+HEALTH_HTTP_CODE="000"
+for i in 1 2 3 4 5; do
+  sleep 3
+  HEALTH_HTTP_CODE=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 10 "$HEALTHCHECK_URL" 2>/dev/null || echo "000")
+  if [[ "$HEALTH_HTTP_CODE" == "200" ]]; then
+    break
+  fi
+  log "Health check attempt $i: HTTP $HEALTH_HTTP_CODE (retrying...)"
+done
+if [[ "$HEALTH_HTTP_CODE" != "200" ]]; then
+  log "Health check failed after 5 attempts: $HEALTHCHECK_URL returned HTTP $HEALTH_HTTP_CODE"
+  exit 1
+fi
+log "Health check passed: $HEALTHCHECK_URL returned HTTP $HEALTH_HTTP_CODE"
+
+# ---- Done --------------------------------------------------------------------
+NEW_HEAD=$(git rev-parse --short HEAD)
+log "Deploy complete! Now running: $NEW_HEAD"
+log "---"
+
+if [[ "$DEPLOY_STARTED" == true && "$DEPLOY_FAILED" == false ]]; then
+  DURATION=$(( $(date +%s) - DEPLOY_START_TS ))
+  tg_notify "DEPLOY FINISHED
+Repo: $GITHUB_REPO
+Branch: $BRANCH
+Now running: $NEW_HEAD
+Health: OK ($HEALTH_HTTP_CODE)
+Duration: ${DURATION}s"
+fi
