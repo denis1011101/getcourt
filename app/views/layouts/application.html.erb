@@ -48,6 +48,7 @@
     <script>window.initMap = window.initMap || function(){};</script>
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=<%= ENV['GOOGLE_MAPS_API_KEY'] %>&callback=initMap"></script>
     <%= javascript_importmap_tags %>
+    <%= yield :head %>
   </head>
 
   <body class="bg-gray-50 text-gray-900">

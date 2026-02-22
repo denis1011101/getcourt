@@ -1,5 +1,18 @@
 <% content_for :meta_title, "#{@court.name} — court and scheduled games" %>
 <% content_for :meta_description, "Find and join games at #{@court.name}. Create or join tennis, padel and table tennis matches on GetCourt." %>
+<% content_for :head do %>
+  <script type="application/ld+json">
+    <%= json_escape({
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": root_url },
+        { "@type": "ListItem", "position": 2, "name": "Courts", "item": courts_url },
+        { "@type": "ListItem", "position": 3, "name": @court.name }
+      ]
+    }.to_json).html_safe %>
+  </script>
+<% end %>
 
 <div class="max-w-6xl mx-auto py-4">
   <!-- Breadcrumb -->
