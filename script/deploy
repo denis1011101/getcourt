@@ -110,6 +110,9 @@ fi
 # ---- Change to app directory ------------------------------------------------
 cd "$APP_DIR"
 
+# ---- Ensure .git is owned by APP_USER (cron runs as root) ------------------
+chown -R "$APP_USER":"$APP_USER" "$APP_DIR/.git"
+
 # ---- Check for updates ------------------------------------------------------
 log "Fetching origin/$BRANCH..."
 sudo -u "$APP_USER" git fetch origin "$BRANCH" --quiet
