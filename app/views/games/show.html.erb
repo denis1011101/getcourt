@@ -2,6 +2,14 @@
 <% content_for :meta_title, "#{@game.court&.name} — game on #{(@game.next_date || @game.date).strftime('%B %d, %Y')}" %>
 <% content_for :meta_description, "Join #{approved_count} players at #{@game.court&.name}. Create or join games for tennis, padel and table tennis on GetCourt." %>
 <div class="max-w-5xl mx-auto px-4 py-6">
+  <!-- Breadcrumb -->
+  <nav class="text-sm text-gray-500 mb-4">
+    <%= link_to "Home", root_path, class: "hover:text-gray-700" %> &rsaquo;
+    <%= link_to "Courts", courts_path, class: "hover:text-gray-700" %> &rsaquo;
+    <%= link_to @game.court.name, court_path(@game.court), class: "hover:text-gray-700" %> &rsaquo;
+    <span class="text-gray-900">Game <%= display_date(@game) %></span>
+  </nav>
+
   <div class="flex items-center justify-between mb-6">
     <div>
       <h1 class="text-2xl font-semibold">Game details</h1>

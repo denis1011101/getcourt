@@ -132,6 +132,8 @@
     <div class="lg:col-span-2">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-lg font-bold text-gray-900">Games at this court</h2>
+        <div class="flex items-center gap-2">
+        <%= link_to "Back to Courts", courts_path, class: "inline-flex items-center rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition" %>
         <% sign_in_path = (respond_to?(:new_session_path) && new_session_path) || '/sign_in' rescue '/sign_in' %>
         <% if user_signed_in? %>
           <%= link_to new_game_path(court_id: @court.id), class: "inline-flex items-center gap-1.5 rounded-full bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition" do %>
@@ -145,6 +147,7 @@
             Sign in to Create Game
           <% end %>
         <% end %>
+        </div>
       </div>
 
       <% if @court.games.any? %>
