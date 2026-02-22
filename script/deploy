@@ -111,7 +111,10 @@ fi
 cd "$APP_DIR"
 
 # ---- Ensure .git is owned by APP_USER (cron runs as root) ------------------
-chown -R "$APP_USER":"$APP_USER" "$APP_DIR/.git"
+if [[ "$(stat -c '%U' "$APP_DIR/.git/objects")" != "$APP_USER" ]]; then
+  log "Fixing .git ownership..."
+  chown -R "$APP_USER":"$APP_USER" "$APP_DIR/.git"
+fi
 
 # ---- Check for updates ------------------------------------------------------
 log "Fetching origin/$BRANCH..."
