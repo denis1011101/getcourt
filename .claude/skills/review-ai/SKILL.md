@@ -18,7 +18,7 @@ Review changes made by an AI editor. Follow these steps:
    - `bin/brakeman --no-pager` (scan_ruby: security vulnerabilities)
    - `bin/importmap audit` (scan_js: JS dependency vulnerabilities)
    - `bin/rubocop` (lint: code style)
-   - `bin/rails db:test:prepare test test:system` (test: unit/integration/system tests)
+   - `PARALLEL_WORKERS=0 bin/rails db:test:prepare test test:system` (test: unit/integration/system tests)
 5. Provide a structured review:
    - Summary of what changed
    - CI results (pass/fail for each check)
