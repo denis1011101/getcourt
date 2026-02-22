@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
   get "/contacts", to: "pages#contacts", as: :contacts
   get "/mission",  to: "pages#mission",  as: :mission
+  get "/coaches",  to: "coaches#index", as: :coaches
   get "tennis_life/index"
   # geocoding quota status and reset
   get  "/geocoding/status", to: "geocoding#status",  as: :geocoding_status
