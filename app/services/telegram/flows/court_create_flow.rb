@@ -84,6 +84,17 @@ module Telegram
                 "message_id" => resume_message_id
               })
               Telegram::Flows::Games::Manage::CreateFlow.send(:send_court_selection, cb.chat_id, 1, message_id: resume_message_id)
+            elsif return_to == "tournament_create"
+              # Restore saved tournament fields and return to court selection step
+              saved_fields = Rails.cache.read("tg:tournament_create_fields:#{cb.chat_id}") || {}
+              Rails.cache.delete("tg:tournament_create_fields:#{cb.chat_id}")
+              Telegram::Helpers::Conversation.start(cb.chat_id, {
+                "flow" => "create_tournament",
+                "step" => "court",
+                "fields" => saved_fields,
+                "message_id" => resume_message_id
+              })
+              Telegram::Flows::TournamentsFlow.send(:send_court_selection, cb.chat_id, 1, message_id: resume_message_id)
             else
               Telegram::Handlers::MenuHandler.menu(cb.chat_id, message_id: cb.message_id)
             end
@@ -322,6 +333,17 @@ module Telegram
               })
               # Let user re-pick from courts including the new one
               Telegram::Flows::Games::Manage::CreateFlow.send(:send_court_selection, chat_id, 1, message_id: resume_message_id)
+            elsif return_to == "tournament_create"
+              # Restore saved tournament fields and resume at court step
+              saved_fields = Rails.cache.read("tg:tournament_create_fields:#{chat_id}") || {}
+              Rails.cache.delete("tg:tournament_create_fields:#{chat_id}")
+              Telegram::Helpers::Conversation.start(chat_id, {
+                "flow" => "create_tournament",
+                "step" => "court",
+                "fields" => saved_fields,
+                "message_id" => resume_message_id
+              })
+              Telegram::Flows::TournamentsFlow.send(:send_court_selection, chat_id, 1, message_id: resume_message_id)
             else
               Telegram::Handlers::MenuHandler.menu(chat_id)
             end

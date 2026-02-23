@@ -88,6 +88,13 @@ module Telegram
             conv = Telegram::Helpers::Conversation.get(cb.chat_id)
             send_court_selection(cb.chat_id, page, message_id: conv["message_id"] || cb.message_id)
 
+          when /\Atournament:create:court_new\z/
+            Telegram::Api.answer_callback(cb.cb_id, "") rescue nil
+            conv = Telegram::Helpers::Conversation.get(cb.chat_id)
+            tournament_fields = conv["fields"] || {}
+            Rails.cache.write("tg:tournament_create_fields:#{cb.chat_id}", tournament_fields, expires_in: 2.hours)
+            Telegram::Flows::CourtCreateFlow.start(cb.chat_id, return_to: "tournament_create", message_id: conv["message_id"] || cb.message_id)
+
           # --- Add result flow ---
           when /\Atournament:add_result:(\d+)(?::(\d+))?\z/
             tid = $1.to_i
@@ -330,9 +337,9 @@ module Telegram
           t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
           user = Telegram::Helpers::UserLookup.find_user(chat_id)
 
-          user_city = user&.city_name.to_s.strip.downcase.presence
+          user_city = normalized_city(user&.city_name)
           courts = Court.visible_to(user).to_a.sort_by do |court|
-            same_city_rank = if user_city && court.city_name.to_s.strip.downcase == user_city
+            same_city_rank = if user_city && normalized_city(court.city_name) == user_city
               0
             else
               1
@@ -356,10 +363,20 @@ module Telegram
           nav << { text: t.(:prev_page), callback_data: "tournament:create:court_page:#{page - 1}" } if page > 1
           nav << { text: t.(:next_page), callback_data: "tournament:create:court_page:#{page + 1}" } if page < total_pages
           buttons << nav unless nav.empty?
+          buttons << [ { text: t.(:create_court), callback_data: "tournament:create:court_new" } ]
           buttons << [ { text: t.(:skip_btn), callback_data: "tournament:create:skip" } ]
           buttons << cancel_row
 
           send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
+        end
+
+        def normalized_city(value)
+          city = I18n.transliterate(value.to_s).downcase.strip
+          city = city.gsub(/\s+/, " ")
+          return nil if city.blank?
+
+          # Handle common transliteration variant: Yekaterinburg vs Ekaterinburg.
+          city.sub(/\Ay(?=[aeiou])/, "")
         end
 
         def send_players_count_input_prompt(chat_id, message_id: nil)
