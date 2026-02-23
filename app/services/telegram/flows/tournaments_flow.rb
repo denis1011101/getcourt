@@ -371,7 +371,7 @@ module Telegram
         end
 
         def normalized_city(value)
-          city = I18n.transliterate(value.to_s).downcase.strip
+          city = ::I18n.transliterate(value.to_s).downcase.strip
           city = city.gsub(/\s+/, " ")
           return nil if city.blank?
 
