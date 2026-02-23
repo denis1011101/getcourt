@@ -3,10 +3,10 @@ module Telegram
     class TournamentsFlow
       # Step-by-step tournament creation + join/leave/show callbacks
       #
-      # Steps: name, players_count, games_count, format, court, start_date, start_time
+      # Steps: name, players_count, tournament_type, games_count, format, court, start_date, start_time
       # Conversation state stored via Telegram::Helpers::Conversation with flow: "create_tournament"
 
-      STEPS = %w[name players_count games_count format court start_date start_time].freeze
+      STEPS = %w[name players_count tournament_type games_count format court start_date start_time].freeze
       TOTAL_STEPS = STEPS.size
 
       class << self
@@ -57,6 +57,14 @@ module Telegram
             conv["message_id"] = message_id if message_id
             Telegram::Helpers::Conversation.set(cb.chat_id, conv)
             send_players_count_input_prompt(cb.chat_id, message_id: message_id)
+
+          when /\Atournament:create:type:(bracket|round_robin)\z/
+            type = $1
+            Telegram::Api.answer_callback(cb.cb_id, "") rescue nil
+            conv = Telegram::Helpers::Conversation.get(cb.chat_id)
+            conv["fields"] ||= {}
+            conv["fields"]["tournament_type"] = type
+            save_and_advance(cb.chat_id, conv, "tournament_type", message_id: conv["message_id"] || cb.message_id)
 
           when /\Atournament:create:games_count:(\d+)\z/
             count = $1.to_i
@@ -141,6 +149,82 @@ module Telegram
             page = ($2 || 1).to_i
             handle_join(cb.chat_id, tid, page, cb_id: cb.cb_id, message_id: cb.message_id)
 
+          when /\Atournament:join_invited:(\d+)(?::(\d+))?\z/
+            tid = $1.to_i
+            page = ($2 || 1).to_i
+            handle_join(cb.chat_id, tid, page, cb_id: cb.cb_id, message_id: cb.message_id, invited: true)
+
+          when /\Atournament:join_pending:(\d+)(?::(\d+))?\z/
+            Telegram::Api.answer_callback(cb.cb_id, t.(:tournament_join_pending), show_alert: false) rescue nil
+
+          when /\Atournament:approve_participation:(\d+)\z/
+            pid = $1.to_i
+            handle_approve_participation(cb.chat_id, pid, cb_id: cb.cb_id, message_id: cb.message_id)
+
+          when /\Atournament:reject_participation:(\d+)\z/
+            pid = $1.to_i
+            handle_reject_participation(cb.chat_id, pid, cb_id: cb.cb_id, message_id: cb.message_id)
+
+          when /\Atournament:manage:(\d+)(?::(\d+))?\z/
+            tid = $1.to_i
+            page = ($2 || 1).to_i
+            handle_manage_players(cb.chat_id, tid, page, cb_id: cb.cb_id, message_id: cb.message_id)
+
+          when /\Atournament:edit:(\d+)(?::(\d+))?\z/
+            tid = $1.to_i
+            page = ($2 || 1).to_i
+            start_edit(cb.chat_id, tid, page, cb_id: cb.cb_id, message_id: cb.message_id)
+
+          when /\Atournament:edit:field:(name|start_date|time)\z/
+            field = $1
+            handle_edit_field(cb.chat_id, field, cb_id: cb.cb_id, message_id: cb.message_id)
+
+          when /\Atournament:edit:skip\z/
+            handle_edit_skip(cb.chat_id, cb_id: cb.cb_id, message_id: cb.message_id)
+
+          when /\Atournament:edit:cancel\z/
+            cancel_edit(cb.chat_id, cb_id: cb.cb_id, message_id: cb.message_id)
+
+          when /\Atournament:delete:(\d+)(?::(\d+))?\z/
+            tid = $1.to_i
+            page = ($2 || 1).to_i
+            prompt_delete(cb.chat_id, tid, page, cb_id: cb.cb_id, message_id: cb.message_id)
+
+          when /\Atournament:delete:confirm:(\d+)(?::(\d+))?\z/
+            tid = $1.to_i
+            page = ($2 || 1).to_i
+            confirm_delete(cb.chat_id, tid, page, cb_id: cb.cb_id, message_id: cb.message_id)
+
+          when /\Atournament:delete:cancel:(\d+)(?::(\d+))?\z/
+            tid = $1.to_i
+            page = ($2 || 1).to_i
+            cancel_delete(cb.chat_id, tid, page, cb_id: cb.cb_id, message_id: cb.message_id)
+
+          when /\Atournament:rr_add_match:(\d+)(?::(\d+))?\z/
+            tid = $1.to_i
+            page = ($2 || 1).to_i
+            start_round_robin_add_match(cb.chat_id, tid, page, cb_id: cb.cb_id, message_id: cb.message_id)
+
+          when /\Atournament:rr_pick_a:(\d+):(\d+)\z/
+            rr_pick_a(cb.chat_id, $1.to_i, $2.to_i, cb_id: cb.cb_id, message_id: cb.message_id)
+
+          when /\Atournament:rr_pick_a2:(\d+):(\d+)\z/
+            rr_pick_a2(cb.chat_id, $1.to_i, $2.to_i, cb_id: cb.cb_id, message_id: cb.message_id)
+
+          when /\Atournament:rr_pick_b:(\d+):(\d+)\z/
+            rr_pick_b(cb.chat_id, $1.to_i, $2.to_i, cb_id: cb.cb_id, message_id: cb.message_id)
+
+          when /\Atournament:rr_pick_b2:(\d+):(\d+)\z/
+            rr_pick_b2(cb.chat_id, $1.to_i, $2.to_i, cb_id: cb.cb_id, message_id: cb.message_id)
+
+          when /\Atournament:rr_cancel\z/
+            rr_cancel(cb.chat_id, cb_id: cb.cb_id, message_id: cb.message_id)
+
+          when /\Atournament:rr_standings:(\d+)(?::(\d+))?\z/
+            tid = $1.to_i
+            page = ($2 || 1).to_i
+            show_round_robin_standings(cb.chat_id, tid, page, cb_id: cb.cb_id, message_id: cb.message_id)
+
           when /\Atournament:leave:(\d+)(?::(\d+))?\z/
             tid = $1.to_i
             page = ($2 || 1).to_i
@@ -159,7 +243,7 @@ module Telegram
           text = message["text"].to_s.strip
           conv = Telegram::Helpers::Conversation.get(chat_id)
           flow = conv["flow"]
-          return false unless %w[create_tournament tournament_add_result tournament_invite].include?(flow)
+          return false unless %w[create_tournament tournament_add_result tournament_invite tournament_edit tournament_rr_add_match].include?(flow)
 
           delete_input_message(message)
 
@@ -174,6 +258,16 @@ module Telegram
 
           if flow == "tournament_invite"
             process_invite_text(chat_id, conv, text, t)
+            return true
+          end
+
+          if flow == "tournament_edit"
+            process_edit_text(chat_id, conv, step, text, t)
+            return true
+          end
+
+          if flow == "tournament_rr_add_match"
+            process_round_robin_add_match_text(chat_id, conv, step, text, t)
             return true
           end
 
@@ -196,6 +290,14 @@ module Telegram
             conv["fields"] ||= {}
             conv["fields"]["players_count"] = count
             save_and_advance(chat_id, conv, "players_count", message_id: conv["message_id"])
+
+          when "tournament_type"
+            val = text.to_s.strip.downcase
+            val = "round_robin" if %w[rr roundrobin round_robin].include?(val)
+            val = "bracket" unless %w[bracket round_robin].include?(val)
+            conv["fields"] ||= {}
+            conv["fields"]["tournament_type"] = val
+            save_and_advance(chat_id, conv, "tournament_type", message_id: conv["message_id"])
 
           when "games_count"
             count = text.to_i
@@ -298,6 +400,16 @@ module Telegram
             buttons = [ row, [ { text: other_text, callback_data: "tournament:create:players:other" } ], cancel_row ]
             send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
 
+          when "tournament_type"
+            text = build_step_text(chat_id, header, t.(:create_tournament_type))
+            buttons = [
+              [ { text: t.(:tournament_type_bracket), callback_data: "tournament:create:type:bracket" } ],
+              [ { text: t.(:tournament_type_round_robin), callback_data: "tournament:create:type:round_robin" } ],
+              [ { text: t.(:skip_btn), callback_data: "tournament:create:skip" } ],
+              cancel_row
+            ]
+            send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
+
           when "games_count"
             text = build_step_text(chat_id, header, t.(:create_tournament_games_count))
             row = [ 3, 5, 7 ].map { |n| { text: n.to_s, callback_data: "tournament:create:games_count:#{n}" } }
@@ -392,8 +504,13 @@ module Telegram
         def handle_skip(chat_id, message_id = nil)
           conv = Telegram::Helpers::Conversation.get(chat_id)
           step = conv["step"]
-          # Can skip: games_count, format, court, start_date, start_time (not name or players_count)
-          skippable = %w[games_count format court start_date start_time]
+          # Can skip: tournament_type, games_count, format, court, start_date, start_time (not name or players_count)
+          skippable = %w[tournament_type games_count format court start_date start_time]
+          if step == "tournament_type"
+            conv["fields"] ||= {}
+            conv["fields"]["tournament_type"] = "bracket"
+            Telegram::Helpers::Conversation.set(chat_id, conv)
+          end
           if skippable.include?(step)
             save_and_advance(chat_id, conv, step, message_id: message_id || conv["message_id"])
           end
@@ -427,6 +544,7 @@ module Telegram
             user_id: user.id,
             name: fields["name"],
             players_count: fields["players_count"] || 4,
+            tournament_type: fields["tournament_type"].presence || "bracket",
             games_count: fields["games_count"],
             format: fields["format"],
             start_date: fields["start_date"],
@@ -450,7 +568,7 @@ module Telegram
           send_or_edit_text(chat_id, t.(:create_tournament_error, error: e.message), message_id: message_id) rescue nil
         end
 
-        def handle_join(chat_id, tournament_id, page, cb_id: nil, message_id: nil)
+        def handle_join(chat_id, tournament_id, page, cb_id: nil, message_id: nil, invited: false)
           locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
           t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
@@ -462,16 +580,68 @@ module Telegram
             return
           end
 
+          callback_text = nil
+          notify_owner_payload = nil
+
           tournament.with_lock do
-            if tournament.tournament_participants.exists?(user_id: user.id)
-              Telegram::Api.answer_callback(cb_id, t.(:tournament_already_joined), show_alert: false) rescue nil
-            elsif tournament.players_count.to_i.positive? && tournament.tournament_participants.count >= tournament.players_count
-              full_text = locale == "ru" ? "Турнир уже заполнен" : "Tournament is full"
-              Telegram::Api.answer_callback(cb_id, full_text, show_alert: false) rescue nil
+            participation = tournament.tournament_participants.find_by(user_id: user.id)
+            direct_join = invited || user.admin? || user.id == tournament.user_id
+
+            approved_count = approved_participants_scope(tournament).count
+            full = tournament.players_count.to_i.positive? && approved_count >= tournament.players_count
+
+            if participation
+              if participation.pending?
+                if direct_join
+                  if full
+                    callback_text = t.(:tournament_full)
+                  else
+                    participation.update(status: "approved", approved_at: Time.current) rescue nil
+                    callback_text = invited ? t.(:tournament_invitation_accepted) : t.(:tournament_joined)
+                  end
+                else
+                  callback_text = t.(:tournament_request_already_sent)
+                end
+              else
+                callback_text = t.(:tournament_already_joined)
+              end
             else
-              tournament.tournament_participants.create!(user: user, name: user.name.presence || user.email)
-              Telegram::Api.answer_callback(cb_id, t.(:tournament_joined), show_alert: false) rescue nil
+              if full
+                callback_text = t.(:tournament_full)
+              elsif direct_join
+                tournament.tournament_participants.create!(user: user, name: user.name.presence || user.email, status: "approved", approved_at: Time.current)
+                callback_text = invited ? t.(:tournament_invitation_accepted) : t.(:tournament_joined)
+              else
+                participation = tournament.tournament_participants.create!(user: user, name: user.name.presence || user.email, status: "pending")
+                callback_text = t.(:tournament_join_request_sent)
+
+                owner_chat_id = tournament.user&.telegram_chat_id
+                if owner_chat_id.present?
+                  requester = Telegram::Helpers::UserLookup.display_name(user)
+                  host = ENV.fetch("APP_HOST", "https://getcourt.co")
+                  owner_locale = Telegram::Helpers::UserLookup.locale_for(owner_chat_id.to_s)
+                  owner_t = ->(key, **args) { Telegram::I18n.t(key, locale: owner_locale, **args) }
+                  notify_owner_payload = {
+                    chat_id: owner_chat_id,
+                    text: owner_t.(:tournament_join_request_owner_text, id: tournament.id, name: requester, url: "#{host}/tournaments/#{tournament.id}"),
+                    participation_id: participation.id
+                  }
+                end
+              end
             end
+          end
+
+          Telegram::Api.answer_callback(cb_id, callback_text, show_alert: false) rescue nil
+          if notify_owner_payload
+            buttons = [ [
+              { text: "Approve", callback_data: "tournament:approve_participation:#{notify_owner_payload[:participation_id]}" },
+              { text: "Reject",  callback_data: "tournament:reject_participation:#{notify_owner_payload[:participation_id]}" }
+            ] ]
+            Telegram::Api.send_api("sendMessage", {
+              chat_id: notify_owner_payload[:chat_id],
+              text: notify_owner_payload[:text],
+              reply_markup: { inline_keyboard: buttons }
+            }) rescue nil
           end
 
           Telegram::Handlers::TournamentsHandler.show_tournament(chat_id, tournament_id, page, message_id: message_id)
@@ -498,6 +668,568 @@ module Telegram
           Telegram::Handlers::TournamentsHandler.show_tournament(chat_id, tournament_id, page, message_id: message_id)
         rescue => e
           Rails.logger.error "[TournamentsFlow] handle_leave error: #{e.class} #{e.message}"
+        end
+
+        def handle_approve_participation(chat_id, participation_id, cb_id: nil, message_id: nil)
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+          user = Telegram::Helpers::UserLookup.find_user(chat_id)
+          participation = TournamentParticipant.find_by(id: participation_id)
+
+          unless participation && user
+            Telegram::Api.answer_callback(cb_id, t.(:tournament_request_not_found), show_alert: false) rescue nil
+            return
+          end
+
+          tournament = participation.tournament
+          unless user.admin? || user.id == tournament.user_id
+            Telegram::Api.answer_callback(cb_id, t.(:no_permission), show_alert: true) rescue nil
+            return
+          end
+
+          callback_text = nil
+          approved = false
+          tournament.with_lock do
+            approved_count = approved_participants_scope(tournament).count
+            full = tournament.players_count.to_i.positive? && approved_count >= tournament.players_count
+
+            if participation.approved?
+              callback_text = t.(:tournament_already_approved)
+            elsif full
+              callback_text = t.(:tournament_full)
+            else
+              participation.update(status: "approved", approved_at: Time.current) rescue nil
+              callback_text = t.(:tournament_participation_approved)
+              approved = true
+            end
+          end
+
+          Telegram::Api.answer_callback(cb_id, callback_text, show_alert: false) rescue nil
+          return unless approved
+
+          if chat_id && message_id
+            Telegram::Api.send_api("editMessageText", {
+              chat_id: chat_id,
+              message_id: message_id,
+              text: t.(:tournament_user_accepted),
+              reply_markup: { inline_keyboard: [] }
+            }) rescue nil
+          end
+
+          if participation.user&.telegram_chat_id.present?
+            participant_locale = Telegram::Helpers::UserLookup.locale_for(participation.user.telegram_chat_id)
+            participant_t = ->(key, **args) { Telegram::I18n.t(key, locale: participant_locale, **args) }
+            Telegram::Api.send_simple(participation.user.telegram_chat_id, participant_t.(:tournament_request_approved_user, id: tournament.id)) rescue nil
+          end
+        rescue => e
+          Rails.logger.error "[TournamentsFlow] handle_approve_participation error: #{e.class} #{e.message}"
+        end
+
+        def handle_reject_participation(chat_id, participation_id, cb_id: nil, message_id: nil)
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+          user = Telegram::Helpers::UserLookup.find_user(chat_id)
+          participation = TournamentParticipant.find_by(id: participation_id)
+
+          unless participation && user
+            Telegram::Api.answer_callback(cb_id, t.(:tournament_request_not_found), show_alert: false) rescue nil
+            return
+          end
+
+          tournament = participation.tournament
+          unless user.admin? || user.id == tournament.user_id
+            Telegram::Api.answer_callback(cb_id, t.(:no_permission), show_alert: true) rescue nil
+            return
+          end
+
+          participation.destroy rescue nil
+          Telegram::Api.answer_callback(cb_id, t.(:tournament_participation_rejected), show_alert: false) rescue nil
+
+          if chat_id && message_id
+            Telegram::Api.send_api("editMessageText", {
+              chat_id: chat_id,
+              message_id: message_id,
+              text: t.(:tournament_user_rejected),
+              reply_markup: { inline_keyboard: [] }
+            }) rescue nil
+          end
+
+          if participation.user&.telegram_chat_id.present?
+            participant_locale = Telegram::Helpers::UserLookup.locale_for(participation.user.telegram_chat_id)
+            participant_t = ->(key, **args) { Telegram::I18n.t(key, locale: participant_locale, **args) }
+            Telegram::Api.send_simple(participation.user.telegram_chat_id, participant_t.(:tournament_request_rejected_user, id: tournament.id)) rescue nil
+          end
+        rescue => e
+          Rails.logger.error "[TournamentsFlow] handle_reject_participation error: #{e.class} #{e.message}"
+        end
+
+        def handle_manage_players(chat_id, tournament_id, page, cb_id: nil, message_id: nil)
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+          user = Telegram::Helpers::UserLookup.find_user(chat_id)
+          tournament = Tournament.includes(tournament_participants: :user).find_by(id: tournament_id)
+
+          unless tournament && user && (user.admin? || user.id == tournament.user_id)
+            Telegram::Api.answer_callback(cb_id, t.(:no_permission), show_alert: true) rescue nil
+            return
+          end
+
+          Telegram::Api.answer_callback(cb_id, "") rescue nil
+          participants = tournament.tournament_participants.to_a.sort_by { |p| [ p.status == "pending" ? 0 : 1, p.created_at.to_i ] }
+          lines = [ "*#{t.(:manage_players)} — ##{tournament.id}*" ]
+          lines << ""
+          if participants.empty?
+            lines << t.(:players_list_empty)
+          else
+            participants.each_with_index do |p, idx|
+              name = Telegram::Helpers::UserLookup.display_name(p.user, fallback: p.name.presence || "User ##{p.user_id}")
+              marker = p.pending? ? "⏳" : "✅"
+              lines << "#{idx + 1}. #{marker} #{name}"
+            end
+          end
+
+          buttons = []
+          participants.each do |p|
+            next unless p.pending? || p.approved?
+            name = Telegram::Helpers::UserLookup.display_name(p.user, fallback: p.name.presence || "User ##{p.user_id}")
+            if p.pending?
+              buttons << [ { text: "✅ #{name}", callback_data: "tournament:approve_participation:#{p.id}" } ]
+            end
+            buttons << [ { text: "❌ #{name}", callback_data: "tournament:reject_participation:#{p.id}" } ]
+          end
+          buttons << [ { text: t.(:back_to_tournament), callback_data: "tournament:show:#{tournament.id}:#{page}" } ]
+
+          send_or_edit_with_buttons(chat_id, lines.join("\n"), buttons, message_id: message_id)
+        rescue => e
+          Rails.logger.error "[TournamentsFlow] handle_manage_players error: #{e.class} #{e.message}"
+        end
+
+        def start_edit(chat_id, tournament_id, page, cb_id: nil, message_id: nil)
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+          user = Telegram::Helpers::UserLookup.find_user(chat_id)
+          tournament = Tournament.find_by(id: tournament_id)
+
+          unless tournament && user && (user.admin? || user.id == tournament.user_id)
+            Telegram::Api.answer_callback(cb_id, t.(:no_permission), show_alert: true) rescue nil
+            return
+          end
+
+          Telegram::Api.answer_callback(cb_id, "") rescue nil
+          Telegram::Helpers::Conversation.start(chat_id, {
+            "flow" => "tournament_edit",
+            "step" => "menu",
+            "tournament_id" => tournament.id,
+            "page" => page.to_i,
+            "message_id" => message_id
+          })
+          render_edit_menu(chat_id)
+        end
+
+        def render_edit_menu(chat_id)
+          conv = Telegram::Helpers::Conversation.get(chat_id)
+          return unless conv["flow"] == "tournament_edit"
+
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+          buttons = [
+            [ { text: t.(:tournament_edit_name), callback_data: "tournament:edit:field:name" } ],
+            [ { text: t.(:tournament_edit_date), callback_data: "tournament:edit:field:start_date" } ],
+            [ { text: t.(:tournament_edit_time), callback_data: "tournament:edit:field:time" } ],
+            [ { text: t.(:cancel_btn), callback_data: "tournament:edit:cancel" } ]
+          ]
+          send_or_edit_with_buttons(chat_id, t.(:tournament_edit_prompt), buttons, message_id: conv["message_id"])
+        end
+
+        def handle_edit_field(chat_id, field, cb_id: nil, message_id: nil)
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+          conv = Telegram::Helpers::Conversation.get(chat_id)
+          return unless conv["flow"] == "tournament_edit"
+
+          Telegram::Api.answer_callback(cb_id, "") rescue nil
+          conv["step"] = field
+          conv["message_id"] ||= message_id
+          Telegram::Helpers::Conversation.set(chat_id, conv)
+
+          key = case field
+          when "name" then :create_tournament_name
+          when "start_date" then :create_tournament_date
+          else :create_tournament_time
+          end
+          buttons = [ [ { text: t.(:skip_btn), callback_data: "tournament:edit:skip" } ], [ { text: t.(:cancel_btn), callback_data: "tournament:edit:cancel" } ] ]
+          send_or_edit_with_buttons(chat_id, t.(key), buttons, message_id: conv["message_id"])
+        end
+
+        def handle_edit_skip(chat_id, cb_id: nil, message_id: nil)
+          conv = Telegram::Helpers::Conversation.get(chat_id)
+          return unless conv["flow"] == "tournament_edit"
+          Telegram::Api.answer_callback(cb_id, "") rescue nil
+          conv["step"] = "menu"
+          conv["message_id"] ||= message_id
+          Telegram::Helpers::Conversation.set(chat_id, conv)
+          render_edit_menu(chat_id)
+        end
+
+        def process_edit_text(chat_id, conv, step, text, t)
+          tournament = Tournament.find_by(id: conv["tournament_id"])
+          user = Telegram::Helpers::UserLookup.find_user(chat_id)
+          unless tournament && user && (user.admin? || user.id == tournament.user_id)
+            Telegram::Helpers::Conversation.finish(chat_id)
+            Telegram::Api.send_simple(chat_id, t.(:no_permission))
+            return
+          end
+
+          attrs = {}
+          case step
+          when "name"
+            return Telegram::Api.send_simple(chat_id, t.(:create_tournament_name_invalid)) if text.blank?
+            attrs[:name] = text
+          when "start_date"
+            date = (Date.parse(text) rescue nil)
+            return Telegram::Api.send_simple(chat_id, t.(:create_tournament_date_invalid)) unless date
+            attrs[:start_date] = date
+          when "time"
+            parsed_time = parse_time_input(text)
+            return Telegram::Api.send_simple(chat_id, t.(:create_tournament_time_invalid)) unless parsed_time
+            attrs[:time] = parsed_time.strftime("%H:%M")
+          else
+            Telegram::Api.send_simple(chat_id, t.(:please_use_buttons))
+            return
+          end
+
+          if tournament.update(attrs)
+            Telegram::Api.send_simple(chat_id, t.(:tournament_edit_saved)) rescue nil
+            conv["step"] = "menu"
+            Telegram::Helpers::Conversation.set(chat_id, conv)
+            Telegram::Handlers::TournamentsHandler.show_tournament(chat_id, tournament.id, conv["page"].to_i, message_id: conv["message_id"])
+          else
+            Telegram::Api.send_simple(chat_id, t.(:create_tournament_error, error: tournament.errors.full_messages.join(", "))) rescue nil
+          end
+        end
+
+        def cancel_edit(chat_id, cb_id: nil, message_id: nil)
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+          conv = Telegram::Helpers::Conversation.get(chat_id)
+          return unless conv["flow"] == "tournament_edit"
+
+          Telegram::Api.answer_callback(cb_id, t.(:tournament_edit_cancelled), show_alert: false) rescue nil
+          tournament_id = conv["tournament_id"]
+          page = conv["page"].to_i
+          mid = conv["message_id"] || message_id
+          Telegram::Helpers::Conversation.finish(chat_id)
+          Telegram::Handlers::TournamentsHandler.show_tournament(chat_id, tournament_id, page, message_id: mid)
+        end
+
+        def prompt_delete(chat_id, tournament_id, page, cb_id: nil, message_id: nil)
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+          user = Telegram::Helpers::UserLookup.find_user(chat_id)
+          tournament = Tournament.find_by(id: tournament_id)
+
+          unless tournament && user && (user.admin? || user.id == tournament.user_id)
+            Telegram::Api.answer_callback(cb_id, t.(:no_permission), show_alert: true) rescue nil
+            return
+          end
+
+          Telegram::Api.answer_callback(cb_id, "") rescue nil
+          buttons = [
+            [ { text: t.(:delete_tournament), callback_data: "tournament:delete:confirm:#{tournament.id}:#{page}" } ],
+            [ { text: t.(:cancel_btn), callback_data: "tournament:delete:cancel:#{tournament.id}:#{page}" } ]
+          ]
+          send_or_edit_with_buttons(chat_id, t.(:tournament_delete_confirm), buttons, message_id: message_id)
+        end
+
+        def confirm_delete(chat_id, tournament_id, page, cb_id: nil, message_id: nil)
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+          user = Telegram::Helpers::UserLookup.find_user(chat_id)
+          tournament = Tournament.find_by(id: tournament_id)
+
+          unless tournament && user && (user.admin? || user.id == tournament.user_id)
+            Telegram::Api.answer_callback(cb_id, t.(:no_permission), show_alert: true) rescue nil
+            return
+          end
+
+          ActiveRecord::Base.transaction do
+            tournament.games.update_all(tournament_id: nil)
+            TournamentMatch.where(tournament_id: tournament.id).delete_all
+            TournamentParticipant.where(tournament_id: tournament.id).delete_all
+            TournamentCourt.where(tournament_id: tournament.id).delete_all if defined?(TournamentCourt)
+            TournamentDate.where(tournament_id: tournament.id).delete_all if defined?(TournamentDate)
+            tournament.destroy!
+          end
+          Telegram::Api.answer_callback(cb_id, t.(:tournament_deleted), show_alert: false) rescue nil
+          Telegram::Handlers::TournamentsHandler.list_page(chat_id, page, message_id: message_id)
+        rescue => e
+          Rails.logger.error "[TournamentsFlow] confirm_delete error: #{e.class} #{e.message}"
+          Telegram::Api.answer_callback(cb_id, t.(:create_tournament_error, error: e.message), show_alert: true) rescue nil
+        end
+
+        def cancel_delete(chat_id, tournament_id, page, cb_id: nil, message_id: nil)
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+          Telegram::Api.answer_callback(cb_id, t.(:tournament_delete_cancelled), show_alert: false) rescue nil
+          Telegram::Handlers::TournamentsHandler.show_tournament(chat_id, tournament_id, page, message_id: message_id)
+        end
+
+        def start_round_robin_add_match(chat_id, tournament_id, page, cb_id: nil, message_id: nil)
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+          tournament = Tournament.find_by(id: tournament_id)
+          user = Telegram::Helpers::UserLookup.find_user(chat_id)
+          unless tournament && user && (user.admin? || user.id == tournament.user_id) && tournament.round_robin?
+            Telegram::Api.answer_callback(cb_id, t.(:no_permission), show_alert: true) rescue nil
+            return
+          end
+          unless tournament.started?
+            Telegram::Api.answer_callback(cb_id, t.(:tournament_results_locked), show_alert: false) rescue nil
+            return
+          end
+
+          Telegram::Api.answer_callback(cb_id, "") rescue nil
+          Telegram::Helpers::Conversation.start(chat_id, {
+            "flow" => "tournament_rr_add_match",
+            "step" => "player_a",
+            "tournament_id" => tournament.id,
+            "page" => page.to_i,
+            "message_id" => message_id,
+            "fields" => { "team_a_ids" => [], "team_b_ids" => [] }
+          })
+          render_round_robin_add_match(chat_id)
+        end
+
+        def rr_pick_a(chat_id, tournament_id, user_id, cb_id: nil, message_id: nil)
+          rr_pick(chat_id, tournament_id, user_id, step: "player_a", next_step_singles: "player_b", next_step_doubles: "player_a2", cb_id: cb_id, message_id: message_id)
+        end
+
+        def rr_pick_a2(chat_id, tournament_id, user_id, cb_id: nil, message_id: nil)
+          rr_pick(chat_id, tournament_id, user_id, step: "player_a2", next_step_singles: "player_b", next_step_doubles: "player_b", cb_id: cb_id, message_id: message_id)
+        end
+
+        def rr_pick_b(chat_id, tournament_id, user_id, cb_id: nil, message_id: nil)
+          rr_pick(chat_id, tournament_id, user_id, step: "player_b", next_step_singles: "score", next_step_doubles: "player_b2", cb_id: cb_id, message_id: message_id)
+        end
+
+        def rr_pick_b2(chat_id, tournament_id, user_id, cb_id: nil, message_id: nil)
+          rr_pick(chat_id, tournament_id, user_id, step: "player_b2", next_step_singles: "score", next_step_doubles: "score", cb_id: cb_id, message_id: message_id)
+        end
+
+        def rr_pick(chat_id, tournament_id, user_id, step:, next_step_singles:, next_step_doubles:, cb_id: nil, message_id: nil)
+          conv = Telegram::Helpers::Conversation.get(chat_id)
+          return unless conv["flow"] == "tournament_rr_add_match" && conv["tournament_id"].to_i == tournament_id
+          tournament = Tournament.find_by(id: tournament_id)
+          return unless tournament
+          Telegram::Api.answer_callback(cb_id, "") rescue nil
+
+          conv["fields"] ||= {}
+          conv["fields"]["team_a_ids"] ||= []
+          conv["fields"]["team_b_ids"] ||= []
+          used = (conv["fields"]["team_a_ids"] + conv["fields"]["team_b_ids"]).map(&:to_i)
+          return if used.include?(user_id.to_i)
+
+          if step.start_with?("player_a")
+            conv["fields"]["team_a_ids"] << user_id.to_i
+          else
+            conv["fields"]["team_b_ids"] << user_id.to_i
+          end
+
+          doubles = tournament.format == "doubles"
+          conv["step"] = doubles ? next_step_doubles : next_step_singles
+          conv["message_id"] ||= message_id
+          Telegram::Helpers::Conversation.set(chat_id, conv)
+          render_round_robin_add_match(chat_id)
+        end
+
+        def render_round_robin_add_match(chat_id)
+          conv = Telegram::Helpers::Conversation.get(chat_id)
+          return unless conv["flow"] == "tournament_rr_add_match"
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+          tournament = Tournament.find_by(id: conv["tournament_id"])
+          return unless tournament
+
+          participants = approved_participants_scope(tournament).includes(:user).to_a
+          fields = conv["fields"] || {}
+          team_a_ids = Array(fields["team_a_ids"]).map(&:to_i)
+          team_b_ids = Array(fields["team_b_ids"]).map(&:to_i)
+          used = (team_a_ids + team_b_ids).uniq
+          buttons = []
+          text = nil
+
+          case conv["step"]
+          when "player_a"
+            text = t.(:tournament_rr_pick_player_a)
+            participants.each do |p|
+              buttons << [ { text: participant_name(p), callback_data: "tournament:rr_pick_a:#{tournament.id}:#{p.user_id}" } ]
+            end
+          when "player_a2"
+            text = t.(:tournament_rr_pick_team_a)
+            participants.each do |p|
+              next if used.include?(p.user_id)
+              buttons << [ { text: participant_name(p), callback_data: "tournament:rr_pick_a2:#{tournament.id}:#{p.user_id}" } ]
+            end
+          when "player_b"
+            text = t.(:tournament_rr_pick_player_b)
+            participants.each do |p|
+              next if used.include?(p.user_id)
+              buttons << [ { text: participant_name(p), callback_data: "tournament:rr_pick_b:#{tournament.id}:#{p.user_id}" } ]
+            end
+          when "player_b2"
+            text = t.(:tournament_rr_pick_team_b)
+            participants.each do |p|
+              next if used.include?(p.user_id)
+              buttons << [ { text: participant_name(p), callback_data: "tournament:rr_pick_b2:#{tournament.id}:#{p.user_id}" } ]
+            end
+          else
+            text = t.(:tournament_rr_enter_score)
+          end
+
+          buttons << [ { text: t.(:cancel_btn), callback_data: "tournament:rr_cancel" } ]
+          send_or_edit_with_buttons(chat_id, text, buttons, message_id: conv["message_id"])
+        end
+
+        def process_round_robin_add_match_text(chat_id, conv, step, text, t)
+          return Telegram::Api.send_simple(chat_id, t.(:please_use_buttons)) unless step == "score"
+
+          parsed = Telegram::Flows::StatsScore::ScoreParser.parse(text)
+          unless parsed
+            Telegram::Api.send_simple(chat_id, t.(:tournament_rr_enter_score))
+            return
+          end
+
+          save_round_robin_match(chat_id, conv, parsed, t)
+        end
+
+        def save_round_robin_match(chat_id, conv, parsed, t)
+          tournament = Tournament.find_by(id: conv["tournament_id"])
+          actor = Telegram::Helpers::UserLookup.find_user(chat_id)
+          return unless tournament && actor
+
+          fields = conv["fields"] || {}
+          team_a_ids = Array(fields["team_a_ids"]).map(&:to_i).uniq
+          team_b_ids = Array(fields["team_b_ids"]).map(&:to_i).uniq
+          doubles = tournament.format == "doubles"
+          return if team_a_ids.empty? || team_b_ids.empty?
+          return if doubles && (team_a_ids.size != 2 || team_b_ids.size != 2)
+
+          pa = team_a_ids.first
+          pb = team_b_ids.first
+          existing = TournamentMatch.where(tournament_id: tournament.id)
+                                   .where("(player_a_id = :a AND player_b_id = :b) OR (player_a_id = :b AND player_b_id = :a)", a: pa, b: pb)
+                                   .exists?
+          if existing
+            Telegram::Api.send_simple(chat_id, t.(:processing_error))
+            return
+          end
+
+          result = case parsed[:result]
+          when :a then "player_a"
+          when :b then "player_b"
+          else "draw"
+          end
+
+          court = tournament.courts.first
+          unless court
+            Telegram::Api.send_simple(chat_id, t.(:tournament_no_court)) rescue nil
+            return
+          end
+
+          TournamentMatch.create!(
+            tournament: tournament,
+            player_a_id: pa,
+            player_b_id: pb,
+            player_a2_id: doubles ? team_a_ids.second : nil,
+            player_b2_id: doubles ? team_b_ids.second : nil,
+            score: parsed[:normalized],
+            result: result,
+            played_at: Time.current
+          )
+          game = Game.create!(
+            tournament: tournament,
+            court: court,
+            user: actor,
+            date: tournament.start_date || Date.current,
+            sport: "tennis"
+          )
+
+          mode = doubles ? "doubles" : "singles"
+          Telegram::Flows::StatsScore::MatchUpserter.call(
+            game: game,
+            actor: actor,
+            mode: mode,
+            team_a_ids: team_a_ids,
+            team_b_ids: team_b_ids,
+            result: parsed[:result],
+            played_at: Time.current,
+            score: parsed[:normalized]
+          )
+
+          Telegram::Helpers::Conversation.finish(chat_id)
+          Telegram::Api.send_simple(chat_id, t.(:tournament_rr_match_saved)) rescue nil
+          Telegram::Handlers::TournamentsHandler.show_tournament(chat_id, tournament.id, conv["page"].to_i, message_id: conv["message_id"])
+        rescue => e
+          Rails.logger.error "[TournamentsFlow] save_round_robin_match error: #{e.class} #{e.message}"
+          Telegram::Api.send_simple(chat_id, t.(:create_tournament_error, error: e.message)) rescue nil
+        end
+
+        def rr_cancel(chat_id, cb_id: nil, message_id: nil)
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+          conv = Telegram::Helpers::Conversation.get(chat_id)
+          return unless conv["flow"] == "tournament_rr_add_match"
+          Telegram::Api.answer_callback(cb_id, t.(:tournament_rr_cancelled), show_alert: false) rescue nil
+          tournament_id = conv["tournament_id"]
+          page = conv["page"].to_i
+          mid = conv["message_id"] || message_id
+          Telegram::Helpers::Conversation.finish(chat_id)
+          Telegram::Handlers::TournamentsHandler.show_tournament(chat_id, tournament_id, page, message_id: mid)
+        end
+
+        def show_round_robin_standings(chat_id, tournament_id, page, cb_id: nil, message_id: nil)
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+          tournament = Tournament.find_by(id: tournament_id)
+          unless tournament&.round_robin?
+            Telegram::Api.answer_callback(cb_id, t.(:tournament_not_found), show_alert: false) rescue nil
+            return
+          end
+
+          Telegram::Api.answer_callback(cb_id, "") rescue nil
+          standings = TournamentStandings.compute(tournament)
+          lines = [ t.(:tournament_rr_standings_title, id: tournament.id) ]
+          lines << ""
+          if standings.empty?
+            lines << t.(:tournament_rr_no_matches)
+          else
+            standings.each_with_index do |row, idx|
+              name = Telegram::Helpers::UserLookup.display_name(row[:user], fallback: "User ##{row[:user].id}")
+              lines << t.(
+                :tournament_rr_standings_row,
+                rank: idx + 1,
+                name: name,
+                wins: row[:wins],
+                losses: row[:losses],
+                sets_won: row[:sets_won],
+                sets_lost: row[:sets_lost],
+                games_won: row[:games_won],
+                games_lost: row[:games_lost]
+              )
+            end
+          end
+
+          buttons = [ [ { text: t.(:back_to_tournament), callback_data: "tournament:show:#{tournament.id}:#{page}" } ] ]
+          send_or_edit_with_buttons(chat_id, lines.join("\n"), buttons, message_id: message_id)
+        end
+
+        def participant_name(participant)
+          Telegram::Helpers::UserLookup.display_name(participant.user, fallback: participant.name.presence || "User ##{participant.user_id}")
+        end
+
+        def approved_participants_scope(tournament)
+          return TournamentParticipant.none unless tournament
+          tournament.tournament_participants.approved
         end
 
         def build_step_text(chat_id, header, prompt)
@@ -557,7 +1289,7 @@ module Telegram
           return unless new_message_id
 
           conv = Telegram::Helpers::Conversation.get(chat_id)
-          return unless %w[create_tournament tournament_add_result tournament_invite].include?(conv["flow"])
+          return unless %w[create_tournament tournament_add_result tournament_invite tournament_edit tournament_rr_add_match].include?(conv["flow"])
           conv["message_id"] = new_message_id
           Telegram::Helpers::Conversation.set(chat_id, conv)
         end
@@ -611,7 +1343,7 @@ module Telegram
           return unless conv["flow"] == "tournament_add_result" && conv["step"] == "participant"
 
           tournament = Tournament.find_by(id: conv["tournament_id"])
-          participant = tournament&.tournament_participants&.includes(:user)&.find_by(user_id: user_id)
+          participant = approved_participants_scope(tournament)&.includes(:user)&.find_by(user_id: user_id)
           unless participant&.user
             Telegram::Api.answer_callback(cb_id, t.(:user_not_found), show_alert: false) rescue nil
             return
@@ -698,7 +1430,7 @@ module Telegram
           buttons = []
           if conv["step"] == "participant"
             text = "#{text}\n\n#{locale == "ru" ? "Выберите участника:" : "Select participant:"}"
-            tournament&.tournament_participants&.includes(:user)&.each do |participant|
+            approved_participants_scope(tournament)&.includes(:user)&.each do |participant|
               next unless participant.user
               name = participant.name.presence || participant.user.name.presence || participant.user.email
               buttons << [ { text: name, callback_data: "tournament:add_result:user:#{participant.user_id}" } ]
@@ -721,7 +1453,7 @@ module Telegram
           return unless tournament && user
 
           fields = conv["fields"] || {}
-          result_user = tournament.tournament_participants.includes(:user).find_by(user_id: fields["user_id"])&.user
+          result_user = approved_participants_scope(tournament).includes(:user).find_by(user_id: fields["user_id"])&.user
           unless result_user
             Telegram::Api.send_simple(chat_id, t.(:user_not_found))
             return
@@ -739,8 +1471,8 @@ module Telegram
         end
 
         def create_tournament_result!(tournament, actor, result_user, score:, hours:)
-          court = tournament.courts.first || Court.first
-          raise "Court not found" unless court
+          court = tournament.courts.first
+          raise "Tournament has no associated court" unless court
 
           ActiveRecord::Base.transaction do
             game = Game.create!(
@@ -883,7 +1615,7 @@ module Telegram
                 user.telegram_chat_id.to_s,
                 t.(:tournament_invite_message, title: title, id: tournament.id, url: tournament_url),
                 [
-                  [ { text: join_text, callback_data: "tournament:join:#{tournament.id}:1" },
+                  [ { text: join_text, callback_data: "tournament:join_invited:#{tournament.id}:1" },
                     { text: decline_text, callback_data: "tournament:invite_decline:#{tournament.id}" } ]
                 ]
               )

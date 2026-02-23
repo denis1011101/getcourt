@@ -1,6 +1,9 @@
 class Tournament < ApplicationRecord
+  enum :tournament_type, { bracket: "bracket", round_robin: "round_robin" }
+
   belongs_to :user, optional: true
   has_many :games
+  has_many :tournament_matches, dependent: :destroy
   has_many :tournament_courts
   has_many :courts, through: :tournament_courts
 

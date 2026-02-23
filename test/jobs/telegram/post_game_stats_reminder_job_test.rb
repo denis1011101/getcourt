@@ -7,6 +7,7 @@ module Telegram
       with_stubbed_singleton_method(Telegram::Api, :send_with_buttons, ->(*) { flunk "should not send message" }) do
         PostGameStatsReminderJob.perform_now(-1)
       end
+      assert_nil Game.find_by(id: -1)
     end
 
     test "sends reminder with action buttons to game creator" do
@@ -61,6 +62,7 @@ module Telegram
       with_stubbed_singleton_method(Telegram::Api, :send_with_buttons, ->(*) { flunk "should not send message" }) do
         PostGameStatsReminderJob.perform_now(game.id)
       end
+      assert_nil game.user.reload.telegram_chat_id
     end
 
     private

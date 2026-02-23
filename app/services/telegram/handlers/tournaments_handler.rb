@@ -9,7 +9,7 @@ module Telegram
         # Formatted label for tournament list items
         def tournament_label(t, locale: Telegram::I18n::DEFAULT_LOCALE)
           name = t.name.presence || "Tournament ##{t.id}"
-          joined = t.tournament_participants.count
+          joined = approved_participants_count(t.tournament_participants)
           total = t.players_count.to_i
           players_text = total > 0 ? "#{joined}/#{total}" : "#{joined}"
           date_str = t.start_date.present? ? t.start_date.strftime("%d.%m") : nil
@@ -107,7 +107,7 @@ module Telegram
           tournament = Tournament.find_by(id: tournament_id)
           return Telegram::Api.send_simple(chat_id, t.(:tournament_not_found)) unless tournament
 
-          joined = tournament.tournament_participants.count
+          joined = approved_participants_count(tournament.tournament_participants)
           capacity = tournament.players_count.to_i > 0 ? tournament.players_count.to_i : "?"
           owner = User.find_by(id: tournament.user_id)
           owner_name = Telegram::Helpers::UserLookup.display_name(owner, fallback: "—")
@@ -141,8 +141,11 @@ module Telegram
 
           user = Telegram::Helpers::UserLookup.find_user(chat_id)
           if user
-            is_participant = tournament.tournament_participants.exists?(user_id: user.id)
-            if is_participant
+            participant = tournament.tournament_participants.find_by(user_id: user.id)
+            if participant&.pending?
+              request_text = locale.to_s == "ru" ? "Запрос отправлен" : "Request sent"
+              buttons << [ { text: request_text, callback_data: "tournament:join_pending:#{tournament.id}:#{page}" } ]
+            elsif participant
               buttons << [ { text: t.(:leave_tournament), callback_data: "tournament:leave:#{tournament.id}:#{page}" } ]
             else
               buttons << [ { text: t.(:join_tournament), callback_data: "tournament:join:#{tournament.id}:#{page}" } ]
@@ -150,9 +153,18 @@ module Telegram
 
             if tournament.user_id == user.id
               buttons << [ { text: t.(:invite_players), callback_data: "tournament:invite:#{tournament.id}:#{page}" } ]
+              buttons << [ { text: t.(:manage_players), callback_data: "tournament:manage:#{tournament.id}:#{page}" } ]
+              buttons << [ { text: t.(:edit_tournament), callback_data: "tournament:edit:#{tournament.id}:#{page}" } ]
+              buttons << [ { text: t.(:delete_tournament), callback_data: "tournament:delete:#{tournament.id}:#{page}" } ]
             end
 
-            if tournament.user_id == user.id && tournament.started?
+            if tournament.round_robin?
+              buttons << [ { text: t.(:tournament_rr_standings), callback_data: "tournament:rr_standings:#{tournament.id}:#{page}" } ]
+            end
+
+            if tournament.user_id == user.id && tournament.started? && tournament.round_robin?
+              buttons << [ { text: t.(:tournament_rr_add_match), callback_data: "tournament:rr_add_match:#{tournament.id}:#{page}" } ]
+            elsif tournament.user_id == user.id && tournament.started?
               buttons << [ { text: t.(:add_tournament_result), callback_data: "tournament:add_result:#{tournament.id}:#{page}" } ]
             end
           end
@@ -161,6 +173,11 @@ module Telegram
           buttons << [ { text: t.(:back_to_tournaments), callback_data: "menu:tournaments:page:#{page}" } ]
 
           send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
+        end
+
+        def approved_participants_count(scope)
+          return scope.approved.count unless scope.loaded?
+          scope.count(&:approved?)
         end
       end
     end

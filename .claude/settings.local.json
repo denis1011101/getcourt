@@ -3,7 +3,10 @@
     "allow": [
       "Bash(bin/rubocop:*)",
       "Bash(bin/brakeman:*)",
-      "Bash(bin/rails test:*)"
+      "Bash(bin/rails test:*)",
+      "Bash(bin/importmap audit:*)",
+      "Bash(PARALLEL_WORKERS=0 bin/rails db:test:prepare:*)",
+      "Bash(PARALLEL_WORKERS=0 bin/rails test:*)"
     ]
   }
 }

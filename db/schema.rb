@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_23_120001) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_23_133000) do
   create_table "cities", force: :cascade do |t|
     t.string "asciiname"
     t.string "country_code"
@@ -216,12 +216,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_23_120001) do
     t.index ["tournament_id"], name: "index_tournament_dates_on_tournament_id"
   end
 
+  create_table "tournament_matches", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "played_at"
+    t.integer "player_a2_id"
+    t.integer "player_a_id", null: false
+    t.integer "player_b2_id"
+    t.integer "player_b_id", null: false
+    t.string "result"
+    t.string "score"
+    t.integer "tournament_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["player_a2_id"], name: "index_tournament_matches_on_player_a2_id"
+    t.index ["player_a_id"], name: "index_tournament_matches_on_player_a_id"
+    t.index ["player_b2_id"], name: "index_tournament_matches_on_player_b2_id"
+    t.index ["player_b_id"], name: "index_tournament_matches_on_player_b_id"
+    t.index ["tournament_id", "player_a_id", "player_b_id"], name: "index_tournament_matches_on_players", unique: true
+    t.index ["tournament_id"], name: "index_tournament_matches_on_tournament_id"
+  end
+
   create_table "tournament_participants", force: :cascade do |t|
+    t.datetime "approved_at"
     t.datetime "created_at", null: false
     t.string "name"
+    t.string "status", default: "approved", null: false
     t.integer "tournament_id", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
+    t.index ["status"], name: "index_tournament_participants_on_status"
+    t.index ["tournament_id", "user_id"], name: "index_tournament_participants_on_tournament_and_user", unique: true
     t.index ["tournament_id"], name: "index_tournament_participants_on_tournament_id"
     t.index ["user_id"], name: "index_tournament_participants_on_user_id"
   end
@@ -237,8 +260,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_23_120001) do
     t.integer "selected_variant"
     t.date "start_date"
     t.time "time"
+    t.string "tournament_type", default: "bracket", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
+    t.index ["tournament_type"], name: "index_tournaments_on_tournament_type"
     t.index ["user_id"], name: "index_tournaments_on_user_id"
   end
 
@@ -296,6 +321,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_23_120001) do
   add_foreign_key "tournament_courts", "courts"
   add_foreign_key "tournament_courts", "tournaments"
   add_foreign_key "tournament_dates", "tournaments"
+  add_foreign_key "tournament_matches", "tournaments"
+  add_foreign_key "tournament_matches", "users", column: "player_a2_id"
+  add_foreign_key "tournament_matches", "users", column: "player_a_id"
+  add_foreign_key "tournament_matches", "users", column: "player_b2_id"
+  add_foreign_key "tournament_matches", "users", column: "player_b_id"
   add_foreign_key "tournament_participants", "tournaments"
   add_foreign_key "tournament_participants", "users"
   add_foreign_key "tournaments", "users"
