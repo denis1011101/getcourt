@@ -1,11 +1,97 @@
-<div class="border p-4 rounded bg-white">
-  <h4 class="font-medium text-lg">
-    <%= link_to (tournament.name.presence || "Tournament"), tournament_path(tournament) %>
-  </h4>
-  <div class="text-sm text-gray-600 mt-1">
-    Players: <%= tournament.players_count || "—" %> • Joined: <%= tournament.tournament_participants.count %>
-  </div>
-  <div class="mt-3">
-    <%= link_to "Options", options_tournaments_path(tournament_id: tournament.id), class: "text-sm text-indigo-600 hover:underline" %>
+<div class="group relative rounded-xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
+  <%= link_to "", tournament_path(tournament), class: "absolute inset-0 z-0" %>
+
+  <!-- Color accent bar -->
+  <% format_colors = { "singles" => "bg-green-500", "doubles" => "bg-blue-500" } %>
+  <div class="h-1 <%= format_colors[tournament.format.to_s.downcase] || 'bg-purple-500' %>"></div>
+
+  <div class="p-4">
+    <!-- Date -->
+    <div class="flex items-center justify-between mb-3">
+      <div class="flex items-center gap-2">
+        <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-purple-50 text-purple-600">
+          <% if tournament.start_date.present? %>
+            <div class="text-center leading-none">
+              <div class="text-[10px] font-medium uppercase"><%= tournament.start_date.strftime("%b") %></div>
+              <div class="text-base font-bold"><%= tournament.start_date.strftime("%d") %></div>
+            </div>
+          <% else %>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M18.75 4.236c.982.143 1.954.317 2.916.52A6.003 6.003 0 0016.27 9.728M18.75 4.236V4.5c0 2.108-.966 3.99-2.48 5.228m0 0a6.003 6.003 0 01-5.54 0"/>
+            </svg>
+          <% end %>
+        </div>
+        <div>
+          <% if tournament.start_date.present? %>
+            <p class="text-sm font-medium text-gray-900"><%= tournament.start_date.strftime("%A") %></p>
+            <% if tournament.end_date.present? %>
+              <p class="text-xs text-gray-500">until <%= tournament.end_date.strftime("%b %d") %></p>
+            <% end %>
+          <% else %>
+            <p class="text-xs text-gray-500">Date TBD</p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tournament name -->
+    <h3 class="text-base font-semibold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors">
+      <%= tournament.name.presence || "Tournament" %>
+    </h3>
+
+    <!-- Badges row -->
+    <div class="flex flex-wrap gap-1.5 mb-3">
+      <% if tournament.format.present? %>
+        <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700">
+          <%= tournament.format.to_s.titleize %>
+        </span>
+      <% end %>
+
+      <% if tournament.respond_to?(:games_count) && tournament.games_count.present? %>
+        <span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700">
+          <%= tournament.games_count %> games
+        </span>
+      <% end %>
+
+      <% if tournament.games.any? %>
+        <span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+          <%= tournament.games.count %> played
+        </span>
+      <% end %>
+    </div>
+
+    <!-- Players bar -->
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="flex -space-x-1">
+          <% joined = tournament.tournament_participants.count %>
+          <% [joined, 4].min.times do %>
+            <div class="w-6 h-6 rounded-full bg-purple-100 border-2 border-white flex items-center justify-center">
+              <svg class="w-3 h-3 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/>
+              </svg>
+            </div>
+          <% end %>
+          <% total = tournament.players_count.to_i %>
+          <% spots_left = total > 0 ? [total - joined, 0].max : 0 %>
+          <% if spots_left > 0 %>
+            <% [spots_left, 3].min.times do %>
+              <div class="w-6 h-6 rounded-full bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center">
+                <svg class="w-3 h-3 text-gray-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+                </svg>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+        <span class="text-xs text-gray-500"><%= joined %>/<%= total > 0 ? total : "?" %></span>
+      </div>
+
+      <% if total > 0 && spots_left > 0 %>
+        <span class="text-xs font-medium text-green-600"><%= spots_left %> spot<%= spots_left == 1 ? '' : 's' %> left</span>
+      <% elsif total > 0 %>
+        <span class="text-xs font-medium text-red-500">Full</span>
+      <% end %>
+    </div>
   </div>
 </div>

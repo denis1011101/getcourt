@@ -19,6 +19,13 @@ class GamesController < ApplicationController
       scoped_games = scoped_games.joins(:court).where(courts: { city_name: params[:city] })
     end
 
+    if params[:my_games].present? && current_user
+      scoped_games = scoped_games.where(
+        "games.user_id = :uid OR games.id IN (SELECT game_id FROM participations WHERE user_id = :uid)",
+        uid: current_user.id
+      )
+    end
+
     games = scoped_games.to_a
 
     if params[:with_spots].present?

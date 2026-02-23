@@ -1,96 +1,157 @@
 module Telegram
   module Handlers
     class TournamentsHandler
+      PER_PAGE = 5
+
       class << self
-        # Entry for callback_query handling related to courts
-        def handle_callback(callback)
-          data = (callback["data"] || "").to_s
-          cb_id = callback["id"]
-          from = callback["from"] || {}
-          chat_id = (callback.dig("message", "chat", "id") || from["id"]).to_s
-          poller = Telegram::Poller.new
+        include Telegram::Handlers::ReplyHelpers
 
-          case data
-          when /\Amenu:courts(?:\:page:(\d+))?\z/
-            page = ($1 || 1).to_i
-            Telegram::Handlers::CourtsHandler.list_page(chat_id, page)
-            poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Courts", show_alert: false }) rescue nil
-            nil
-          when /\Acourt:show:(\d+)(?::(\d+))?\z/
-            court_id = $1.to_i
-            page = ($2 || 1).to_i
-            Telegram::Handlers::CourtsHandler.show_court(chat_id, court_id, page, message_id: msg_id)
-            poller.send_api("answerCallbackQuery", { callback_query_id: cb_id }) rescue nil
-            nil
-          when /\Acreate_game_from_court:(\d+)\z/
-            start_create_game_from_court(chat_id, $1.to_i, cb_id: cb_id)
-            nil
-          when /\Acourt:edit:(\d+)\z/
-            start_edit_court(chat_id, $1.to_i, cb_id: cb_id)
-            nil
-          when /\Acourt:create\z/
-            start_create_court(chat_id, cb_id: cb_id)
-            nil
-          else
-            poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Unknown courts action", show_alert: false }) rescue nil
-            nil
-          end
-        rescue => e
-          Rails.logger.error "[Telegram::Flows::CourtsFlow] callback error: #{e.class} #{e.message}"
+        # Formatted label for tournament list items
+        def tournament_label(t, locale: Telegram::I18n::DEFAULT_LOCALE)
+          name = t.name.presence || "Tournament ##{t.id}"
+          joined = t.tournament_participants.count
+          total = t.players_count.to_i
+          players_text = total > 0 ? "#{joined}/#{total}" : "#{joined}"
+          date_str = t.start_date.present? ? t.start_date.strftime("%d.%m") : nil
+
+          parts = [name]
+          parts << date_str if date_str
+          parts << players_text
+          parts.join(" — ")
         end
 
-        # Initiate create-game flow prefilled with court_id via ForceReply
-        def start_create_game_from_court(chat_id, court_id, cb_id: nil)
-          poller = Telegram::Poller.new
-          user = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
-          if user
-            poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Create game — reply with details", show_alert: false }) rescue nil
-            poller.send_api("sendMessage", {
-              chat_id: chat_id,
-              text: "GAME_PROMPT_FROM_COURT #{court_id}\nReply with: date(YYYY-MM-DD) time(HH:MM) players_count sport\nExample:\n2025-12-10 19:00 4 tennis",
-              reply_markup: { force_reply: true, selective: true }
-            })
-          else
-            poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "No linked account. Send /start first.", show_alert: false }) rescue nil
-          end
-        end
+        # Paginated tournament list
+        def list_page(chat_id, page = 1, message_id: nil)
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
-        # Initiate edit-court flow (permission check)
-        def start_edit_court(chat_id, court_id, cb_id: nil)
-          poller = Telegram::Poller.new
-          court = Court.find_by(id: court_id)
-          unless court
-            poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Court not found", show_alert: false }) rescue nil
-            return
-          end
-          user = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
-          unless user && (user.admin? || user.id == court.user_id)
-            poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "No permission to edit", show_alert: true }) rescue nil
+          page = [page.to_i, 1].max
+
+          tournaments = Tournament.includes(:tournament_participants).order(created_at: :desc).to_a
+
+          total = tournaments.size
+          pages = [(total.to_f / PER_PAGE).ceil, 1].max
+          offset = (page - 1) * PER_PAGE
+          slice = tournaments.slice(offset, PER_PAGE) || []
+
+          header = t.(:tournaments_page, page: page, pages: pages)
+
+          if slice.empty?
+            send_or_edit_text(chat_id, "#{header}\n\n#{t.(:no_tournaments_on_page)}", message_id: message_id)
             return
           end
 
-          poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Edit court — reply with updated info", show_alert: false }) rescue nil
-          poller.send_api("sendMessage", {
-            chat_id: chat_id,
-            text: "COURT_EDIT_PROMPT #{court_id}\nReply with: Name; lat,lon; contact_type:contact_value",
-            reply_markup: { force_reply: true, selective: true }
-          })
+          buttons = slice.map do |tour|
+            [{ text: tournament_label(tour, locale: locale), callback_data: "tournament:show:#{tour.id}:#{page}" }]
+          end
+
+          nav = []
+          nav << [{ text: t.(:prev_page), callback_data: "menu:tournaments:page:#{page - 1}" }] if page > 1
+          nav << [{ text: t.(:next_page), callback_data: "menu:tournaments:page:#{page + 1}" }] if page < pages
+          buttons.concat(nav) unless nav.empty?
+
+          buttons << [{ text: t.(:main_menu_btn), callback_data: "menu:main" }]
+
+          send_or_edit_with_buttons(chat_id, header, buttons, message_id: message_id)
         end
 
-        # Start create court flow (from menu)
-        def start_create_court(chat_id, cb_id: nil)
-          poller = Telegram::Poller.new
-          user = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
-          if user
-            poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Create court — reply with details", show_alert: false }) rescue nil
-            poller.send_api("sendMessage", {
-              chat_id: chat_id,
-              text: "COURT_PROMPT\nReply with court info in one line or multiple lines:\nName; lat,lon; contact_type:contact_value\nExample:\nCentral Court; 55.7558,37.6173; telegram:ivan123",
-              reply_markup: { force_reply: true, selective: true }
-            })
-          else
-            poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "No linked account. Send /start first.", show_alert: false }) rescue nil
+        # My tournaments (filtered by user)
+        def my_tournaments_page(chat_id, page = 1, message_id: nil)
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t_fn = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+
+          user = Telegram::Helpers::UserLookup.find_user(chat_id)
+          unless user
+            send_or_edit_text(chat_id, t_fn.(:no_linked_account), message_id: message_id)
+            return
           end
+
+          page = [page.to_i, 1].max
+
+          tournaments = Tournament.includes(:tournament_participants)
+                                  .where("tournaments.user_id = :uid OR tournaments.id IN (SELECT tournament_id FROM tournament_participants WHERE user_id = :uid)", uid: user.id)
+                                  .order(created_at: :desc).to_a
+
+          total = tournaments.size
+          pages = [(total.to_f / PER_PAGE).ceil, 1].max
+          offset = (page - 1) * PER_PAGE
+          slice = tournaments.slice(offset, PER_PAGE) || []
+
+          header = t_fn.(:my_tournaments_page, page: page, pages: pages)
+
+          if slice.empty?
+            buttons = [[{ text: t_fn.(:main_menu_btn), callback_data: "menu:main" }]]
+            send_or_edit_with_buttons(chat_id, "#{header}\n\n#{t_fn.(:no_my_tournaments)}", buttons, message_id: message_id)
+            return
+          end
+
+          buttons = slice.map do |tour|
+            [{ text: tournament_label(tour, locale: locale), callback_data: "tournament:show:#{tour.id}:#{page}" }]
+          end
+
+          nav = []
+          nav << [{ text: t_fn.(:prev_page), callback_data: "menu:my_tournaments:page:#{page - 1}" }] if page > 1
+          nav << [{ text: t_fn.(:next_page), callback_data: "menu:my_tournaments:page:#{page + 1}" }] if page < pages
+          buttons.concat(nav) unless nav.empty?
+
+          buttons << [{ text: t_fn.(:main_menu_btn), callback_data: "menu:main" }]
+
+          send_or_edit_with_buttons(chat_id, header, buttons, message_id: message_id)
+        end
+
+        # Show tournament card with action buttons
+        def show_tournament(chat_id, tournament_id, page = 1, message_id: nil)
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+
+          tournament = Tournament.find_by(id: tournament_id)
+          return Telegram::Api.send_simple(chat_id, t.(:tournament_not_found)) unless tournament
+
+          joined = tournament.tournament_participants.count
+          capacity = tournament.players_count.to_i > 0 ? tournament.players_count.to_i : "?"
+          owner = User.find_by(id: tournament.user_id)
+          owner_name = Telegram::Helpers::UserLookup.display_name(owner, fallback: "—")
+
+          host = ENV.fetch("APP_HOST", "https://getcourt.co")
+          tournament_url = "#{host}/tournaments/#{tournament.id}"
+
+          lines = []
+          name = tournament.name.presence || "Tournament"
+          lines << "*#{name} \\##{tournament.id}*"
+          lines << t.(:tournament_format_label, format: tournament.format&.humanize || "—") if tournament.format.present?
+
+          if tournament.start_date.present?
+            dates = tournament.start_date.strftime("%d.%m.%Y")
+            dates += " — #{tournament.end_date.strftime("%d.%m.%Y")}" if tournament.end_date.present?
+            lines << t.(:tournament_dates_label, dates: dates)
+          end
+
+          lines << t.(:tournament_players, count: joined, capacity: capacity)
+
+          if tournament.games.count > 0
+            lines << t.(:tournament_games_label, count: tournament.games.count)
+          end
+
+          lines << t.(:tournament_owner, name: owner_name)
+
+          text = lines.compact.join("\n")
+
+          buttons = []
+
+          user = Telegram::Helpers::UserLookup.find_user(chat_id)
+          if user
+            is_participant = tournament.tournament_participants.exists?(user_id: user.id)
+            if is_participant
+              buttons << [{ text: t.(:leave_tournament), callback_data: "tournament:leave:#{tournament.id}:#{page}" }]
+            elsif tournament.user_id != user.id
+              buttons << [{ text: t.(:join_tournament), callback_data: "tournament:join:#{tournament.id}:#{page}" }]
+            end
+          end
+
+          buttons << [{ text: t.(:open_in_browser), url: tournament_url }] unless host.to_s.include?("localhost")
+          buttons << [{ text: t.(:back_to_tournaments), callback_data: "menu:tournaments:page:#{page}" }]
+
+          send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
         end
       end
     end

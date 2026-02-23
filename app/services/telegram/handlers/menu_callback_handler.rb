@@ -39,6 +39,18 @@ module Telegram
           Telegram::Handlers::TennisLifeMenuHandler.show(cb.chat_id, message_id: cb.message_id) rescue nil
           true
 
+        when /\Amenu:my_games(?::page:(\d+))?\z/
+          page = ($1 || 1).to_i
+          Telegram::Api.answer_callback(cb.cb_id, "") rescue nil
+          Telegram::Handlers::GamesHandler.my_games_page(cb.chat_id, page, message_id: cb.message_id) rescue nil
+          true
+
+        when /\Amenu:my_tournaments(?::page:(\d+))?\z/
+          page = ($1 || 1).to_i
+          Telegram::Api.answer_callback(cb.cb_id, "") rescue nil
+          Telegram::Handlers::TournamentsHandler.my_tournaments_page(cb.chat_id, page, message_id: cb.message_id) rescue nil
+          true
+
         else
           false
         end

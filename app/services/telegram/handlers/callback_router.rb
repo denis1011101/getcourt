@@ -16,6 +16,11 @@ module Telegram
           return true
         end
 
+        if data.match?(/\A(menu:tournaments|menu:my_tournaments|tournament:)/)
+          Telegram::Handlers::TournamentsCallbackHandler.process(callback_query)
+          return true
+        end
+
         # Coach card
         if data.match?(/\Acoach:show:/)
           cb = Telegram::Helpers::CallbackData.parse(callback_query)

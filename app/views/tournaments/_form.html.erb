@@ -12,6 +12,20 @@
       </div>
 
       <div>
+        <%= f.label :games_count, "Number of games", class: "block text-sm font-medium text-gray-700" %>
+        <div class="mt-1 flex items-center gap-4">
+          <%= f.number_field :games_count, min: 1, class: "block w-32 rounded-md border-gray-300 shadow-sm", id: "tournament_games_count_field", disabled: tournament.games_count.nil? && tournament.persisted? %>
+          <label class="inline-flex items-center text-sm text-gray-600">
+            <%= check_box_tag "games_count_unknown", "1", tournament.games_count.nil?,
+                  class: "form-checkbox h-4 w-4 text-indigo-600",
+                  onchange: "var field = document.getElementById('tournament_games_count_field'); field.disabled = this.checked; if(this.checked) field.value = '';" %>
+            <span class="ml-2">Unknown (will be added during tournament)</span>
+          </label>
+        </div>
+        <p class="mt-1 text-xs text-gray-500">If unknown, games can be created and added as the tournament progresses.</p>
+      </div>
+
+      <div>
         <span class="block text-sm font-medium text-gray-700">Format</span>
         <div class="mt-2 flex items-center gap-6">
           <label class="inline-flex items-center">

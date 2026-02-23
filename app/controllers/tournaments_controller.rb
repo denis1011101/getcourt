@@ -5,7 +5,14 @@ class TournamentsController < ApplicationController
   before_action :authorize_organizer!, only: %i[select_bracket reset_bracket]
 
   def index
-    @tournaments = Tournament.order(created_at: :desc)
+    @tournaments = Tournament.includes(:tournament_participants).order(created_at: :desc)
+
+    if params[:my_tournaments].present? && current_user
+      @tournaments = @tournaments.where(
+        "tournaments.user_id = :uid OR tournaments.id IN (SELECT tournament_id FROM tournament_participants WHERE user_id = :uid)",
+        uid: current_user.id
+      )
+    end
   end
 
   def new
@@ -98,12 +105,12 @@ class TournamentsController < ApplicationController
   end
 
   def tournament_params
-    params.require(:tournament).permit(:name, :players_count, :format, :start_date, :end_date, court_ids: [], dates: [])
+    params.require(:tournament).permit(:name, :players_count, :games_count, :format, :start_date, :end_date, court_ids: [], dates: [])
   end
 
   def tournament_params_from_params
     return {} unless params[:tournament].present?
-    params.require(:tournament).permit(:name, :players_count, :format, :start_date, :end_date, court_ids: [], dates: [])
+    params.require(:tournament).permit(:name, :players_count, :games_count, :format, :start_date, :end_date, court_ids: [], dates: [])
   end
 
   # Simple fallback bracket generator — returns an array of variants.
