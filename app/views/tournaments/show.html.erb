@@ -9,7 +9,7 @@
   <div class="flex items-center justify-between mb-6">
     <div>
       <h1 class="text-2xl font-semibold"><%= @tournament.name.presence || "Tournament" %></h1>
-      <p class="text-gray-600">Tournament details and games.</p>
+      <p class="text-gray-600">Tournament details and results.</p>
     </div>
     <% if user_signed_in? && @tournament.user_id == current_user.id %>
       <%= link_to options_tournaments_path(tournament_id: @tournament.id), class: "inline-flex items-center gap-1.5 rounded-full bg-purple-600 px-5 py-2 text-sm font-medium text-white hover:bg-purple-700 transition" do %>
@@ -34,8 +34,13 @@
 
       <% if @tournament.start_date.present? %>
         <div>
-          <p class="text-sm text-gray-500">Start date</p>
-          <p class="text-lg font-medium text-gray-900"><%= @tournament.start_date.strftime("%B %d, %Y") %></p>
+          <p class="text-sm text-gray-500">Start</p>
+          <p class="text-lg font-medium text-gray-900">
+            <%= @tournament.start_date.strftime("%B %d, %Y") %>
+            <% if @tournament.time.present? %>
+              <span class="text-base text-gray-500"><%= @tournament.time.strftime("%H:%M") %></span>
+            <% end %>
+          </p>
         </div>
       <% end %>
 
@@ -96,37 +101,78 @@
     </div>
   </div>
 
-  <!-- Tournament Games -->
+  <!-- Tournament Game Results -->
   <div class="mt-6">
     <div class="flex items-center justify-between mb-4">
-      <h2 class="text-lg font-semibold text-gray-900">Games</h2>
-      <% if user_signed_in? && @tournament.user_id == current_user.id %>
-        <%= link_to new_game_path(tournament_id: @tournament.id), class: "inline-flex items-center gap-1.5 rounded-full bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition" do %>
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
-          </svg>
-          Add game
-        <% end %>
-      <% end %>
+      <h2 class="text-lg font-semibold text-gray-900">Game Results</h2>
     </div>
 
-    <% games = @tournament.games.includes(:court, :participations).order(:date, :time) %>
+    <% games = @tournament.games.includes(:court).order(:created_at).to_a %>
+    <% game_ids = games.map(&:id) %>
+    <% matches_by_game_id = game_ids.empty? ? {} : Match.where(game_id: game_ids).index_by(&:game_id) %>
+    <% stat_entries_by_game_id = game_ids.empty? ? {} : PlayerStatisticEntry.where(game_id: game_ids).index_by(&:game_id) %>
     <% if games.any? %>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        <% games.each do |game| %>
-          <div>
-            <%= render partial: "games/card", locals: { game: game } %>
-          </div>
-        <% end %>
+      <div class="bg-white rounded-lg border shadow-sm overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Score</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hours</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Added</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <% games.each_with_index do |game, idx| %>
+              <% match = matches_by_game_id[game.id] %>
+              <% stat_entry = stat_entries_by_game_id[game.id] %>
+              <% hours_key = @tournament.format == "doubles" ? "doubles_hours" : "singles_hours" %>
+              <% hours_val = stat_entry&.data&.dig(hours_key) %>
+              <tr>
+                <td class="px-4 py-3 text-sm text-gray-900"><%= idx + 1 %></td>
+                <td class="px-4 py-3 text-sm font-medium text-gray-900"><%= match&.score.presence || "—" %></td>
+                <td class="px-4 py-3 text-sm text-gray-700"><%= hours_val ? "#{hours_val}h" : "—" %></td>
+                <td class="px-4 py-3 text-sm text-gray-500"><%= game.created_at.strftime("%d.%m %H:%M") %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
       </div>
     <% else %>
       <div class="rounded-lg border border-dashed p-8 text-center text-gray-500">
-        No games in this tournament yet.
-        <% if user_signed_in? && @tournament.user_id == current_user.id %>
-          <div class="mt-2">
-            <%= link_to "Add a game", new_game_path(tournament_id: @tournament.id), class: "text-indigo-600 hover:underline" %>
-            or
-            <%= link_to "set up bracket", options_tournaments_path(tournament_id: @tournament.id), class: "text-indigo-600 hover:underline" %>
+        No game results yet.
+      </div>
+    <% end %>
+
+    <!-- Add game result form -->
+    <% if user_signed_in? && @tournament.user_id == current_user.id %>
+      <div class="mt-4">
+        <% if @tournament.started? %>
+          <div class="bg-white rounded-lg border p-4 shadow-sm">
+            <h3 class="text-sm font-semibold text-gray-700 mb-3">Add game result</h3>
+            <%= form_tag add_game_result_tournament_path(@tournament), method: :post, class: "flex flex-wrap items-end gap-3" do %>
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Participant</label>
+                <% participant_options = @tournament.tournament_participants.includes(:user).map { |tp| [tp.name.presence || tp.user&.name.presence || tp.user&.email || "Player", tp.user_id] } %>
+                <%= select_tag :user_id, options_for_select(participant_options), include_blank: "Select", class: "block w-48 rounded-md border-gray-300 shadow-sm text-sm" %>
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Score</label>
+                <%= text_field_tag :score, nil, placeholder: "6-4 6-3", class: "block w-40 rounded-md border-gray-300 shadow-sm text-sm" %>
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Hours</label>
+                <%= number_field_tag :hours, nil, step: 0.5, min: 0, placeholder: "1.5", class: "block w-24 rounded-md border-gray-300 shadow-sm text-sm" %>
+              </div>
+              <%= submit_tag "Add result", class: "inline-flex items-center rounded-full bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition cursor-pointer" %>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+            Statistics will be available after the tournament starts
+            <% if @tournament.start_date.present? %>
+              (<%= @tournament.start_date.strftime("%B %d, %Y") %><% if @tournament.time.present? %> at <%= @tournament.time.strftime("%H:%M") %><% end %>).
+            <% end %>
           </div>
         <% end %>
       </div>

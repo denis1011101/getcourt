@@ -1,8 +1,8 @@
 class TournamentsController < ApplicationController
   # redirect to login when non-authenticated users call mutating actions
-  before_action :authenticate_user!, only: %i[new create join leave select_bracket reset_bracket]
-  before_action :set_tournament, only: %i[options show join leave select_bracket reset_bracket]
-  before_action :authorize_organizer!, only: %i[select_bracket reset_bracket]
+  before_action :authenticate_user!, only: %i[new create join leave select_bracket reset_bracket add_game_result]
+  before_action :set_tournament, only: %i[options show join leave select_bracket reset_bracket add_game_result]
+  before_action :authorize_organizer!, only: %i[select_bracket reset_bracket add_game_result]
 
   def index
     @tournaments = Tournament.includes(:tournament_participants).order(created_at: :desc)
@@ -81,6 +81,77 @@ class TournamentsController < ApplicationController
     redirect_to tournament_path(@tournament)
   end
 
+  def add_game_result
+    unless @tournament.started?
+      redirect_back fallback_location: tournament_path(@tournament), alert: "Statistics available after tournament starts."
+      return
+    end
+
+    score = params[:score].to_s.strip.presence
+    hours_raw = params[:hours].to_s.strip
+    hours_value = nil
+    if hours_raw.present?
+      begin
+        hours_value = Float(hours_raw)
+        raise ArgumentError if hours_value.negative?
+      rescue ArgumentError, TypeError
+        redirect_back fallback_location: tournament_path(@tournament), alert: "Enter valid hours (0 or greater)."
+        return
+      end
+    end
+
+    if score.blank? && hours_value.nil?
+      redirect_back fallback_location: tournament_path(@tournament), alert: "Enter score or hours."
+      return
+    end
+    result_user = resolve_result_user
+    unless result_user
+      redirect_back fallback_location: tournament_path(@tournament), alert: "Select a tournament participant."
+      return
+    end
+
+    court = @tournament.courts.first || Court.first
+    unless court
+      redirect_back fallback_location: tournament_path(@tournament), alert: "Court not found."
+      return
+    end
+
+    ActiveRecord::Base.transaction do
+      game = Game.create!(
+        tournament: @tournament,
+        court: court,
+        user: current_user,
+        date: @tournament.start_date,
+        sport: "tennis"
+      )
+
+      if score.present?
+        Match.create!(
+          game: game,
+          user: result_user,
+          score: score,
+          mode: @tournament.format.presence || "singles",
+          outcome: "draw",
+          played_at: Time.current
+        )
+      end
+
+      if !hours_value.nil?
+        hours_key = @tournament.format == "doubles" ? "doubles_hours" : "singles_hours"
+        PlayerStatisticEntry.create!(
+          user: result_user,
+          game: game,
+          actor: current_user,
+          data: { hours_key => hours_value },
+          source: "web",
+          recorded_at: Time.current
+        )
+      end
+    end
+
+    redirect_to tournament_path(@tournament), notice: "Game result added."
+  end
+
   # destroy games created for bracket (reset)
   def reset_bracket
     @tournament = Tournament.find(params[:id])
@@ -104,13 +175,21 @@ class TournamentsController < ApplicationController
     @tournament = Tournament.find_by(id: params[:tournament_id] || params[:id])
   end
 
+  def resolve_result_user
+    user_id = params[:user_id].to_i
+    return nil if user_id <= 0
+
+    participant = @tournament.tournament_participants.find_by(user_id: user_id)
+    participant&.user
+  end
+
   def tournament_params
-    params.require(:tournament).permit(:name, :players_count, :games_count, :format, :start_date, :end_date, court_ids: [], dates: [])
+    params.require(:tournament).permit(:name, :players_count, :games_count, :format, :start_date, :end_date, :time, court_ids: [], dates: [])
   end
 
   def tournament_params_from_params
     return {} unless params[:tournament].present?
-    params.require(:tournament).permit(:name, :players_count, :games_count, :format, :start_date, :end_date, court_ids: [], dates: [])
+    params.require(:tournament).permit(:name, :players_count, :games_count, :format, :start_date, :end_date, :time, court_ids: [], dates: [])
   end
 
   # Simple fallback bracket generator — returns an array of variants.

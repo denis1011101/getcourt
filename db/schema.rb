@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_23_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_23_120001) do
   create_table "cities", force: :cascade do |t|
     t.string "asciiname"
     t.string "country_code"
@@ -236,6 +236,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_23_120000) do
     t.integer "players_count"
     t.integer "selected_variant"
     t.date "start_date"
+    t.time "time"
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
     t.index ["user_id"], name: "index_tournaments_on_user_id"

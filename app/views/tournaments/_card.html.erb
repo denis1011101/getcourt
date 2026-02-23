@@ -23,7 +23,12 @@
         </div>
         <div>
           <% if tournament.start_date.present? %>
-            <p class="text-sm font-medium text-gray-900"><%= tournament.start_date.strftime("%A") %></p>
+            <p class="text-sm font-medium text-gray-900">
+              <%= tournament.start_date.strftime("%A") %>
+              <% if tournament.time.present? %>
+                <span class="text-xs text-gray-500"><%= tournament.time.strftime("%H:%M") %></span>
+              <% end %>
+            </p>
             <% if tournament.end_date.present? %>
               <p class="text-xs text-gray-500">until <%= tournament.end_date.strftime("%b %d") %></p>
             <% end %>

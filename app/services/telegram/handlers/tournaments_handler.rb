@@ -123,6 +123,7 @@ module Telegram
           if tournament.start_date.present?
             dates = tournament.start_date.strftime("%d.%m.%Y")
             dates += " — #{tournament.end_date.strftime("%d.%m.%Y")}" if tournament.end_date.present?
+            dates += " #{tournament.time.strftime("%H:%M")}" if tournament.time.present?
             lines << t.(:tournament_dates_label, dates: dates)
           end
 
@@ -143,8 +144,16 @@ module Telegram
             is_participant = tournament.tournament_participants.exists?(user_id: user.id)
             if is_participant
               buttons << [ { text: t.(:leave_tournament), callback_data: "tournament:leave:#{tournament.id}:#{page}" } ]
-            elsif tournament.user_id != user.id
+            else
               buttons << [ { text: t.(:join_tournament), callback_data: "tournament:join:#{tournament.id}:#{page}" } ]
+            end
+
+            if tournament.user_id == user.id
+              buttons << [ { text: t.(:invite_players), callback_data: "tournament:invite:#{tournament.id}:#{page}" } ]
+            end
+
+            if tournament.user_id == user.id && tournament.started?
+              buttons << [ { text: t.(:add_tournament_result), callback_data: "tournament:add_result:#{tournament.id}:#{page}" } ]
             end
           end
 
