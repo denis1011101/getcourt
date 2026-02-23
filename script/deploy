@@ -37,8 +37,8 @@ LOCK_FILE="/tmp/getcourt-deploy.lock"
 CI_FAIL_FILE="/tmp/getcourt-last-ci-fail"
 RAILS_ENV="${RAILS_ENV:-production}"
 HEALTHCHECK_URL="${HEALTHCHECK_URL:-https://getcourt.co/up}"
-TELEGRAM_BOT_TOKEN="${TELEGRAM_BOT_TOKEN:-}"
-TELEGRAM_CHAT_ID="${TELEGRAM_CHAT_ID:-}"
+TELEGRAM_BOT_TOKEN_DEPLOY="${TELEGRAM_BOT_DEPLOY_TOKEN:-}"
+TELEGRAM_CHAT_ID_DEPLOY="${TELEGRAM_CHAT_ID_DEPLOY:-}"
 # -----------------------------------------------------------------------------
 
 FORCE=false
@@ -53,12 +53,12 @@ log() {
 # Telegram is optional. If token/chat_id are not set, notifications are skipped.
 tg_notify() {
   local text="$1"
-  if [[ -z "$TELEGRAM_BOT_TOKEN" || -z "$TELEGRAM_CHAT_ID" ]]; then
+  if [[ -z "$TELEGRAM_BOT_TOKEN_DEPLOY" || -z "$TELEGRAM_CHAT_ID_DEPLOY" ]]; then
     return 0
   fi
 
-  curl -sS --max-time 10 -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-    --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+  curl -sS --max-time 10 -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_DEPLOY}/sendMessage" \
+    --data-urlencode "chat_id=${TELEGRAM_CHAT_ID_DEPLOY}" \
     --data-urlencode "text=${text}" \
     > /dev/null || true
 }

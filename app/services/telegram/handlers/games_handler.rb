@@ -141,35 +141,35 @@ module Telegram
             return
           end
 
-          page = [page.to_i, 1].max
+          page = [ page.to_i, 1 ].max
 
           all_games = Game.includes(:user, :participations, :prebooking_cancellations)
                           .where("games.user_id = :uid OR games.id IN (SELECT game_id FROM participations WHERE user_id = :uid)", uid: user.id)
                           .order(:date, :time).to_a
 
           total = all_games.size
-          pages = [(total.to_f / PER_PAGE).ceil, 1].max
+          pages = [ (total.to_f / PER_PAGE).ceil, 1 ].max
           offset = (page - 1) * PER_PAGE
           games = all_games.slice(offset, PER_PAGE) || []
 
           header = t.(:my_games_page, page: page, pages: pages)
 
           if games.empty?
-            buttons = [[{ text: t.(:main_menu_btn), callback_data: "menu:main" }]]
+            buttons = [ [ { text: t.(:main_menu_btn), callback_data: "menu:main" } ] ]
             send_or_edit_with_buttons(chat_id, "#{header}\n\n#{t.(:no_my_games)}", buttons, message_id: message_id)
             return
           end
 
           buttons = games.map do |g|
-            [{ text: game_label(g, locale: locale), callback_data: "game:show:#{g.id}:#{page}" }]
+            [ { text: game_label(g, locale: locale), callback_data: "game:show:#{g.id}:#{page}" } ]
           end
 
           nav = []
-          nav << [{ text: t.(:prev_page), callback_data: "menu:my_games:page:#{page - 1}" }] if page > 1
-          nav << [{ text: t.(:next_page), callback_data: "menu:my_games:page:#{page + 1}" }] if page < pages
+          nav << [ { text: t.(:prev_page), callback_data: "menu:my_games:page:#{page - 1}" } ] if page > 1
+          nav << [ { text: t.(:next_page), callback_data: "menu:my_games:page:#{page + 1}" } ] if page < pages
           buttons.concat(nav) unless nav.empty?
 
-          buttons << [{ text: t.(:main_menu_btn), callback_data: "menu:main" }]
+          buttons << [ { text: t.(:main_menu_btn), callback_data: "menu:main" } ]
 
           send_or_edit_with_buttons(chat_id, header, buttons, message_id: message_id)
         end

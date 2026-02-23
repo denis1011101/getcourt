@@ -10,17 +10,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_11_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_23_120000) do
   create_table "cities", force: :cascade do |t|
-    t.integer "geoname_id"
-    t.string "name"
     t.string "asciiname"
     t.string "country_code"
+    t.datetime "created_at", null: false
+    t.integer "geoname_id"
     t.decimal "latitude", precision: 10, scale: 6
     t.decimal "longitude", precision: 10, scale: 6
+    t.string "name"
     t.integer "population"
     t.string "timezone"
-    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["country_code"], name: "index_cities_on_country_code"
     t.index ["geoname_id"], name: "index_cities_on_geoname_id", unique: true
@@ -29,40 +29,40 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_11_120000) do
   end
 
   create_table "courts", force: :cascade do |t|
-    t.string "name"
-    t.string "coordinates"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.integer "user_id"
-    t.string "contact_type"
-    t.string "contact_value"
-    t.string "moderation_status", default: "pending", null: false
     t.datetime "approved_at"
     t.string "city_name"
+    t.string "contact_type"
+    t.string "contact_value"
+    t.string "coordinates"
+    t.datetime "created_at", null: false
+    t.string "moderation_status", default: "pending", null: false
+    t.string "name"
+    t.datetime "updated_at", null: false
+    t.integer "user_id"
     t.index ["city_name"], name: "index_courts_on_city_name"
     t.index ["moderation_status"], name: "index_courts_on_moderation_status"
     t.index ["user_id"], name: "index_courts_on_user_id"
   end
 
   create_table "games", force: :cascade do |t|
-    t.date "date"
-    t.time "time"
     t.integer "court_id", null: false
-    t.integer "user_id", null: false
     t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.boolean "recurring", default: false, null: false
+    t.date "date"
+    t.date "last_participations_reset_at"
     t.integer "occurrences_per_week", default: 1, null: false
+    t.integer "players_count", default: 4, null: false
+    t.string "post_game_stats_reminder_job_id"
+    t.boolean "prebooking_enabled", default: false, null: false
+    t.boolean "recurring", default: false, null: false
+    t.string "skill_level"
+    t.string "sport"
+    t.time "time"
     t.time "time2"
     t.text "times", default: "[]", null: false
-    t.boolean "with_coach", default: false, null: false
-    t.date "last_participations_reset_at"
-    t.integer "players_count", default: 4, null: false
-    t.string "sport"
-    t.string "skill_level"
-    t.boolean "prebooking_enabled", default: false, null: false
-    t.string "post_game_stats_reminder_job_id"
     t.integer "tournament_id"
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.boolean "with_coach", default: false, null: false
     t.index ["court_id"], name: "index_games_on_court_id"
     t.index ["prebooking_enabled"], name: "index_games_on_prebooking_enabled"
     t.index ["recurring"], name: "index_games_on_recurring"
@@ -72,17 +72,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_11_120000) do
   end
 
   create_table "matches", force: :cascade do |t|
-    t.integer "user_id", null: false
-    t.integer "opponent_id"
+    t.datetime "created_at", null: false
     t.integer "game_id"
     t.string "mode", null: false
+    t.integer "opponent_id"
     t.string "outcome", null: false
-    t.string "surface"
-    t.string "score"
     t.datetime "played_at", null: false
+    t.string "score"
     t.json "stats", default: {}, null: false
-    t.datetime "created_at", null: false
+    t.string "surface"
     t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
     t.index ["game_id"], name: "index_matches_on_game_id"
     t.index ["opponent_id"], name: "index_matches_on_opponent_id"
     t.index ["user_id", "mode", "played_at"], name: "index_matches_on_user_id_and_mode_and_played_at"
@@ -91,26 +91,26 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_11_120000) do
   end
 
   create_table "participations", force: :cascade do |t|
-    t.integer "user_id", null: false
-    t.integer "game_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.string "status", default: "approved", null: false
     t.datetime "approved_at"
+    t.datetime "created_at", null: false
+    t.integer "game_id", null: false
+    t.string "status", default: "approved", null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
     t.index ["game_id"], name: "index_participations_on_game_id"
     t.index ["user_id", "game_id"], name: "index_participations_on_user_and_game", unique: true
     t.index ["user_id"], name: "index_participations_on_user_id"
   end
 
   create_table "player_statistic_entries", force: :cascade do |t|
-    t.integer "user_id", null: false
-    t.integer "game_id", null: false
     t.integer "actor_id", null: false
-    t.string "source", default: "telegram", null: false
-    t.json "data", default: {}, null: false
-    t.datetime "recorded_at", null: false
     t.datetime "created_at", null: false
+    t.json "data", default: {}, null: false
+    t.integer "game_id", null: false
+    t.datetime "recorded_at", null: false
+    t.string "source", default: "telegram", null: false
     t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
     t.index ["actor_id"], name: "index_player_statistic_entries_on_actor_id"
     t.index ["game_id"], name: "index_player_statistic_entries_on_game_id"
     t.index ["user_id", "game_id", "source"], name: "index_ps_entries_on_user_game_source", unique: true
@@ -118,81 +118,81 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_11_120000) do
   end
 
   create_table "player_statistics", force: :cascade do |t|
-    t.integer "user_id", null: false
-    t.float "singles_hours"
-    t.float "doubles_hours"
-    t.integer "singles_sessions"
-    t.integer "doubles_sessions"
-    t.integer "singles_games"
-    t.integer "doubles_games"
-    t.integer "singles_wins"
-    t.integer "singles_losses"
-    t.integer "doubles_wins"
-    t.integer "doubles_losses"
     t.integer "aces"
-    t.integer "double_faults"
-    t.float "first_serve_percent"
-    t.float "singles_rating"
-    t.float "doubles_rating"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.integer "individual_training"
-    t.integer "group_training"
-    t.integer "break_points_saved"
     t.integer "break_points_converted"
-    t.integer "winners"
-    t.integer "unforced_errors"
-    t.integer "net_points_won"
-    t.integer "service_points_won"
-    t.integer "return_points_won"
-    t.integer "return_games_won"
+    t.integer "break_points_saved"
+    t.datetime "created_at", null: false
+    t.integer "double_faults"
+    t.integer "doubles_games"
+    t.float "doubles_hours"
+    t.integer "doubles_losses"
+    t.float "doubles_rating"
+    t.integer "doubles_sessions"
+    t.integer "doubles_wins"
+    t.float "first_serve_percent"
     t.integer "games_won_total"
+    t.integer "group_training"
+    t.integer "individual_training"
+    t.integer "net_points_won"
+    t.integer "return_games_won"
+    t.integer "return_points_won"
+    t.integer "service_points_won"
+    t.integer "singles_games"
+    t.float "singles_hours"
+    t.integer "singles_losses"
+    t.float "singles_rating"
+    t.integer "singles_sessions"
+    t.integer "singles_wins"
+    t.integer "unforced_errors"
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.integer "winners"
     t.index ["user_id"], name: "index_player_statistics_on_user_id"
   end
 
   create_table "prebooking_cancellations", force: :cascade do |t|
-    t.integer "game_id", null: false
-    t.date "date", null: false
-    t.integer "user_id", null: false
     t.datetime "cancelled_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.datetime "created_at", null: false
+    t.date "date", null: false
+    t.integer "game_id", null: false
     t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
     t.index ["game_id", "date"], name: "index_prebooking_cancellations_on_game_id_and_date", unique: true
     t.index ["game_id"], name: "index_prebooking_cancellations_on_game_id"
     t.index ["user_id"], name: "index_prebooking_cancellations_on_user_id"
   end
 
   create_table "prebookings", force: :cascade do |t|
-    t.integer "game_id", null: false
-    t.date "date", null: false
-    t.integer "slot_index", null: false
-    t.integer "user_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.string "status", default: "approved", null: false
     t.datetime "approved_at"
+    t.datetime "created_at", null: false
+    t.date "date", null: false
+    t.integer "game_id", null: false
+    t.integer "slot_index", null: false
+    t.string "status", default: "approved", null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id"
     t.index ["game_id", "date", "slot_index"], name: "index_prebookings_on_game_date_slot", unique: true
     t.index ["game_id"], name: "index_prebookings_on_game_id"
     t.index ["user_id"], name: "index_prebookings_on_user_id"
   end
 
   create_table "telegram_channels", force: :cascade do |t|
-    t.string "username", null: false
-    t.string "url"
-    t.string "title"
-    t.bigint "last_message_id"
     t.datetime "created_at", null: false
+    t.bigint "last_message_id"
+    t.string "title"
     t.datetime "updated_at", null: false
+    t.string "url"
+    t.string "username", null: false
     t.index ["username"], name: "index_telegram_channels_on_username", unique: true
   end
 
   create_table "telegram_posts", force: :cascade do |t|
-    t.integer "telegram_channel_id", null: false
-    t.bigint "message_id", null: false
-    t.text "text"
-    t.json "extra", default: {}
-    t.datetime "published_at"
     t.datetime "created_at", null: false
+    t.json "extra", default: {}
+    t.bigint "message_id", null: false
+    t.datetime "published_at"
+    t.integer "telegram_channel_id", null: false
+    t.text "text"
     t.datetime "updated_at", null: false
     t.index ["published_at"], name: "index_telegram_posts_on_published_at"
     t.index ["telegram_channel_id", "message_id"], name: "index_telegram_posts_on_telegram_channel_id_and_message_id", unique: true
@@ -200,70 +200,71 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_11_120000) do
   end
 
   create_table "tournament_courts", force: :cascade do |t|
-    t.integer "tournament_id", null: false
     t.integer "court_id", null: false
     t.datetime "created_at", null: false
+    t.integer "tournament_id", null: false
     t.datetime "updated_at", null: false
     t.index ["court_id"], name: "index_tournament_courts_on_court_id"
     t.index ["tournament_id"], name: "index_tournament_courts_on_tournament_id"
   end
 
   create_table "tournament_dates", force: :cascade do |t|
-    t.integer "tournament_id", null: false
-    t.date "date"
     t.datetime "created_at", null: false
+    t.date "date"
+    t.integer "tournament_id", null: false
     t.datetime "updated_at", null: false
     t.index ["tournament_id"], name: "index_tournament_dates_on_tournament_id"
   end
 
   create_table "tournament_participants", force: :cascade do |t|
-    t.integer "tournament_id", null: false
-    t.integer "user_id", null: false
-    t.string "name"
     t.datetime "created_at", null: false
+    t.string "name"
+    t.integer "tournament_id", null: false
     t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
     t.index ["tournament_id"], name: "index_tournament_participants_on_tournament_id"
     t.index ["user_id"], name: "index_tournament_participants_on_user_id"
   end
 
   create_table "tournaments", force: :cascade do |t|
-    t.integer "players_count"
-    t.string "format"
-    t.date "start_date"
-    t.date "end_date"
-    t.integer "user_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.string "name"
     t.json "bracket_data", default: {}
+    t.datetime "created_at", null: false
+    t.date "end_date"
+    t.string "format"
+    t.integer "games_count"
+    t.string "name"
+    t.integer "players_count"
     t.integer "selected_variant"
+    t.date "start_date"
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
     t.index ["user_id"], name: "index_tournaments_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
-    t.string "name"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.string "email"
     t.boolean "admin", default: false, null: false
-    t.string "telegram_username"
-    t.bigint "telegram_chat_id"
-    t.string "telegram_registration_token"
-    t.string "skill_level"
+    t.string "city_name"
     t.boolean "coach", default: false, null: false
-    t.text "preferred_sports"
-    t.json "skill_levels", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.string "email"
     t.string "login_code"
     t.datetime "login_code_sent_at"
     t.string "login_via"
-    t.boolean "require_verification", default: false, null: false
-    t.string "preferred_login_via"
-    t.string "registration_source", default: "email", null: false
-    t.boolean "telegram_generated_email", default: false, null: false
-    t.string "timezone", default: "Asia/Yekaterinburg"
-    t.string "city_name"
+    t.string "name"
     t.boolean "notify_nearby", default: false, null: false
+    t.string "preferred_login_via"
+    t.text "preferred_sports"
+    t.string "registration_source", default: "email", null: false
+    t.boolean "require_verification", default: false, null: false
+    t.string "skill_level"
+    t.json "skill_levels", default: {}, null: false
+    t.bigint "telegram_chat_id"
+    t.boolean "telegram_generated_email", default: false, null: false
     t.string "telegram_locale", default: "ru", null: false
+    t.string "telegram_registration_token"
+    t.string "telegram_username"
+    t.string "timezone", default: "Asia/Yekaterinburg"
+    t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true, where: "email IS NOT NULL"
     t.index ["login_code"], name: "index_users_on_login_code"
     t.index ["registration_source"], name: "index_users_on_registration_source"

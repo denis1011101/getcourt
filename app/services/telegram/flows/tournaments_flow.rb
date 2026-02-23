@@ -192,9 +192,9 @@ module Telegram
 
           text = t.(:create_tournament_start_options)
           buttons = [
-            [{ text: locale == "ru" ? "Создать в боте" : "Create in bot", callback_data: "tournament:create:bot" }],
-            [{ text: locale == "ru" ? "Создать на сайте" : "Create on website", url: "https://getcourt.co/tournaments/new" }],
-            [{ text: t.(:cancel_btn), callback_data: "tournament:create:cancel" }]
+            [ { text: locale == "ru" ? "Создать в боте" : "Create in bot", callback_data: "tournament:create:bot" } ],
+            [ { text: locale == "ru" ? "Создать на сайте" : "Create on website", url: "https://getcourt.co/tournaments/new" } ],
+            [ { text: t.(:cancel_btn), callback_data: "tournament:create:cancel" } ]
           ]
           send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
         end
@@ -208,24 +208,24 @@ module Telegram
           t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
           header = t.(:create_tournament_step, step: step_number(step), total: TOTAL_STEPS)
-          cancel_row = [{ text: t.(:cancel_btn), callback_data: "tournament:create:cancel" }]
+          cancel_row = [ { text: t.(:cancel_btn), callback_data: "tournament:create:cancel" } ]
 
           case step
           when "name"
             text = build_step_text(chat_id, header, t.(:create_tournament_name))
-            buttons = [cancel_row]
+            buttons = [ cancel_row ]
             send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
 
           when "players_count"
             text = build_step_text(chat_id, header, t.(:create_tournament_players))
-            row = [2, 4, 8, 16].map { |n| { text: n.to_s, callback_data: "tournament:create:players:#{n}" } }
-            buttons = [row, cancel_row]
+            row = [ 2, 4, 8, 16 ].map { |n| { text: n.to_s, callback_data: "tournament:create:players:#{n}" } }
+            buttons = [ row, cancel_row ]
             send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
 
           when "games_count"
             text = build_step_text(chat_id, header, t.(:create_tournament_games_count))
-            row = [3, 5, 7].map { |n| { text: n.to_s, callback_data: "tournament:create:games_count:#{n}" } }
-            buttons = [row, [{ text: t.(:skip_btn), callback_data: "tournament:create:skip" }], cancel_row]
+            row = [ 3, 5, 7 ].map { |n| { text: n.to_s, callback_data: "tournament:create:games_count:#{n}" } }
+            buttons = [ row, [ { text: t.(:skip_btn), callback_data: "tournament:create:skip" } ], cancel_row ]
             send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
 
           when "format"
@@ -235,7 +235,7 @@ module Telegram
                 { text: "Singles", callback_data: "tournament:create:format:singles" },
                 { text: "Doubles", callback_data: "tournament:create:format:doubles" }
               ],
-              [{ text: t.(:skip_btn), callback_data: "tournament:create:skip" }],
+              [ { text: t.(:skip_btn), callback_data: "tournament:create:skip" } ],
               cancel_row
             ]
             send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
@@ -245,7 +245,7 @@ module Telegram
 
           when "start_date"
             text = build_step_text(chat_id, header, t.(:create_tournament_date))
-            buttons = [[{ text: t.(:skip_btn), callback_data: "tournament:create:skip" }], cancel_row]
+            buttons = [ [ { text: t.(:skip_btn), callback_data: "tournament:create:skip" } ], cancel_row ]
             send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
           end
         end
@@ -257,23 +257,23 @@ module Telegram
 
           courts = Court.visible_to(user).order(:name).to_a
           per_page = 5
-          total_pages = [(courts.size.to_f / per_page).ceil, 1].max
-          page = [[page, 1].max, total_pages].min
+          total_pages = [ (courts.size.to_f / per_page).ceil, 1 ].max
+          page = [ [ page, 1 ].max, total_pages ].min
           offset = (page - 1) * per_page
           slice = courts.slice(offset, per_page) || []
 
           step_num = step_number("court")
           header = t.(:create_tournament_step, step: step_num, total: TOTAL_STEPS)
           text = build_step_text(chat_id, header, t.(:create_tournament_court))
-          cancel_row = [{ text: t.(:cancel_btn), callback_data: "tournament:create:cancel" }]
+          cancel_row = [ { text: t.(:cancel_btn), callback_data: "tournament:create:cancel" } ]
 
-          buttons = slice.map { |c| [{ text: c.name, callback_data: "tournament:create:court:#{c.id}" }] }
+          buttons = slice.map { |c| [ { text: c.name, callback_data: "tournament:create:court:#{c.id}" } ] }
 
           nav = []
           nav << { text: t.(:prev_page), callback_data: "tournament:create:court_page:#{page - 1}" } if page > 1
           nav << { text: t.(:next_page), callback_data: "tournament:create:court_page:#{page + 1}" } if page < total_pages
           buttons << nav unless nav.empty?
-          buttons << [{ text: t.(:skip_btn), callback_data: "tournament:create:skip" }]
+          buttons << [ { text: t.(:skip_btn), callback_data: "tournament:create:skip" } ]
           buttons << cancel_row
 
           send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
@@ -323,7 +323,7 @@ module Telegram
 
           # Link court if provided
           if fields["court_id"].present?
-            tournament.court_ids = [fields["court_id"]]
+            tournament.court_ids = [ fields["court_id"] ]
           end
 
           if tournament.save
@@ -351,11 +351,16 @@ module Telegram
             return
           end
 
-          if tournament.tournament_participants.exists?(user_id: user.id)
-            Telegram::Api.answer_callback(cb_id, t.(:tournament_already_joined), show_alert: false) rescue nil
-          else
-            tournament.tournament_participants.create!(user: user, name: user.name.presence || user.email)
-            Telegram::Api.answer_callback(cb_id, t.(:tournament_joined), show_alert: false) rescue nil
+          tournament.with_lock do
+            if tournament.tournament_participants.exists?(user_id: user.id)
+              Telegram::Api.answer_callback(cb_id, t.(:tournament_already_joined), show_alert: false) rescue nil
+            elsif tournament.players_count.to_i.positive? && tournament.tournament_participants.count >= tournament.players_count
+              full_text = locale == "ru" ? "Турнир уже заполнен" : "Tournament is full"
+              Telegram::Api.answer_callback(cb_id, full_text, show_alert: false) rescue nil
+            else
+              tournament.tournament_participants.create!(user: user, name: user.name.presence || user.email)
+              Telegram::Api.answer_callback(cb_id, t.(:tournament_joined), show_alert: false) rescue nil
+            end
           end
 
           Telegram::Handlers::TournamentsHandler.show_tournament(chat_id, tournament_id, page, message_id: message_id)
@@ -417,7 +422,7 @@ module Telegram
           return nil if lines.empty?
 
           title = locale == "ru" ? "Введено:" : "Entered:"
-          ([title] + lines).join("\n")
+          ([ title ] + lines).join("\n")
         end
 
         def delete_input_message(message)

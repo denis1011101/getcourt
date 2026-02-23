@@ -14,7 +14,7 @@ module Telegram
           players_text = total > 0 ? "#{joined}/#{total}" : "#{joined}"
           date_str = t.start_date.present? ? t.start_date.strftime("%d.%m") : nil
 
-          parts = [name]
+          parts = [ name ]
           parts << date_str if date_str
           parts << players_text
           parts.join(" — ")
@@ -25,12 +25,12 @@ module Telegram
           locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
           t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
-          page = [page.to_i, 1].max
+          page = [ page.to_i, 1 ].max
 
           tournaments = Tournament.includes(:tournament_participants).order(created_at: :desc).to_a
 
           total = tournaments.size
-          pages = [(total.to_f / PER_PAGE).ceil, 1].max
+          pages = [ (total.to_f / PER_PAGE).ceil, 1 ].max
           offset = (page - 1) * PER_PAGE
           slice = tournaments.slice(offset, PER_PAGE) || []
 
@@ -42,15 +42,15 @@ module Telegram
           end
 
           buttons = slice.map do |tour|
-            [{ text: tournament_label(tour, locale: locale), callback_data: "tournament:show:#{tour.id}:#{page}" }]
+            [ { text: tournament_label(tour, locale: locale), callback_data: "tournament:show:#{tour.id}:#{page}" } ]
           end
 
           nav = []
-          nav << [{ text: t.(:prev_page), callback_data: "menu:tournaments:page:#{page - 1}" }] if page > 1
-          nav << [{ text: t.(:next_page), callback_data: "menu:tournaments:page:#{page + 1}" }] if page < pages
+          nav << [ { text: t.(:prev_page), callback_data: "menu:tournaments:page:#{page - 1}" } ] if page > 1
+          nav << [ { text: t.(:next_page), callback_data: "menu:tournaments:page:#{page + 1}" } ] if page < pages
           buttons.concat(nav) unless nav.empty?
 
-          buttons << [{ text: t.(:main_menu_btn), callback_data: "menu:main" }]
+          buttons << [ { text: t.(:main_menu_btn), callback_data: "menu:main" } ]
 
           send_or_edit_with_buttons(chat_id, header, buttons, message_id: message_id)
         end
@@ -66,35 +66,35 @@ module Telegram
             return
           end
 
-          page = [page.to_i, 1].max
+          page = [ page.to_i, 1 ].max
 
           tournaments = Tournament.includes(:tournament_participants)
                                   .where("tournaments.user_id = :uid OR tournaments.id IN (SELECT tournament_id FROM tournament_participants WHERE user_id = :uid)", uid: user.id)
                                   .order(created_at: :desc).to_a
 
           total = tournaments.size
-          pages = [(total.to_f / PER_PAGE).ceil, 1].max
+          pages = [ (total.to_f / PER_PAGE).ceil, 1 ].max
           offset = (page - 1) * PER_PAGE
           slice = tournaments.slice(offset, PER_PAGE) || []
 
           header = t_fn.(:my_tournaments_page, page: page, pages: pages)
 
           if slice.empty?
-            buttons = [[{ text: t_fn.(:main_menu_btn), callback_data: "menu:main" }]]
+            buttons = [ [ { text: t_fn.(:main_menu_btn), callback_data: "menu:main" } ] ]
             send_or_edit_with_buttons(chat_id, "#{header}\n\n#{t_fn.(:no_my_tournaments)}", buttons, message_id: message_id)
             return
           end
 
           buttons = slice.map do |tour|
-            [{ text: tournament_label(tour, locale: locale), callback_data: "tournament:show:#{tour.id}:#{page}" }]
+            [ { text: tournament_label(tour, locale: locale), callback_data: "tournament:show:#{tour.id}:#{page}" } ]
           end
 
           nav = []
-          nav << [{ text: t_fn.(:prev_page), callback_data: "menu:my_tournaments:page:#{page - 1}" }] if page > 1
-          nav << [{ text: t_fn.(:next_page), callback_data: "menu:my_tournaments:page:#{page + 1}" }] if page < pages
+          nav << [ { text: t_fn.(:prev_page), callback_data: "menu:my_tournaments:page:#{page - 1}" } ] if page > 1
+          nav << [ { text: t_fn.(:next_page), callback_data: "menu:my_tournaments:page:#{page + 1}" } ] if page < pages
           buttons.concat(nav) unless nav.empty?
 
-          buttons << [{ text: t_fn.(:main_menu_btn), callback_data: "menu:main" }]
+          buttons << [ { text: t_fn.(:main_menu_btn), callback_data: "menu:main" } ]
 
           send_or_edit_with_buttons(chat_id, header, buttons, message_id: message_id)
         end
@@ -142,14 +142,14 @@ module Telegram
           if user
             is_participant = tournament.tournament_participants.exists?(user_id: user.id)
             if is_participant
-              buttons << [{ text: t.(:leave_tournament), callback_data: "tournament:leave:#{tournament.id}:#{page}" }]
+              buttons << [ { text: t.(:leave_tournament), callback_data: "tournament:leave:#{tournament.id}:#{page}" } ]
             elsif tournament.user_id != user.id
-              buttons << [{ text: t.(:join_tournament), callback_data: "tournament:join:#{tournament.id}:#{page}" }]
+              buttons << [ { text: t.(:join_tournament), callback_data: "tournament:join:#{tournament.id}:#{page}" } ]
             end
           end
 
-          buttons << [{ text: t.(:open_in_browser), url: tournament_url }] unless host.to_s.include?("localhost")
-          buttons << [{ text: t.(:back_to_tournaments), callback_data: "menu:tournaments:page:#{page}" }]
+          buttons << [ { text: t.(:open_in_browser), url: tournament_url } ] unless host.to_s.include?("localhost")
+          buttons << [ { text: t.(:back_to_tournaments), callback_data: "menu:tournaments:page:#{page}" } ]
 
           send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
         end
