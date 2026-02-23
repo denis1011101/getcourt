@@ -330,7 +330,15 @@ module Telegram
           t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
           user = Telegram::Helpers::UserLookup.find_user(chat_id)
 
-          courts = Court.visible_to(user).order(:name).to_a
+          user_city = user&.city_name.to_s.strip.downcase.presence
+          courts = Court.visible_to(user).to_a.sort_by do |court|
+            same_city_rank = if user_city && court.city_name.to_s.strip.downcase == user_city
+              0
+            else
+              1
+            end
+            [ same_city_rank, court.name.to_s.downcase ]
+          end
           per_page = 5
           total_pages = [ (courts.size.to_f / per_page).ceil, 1 ].max
           page = [ [ page, 1 ].max, total_pages ].min
