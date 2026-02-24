@@ -23,6 +23,9 @@ class SitemapGenerator
     add_url(xml, tennis_life_url)
     add_url(xml, contacts_url)
     add_url(xml, mission_url)
+    add_url(xml, partnership_url)
+    add_url(xml, tennis_formats_and_rules_url)
+    add_url(xml, ntrp_level_guide_url)
     Court.find_each do |court|
       add_url(xml, court_url(court), court.updated_at)
     end
@@ -71,6 +74,18 @@ class SitemapGenerator
 
   def mission_url
     "#{@host}#{Rails.application.routes.url_helpers.mission_path}"
+  end
+
+  def partnership_url
+    "#{@host}#{Rails.application.routes.url_helpers.partnership_path}"
+  end
+
+  def tennis_formats_and_rules_url
+    "#{@host}#{Rails.application.routes.url_helpers.tennis_formats_and_rules_path}"
+  end
+
+  def ntrp_level_guide_url
+    "#{@host}#{Rails.application.routes.url_helpers.ntrp_level_guide_path}"
   end
 
   def add_url(xml, loc, lastmod = nil)
