@@ -79,7 +79,7 @@ Rails.application.routes.draw do
       post :leave
       post :select_bracket
       post :reset_bracket
-      post :add_game_result
+      post :add_match
     end
 
     collection do

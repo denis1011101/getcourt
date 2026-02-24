@@ -37,7 +37,7 @@ module Telegram
             Telegram::Flows::Games::Manage::CreateFlow.process_text(message)
           when "create_court"
             Telegram::Flows::CourtCreateFlow.process_text(message)
-          when "create_tournament", "tournament_add_result", "tournament_invite"
+          when "create_tournament", "tournament_invite", "tournament_edit", "tournament_rr_add_match"
             Telegram::Flows::TournamentsFlow.process_text(message)
           else
             false

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_23_133000) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_24_141534) do
   create_table "cities", force: :cascade do |t|
     t.string "asciiname"
     t.string "country_code"
@@ -231,7 +231,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_23_133000) do
     t.index ["player_a_id"], name: "index_tournament_matches_on_player_a_id"
     t.index ["player_b2_id"], name: "index_tournament_matches_on_player_b2_id"
     t.index ["player_b_id"], name: "index_tournament_matches_on_player_b_id"
-    t.index ["tournament_id", "player_a_id", "player_b_id"], name: "index_tournament_matches_on_players", unique: true
+    t.index ["tournament_id", "player_a_id", "player_b_id"], name: "index_tournament_matches_on_players"
     t.index ["tournament_id"], name: "index_tournament_matches_on_tournament_id"
   end
 

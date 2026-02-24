@@ -1,8 +1,8 @@
 class TournamentsController < ApplicationController
   # redirect to login when non-authenticated users call mutating actions
-  before_action :authenticate_user!, only: %i[new create join leave select_bracket reset_bracket add_game_result]
-  before_action :set_tournament, only: %i[options show join leave select_bracket reset_bracket add_game_result]
-  before_action :authorize_organizer!, only: %i[select_bracket reset_bracket add_game_result]
+  before_action :authenticate_user!, only: %i[new create join leave select_bracket reset_bracket add_match]
+  before_action :set_tournament, only: %i[options show join leave select_bracket reset_bracket add_match]
+  before_action :authorize_organizer!, only: %i[select_bracket reset_bracket add_match]
 
   def index
     @tournaments = Tournament.includes(:tournament_participants).order(created_at: :desc)
@@ -81,75 +81,70 @@ class TournamentsController < ApplicationController
     redirect_to tournament_path(@tournament)
   end
 
-  def add_game_result
+  def add_match
     unless @tournament.started?
       redirect_back fallback_location: tournament_path(@tournament), alert: "Statistics available after tournament starts."
       return
     end
 
-    score = params[:score].to_s.strip.presence
-    hours_raw = params[:hours].to_s.strip
-    hours_value = nil
-    if hours_raw.present?
-      begin
-        hours_value = Float(hours_raw)
-        raise ArgumentError if hours_value.negative?
-      rescue ArgumentError, TypeError
-        redirect_back fallback_location: tournament_path(@tournament), alert: "Enter valid hours (0 or greater)."
+    player_a = resolve_participant(:player_a_id)
+    player_b = resolve_participant(:player_b_id)
+
+    unless player_a && player_b
+      redirect_back fallback_location: tournament_path(@tournament), alert: "Select both players."
+      return
+    end
+
+    if player_a.id == player_b.id
+      redirect_back fallback_location: tournament_path(@tournament), alert: "Players must be different."
+      return
+    end
+
+    score = params[:score].to_s.strip
+    if score.blank?
+      redirect_back fallback_location: tournament_path(@tournament), alert: "Enter score (e.g. 6-4 6-3)."
+      return
+    end
+
+    parsed = TournamentStandings.parse_score(score)
+    unless parsed
+      redirect_back fallback_location: tournament_path(@tournament), alert: "Invalid score format. Use e.g. 6-4 6-3."
+      return
+    end
+
+    # Prevent duplicate pair in round_robin (symmetric check)
+    if @tournament.round_robin?
+      exists = TournamentMatch.where(tournament_id: @tournament.id)
+                              .where(
+                                "(player_a_id = :a AND player_b_id = :b) OR (player_a_id = :b AND player_b_id = :a)",
+                                a: player_a.id, b: player_b.id
+                              ).exists?
+      if exists
+        redirect_back fallback_location: tournament_path(@tournament), alert: "This pair already played in this tournament."
         return
       end
     end
 
-    if score.blank? && hours_value.nil?
-      redirect_back fallback_location: tournament_path(@tournament), alert: "Enter score or hours."
-      return
-    end
-    result_user = resolve_result_user
-    unless result_user
-      redirect_back fallback_location: tournament_path(@tournament), alert: "Select a tournament participant."
-      return
+    result = if parsed[:sets_a] > parsed[:sets_b]
+      "player_a"
+    elsif parsed[:sets_b] > parsed[:sets_a]
+      "player_b"
+    else
+      parsed[:games_a] > parsed[:games_b] ? "player_a" : (parsed[:games_b] > parsed[:games_a] ? "player_b" : "draw")
     end
 
-    court = @tournament.courts.first || Court.first
-    unless court
-      redirect_back fallback_location: tournament_path(@tournament), alert: "Court not found."
-      return
-    end
+    TournamentMatch.create!(
+      tournament: @tournament,
+      player_a: player_a,
+      player_b: player_b,
+      score: score,
+      result: result,
+      played_at: Time.current
+    )
 
-    ActiveRecord::Base.transaction do
-      game = Game.create!(
-        tournament: @tournament,
-        court: court,
-        user: current_user,
-        date: @tournament.start_date,
-        sport: "tennis"
-      )
-
-      if score.present?
-        Match.create!(
-          game: game,
-          user: result_user,
-          score: score,
-          mode: @tournament.format.presence || "singles",
-          outcome: "draw",
-          played_at: Time.current
-        )
-      end
-
-      if !hours_value.nil?
-        hours_key = @tournament.format == "doubles" ? "doubles_hours" : "singles_hours"
-        PlayerStatisticEntry.create!(
-          user: result_user,
-          game: game,
-          actor: current_user,
-          data: { hours_key => hours_value },
-          source: "web",
-          recorded_at: Time.current
-        )
-      end
-    end
-
-    redirect_to tournament_path(@tournament), notice: "Game result added."
+    redirect_to tournament_path(@tournament), notice: "Match added."
+  rescue ActiveRecord::RecordNotUnique
+    redirect_back fallback_location: tournament_path(@tournament), alert: "This match already exists."
   end
 
   # destroy games created for bracket (reset)
@@ -175,8 +170,8 @@ class TournamentsController < ApplicationController
     @tournament = Tournament.find_by(id: params[:tournament_id] || params[:id])
   end
 
-  def resolve_result_user
-    user_id = params[:user_id].to_i
+  def resolve_participant(param_key)
+    user_id = params[param_key].to_i
     return nil if user_id <= 0
 
     participant = @tournament.tournament_participants.find_by(user_id: user_id)

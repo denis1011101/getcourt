@@ -158,14 +158,10 @@ module Telegram
               buttons << [ { text: t.(:delete_tournament), callback_data: "tournament:delete:#{tournament.id}:#{page}" } ]
             end
 
-            if tournament.round_robin?
-              buttons << [ { text: t.(:tournament_rr_standings), callback_data: "tournament:rr_standings:#{tournament.id}:#{page}" } ]
-            end
+            buttons << [ { text: t.(:tournament_rr_standings), callback_data: "tournament:rr_standings:#{tournament.id}:#{page}" } ]
 
-            if tournament.user_id == user.id && tournament.started? && tournament.round_robin?
+            if tournament.user_id == user.id && tournament.started?
               buttons << [ { text: t.(:tournament_rr_add_match), callback_data: "tournament:rr_add_match:#{tournament.id}:#{page}" } ]
-            elsif tournament.user_id == user.id && tournament.started?
-              buttons << [ { text: t.(:add_tournament_result), callback_data: "tournament:add_result:#{tournament.id}:#{page}" } ]
             end
           end
 

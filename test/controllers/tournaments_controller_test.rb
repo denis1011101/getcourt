@@ -44,35 +44,38 @@ class TournamentsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_path
   end
 
-  test "add_game_result creates game and match for valid score" do
+  test "add_match creates tournament match for valid score" do
     post session_url, params: { email: @organizer_email }
-    assert_difference("Game.count", 1) do
-      assert_difference("Match.count", 1) do
-        post add_game_result_tournament_url(@tournament), params: {
-          user_id: @participant.id,
-          score: "6-4 6-3"
-        }
-      end
-    end
+    @tournament.tournament_participants.find_or_create_by!(user: @organizer) { |p| p.name = @organizer.name }
 
-    assert_redirected_to tournament_url(@tournament)
-  end
-
-  test "add_game_result rejects invalid hours input" do
-    post session_url, params: { email: @organizer_email }
-    assert_no_difference("Game.count") do
-      post add_game_result_tournament_url(@tournament), params: {
-        user_id: @participant.id,
-        score: "6-4 6-3",
-        hours: "abc"
+    assert_difference("TournamentMatch.count", 1) do
+      post add_match_tournament_url(@tournament), params: {
+        player_a_id: @organizer.id,
+        player_b_id: @participant.id,
+        score: "6-4 6-3"
       }
     end
 
     assert_redirected_to tournament_url(@tournament)
-    assert_equal "Enter valid hours (0 or greater).", flash[:alert]
+    match = TournamentMatch.last
+    assert_equal "6-4 6-3", match.score
+    assert_equal "player_a", match.result
   end
 
-  test "add_game_result is blocked before tournament starts" do
+  test "add_match rejects missing players" do
+    post session_url, params: { email: @organizer_email }
+    assert_no_difference("TournamentMatch.count") do
+      post add_match_tournament_url(@tournament), params: {
+        player_a_id: @participant.id,
+        score: "6-4 6-3"
+      }
+    end
+
+    assert_redirected_to tournament_url(@tournament)
+    assert_equal "Select both players.", flash[:alert]
+  end
+
+  test "add_match is blocked before tournament starts" do
     post session_url, params: { email: @organizer_email }
     future_tournament = Tournament.create!(
       user: @organizer,
@@ -84,11 +87,11 @@ class TournamentsControllerTest < ActionDispatch::IntegrationTest
     future_tournament.courts << courts(:one)
     future_tournament.tournament_participants.create!(user: @participant, name: @participant.name)
 
-    assert_no_difference("Game.count") do
-      post add_game_result_tournament_url(future_tournament), params: {
-        user_id: @participant.id,
-        score: "6-4 6-3",
-        hours: "1.0"
+    assert_no_difference("TournamentMatch.count") do
+      post add_match_tournament_url(future_tournament), params: {
+        player_a_id: @organizer.id,
+        player_b_id: @participant.id,
+        score: "6-4 6-3"
       }
     end
 

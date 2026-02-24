@@ -6,7 +6,8 @@
       "Bash(bin/rails test:*)",
       "Bash(bin/importmap audit:*)",
       "Bash(PARALLEL_WORKERS=0 bin/rails db:test:prepare:*)",
-      "Bash(PARALLEL_WORKERS=0 bin/rails test:*)"
+      "Bash(PARALLEL_WORKERS=0 bin/rails test:*)",
+      "Bash(bundle exec rails test:*)"
     ]
   }
 }

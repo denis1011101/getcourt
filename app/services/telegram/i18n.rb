@@ -367,8 +367,8 @@ module Telegram
       tournament_rr_pick_team_b: "Выберите второго игрока команды B",
       tournament_rr_enter_score: "Введите счёт матча (например: 6-2 6-4)",
       tournament_rr_match_saved: "Матч сохранён.",
-      tournament_rr_standings_title: "🏆 Round Robin — Турнир #%{id}",
-      tournament_rr_standings_row: "%{rank}. %{name}  %{wins}W %{losses}L  Сеты %{sets_won}/%{sets_lost}  Геймы %{games_won}/%{games_lost}",
+      tournament_rr_standings_title: "🏆 Турнир #%{id} — Таблица",
+      tournament_rr_standings_row: "%{rank}. %{name} — %{wins}П %{losses}П",
       tournament_rr_no_matches: "Матчей пока нет.",
       tournament_no_court: "У турнира не выбран корт.",
 
@@ -724,8 +724,8 @@ module Telegram
       tournament_rr_pick_team_b: "Pick second player for Team B",
       tournament_rr_enter_score: "Enter match score (example: 6-2 6-4)",
       tournament_rr_match_saved: "Match saved.",
-      tournament_rr_standings_title: "🏆 Round Robin — Tournament #%{id}",
-      tournament_rr_standings_row: "%{rank}. %{name}  %{wins}W %{losses}L  Sets %{sets_won}/%{sets_lost}  Games %{games_won}/%{games_lost}",
+      tournament_rr_standings_title: "🏆 Tournament #%{id} — Standings",
+      tournament_rr_standings_row: "%{rank}. %{name} — %{wins}W %{losses}L",
       tournament_rr_no_matches: "No matches yet.",
       tournament_no_court: "Tournament has no court selected.",
 
