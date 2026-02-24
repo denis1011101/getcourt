@@ -2,6 +2,7 @@ Rails.application.routes.draw do
   get "/contacts", to: "pages#contacts", as: :contacts
   get "/mission",  to: "pages#mission",  as: :mission
   get "/partnership", to: "pages#partnership", as: :partnership
+  post "/partnership", to: "pages#partnership_inquiry", as: :partnership_inquiry
   get "/tennis-formats-and-rules", to: "pages#tennis_formats_and_rules", as: :tennis_formats_and_rules
   get "/ntrp-level-guide", to: "pages#ntrp_level_guide", as: :ntrp_level_guide
   get "/coaches",  to: "coaches#index", as: :coaches
