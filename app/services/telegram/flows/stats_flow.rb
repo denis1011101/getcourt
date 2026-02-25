@@ -209,18 +209,18 @@ module Telegram
           lines << ""
           lines << t.call(:stats_entered_section)
 
+          game = game_id > 0 ? Game.find_by(id: game_id) : nil
+          last_reset = game&.last_participations_reset_at
+
           score =
             if game_id > 0
-              Match.where(game_id: game_id)
-                .where.not(score: [ nil, "" ])
-                .order(updated_at: :desc)
-                .limit(1)
-                .pick(:score)
+              scope = Match.where(game_id: game_id).where.not(score: [ nil, "" ])
+              scope = scope.where("played_at >= ?", last_reset.beginning_of_day) if last_reset.present?
+              scope.order(updated_at: :desc).limit(1).pick(:score)
             end
           shown_score = score.to_s.strip.presence || "—"
           lines << "• #{t.call(:stats_score_line, score: shown_score)}"
 
-          game = game_id > 0 ? Game.find_by(id: game_id) : nil
           doubles_mode = game && StatisticsPresenter.hours_field_for_game(game) == :doubles_hours
 
           hours_key = doubles_mode ? "doubles_hours" : "singles_hours"
@@ -228,7 +228,6 @@ module Telegram
           hours_value = entered[hours_key] || entered[hours_key.to_sym]
 
           if hours_value.nil? && game
-            last_reset = game.respond_to?(:last_participations_reset_at) ? game.last_participations_reset_at : nil
             saved_entry =
               if last_reset.present?
                 PlayerStatisticEntry.where(user: game.user, game: game, source: "telegram")
@@ -238,11 +237,6 @@ module Telegram
                 PlayerStatisticEntry.find_by(user: game.user, game: game, source: "telegram")
               end
             hours_value = saved_entry&.data&.dig(hours_key)
-            # Fallback without date filter if still nil
-            if hours_value.nil?
-              any_entry = PlayerStatisticEntry.find_by(user: game.user, game: game, source: "telegram")
-              hours_value = any_entry&.data&.dig(hours_key)
-            end
           end
 
           display_hours =
