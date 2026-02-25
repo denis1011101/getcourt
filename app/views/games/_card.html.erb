@@ -78,6 +78,12 @@
           Weekly
         </span>
       <% end %>
+
+      <% if game.respond_to?(:urgent_player_search?) && game.urgent_player_search? %>
+        <span class="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-medium text-rose-700">
+          Urgent search
+        </span>
+      <% end %>
     </div>
 
     <!-- Players bar -->

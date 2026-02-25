@@ -1,7 +1,7 @@
 class GamesController < ApplicationController
   before_action :handle_mark_not_happened, only: [ :show ]
-  before_action :set_game, only: %i[show edit update destroy]
-  before_action :authorize_manage_game!, only: %i[edit update destroy]
+  before_action :set_game, only: %i[show edit update destroy toggle_urgent_player_search]
+  before_action :authorize_manage_game!, only: %i[edit update destroy toggle_urgent_player_search]
   skip_before_action :authenticate_user!, only: %i[index show]
 
   helper_method :display_date, :display_time, :game_badges
@@ -84,6 +84,12 @@ class GamesController < ApplicationController
     redirect_to games_url, notice: "Game was successfully destroyed."
   end
 
+  def toggle_urgent_player_search
+    @game.update!(urgent_player_search: !@game.urgent_player_search?)
+    state = @game.urgent_player_search? ? "enabled" : "disabled"
+    redirect_to @game, notice: "Urgent player search #{state}."
+  end
+
   # GET /games/prebooking_fragment
   def prebooking_fragment
     if params[:game_id].present?
@@ -116,7 +122,7 @@ class GamesController < ApplicationController
   end
 
   def game_params
-    params.require(:game).permit(:court_id, :recurring, :occurrences_per_week, :with_coach, :date, :time, :players_count, :skill_level, :sport, :prebooking_enabled)
+    params.require(:game).permit(:court_id, :recurring, :occurrences_per_week, :with_coach, :date, :time, :players_count, :skill_level, :sport, :prebooking_enabled, :urgent_player_search)
   end
 
   def display_date(game)
@@ -189,6 +195,7 @@ class GamesController < ApplicationController
     gp["time"] = gp["time"].presence
     gp["recurring"] = ActiveModel::Type::Boolean.new.cast(gp["recurring"]) if gp.key?("recurring")
     gp["with_coach"] = ActiveModel::Type::Boolean.new.cast(gp["with_coach"]) if gp.key?("with_coach")
+    gp["urgent_player_search"] = ActiveModel::Type::Boolean.new.cast(gp["urgent_player_search"]) if gp.key?("urgent_player_search")
     gp["occurrences_per_week"] = gp["occurrences_per_week"].to_i if gp.key?("occurrences_per_week")
     gp["players_count"] = gp["players_count"].to_i if gp.key?("players_count")
     gp["sport"] = gp["sport"].presence if gp.key?("sport")

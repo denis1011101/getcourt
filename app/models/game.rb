@@ -1,5 +1,6 @@
 class Game < ApplicationRecord
   after_commit :schedule_post_game_stats_reminder, on: %i[create update]
+  after_commit :enqueue_urgent_player_search_notification, on: %i[create update]
 
   belongs_to :tournament, optional: true
   belongs_to :court
@@ -270,7 +271,19 @@ class Game < ApplicationRecord
     false
   end
 
+  def urgent_player_search?
+    !!self[:urgent_player_search]
+  end
+
   private
+
+  def enqueue_urgent_player_search_notification
+    return unless urgent_player_search?
+    return unless saved_change_to_urgent_player_search?
+    return unless self[:urgent_player_search]
+
+    NotifyUrgentPlayerSearchJob.perform_later(id)
+  end
 
   # IMPORTANT: relies on Time.zone being already set (caller wraps Time.use_zone)
   def start_at_for_ui_in_current_zone

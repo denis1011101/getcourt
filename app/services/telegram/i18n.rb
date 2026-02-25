@@ -204,6 +204,9 @@ module Telegram
       # Games looking for player
       games_need_players_title: "Игры, которые ищут игроков:",
       no_games_need_players: "Сейчас нет игр, которым нужны игроки.",
+      urgent_search_enable: "Объявить срочный поиск игрока",
+      urgent_search_disable: "Отменить срочный поиск игрока",
+      urgent_search_notification: "Срочно нужен игрок\nИгра #%{id}\nСоздатель: %{owner}\nДата: %{date}\nСпорт: %{sport}\nУровень: %{skill}\nМесто: %{court}",
 
       # Tennis life (placeholder)
       tennis_life_title: "Теннис лайф",
@@ -581,6 +584,9 @@ module Telegram
       # Games looking for player
       games_need_players_title: "Games looking for players:",
       no_games_need_players: "No games currently looking for players.",
+      urgent_search_enable: "Announce urgent player search",
+      urgent_search_disable: "Cancel urgent player search",
+      urgent_search_notification: "Urgent player needed\nGame #%{id}\nOwner: %{owner}\nDate: %{date}\nSport: %{sport}\nLevel: %{skill}\nCourt: %{court}",
 
       # Tennis life (placeholder)
       tennis_life_title: "Tennis life",

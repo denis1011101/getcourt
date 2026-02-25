@@ -256,6 +256,11 @@ module Telegram
           end
 
           if user && (user.admin? || user.id == game.user_id)
+            if game.urgent_player_search?
+              buttons << [ { text: t.(:urgent_search_disable), callback_data: "game:urgent_search:#{game.id}:off:#{page}" } ]
+            else
+              buttons << [ { text: t.(:urgent_search_enable), callback_data: "game:urgent_search:#{game.id}:on:#{page}" } ]
+            end
             buttons << [ { text: t.(:invite_players), callback_data: "game:invite:#{game.id}" } ]
             buttons << [ { text: t.(:manage_players), callback_data: "game:manage:#{game.id}:#{page}" } ]
             buttons << [ { text: t.(:edit), callback_data: "game:edit:#{game.id}" } ]

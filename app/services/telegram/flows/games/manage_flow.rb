@@ -19,6 +19,8 @@ module Telegram
               Telegram::Flows::Games::Manage::PrebookApproveFlow.handle_callback(callback)
             when /\Agame:delete\b/
               Telegram::Flows::Games::Manage::DeleteFlow.handle_callback(callback)
+            when /\Agame:urgent_search\b/
+              Telegram::Flows::Games::Manage::UrgentSearchFlow.handle_callback(callback)
             else
               Rails.logger.debug "[Telegram::Flows::Games::ManageFlow] unknown action: #{data}"
               nil

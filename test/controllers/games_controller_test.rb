@@ -93,4 +93,31 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to game_path(game)
     assert_equal 6, game.reload.players_count
   end
+
+  test "owner can toggle urgent player search on and off" do
+    post session_url, params: { email: "owner_urgent_toggle@example.com" }
+    owner = User.find_by!(email: "owner_urgent_toggle@example.com")
+    game = Game.create!(court: courts(:one), user: owner, date: Date.current + 2.days, time: "10:00")
+
+    assert_not game.urgent_player_search?
+
+    post toggle_urgent_player_search_game_url(game)
+    assert_redirected_to game_path(game)
+    assert game.reload.urgent_player_search?
+
+    post toggle_urgent_player_search_game_url(game)
+    assert_redirected_to game_path(game)
+    assert_not game.reload.urgent_player_search?
+  end
+
+  test "non-owner cannot toggle urgent player search" do
+    owner = User.create!(email: "owner_forbidden_urgent@example.com")
+    game = Game.create!(court: courts(:one), user: owner, date: Date.current + 2.days, time: "10:00")
+
+    post session_url, params: { email: "stranger_forbidden_urgent@example.com" }
+    post toggle_urgent_player_search_game_url(game)
+
+    assert_response :forbidden
+    assert_not game.reload.urgent_player_search?
+  end
 end

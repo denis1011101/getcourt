@@ -53,6 +53,10 @@ Rails.application.routes.draw do
   end
   root "games#index"
   resources :games, except: [ :index ] do
+    member do
+      post :toggle_urgent_player_search
+    end
+
     collection do
       get :prebooking_fragment
     end

@@ -19,6 +19,7 @@ Review changes made by an AI editor. Follow these steps:
    - `bin/importmap audit` (scan_js: JS dependency vulnerabilities)
    - `bin/rubocop` (lint: code style)
    - `PARALLEL_WORKERS=0 bin/rails db:test:prepare test test:system` (test: unit/integration/system tests)
+   - For reviews, always run the exact command above to include system tests.
 5. Provide a structured review:
    - Summary of what changed
    - CI results (pass/fail for each check)

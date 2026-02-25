@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_24_141534) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_25_225808) do
   create_table "cities", force: :cascade do |t|
     t.string "asciiname"
     t.string "country_code"
@@ -61,12 +61,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_24_141534) do
     t.text "times", default: "[]", null: false
     t.integer "tournament_id"
     t.datetime "updated_at", null: false
+    t.boolean "urgent_player_search", default: false, null: false
     t.integer "user_id", null: false
     t.boolean "with_coach", default: false, null: false
     t.index ["court_id"], name: "index_games_on_court_id"
     t.index ["prebooking_enabled"], name: "index_games_on_prebooking_enabled"
     t.index ["recurring"], name: "index_games_on_recurring"
     t.index ["tournament_id"], name: "index_games_on_tournament_id"
+    t.index ["urgent_player_search"], name: "index_games_on_urgent_player_search"
     t.index ["user_id"], name: "index_games_on_user_id"
     t.index ["with_coach"], name: "index_games_on_with_coach"
   end

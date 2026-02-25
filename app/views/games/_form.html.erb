@@ -42,6 +42,14 @@
       </label>
       <p class="mt-1 text-xs text-gray-500">If checked, this game will be held with a coach.</p>
     </div>
+
+    <div class="mb-4">
+      <label class="inline-flex items-center gap-2">
+        <%= form.check_box :urgent_player_search, { class: "h-4 w-4 text-indigo-600" }, "1", "0" %>
+        <span class="text-sm text-gray-700">Urgent player search</span>
+      </label>
+      <p class="mt-1 text-xs text-gray-500">Show this game in "Games looking for player" and notify users with enabled nearby alerts.</p>
+    </div>
     
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
       <div>

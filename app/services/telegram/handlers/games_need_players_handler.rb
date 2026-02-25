@@ -13,21 +13,11 @@ module Telegram
           page = page.to_i < 1 ? 1 : page.to_i
           user = Telegram::Helpers::UserLookup.find_user(chat_id)
 
-          # Future games that still have spots available
-          all_games = Game.includes(:user, :participations)
-                         .where("recurring = ? OR date >= ?", true, Date.current)
-                         .to_a
-
-          # Filter to games with open spots
-          open_games = all_games.select do |g|
-            required = (g.respond_to?(:players_count) && g.players_count.to_i > 0) ? g.players_count.to_i : 4
-            approved = if g.participations.loaded?
-                         g.participations.count { |p| p.respond_to?(:approved?) ? p.approved? : (p.status == "approved") }
-            else
-                         g.participations.respond_to?(:approved) ? g.participations.approved.count : g.participations.count
-            end
-            approved < required
-          end
+          # Future games where urgent player search is enabled
+          open_games = Game.includes(:user, :participations)
+                           .where(urgent_player_search: true)
+                           .where("recurring = ? OR date >= ?", true, Date.current)
+                           .to_a
 
           # Sort by date (nearest first)
           open_games.sort_by! do |g|
