@@ -29,11 +29,15 @@ module Telegram
     end
 
     def self.send_with_buttons(chat_id, text, buttons, parse_mode: "Markdown")
-      post("sendMessage", { "chat_id" => chat_id.to_s, "text" => text.to_s, "parse_mode" => parse_mode, "reply_markup" => { inline_keyboard: buttons }.to_json })
+      params = { "chat_id" => chat_id.to_s, "text" => text.to_s, "reply_markup" => { inline_keyboard: buttons }.to_json }
+      params["parse_mode"] = parse_mode if parse_mode.present?
+      post("sendMessage", params)
     end
 
     def self.send_simple(chat_id, text, parse_mode: "Markdown")
-      post("sendMessage", { "chat_id" => chat_id.to_s, "text" => text.to_s, "parse_mode" => parse_mode })
+      params = { "chat_id" => chat_id.to_s, "text" => text.to_s }
+      params["parse_mode"] = parse_mode if parse_mode.present?
+      post("sendMessage", params)
     end
 
     def self.answer_callback(callback_id, text = nil, show_alert: false)
@@ -41,7 +45,8 @@ module Telegram
     end
 
     def self.edit_message_with_buttons(chat_id, message_id_or_inline, text, buttons, parse_mode: "Markdown")
-      params = { "text" => text.to_s, "parse_mode" => parse_mode, "reply_markup" => { inline_keyboard: buttons }.to_json }
+      params = { "text" => text.to_s, "reply_markup" => { inline_keyboard: buttons }.to_json }
+      params["parse_mode"] = parse_mode if parse_mode.present?
       # numeric message_id (chat + message_id) vs inline_message_id (no chat_id)
       if message_id_or_inline.to_s =~ /\A\d+\z/
         params["chat_id"] = chat_id.to_s
@@ -67,7 +72,9 @@ module Telegram
 
     # Fallback edit without buttons
     def self.edit_message_text(chat_id, message_id, text, parse_mode: "Markdown")
-      post("editMessageText", { "chat_id" => chat_id.to_s, "message_id" => message_id.to_i, "text" => text.to_s, "parse_mode" => parse_mode })
+      params = { "chat_id" => chat_id.to_s, "message_id" => message_id.to_i, "text" => text.to_s }
+      params["parse_mode"] = parse_mode if parse_mode.present?
+      post("editMessageText", params)
     end
 
     def self.delete_message(chat_id, message_id)

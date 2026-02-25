@@ -14,12 +14,12 @@ module Telegram
           rating_rows = fetch_rating_rows(limit: RATING_LIMIT)
           stats = fetch_stats
 
-          lines = [ "*#{t.(:tennis_life_title)}*", "" ]
+          lines = [ t.(:tennis_life_title).to_s, "" ]
 
           lines.concat(stats_lines(stats, locale: locale))
           lines << ""
 
-          lines << "*#{t.(:rating_title)}*"
+          lines << t.(:rating_title).to_s
           if rating_rows.any?
             rating_rows.each_with_index do |row, idx|
               lines << t.(:rating_row, rank: idx + 1, name: display_name_for(row[:user]), games: row[:games], wins: row[:wins], pct: row[:pct])
@@ -29,7 +29,7 @@ module Telegram
           end
 
           lines << ""
-          lines << "*Telegram*"
+          lines << "Telegram"
           if posts.any?
             posts.each do |post|
               channel = post.telegram_channel
@@ -50,7 +50,11 @@ module Telegram
           text = lines.join("\n")
           buttons = [ [ { text: t.(:main_menu_btn), callback_data: "menu:main" } ] ]
 
-          send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
+          if message_id.present?
+            Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, buttons, parse_mode: nil)
+          else
+            Telegram::Api.send_with_buttons(chat_id, text, buttons, parse_mode: nil)
+          end
         end
 
         private
@@ -66,14 +70,14 @@ module Telegram
         def stats_lines(stats, locale: :ru)
           if locale.to_s.start_with?("ru")
             [
-              "*Статистика GetCourt*",
+              "Статистика GetCourt",
               "• Игр: #{stats[:games]}",
               "• Кортов: #{stats[:courts]}",
               "• Участий: #{stats[:participations]}"
             ]
           else
             [
-              "*GetCourt stats*",
+              "GetCourt stats",
               "• Games: #{stats[:games]}",
               "• Courts: #{stats[:courts]}",
               "• Participations: #{stats[:participations]}"
