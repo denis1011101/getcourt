@@ -191,16 +191,29 @@
           <div class="bg-white rounded-lg border p-4 shadow-sm">
             <h3 class="text-sm font-semibold text-gray-700 mb-3">Add match</h3>
             <% participant_options = @tournament.tournament_participants.includes(:user).map { |tp| [tp.name.presence || tp.user&.name.presence || tp.user&.email || "Player", tp.user_id] } %>
+            <% doubles = @tournament.format == "doubles" %>
             <%= form_tag add_match_tournament_path(@tournament), method: :post, class: "flex flex-wrap items-end gap-3" do %>
               <div>
-                <label class="block text-xs text-gray-500 mb-1">Player A</label>
+                <label class="block text-xs text-gray-500 mb-1"><%= doubles ? "Team A / Player 1" : "Player A" %></label>
                 <%= select_tag :player_a_id, options_for_select(participant_options), include_blank: "Select", class: "block w-44 rounded-md border-gray-300 shadow-sm text-sm" %>
               </div>
+              <% if doubles %>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Team A / Player 2</label>
+                  <%= select_tag :player_a2_id, options_for_select(participant_options), include_blank: "Select", class: "block w-44 rounded-md border-gray-300 shadow-sm text-sm" %>
+                </div>
+              <% end %>
               <div class="flex items-end pb-2 text-gray-400 font-medium">vs</div>
               <div>
-                <label class="block text-xs text-gray-500 mb-1">Player B</label>
+                <label class="block text-xs text-gray-500 mb-1"><%= doubles ? "Team B / Player 1" : "Player B" %></label>
                 <%= select_tag :player_b_id, options_for_select(participant_options), include_blank: "Select", class: "block w-44 rounded-md border-gray-300 shadow-sm text-sm" %>
               </div>
+              <% if doubles %>
+                <div>
+                  <label class="block text-xs text-gray-500 mb-1">Team B / Player 2</label>
+                  <%= select_tag :player_b2_id, options_for_select(participant_options), include_blank: "Select", class: "block w-44 rounded-md border-gray-300 shadow-sm text-sm" %>
+                </div>
+              <% end %>
               <div>
                 <label class="block text-xs text-gray-500 mb-1">Score</label>
                 <%= text_field_tag :score, nil, placeholder: "6-4 6-3", class: "block w-36 rounded-md border-gray-300 shadow-sm text-sm" %>
