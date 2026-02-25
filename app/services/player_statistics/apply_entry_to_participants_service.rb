@@ -10,7 +10,6 @@ module PlayerStatistics
 
     def call
       users = @game.participations.includes(:user).map(&:user)
-
       users = users.compact.uniq { |u| u.id }
 
       result = users.map do |u|

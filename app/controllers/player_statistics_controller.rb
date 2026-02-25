@@ -124,7 +124,15 @@ end
   end
 
   def allowed_to_fill_stats?(game)
-    current_user && (current_user == game.user || (current_user.respond_to?(:admin?) && current_user.admin?))
+    return false unless current_user
+    return true if current_user == game.user || (current_user.respond_to?(:admin?) && current_user.admin?)
+
+    participations = game.participations
+    if participations.respond_to?(:approved)
+      participations.approved.exists?(user_id: current_user.id)
+    else
+      participations.exists?(user_id: current_user.id, status: "approved")
+    end
   end
 
   def game_started?(game)

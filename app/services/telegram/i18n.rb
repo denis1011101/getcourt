@@ -130,7 +130,7 @@ module Telegram
       create_court_error: "Не удалось создать корт: %{error}",
 
       # Rating
-      rating_title: "Рейтинг игроков:",
+      rating_title: "Рейтинг игроков (топ 10):",
       rating_page: "Рейтинг — стр. %{page}/%{pages}",
       no_rating_data: "Пока нет данных для рейтинга.",
       rating_row: "%{rank}. %{name} — %{games} игр, %{wins} побед (%{pct}%)",
@@ -234,7 +234,7 @@ module Telegram
       stats_user_not_found: "Пользователь не найден — не удаётся записать статистику.",
       stats_locked_msg: "Статистика будет доступна после начала игры: %{time} (%{tz})",
       stats_locked_no_time: "Время начала ещё не установлено.",
-      stats_unauthorized: "Только создатель игры или администратор может заполнять статистику.",
+      stats_unauthorized: "Только участники игры или администратор могут заполнять статистику.",
       stats_will_be_available: "Статистика будет доступна после начала игры.",
       unexpected_step: "Неожиданный шаг, прерывание.",
       please_reply: "Пожалуйста, ответьте.",
@@ -611,7 +611,7 @@ module Telegram
       stats_user_not_found: "User not found — cannot record statistics.",
       stats_locked_msg: "Statistics will be available after the game starts: %{time} (%{tz})",
       stats_locked_no_time: "Start time is not set yet.",
-      stats_unauthorized: "Only the game creator or an admin can fill statistics.",
+      stats_unauthorized: "Only game participants or an admin can fill statistics.",
       stats_will_be_available: "Statistics will be available after the game starts.",
       unexpected_step: "Unexpected step, aborting.",
       please_reply: "Please reply.",

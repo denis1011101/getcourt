@@ -240,7 +240,7 @@ module Telegram
 
           buttons << row1
 
-          can_fill_stats = user && (user.admin? || user.id == game.user_id)
+          can_fill_stats = can_fill_stats_for_game?(user, game)
 
           # inline players list (same message)
           buttons << [ { text: t.(:players_list_btn), callback_data: "game:players:#{game.id}:#{page}" } ]
@@ -316,6 +316,18 @@ module Telegram
         end
 
         private
+
+        def can_fill_stats_for_game?(user, game)
+          return false unless user && game
+          return true if user.admin? || user.id == game.user_id
+
+          participations = game.participations
+          if participations.respond_to?(:approved)
+            participations.approved.exists?(user_id: user.id)
+          else
+            participations.exists?(user_id: user.id, status: "approved")
+          end
+        end
 
         def coach_badge_for(game, locale = "ru")
           return nil unless game

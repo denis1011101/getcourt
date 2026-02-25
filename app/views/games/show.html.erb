@@ -62,7 +62,14 @@
       <%= render "prebookings", game: @game %>
     <% end %>
 
-    <% can_fill_stats = current_user && (current_user == @game.user || (current_user.respond_to?(:admin?) && current_user.admin?)) %>
+    <% can_fill_stats = false %>
+    <% if current_user.present? %>
+      <% can_fill_stats = (current_user == @game.user || (current_user.respond_to?(:admin?) && current_user.admin?)) %>
+      <% unless can_fill_stats %>
+        <% scope = @game.participations.respond_to?(:approved) ? @game.participations.approved : @game.participations %>
+        <% can_fill_stats = scope.exists?(user_id: current_user.id) %>
+      <% end %>
+    <% end %>
     <% game_started =
          if @game.respond_to?(:started_for_ui?)
            @game.started_for_ui?

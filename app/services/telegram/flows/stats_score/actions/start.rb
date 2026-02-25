@@ -16,7 +16,7 @@ module Telegram
             end
 
             actor = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
-            unless actor && (actor.admin? || actor.id == game.user_id)
+            unless can_fill_stats_for_game?(actor, game)
               Telegram::Api.answer_callback(cb_id, t.(:stats_unauthorized), show_alert: true) rescue nil
               return
             end
@@ -51,6 +51,18 @@ module Telegram
             StatsScore::State.set(chat_id, state)
             StatsScore::Ui.render_setup(chat_id:)
             Telegram::Api.answer_callback(cb_id) rescue nil
+          end
+
+          def can_fill_stats_for_game?(user, game)
+            return false unless user && game
+            return true if user.admin? || user.id == game.user_id
+
+            participations = game.participations
+            if participations.respond_to?(:approved)
+              participations.approved.exists?(user_id: user.id)
+            else
+              participations.exists?(user_id: user.id, status: "approved")
+            end
           end
         end
       end

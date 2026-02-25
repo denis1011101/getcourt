@@ -139,8 +139,8 @@ module Telegram
           end
 
           user = Telegram::Helpers::UserLookup.find_user(chat_id)
-          unless user && (user.admin? || user.id == game.user_id)
-            Telegram::Api.answer_callback(cb_id, "Only the game creator or an admin can fill statistics.", show_alert: true) rescue nil
+          unless can_fill_stats_for_game?(user, game)
+            Telegram::Api.answer_callback(cb_id, "Only game participants or an admin can fill statistics.", show_alert: true) rescue nil
             return
           end
 
@@ -162,11 +162,14 @@ module Telegram
           last_reset = game.last_participations_reset_at
           saved_entry =
             if last_reset.present?
-              PlayerStatisticEntry.where(user: game.user, game: game, source: "telegram")
+              PlayerStatisticEntry.where(game: game, source: "telegram")
                                  .where("recorded_at >= ?", last_reset.beginning_of_day)
+                                 .order(recorded_at: :desc)
                                  .first
             else
-              PlayerStatisticEntry.find_by(user: game.user, game: game, source: "telegram")
+              PlayerStatisticEntry.where(game: game, source: "telegram")
+                                 .order(recorded_at: :desc)
+                                 .first
             end
           saved_fields = (saved_entry&.data || {}).stringify_keys
 
@@ -228,15 +231,14 @@ module Telegram
           hours_value = entered[hours_key] || entered[hours_key.to_sym]
 
           if hours_value.nil? && game
-            saved_entry =
-              if last_reset.present?
-                PlayerStatisticEntry.where(user: game.user, game: game, source: "telegram")
-                                   .where("recorded_at >= ?", last_reset.beginning_of_day)
-                                   .first
-              else
-                PlayerStatisticEntry.find_by(user: game.user, game: game, source: "telegram")
-              end
-            hours_value = saved_entry&.data&.dig(hours_key)
+            scope = PlayerStatisticEntry.where(game: game, source: "telegram")
+            scope = scope.where("recorded_at >= ?", last_reset.beginning_of_day) if last_reset.present?
+
+            saved_entry = scope.order(recorded_at: :desc).detect do |entry|
+              data = entry.data.to_h
+              data.key?(hours_key) || data.key?(hours_key.to_sym)
+            end
+            hours_value = saved_entry&.data&.to_h&.dig(hours_key) || saved_entry&.data&.to_h&.dig(hours_key.to_sym)
           end
 
           display_hours =
@@ -307,8 +309,8 @@ module Telegram
           end
 
           actor = Telegram::Helpers::UserLookup.find_user(chat_id)
-          unless actor && (actor.admin? || actor.id == game.user_id)
-            Telegram::Api.answer_callback(cb_id, "Only the game creator or an admin can fill statistics.", show_alert: true) rescue nil
+          unless can_fill_stats_for_game?(actor, game)
+            Telegram::Api.answer_callback(cb_id, "Only game participants or an admin can fill statistics.", show_alert: true) rescue nil
             return
           end
 
@@ -388,6 +390,18 @@ module Telegram
             chat_id,
             (conv.is_a?(Hash) ? conv.merge("fields" => entered, "game_id" => game_id) : { "fields" => entered, "game_id" => game_id })
           )
+        end
+
+        def can_fill_stats_for_game?(user, game)
+          return false unless user && game
+          return true if user.admin? || user.id == game.user_id
+
+          participations = game.participations
+          if participations.respond_to?(:approved)
+            participations.approved.exists?(user_id: user.id)
+          else
+            participations.exists?(user_id: user.id, status: "approved")
+          end
         end
       end
     end

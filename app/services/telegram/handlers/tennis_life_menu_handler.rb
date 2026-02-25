@@ -1,7 +1,7 @@
 module Telegram
   module Handlers
     class TennisLifeMenuHandler
-      RATING_LIMIT = 5
+      RATING_LIMIT = 10
 
       class << self
         include Telegram::Handlers::ReplyHelpers

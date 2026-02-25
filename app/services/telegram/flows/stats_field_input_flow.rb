@@ -10,8 +10,8 @@ module Telegram
           end
 
           actor = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
-          unless actor && (actor.admin? || actor.id == game.user_id)
-            Telegram::Api.answer_callback(cb_id, "Only the game creator or an admin can fill statistics.", show_alert: true) rescue nil
+          unless can_fill_stats_for_game?(actor, game)
+            Telegram::Api.answer_callback(cb_id, "Only game participants or an admin can fill statistics.", show_alert: true) rescue nil
             return false
           end
 
@@ -214,6 +214,18 @@ module Telegram
           end
         rescue => e
           Rails.logger.error "[Telegram::Flows::StatsFieldInputFlow] increment_activity_for_game error: #{e.class}: #{e.message}"
+        end
+
+        def can_fill_stats_for_game?(user, game)
+          return false unless user && game
+          return true if user.admin? || user.id == game.user_id
+
+          participations = game.participations
+          if participations.respond_to?(:approved)
+            participations.approved.exists?(user_id: user.id)
+          else
+            participations.exists?(user_id: user.id, status: "approved")
+          end
         end
       end
     end
