@@ -269,6 +269,26 @@ module Telegram
       hours_short: "ч",
       stats_field_enter_value: "Введите значение для: *%{label}*\nПример: `%{example}`\n\nОтправьте число в чат или нажмите кнопку ниже.",
 
+      # Stats score flow (team picking & score entry)
+      score_result_setup: "Настройка результата",
+      score_game_label: "Игра #%{id}",
+      score_teams_detected_1v1: "Команды определены (1 на 1).",
+      score_pick_team_a: "Выберите 2 игроков для команды A:",
+      score_team_a_picked: "Команда A: %{names}",
+      score_team_a: "Команда A: %{names}",
+      score_team_b: "Команда B: %{names}",
+      score_swap_btn: "Поменять A/B",
+      score_enter_btn: "Ввести счёт",
+      score_reset_btn: "Сброс",
+      score_select_teams_first: "Сначала выберите команды.",
+      score_result_title: "Результат",
+      score_enter_instruction: "Введите счёт по сетам (команда A vs команда B):",
+      score_example: "Пример: `6-4 6-3` или `6:4 3:6 10:8`",
+      score_send_in_chat: "Отправьте счёт в чат.",
+      score_invalid_format: "Неверный формат счёта, попробуйте снова.",
+      score_not_enough_players: "Недостаточно игроков для записи результата.",
+      score_error: "Ошибка.",
+
       # Tournaments
       create_tournament: "Создать турнир",
       find_tournament: "Найти турнир",
@@ -625,6 +645,26 @@ module Telegram
       game_time_label: "Game time",
       hours_short: "h",
       stats_field_enter_value: "Enter value for: *%{label}*\nExample: `%{example}`\n\nSend a number in chat or use buttons below.",
+
+      # Stats score flow (team picking & score entry)
+      score_result_setup: "Result setup",
+      score_game_label: "Game #%{id}",
+      score_teams_detected_1v1: "Teams detected (1v1).",
+      score_pick_team_a: "Pick 2 players for Team A:",
+      score_team_a_picked: "Team A: %{names}",
+      score_team_a: "Team A: %{names}",
+      score_team_b: "Team B: %{names}",
+      score_swap_btn: "Swap A/B",
+      score_enter_btn: "Enter score",
+      score_reset_btn: "Reset",
+      score_select_teams_first: "Select teams first.",
+      score_result_title: "Result",
+      score_enter_instruction: "Enter set score as Team A vs Team B:",
+      score_example: "Example: `6-4 6-3` or `6:4 3:6 10:8`",
+      score_send_in_chat: "Please send score in chat.",
+      score_invalid_format: "Invalid score format, try again.",
+      score_not_enough_players: "Not enough players to record a result.",
+      score_error: "Error.",
 
       # Tournaments
       create_tournament: "Create tournament",

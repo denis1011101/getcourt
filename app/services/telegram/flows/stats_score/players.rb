@@ -5,10 +5,7 @@ module Telegram
         module_function
 
         def for_game(game)
-          users = []
-          users << game.user
-          users.concat(game.participations.includes(:user).map(&:user))
-          users.compact.uniq(&:id)
+          game.participations.where(status: :approved).includes(:user).map(&:user).compact.uniq(&:id)
         rescue
           []
         end

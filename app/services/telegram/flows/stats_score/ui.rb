@@ -8,6 +8,9 @@ module Telegram
           conv = State.get(chat_id)
           return unless conv.is_a?(Hash)
 
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+
           game_id = conv["game_id"].to_i
           message_id = conv["message_id"]
 
@@ -19,21 +22,21 @@ module Telegram
           picked = Array(conv["picked_ids"]).map(&:to_i)
 
           text = []
-          text << "*Result setup*"
-          text << "Game ##{game_id}"
+          text << "*#{t.(:score_result_setup)}*"
+          text << t.(:score_game_label, id: game_id)
           text << ""
 
           if ids.size == 2
-            text << "Teams detected (1v1)."
+            text << t.(:score_teams_detected_1v1)
           else
-            text << "Pick 2 players for Team A:" if picked.size < 2
-            text << "Team A picked: #{Names.team_names(conv, picked)}" if picked.any? && picked.size < 2
+            text << t.(:score_pick_team_a) if picked.size < 2
+            text << t.(:score_team_a_picked, names: Names.team_names(conv, picked)) if picked.any? && picked.size < 2
           end
 
           if team_a_ids.any? && team_b_ids.any?
             text << ""
-            text << "Team A: #{Names.team_names(conv, team_a_ids)}"
-            text << "Team B: #{Names.team_names(conv, team_b_ids)}"
+            text << t.(:score_team_a, names: Names.team_names(conv, team_a_ids))
+            text << t.(:score_team_b, names: Names.team_names(conv, team_b_ids))
           end
 
           keyboard = []
@@ -48,14 +51,14 @@ module Telegram
 
           if team_a_ids.any? && team_b_ids.any?
             keyboard << [
-              { text: "Swap A/B", callback_data: "tg_score_swap:#{game_id}" },
-              { text: "Enter score", callback_data: "tg_score_enter:#{game_id}" }
+              { text: t.(:score_swap_btn), callback_data: "tg_score_swap:#{game_id}" },
+              { text: t.(:score_enter_btn), callback_data: "tg_score_enter:#{game_id}" }
             ]
           elsif ids.size >= 4
-            keyboard << [ { text: "Reset", callback_data: "tg_score_reset:#{game_id}" } ]
+            keyboard << [ { text: t.(:score_reset_btn), callback_data: "tg_score_reset:#{game_id}" } ]
           end
 
-          keyboard << [ { text: "Back", callback_data: "tg_score_cancel:#{game_id}" } ]
+          keyboard << [ { text: t.(:back), callback_data: "tg_score_cancel:#{game_id}" } ]
 
           edit_or_send(chat_id:, message_id:, text: text.join("\n"), keyboard:)
         end
@@ -64,12 +67,15 @@ module Telegram
           conv = State.get(chat_id)
           return unless conv.is_a?(Hash) && conv["game_id"].to_i == game_id
 
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+
           team_a_ids = Array(conv["team_a_ids"]).map(&:to_i)
           team_b_ids = Array(conv["team_b_ids"]).map(&:to_i)
 
           if team_a_ids.empty? || team_b_ids.empty?
             render_setup(chat_id:)
-            Telegram::Api.answer_callback(cb_id, "Select teams first.", show_alert: true) rescue nil
+            Telegram::Api.answer_callback(cb_id, t.(:score_select_teams_first), show_alert: true) rescue nil
             return
           end
 
@@ -80,19 +86,19 @@ module Telegram
           team_b = Names.team_names(conv, team_b_ids)
 
           text = []
-          text << "*Result*"
-          text << "Game ##{game_id}"
+          text << "*#{t.(:score_result_title)}*"
+          text << t.(:score_game_label, id: game_id)
           text << ""
-          text << "Enter set score as Team A vs Team B:"
+          text << t.(:score_enter_instruction)
           text << "A: #{team_a}"
           text << "B: #{team_b}"
           text << ""
-          text << "Example: `6-4 6-3` or `6:4 3:6 10:8`"
-          text << "Please send score in chat."
+          text << t.(:score_example)
+          text << t.(:score_send_in_chat)
           text << ""
-          text << "Invalid score format, try again." if invalid
+          text << t.(:score_invalid_format) if invalid
 
-          keyboard = [ [ { text: "Back", callback_data: "tg_score_cancel:#{game_id}" } ] ]
+          keyboard = [ [ { text: t.(:back), callback_data: "tg_score_cancel:#{game_id}" } ] ]
 
           edit_or_send(chat_id:, message_id:, text: text.join("\n"), keyboard:)
           Telegram::Api.answer_callback(cb_id) rescue nil if cb_id

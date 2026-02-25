@@ -6,21 +6,24 @@ module Telegram
           module_function
 
           def call(chat_id:, message_id:, cb_id:, game_id:)
+            locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+            t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+
             game = Game.find_by(id: game_id)
             unless game
-              Telegram::Api.answer_callback(cb_id, "Game not found.", show_alert: true) rescue nil
+              Telegram::Api.answer_callback(cb_id, t.(:game_not_found), show_alert: true) rescue nil
               return
             end
 
             actor = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
             unless actor && (actor.admin? || actor.id == game.user_id)
-              Telegram::Api.answer_callback(cb_id, "Only the game creator or an admin can fill statistics.", show_alert: true) rescue nil
+              Telegram::Api.answer_callback(cb_id, t.(:stats_unauthorized), show_alert: true) rescue nil
               return
             end
 
             players = StatsScore::Players.for_game(game)
             if players.size < 2
-              Telegram::Api.answer_callback(cb_id, "Not enough players to record a result.", show_alert: true) rescue nil
+              Telegram::Api.answer_callback(cb_id, t.(:score_not_enough_players), show_alert: true) rescue nil
               return
             end
 

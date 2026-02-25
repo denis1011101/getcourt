@@ -31,7 +31,8 @@ module Telegram
         rescue => e
           Rails.logger.error "[Telegram::Flows::StatsScore::CallbackRouter] error: #{e.class}: #{e.message}"
           cb_id = callback_query["id"] rescue nil
-          Telegram::Api.answer_callback(cb_id, "Error.", show_alert: true) rescue nil
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id) rescue "ru"
+          Telegram::Api.answer_callback(cb_id, Telegram::I18n.t(:score_error, locale: locale), show_alert: true) rescue nil
           nil
         end
       end
