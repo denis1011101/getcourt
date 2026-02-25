@@ -342,8 +342,7 @@ module Telegram
             actor: actor,
             data: data,
             source: "telegram",
-            recorded_at: recorded_at,
-            include_creator: true
+            recorded_at: recorded_at
           ).call
 
           Telegram::Api.answer_callback(cb_id, "Saved.", show_alert: false) rescue nil

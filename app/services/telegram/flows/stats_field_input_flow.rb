@@ -76,12 +76,14 @@ module Telegram
           actor = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
           return false unless game && actor
 
-          entry_exists = PlayerStatisticEntry.where(game: game, source: "telegram").exists?
-          match_exists = Match.where(game_id: game.id).exists?
-          first_entry = false
-          if entry_exists == false && match_exists == false
-            first_entry = true
+          last_reset = game.respond_to?(:last_participations_reset_at) ? game.last_participations_reset_at : nil
+          entry_scope = PlayerStatisticEntry.where(game: game)
+          match_scope = Match.where(game_id: game.id)
+          if last_reset.present?
+            entry_scope = entry_scope.where("recorded_at >= ?", last_reset)
+            match_scope = match_scope.where("played_at >= ?", last_reset)
           end
+          first_entry = !entry_scope.exists? && !match_scope.exists?
 
           # удалить пользовательское сообщение с числом (может не получиться — ок)
           Telegram::Api.post(
@@ -95,8 +97,7 @@ module Telegram
             actor: actor,
             data: { field.to_s => parsed },
             source: "telegram",
-            recorded_at: Time.current,
-            include_creator: true
+            recorded_at: Time.current
           ).call
 
           if first_entry
@@ -184,14 +185,7 @@ module Telegram
         end
 
         def increment_activity_for_game(game)
-          users = []
-          if game.respond_to?(:user)
-            users << game.user
-          end
-          if game.respond_to?(:participations)
-            users.concat(game.participations.includes(:user).map(&:user))
-          end
-          users = users.compact.uniq { |u| u.id }
+          users = game.participations.includes(:user).map(&:user).compact.uniq { |u| u.id }
 
           mode = StatisticsPresenter.hours_field_for_game(game) == :doubles_hours ? :doubles : :singles
 

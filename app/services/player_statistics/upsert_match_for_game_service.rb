@@ -75,12 +75,25 @@ module PlayerStatistics
         end
       end
 
+      # Skip games/training increment if any stat entry was already recorded for this
+      # user+game in the current cycle — increment_activity_for_game already counted it.
+      activity_counted = if new_record
+        last_reset = @game.respond_to?(:last_participations_reset_at) ? @game.last_participations_reset_at : nil
+        scope = PlayerStatisticEntry.where(user: @user, game: @game)
+        scope = scope.where("recorded_at >= ?", last_reset) if last_reset.present?
+        scope.exists?
+      else
+        false
+      end
+
       ps.with_lock do
         if new_record
-          if training_key
-            ps[training_key] = ps[training_key].to_i + 1
-          else
-            ps[games_key] = ps[games_key].to_i + 1
+          unless activity_counted
+            if training_key
+              ps[training_key] = ps[training_key].to_i + 1
+            else
+              ps[games_key] = ps[games_key].to_i + 1
+            end
           end
 
           if new_outcome == "win"

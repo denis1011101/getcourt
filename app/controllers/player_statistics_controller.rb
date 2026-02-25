@@ -44,17 +44,26 @@ class PlayerStatisticsController < ApplicationController
 
       saved_any = false
 
+      last_reset = game.respond_to?(:last_participations_reset_at) ? game.last_participations_reset_at : nil
+      entry_scope = PlayerStatisticEntry.where(game: game)
+      match_scope = Match.where(game_id: game.id)
+      if last_reset.present?
+        entry_scope = entry_scope.where("recorded_at >= ?", last_reset)
+        match_scope = match_scope.where("played_at >= ?", last_reset)
+      end
+      first_stats = !entry_scope.exists? && !match_scope.exists?
+
       if data.present?
         PlayerStatistics::ApplyEntryToParticipantsService.new(
           game: game,
           actor: current_user,
           data: data,
           source: "web",
-          recorded_at: Time.current,
-          include_creator: true
+          recorded_at: Time.current
         ).call
 
-        increment_activity_for_game!(game)
+        increment_activity_for_game!(game) if first_stats
+        first_stats = false
         saved_any = true
       end
 
@@ -66,7 +75,6 @@ class PlayerStatisticsController < ApplicationController
 
         if team_a_ids.any? && team_b_ids.any? && %w[a b draw].include?(winner)
           upsert_matches_for_teams(game, team_a_ids, team_b_ids, score, winner)
-          increment_activity_for_game!(game)
           saved_any = true
         end
       end
@@ -155,83 +163,40 @@ end
         Time.current
       end
 
-    mode = if team_a_ids.size >= 2 || team_b_ids.size >= 2
-             "doubles"
-    else
-             "singles"
-    end
+    mode = (team_a_ids.size >= 2 || team_b_ids.size >= 2) ? "doubles" : "singles"
+    result = winner == "draw" ? :draw : winner.to_sym
 
-    if winner == "draw"
-      team_a_ids.each do |user_id|
-        team_b_ids.each do |opponent_id|
-          upsert_match(game, user_id, opponent_id, mode, "draw", score, played_at)
-        end
-      end
-
-      team_b_ids.each do |user_id|
-        team_a_ids.each do |opponent_id|
-          upsert_match(game, user_id, opponent_id, mode, "draw", score, played_at)
-        end
-      end
-
-      return
-    end
-
-    team_a_ids.each do |user_id|
-      outcome = winner == "a" ? "win" : "loss"
-      opponent_id = mode == "singles" && team_b_ids.size == 1 ? team_b_ids.first : nil
-      upsert_match(game, user_id, opponent_id, mode, outcome, score, played_at)
-    end
-
-    team_b_ids.each do |user_id|
-      outcome = winner == "b" ? "win" : "loss"
-      opponent_id = mode == "singles" && team_a_ids.size == 1 ? team_a_ids.first : nil
-      upsert_match(game, user_id, opponent_id, mode, outcome, score, played_at)
-    end
-  end
-
-  def upsert_match(game, user_id, opponent_id, mode, outcome, score, played_at)
-    match = Match.find_or_initialize_by(user_id: user_id, game_id: game.id)
-    match.opponent_id = opponent_id
-    match.mode = mode
-    match.outcome = outcome
-    match.score = score
-    match.played_at = played_at
-    match.save!
+    Telegram::Flows::StatsScore::MatchUpserter.call(
+      game: game,
+      actor: current_user,
+      mode: mode,
+      team_a_ids: team_a_ids,
+      team_b_ids: team_b_ids,
+      result: result,
+      played_at: played_at,
+      score: score
+    )
   end
 
   def increment_activity_for_game!(game)
-    already_counted =
-      PlayerStatisticEntry.where(game: game).exists? ||
-      Match.where(game_id: game.id).exists?
-
-    if already_counted
-      return
-    end
-
-    users = game_participants(game)
+    users = game.participations.includes(:user).map(&:user).compact.uniq { |u| u.id }
+    return if users.empty?
 
     mode = StatisticsPresenter.hours_field_for_game(game) == :doubles_hours ? :doubles : :singles
 
     training_key = nil
     if game.respond_to?(:with_coach?) && game.with_coach?
-      if mode == :doubles
-        training_key = :group_training
-      else
-        training_key = :individual_training
-      end
+      training_key = mode == :doubles ? :group_training : :individual_training
     end
 
     users.each do |u|
       ps = u.player_statistic || u.create_player_statistic
       ps.with_lock do
         if training_key
-          ps[training_key] = ps[training_key].to_i + 1
-          ps[training_key] = [ ps[training_key].to_i, 0 ].max
+          ps[training_key] = [ ps[training_key].to_i + 1, 0 ].max
         else
           games_key = mode == :doubles ? :doubles_games : :singles_games
-          ps[games_key] = ps[games_key].to_i + 1
-          ps[games_key] = [ ps[games_key].to_i, 0 ].max
+          ps[games_key] = [ ps[games_key].to_i + 1, 0 ].max
         end
         ps.save!
       end
