@@ -391,7 +391,7 @@ module Telegram
       tournament_rr_enter_score: "Введите счёт матча (например: 6-2 6-4)",
       tournament_rr_match_saved: "Матч сохранён.",
       tournament_rr_standings_title: "🏆 Турнир #%{id} — Таблица",
-      tournament_rr_standings_row: "%{rank}. %{name} — %{wins}П %{losses}П",
+      tournament_rr_standings_row: "%{rank}. %{name} — %{wins}В %{losses}П",
       tournament_rr_no_matches: "Матчей пока нет.",
       tournament_no_court: "У турнира не выбран корт.",
 

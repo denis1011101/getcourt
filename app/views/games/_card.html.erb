@@ -86,6 +86,15 @@
       <% end %>
     </div>
 
+    <% if game.tournament.present? %>
+      <div class="mb-3 text-xs text-gray-500 truncate">
+        Tournament:
+        <%= link_to (game.tournament.respond_to?(:name) ? game.tournament.name : "##{game.tournament.id}"),
+                    tournament_path(game.tournament),
+                    class: "relative z-10 font-medium text-indigo-600 hover:text-indigo-800" %>
+      </div>
+    <% end %>
+
     <!-- Players bar -->
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">
