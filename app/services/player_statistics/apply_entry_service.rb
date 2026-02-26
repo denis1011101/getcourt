@@ -15,13 +15,18 @@ module PlayerStatistics
 
       PlayerStatisticEntry.transaction do
         entry = find_or_init_entry
-        old_data = (entry.persisted? ? (entry.data || {}) : {}).stringify_keys
+        stale = stale_entry?(entry)
+        old_data = if entry.persisted? && !stale
+          (entry.data || {}).stringify_keys
+        else
+          {}
+        end
         new_data = old_data.merge(patch)
         new_data.delete_if { |_k, v| v.nil? } # nil = удалить ключ из source of truth
 
         entry.actor = @actor
         entry.data = new_data
-        entry.recorded_at = @recorded_at
+        entry.recorded_at = stale ? [ @recorded_at, last_reset_time ].compact.max : @recorded_at
         entry.save!
 
         ps = @user.player_statistic || @user.create_player_statistic
@@ -51,17 +56,18 @@ module PlayerStatistics
     private
 
     def find_or_init_entry
-      last_reset = @game.respond_to?(:last_participations_reset_at) ? @game.last_participations_reset_at : nil
+      PlayerStatisticEntry.lock
+        .find_or_initialize_by(user: @user, game: @game, source: @source)
+    end
 
-      if last_reset.present?
-        PlayerStatisticEntry.lock
-          .where(user: @user, game: @game, source: @source)
-          .where("recorded_at >= ?", last_reset.beginning_of_day)
-          .first ||
-          PlayerStatisticEntry.new(user: @user, game: @game, source: @source)
-      else
-        PlayerStatisticEntry.lock
-          .find_or_initialize_by(user: @user, game: @game, source: @source)
+    def stale_entry?(entry)
+      lr = last_reset_time
+      lr.present? && entry.recorded_at.present? && entry.recorded_at < lr
+    end
+
+    def last_reset_time
+      @last_reset_time ||= if @game.respond_to?(:last_participations_reset_at)
+        @game.last_participations_reset_at&.beginning_of_day
       end
     end
   end
