@@ -1,6 +1,3 @@
-require "net/http"
-require "uri"
-
 module TennisScoreboard
   class Fetcher
     class << self
@@ -8,11 +5,15 @@ module TennisScoreboard
         fetch_raw_text
       end
 
+      def tennis_block(raw_text)
+        extract_tennis_block(raw_text)
+      end
+
       def telegram_text
         text = raw_text
         return if text.blank?
 
-        tennis = extract_tennis_block(text)
+        tennis = tennis_block(text)
         return if tennis.blank?
 
         plain = strip_html(tennis).strip
@@ -27,7 +28,7 @@ module TennisScoreboard
         gist_url = ENV["TENNIS_SCORE_GIST_URL"].to_s.strip
         return if gist_url.blank?
 
-        Rails.cache.fetch("tennis_life/tennis_score_raw", expires_in: 1.day) do
+        Rails.cache.fetch("tennis_life/tennis_score_raw", expires_in: 30.minutes) do
           uri = URI.parse(normalize_gist_url(gist_url))
           allowed_hosts = %w[gist.github.com gist.githubusercontent.com]
           raise ArgumentError, "Unsupported scoreboard host: #{uri.host}" unless allowed_hosts.include?(uri.host)
