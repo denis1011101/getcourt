@@ -13,11 +13,18 @@ module Telegram
           posts = fetch_recent_posts(limit: 5)
           rating_rows = fetch_rating_rows(limit: RATING_LIMIT)
           stats = fetch_stats
+          scoreboard_text = TennisScoreboard::Fetcher.telegram_text
 
           lines = [ t.(:tennis_life_title).to_s, "" ]
 
           lines.concat(stats_lines(stats, locale: locale))
           lines << ""
+
+          if scoreboard_text.present?
+            lines << (locale.to_s.start_with?("ru") ? "Теннисные события" : "Tennis scoreboard")
+            lines << scoreboard_text
+            lines << ""
+          end
 
           lines << t.(:rating_title).to_s
           if rating_rows.any?
