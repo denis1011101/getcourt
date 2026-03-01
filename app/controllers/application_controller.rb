@@ -1,5 +1,5 @@
 class ApplicationController < ActionController::Base
-  include Pagy::Backend
+  include Pagy::Method
   # Browser support check (keeps tolerant policy; skips in development and for non-HTML requests).
   before_action :check_browser_support, if: -> { request.format.html? }
 

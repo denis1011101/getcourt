@@ -1,5 +1,8 @@
 module ApplicationHelper
-  include Pagy::Frontend
+  def pagy_url_for(pagy, page, absolute: false)
+    pagy.page_url(page, absolute:)
+  end
+
   def format_date(date)
     date.strftime("%B %d, %Y")
   end
