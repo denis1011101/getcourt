@@ -2,7 +2,7 @@
 inherit_gem: { rubocop-rails-omakase: rubocop.yml }
 
 AllCops:
-  ParserEngine: parser_whitequark
+  ParserEngine: parser_prism
 
 # Overwrite or add rules to create your own house style
 #
