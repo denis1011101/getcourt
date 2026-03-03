@@ -60,6 +60,40 @@ class GameTest < ActiveSupport::TestCase
     assert_equal previous_date, game.display_date_for_show
   end
 
+  test "display_date_for_show returns previous occurrence when not yet reset" do
+    # Bug fix: stats should stay unlocked until weekly participations reset happens
+    game = Game.create!(
+      court: courts(:one),
+      user: users(:one),
+      date: Date.current - 21.days,
+      recurring: true
+    )
+
+    previous_date = game.next_date - 7.days
+    # no reset happened yet (last_participations_reset_at is nil or older)
+    assert_nil game.last_participations_reset_at
+    assert previous_date < Date.today, "previous occurrence should be in the past"
+
+    assert_equal previous_date, game.display_date_for_show
+    assert game.started_for_ui?, "stats should be unlocked while previous occurrence is not reset"
+  end
+
+  test "display_date_for_show returns next_date after participations are reset" do
+    game = Game.create!(
+      court: courts(:one),
+      user: users(:one),
+      date: Date.tomorrow - 21.days,
+      recurring: true
+    )
+
+    nd = game.next_date
+    assert_equal Date.tomorrow, nd
+    game.mark_participations_reset!(nd)
+
+    assert_equal nd, game.display_date_for_show
+    assert_not game.started_for_ui?, "stats should be locked after reset until next game starts"
+  end
+
   test "prebooking_candidate_dates returns weekly date sequence" do
     game = Game.new(court: courts(:one), user: users(:one), date: Date.current - 14.days, recurring: true)
 

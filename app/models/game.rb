@@ -146,6 +146,7 @@ class Game < ApplicationRecord
   end
 
   # Choose which occurrence to show on the game page:
+  # - if previous occurrence already passed and participations haven't been reset => show prev
   # - if next_date is today or in the future => show next_date
   # - otherwise => show previous occurrence (if any), fallback to next_date
   def display_date_for_show
@@ -156,6 +157,12 @@ class Game < ApplicationRecord
 
     # if participations were reset for the previous occurrence, show that one
     if prev && last_participations_reset_at.present? && last_participations_reset_at.to_date == prev
+      return prev
+    end
+
+    # if previous occurrence already passed but participations haven't been
+    # reset yet, we're still in that occurrence's cycle (stats should stay unlocked)
+    if prev && prev < Date.today && should_reset_participations?
       return prev
     end
 
