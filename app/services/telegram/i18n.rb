@@ -210,6 +210,8 @@ module Telegram
 
       # Tennis life (placeholder)
       tennis_life_title: "Теннис лайф",
+      tennis_life_feed_title: "Telegram Feed",
+      tennis_life_no_posts: "Пока постов нет. Подпишитесь на каналы ниже.",
 
       # Survey / onboarding
       greeting: "Добро пожаловать в GetCourt! Я помогу настроить ваш профиль для поиска соперников.",
@@ -590,6 +592,8 @@ module Telegram
       # Tennis life (placeholder)
       tennis_life_title: "Tennis life",
       tennis_life_text: "Section under development. News, tips, and interesting tennis content coming soon.",
+      tennis_life_feed_title: "Telegram Feed",
+      tennis_life_no_posts: "No posts yet. Subscribe to the channels below.",
 
       # Survey / onboarding
       greeting: "Welcome to GetCourt! I will help set up your profile to find opponents.",
