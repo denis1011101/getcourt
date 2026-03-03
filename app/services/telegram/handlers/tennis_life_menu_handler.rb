@@ -36,7 +36,7 @@ module Telegram
           end
 
           lines << ""
-          lines << "Telegram"
+          lines << "Telegram Feed"
           if posts.any?
             posts.each do |post|
               channel = post.telegram_channel
@@ -50,6 +50,8 @@ module Telegram
               lines << link
               lines << ""
             end
+          else
+            lines << "No posts yet. Subscribe to the channels below."
           end
 
           text = lines.join("\n")
