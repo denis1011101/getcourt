@@ -37,9 +37,9 @@ module Telegram
     private
 
     def stats_already_filled?(game)
-      last_reset = game.last_participations_reset_at
+      cycle_start = game.respond_to?(:current_cycle_start) ? game.current_cycle_start : nil
       query = PlayerStatisticEntry.where(user_id: game.user_id, game_id: game.id)
-      query = query.where("recorded_at >= ?", last_reset.beginning_of_day) if last_reset.present?
+      query = query.where("recorded_at >= ?", cycle_start) if cycle_start.present?
       query.exists?
     end
 

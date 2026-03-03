@@ -66,8 +66,8 @@ module PlayerStatistics
     end
 
     def last_reset_time
-      @last_reset_time ||= if @game.respond_to?(:last_participations_reset_at)
-        @game.last_participations_reset_at&.beginning_of_day
+      @last_reset_time ||= if @game.respond_to?(:current_cycle_start)
+        @game.current_cycle_start
       end
     end
   end

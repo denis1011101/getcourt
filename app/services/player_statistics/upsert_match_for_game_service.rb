@@ -78,9 +78,9 @@ module PlayerStatistics
       # Skip games/training increment if any stat entry was already recorded for this
       # user+game in the current cycle — increment_activity_for_game already counted it.
       activity_counted = if new_record
-        last_reset = @game.respond_to?(:last_participations_reset_at) ? @game.last_participations_reset_at : nil
+        cycle_start = @game.respond_to?(:current_cycle_start) ? @game.current_cycle_start : nil
         scope = PlayerStatisticEntry.where(user: @user, game: @game)
-        scope = scope.where("recorded_at >= ?", last_reset) if last_reset.present?
+        scope = scope.where("recorded_at >= ?", cycle_start) if cycle_start.present?
         scope.exists?
       else
         false

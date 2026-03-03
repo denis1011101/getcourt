@@ -76,12 +76,12 @@ module Telegram
           actor = User.find_by(telegram_chat_id: chat_id.to_s) rescue nil
           return false unless game && actor
 
-          last_reset = game.respond_to?(:last_participations_reset_at) ? game.last_participations_reset_at : nil
+          cycle_start = game.respond_to?(:current_cycle_start) ? game.current_cycle_start : nil
           entry_scope = PlayerStatisticEntry.where(game: game)
           match_scope = Match.where(game_id: game.id)
-          if last_reset.present?
-            entry_scope = entry_scope.where("recorded_at >= ?", last_reset)
-            match_scope = match_scope.where("played_at >= ?", last_reset)
+          if cycle_start.present?
+            entry_scope = entry_scope.where("recorded_at >= ?", cycle_start)
+            match_scope = match_scope.where("played_at >= ?", cycle_start)
           end
           first_entry = !entry_scope.exists? && !match_scope.exists?
 

@@ -248,6 +248,13 @@ class Game < ApplicationRecord
     update_column(:last_participations_reset_at, date)
   end
 
+  # Начало текущего игрового цикла (для фильтрации матчей/записей статистики).
+  # Использует display_date_for_show вместо last_participations_reset_at,
+  # т.к. reset может сдвинуться раньше отображаемого вхождения.
+  def current_cycle_start
+    display_date_for_show&.beginning_of_day
+  end
+
   # Таймзона создателя (или дефолт приложения)
   def creator_time_zone
     tz = user&.timezone_or_default if respond_to?(:user)

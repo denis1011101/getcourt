@@ -159,11 +159,11 @@ module Telegram
 
           conv = safe_conv_get(chat_id)
 
-          last_reset = game.last_participations_reset_at
+          cycle_start = game.respond_to?(:current_cycle_start) ? game.current_cycle_start : nil
           saved_entry =
-            if last_reset.present?
+            if cycle_start.present?
               PlayerStatisticEntry.where(game: game, source: "telegram")
-                                 .where("recorded_at >= ?", last_reset.beginning_of_day)
+                                 .where("recorded_at >= ?", cycle_start)
                                  .order(recorded_at: :desc)
                                  .first
             else
@@ -213,12 +213,12 @@ module Telegram
           lines << t.call(:stats_entered_section)
 
           game = game_id > 0 ? Game.find_by(id: game_id) : nil
-          last_reset = game&.last_participations_reset_at
+          cycle_start = game&.respond_to?(:current_cycle_start) ? game.current_cycle_start : nil
 
           score =
             if game_id > 0
               scope = Match.where(game_id: game_id).where.not(score: [ nil, "" ])
-              scope = scope.where("played_at >= ?", last_reset.beginning_of_day) if last_reset.present?
+              scope = scope.where("played_at >= ?", cycle_start) if cycle_start.present?
               scope.order(updated_at: :desc).limit(1).pick(:score)
             end
           shown_score = score.to_s.strip.presence || "—"
@@ -232,7 +232,7 @@ module Telegram
 
           if hours_value.nil? && game
             scope = PlayerStatisticEntry.where(game: game, source: "telegram")
-            scope = scope.where("recorded_at >= ?", last_reset.beginning_of_day) if last_reset.present?
+            scope = scope.where("recorded_at >= ?", cycle_start) if cycle_start.present?
 
             saved_entry = scope.order(recorded_at: :desc).detect do |entry|
               data = entry.data.to_h
