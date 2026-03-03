@@ -62,7 +62,7 @@ class PlayerStatisticsController < ApplicationController
           recorded_at: Time.current
         ).call
 
-        increment_activity_for_game!(game) if first_stats
+        increment_activity_for_game!(game) if first_stats && game.respond_to?(:with_coach?) && game.with_coach?
         first_stats = false
         saved_any = true
       end
@@ -187,25 +187,19 @@ end
   end
 
   def increment_activity_for_game!(game)
+    return unless game.respond_to?(:with_coach?) && game.with_coach?
+
     users = game.participations.includes(:user).map(&:user).compact.uniq { |u| u.id }
     return if users.empty?
 
     mode = StatisticsPresenter.hours_field_for_game(game) == :doubles_hours ? :doubles : :singles
 
-    training_key = nil
-    if game.respond_to?(:with_coach?) && game.with_coach?
-      training_key = mode == :doubles ? :group_training : :individual_training
-    end
+    training_key = mode == :doubles ? :group_training : :individual_training
 
     users.each do |u|
       ps = u.player_statistic || u.create_player_statistic
       ps.with_lock do
-        if training_key
-          ps[training_key] = [ ps[training_key].to_i + 1, 0 ].max
-        else
-          games_key = mode == :doubles ? :doubles_games : :singles_games
-          ps[games_key] = [ ps[games_key].to_i + 1, 0 ].max
-        end
+        ps[training_key] = [ ps[training_key].to_i + 1, 0 ].max
         ps.save!
       end
     end
