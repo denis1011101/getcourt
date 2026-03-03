@@ -210,7 +210,6 @@ module Telegram
 
       # Tennis life (placeholder)
       tennis_life_title: "Теннис лайф",
-      tennis_life_text: "Раздел в разработке. Здесь скоро появятся новости, советы и интересные материалы о теннисе.",
 
       # Survey / onboarding
       greeting: "Добро пожаловать в GetCourt! Я помогу настроить ваш профиль для поиска соперников.",

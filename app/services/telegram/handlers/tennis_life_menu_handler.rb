@@ -21,7 +21,7 @@ module Telegram
           lines << ""
 
           if scoreboard_text.present?
-            lines << (locale.to_s.start_with?("ru") ? "Теннисные события" : "Tennis scoreboard")
+            lines << (locale.to_s.start_with?("ru") ? "Теннисные события:" : "Tennis scoreboard:")
             lines << scoreboard_text
             lines << ""
           end
@@ -50,8 +50,6 @@ module Telegram
               lines << link
               lines << ""
             end
-          else
-            lines << t.(:tennis_life_text)
           end
 
           text = lines.join("\n")
@@ -77,7 +75,7 @@ module Telegram
         def stats_lines(stats, locale: :ru)
           if locale.to_s.start_with?("ru")
             [
-              "Статистика GetCourt",
+              "Статистика GetCourt:",
               "• Игр: #{stats[:games]}",
               "• Кортов: #{stats[:courts]}",
               "• Участий: #{stats[:participations]}"
