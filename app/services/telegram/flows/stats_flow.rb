@@ -262,7 +262,12 @@ module Telegram
           ]
 
           if message_id.present?
-            Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, field_buttons + footer) rescue nil
+            begin
+              Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, field_buttons + footer)
+            rescue => e
+              Rails.logger.error "[StatsFlow#render_menu] edit_message failed: #{e.class}: #{e.message}"
+              Telegram::Api.send_with_buttons(chat_id, text, field_buttons + footer) rescue nil
+            end
           else
             Telegram::Api.send_with_buttons(chat_id, text, field_buttons + footer) rescue nil
           end
