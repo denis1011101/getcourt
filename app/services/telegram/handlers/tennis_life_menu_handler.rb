@@ -54,6 +54,12 @@ module Telegram
             lines << t.(:tennis_life_no_posts).to_s
           end
 
+          lines << ""
+          lines << (locale.to_s.start_with?("ru") ? "Каналы:" : "Channels:")
+          TennisLifeController::TELEGRAM_CHANNELS.each do |c|
+            lines << "• #{c[:name]} — #{c[:username]}"
+          end
+
           text = lines.join("\n")
           buttons = [ [ { text: t.(:main_menu_btn), callback_data: "menu:main" } ] ]
 
