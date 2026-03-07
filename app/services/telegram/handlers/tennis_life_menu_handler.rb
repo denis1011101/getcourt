@@ -53,7 +53,14 @@ module Telegram
               lines << ""
             end
           else
-            lines << t.(:tennis_life_no_posts).to_s
+            random_post = TennisLife::TelegramPostsFetcher.random_post
+            if random_post
+              lines << "#{random_post["channel_name"]}:"
+              lines << random_post["text"].to_s.strip.gsub(/\s+/, " ").truncate(200)
+              lines << random_post["url"]
+            else
+              lines << t.(:tennis_life_no_posts).to_s
+            end
           end
 
           lines << ""
