@@ -31,6 +31,15 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "index renders telegram widget for random post with valid url" do
+    TelegramPost.delete_all
+    with_stubbed_singleton_method(TennisLife::TelegramPostsFetcher, :random_post, SAMPLE_POST) do
+      get tennis_life_index_url
+      assert_response :success
+      assert_select "script[data-telegram-post='test/42']"
+    end
+  end
+
   private
 
   def with_stubbed_singleton_method(target, method_name, replacement)

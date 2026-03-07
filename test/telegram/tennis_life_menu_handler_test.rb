@@ -28,6 +28,82 @@ class TennisLifeMenuHandlerTest < ActiveSupport::TestCase
     assert_nil sent[3][:parse_mode]
   end
 
+  test "shows random gist post in feed when no db posts exist" do
+    sent = nil
+    gist_post = {
+      "channel_name" => "Теннисология",
+      "channel_url" => "https://t.me/tennisologia",
+      "text" => "Джокович вернулся!",
+      "url" => "https://t.me/tennisologia/99",
+      "published_at" => "2024-06-01T12:00:00Z"
+    }
+
+    with_stubbed_singleton_method(Telegram::Helpers::UserLookup, :locale_for, :ru) do
+      with_stubbed_singleton_method(TennisScoreboard::Fetcher, :telegram_text, nil) do
+        with_stubbed_singleton_method(Time, :current, @fixed_time) do
+          with_stubbed_singleton_method(TennisLife::TelegramPostsFetcher, :random_post, gist_post) do
+            with_stubbed_singleton_method(Telegram::Api, :send_with_buttons, ->(*args) { sent = args }) do
+              handler = Telegram::Handlers::TennisLifeMenuHandler
+              with_stubbed_singleton_method(handler, :fetch_recent_posts, []) do
+                handler.show(@chat_id)
+              end
+            end
+          end
+        end
+      end
+    end
+
+    assert sent.present?
+    assert_includes sent[1], "Теннисология:"
+    assert_includes sent[1], "Джокович вернулся!"
+    assert_includes sent[1], "https://t.me/tennisologia/99"
+  end
+
+  test "shows no_posts text when both db posts and gist post are absent" do
+    sent = nil
+
+    with_stubbed_singleton_method(Telegram::Helpers::UserLookup, :locale_for, :ru) do
+      with_stubbed_singleton_method(TennisScoreboard::Fetcher, :telegram_text, nil) do
+        with_stubbed_singleton_method(Time, :current, @fixed_time) do
+          with_stubbed_singleton_method(TennisLife::TelegramPostsFetcher, :random_post, nil) do
+            with_stubbed_singleton_method(Telegram::Api, :send_with_buttons, ->(*args) { sent = args }) do
+              handler = Telegram::Handlers::TennisLifeMenuHandler
+              with_stubbed_singleton_method(handler, :fetch_recent_posts, []) do
+                handler.show(@chat_id)
+              end
+            end
+          end
+        end
+      end
+    end
+
+    assert sent.present?
+    assert_includes sent[1], "Пока постов нет"
+  end
+
+  test "channels section appears before feed section" do
+    sent = nil
+    handler = Telegram::Handlers::TennisLifeMenuHandler
+
+    with_stubbed_singleton_method(Telegram::Helpers::UserLookup, :locale_for, :ru) do
+      with_stubbed_singleton_method(TennisScoreboard::Fetcher, :telegram_text, nil) do
+        with_stubbed_singleton_method(Time, :current, @fixed_time) do
+          with_stubbed_singleton_method(TennisLife::TelegramPostsFetcher, :random_post, nil) do
+            with_stubbed_singleton_method(Telegram::Api, :send_with_buttons, ->(*args) { sent = args }) do
+              with_stubbed_singleton_method(handler, :fetch_recent_posts, []) do
+                handler.show(@chat_id)
+              end
+            end
+          end
+        end
+      end
+    end
+
+    text = sent[1]
+    assert text.index("Каналы:") < text.index("Telegram Feed"),
+           "Expected 'Каналы:' to appear before 'Telegram Feed'"
+  end
+
   test "edits existing tennis life menu when message id is provided" do
     edited = nil
 

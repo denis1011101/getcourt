@@ -35,6 +35,7 @@
           <% end %>
         <% elsif @random_telegram_post %>
           <% rpost = @random_telegram_post %>
+          <% tg_post_path = rpost["url"].to_s.sub(%r{\Ahttps://t\.me/}, "") %>
           <article class="bg-white border rounded-lg p-4">
             <p class="text-xs text-gray-500 mb-1">
               <a href="<%= rpost["channel_url"] %>" class="text-indigo-600 hover:underline" target="_blank" rel="noopener"><%= rpost["channel_name"] %></a>
@@ -42,6 +43,14 @@
             <p class="text-sm text-gray-800 whitespace-pre-line"><%= rpost["text"] %></p>
             <a href="<%= rpost["url"] %>" class="mt-2 inline-block text-xs text-indigo-500 hover:underline" target="_blank" rel="noopener">Читать в Telegram →</a>
           </article>
+          <% if tg_post_path.match?(%r{\A[\w-]+/\d+\z}) %>
+            <article class="bg-white border rounded-lg p-2">
+              <script async src="https://telegram.org/js/telegram-widget.js?22"
+                      data-telegram-post="<%= tg_post_path %>"
+                      data-width="100%"
+                      data-userpic="true"></script>
+            </article>
+          <% end %>
         <% else %>
           <div class="rounded-lg border p-6 text-center text-gray-700 bg-white">
             No posts yet. Subscribe to the channels below.

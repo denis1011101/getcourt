@@ -1,3 +1,6 @@
+# TODO: перевести fetch_raw_text с сырого raw-URL (TENNIS_SCORE_GIST_URL + normalize_gist_url)
+#       на GitHub API (GET /gists/:id + dig("files", filename, "content")),
+#       по аналогии с TennisLife::TelegramPostsFetcher.
 module TennisScoreboard
   class Fetcher
     class << self

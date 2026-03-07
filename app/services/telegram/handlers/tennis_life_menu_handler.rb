@@ -38,6 +38,12 @@ module Telegram
           end
 
           lines << ""
+          lines << (locale.to_s.start_with?("ru") ? "Каналы:" : "Channels:")
+          TennisLifeController::TELEGRAM_CHANNELS.each do |c|
+            lines << "• #{c[:name]} — #{c[:username]}"
+          end
+
+          lines << ""
           lines << t.(:tennis_life_feed_title).to_s
           if posts.any?
             posts.each do |post|
@@ -61,12 +67,6 @@ module Telegram
             else
               lines << t.(:tennis_life_no_posts).to_s
             end
-          end
-
-          lines << ""
-          lines << (locale.to_s.start_with?("ru") ? "Каналы:" : "Channels:")
-          TennisLifeController::TELEGRAM_CHANNELS.each do |c|
-            lines << "• #{c[:name]} — #{c[:username]}"
           end
 
           text = lines.join("\n")
