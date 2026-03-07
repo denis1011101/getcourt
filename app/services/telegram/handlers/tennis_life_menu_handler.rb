@@ -61,7 +61,10 @@ module Telegram
           end
 
           text = lines.join("\n")
-          buttons = [ [ { text: t.(:main_menu_btn), callback_data: "menu:main" } ] ]
+          buttons = [
+            [ { text: (locale.to_s.start_with?("ru") ? "Обновить" : "Refresh"), callback_data: "menu:tennis_life" } ],
+            [ { text: t.(:main_menu_btn), callback_data: "menu:main" } ]
+          ]
 
           if message_id.present?
             Telegram::Api.edit_message_with_buttons(chat_id, message_id, text, buttons, parse_mode: nil)
