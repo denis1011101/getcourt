@@ -19,6 +19,8 @@ module Telegram
 
           lines.concat(stats_lines(stats, locale: locale))
           lines << ""
+          lines << refreshed_at_line(locale)
+          lines << ""
 
           if scoreboard_text.present?
             lines << (locale.to_s.start_with?("ru") ? "Теннисные события:" : "Tennis scoreboard:")
@@ -99,6 +101,11 @@ module Telegram
               "• Participations: #{stats[:participations]}"
             ]
           end
+        end
+
+        def refreshed_at_line(locale)
+          label = locale.to_s.start_with?("ru") ? "Обновлено" : "Updated"
+          "#{label}: #{Time.current.strftime("%H:%M:%S")}"
         end
 
         def fetch_rating_rows(limit:)
