@@ -10,24 +10,37 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
   }.freeze
 
   test "should get index" do
-    TennisLife::TelegramPostsFetcher.stub(:random_post, nil) do
+    with_stubbed_singleton_method(TennisLife::TelegramPostsFetcher, :random_post, nil) do
       get tennis_life_index_url
       assert_response :success
     end
   end
 
   test "index renders without error when random_post is nil" do
-    TennisLife::TelegramPostsFetcher.stub(:random_post, nil) do
+    with_stubbed_singleton_method(TennisLife::TelegramPostsFetcher, :random_post, nil) do
       get tennis_life_index_url
       assert_response :success
     end
   end
 
   test "index shows random telegram post link when present" do
-    TennisLife::TelegramPostsFetcher.stub(:random_post, SAMPLE_POST) do
+    with_stubbed_singleton_method(TennisLife::TelegramPostsFetcher, :random_post, SAMPLE_POST) do
       get tennis_life_index_url
       assert_response :success
       assert_select "a[href='#{SAMPLE_POST["url"]}']"
     end
+  end
+
+  private
+
+  def with_stubbed_singleton_method(target, method_name, replacement)
+    singleton = target.singleton_class
+    had_method = singleton.method_defined?(method_name) || singleton.private_method_defined?(method_name)
+    original = singleton.instance_method(method_name) if had_method
+    callable = replacement.respond_to?(:call) ? replacement : ->(*) { replacement }
+    singleton.define_method(method_name) { |*args, **kwargs, &blk| callable.call(*args, **kwargs, &blk) }
+    yield
+  ensure
+    had_method ? singleton.define_method(method_name, original) : singleton.remove_method(method_name)
   end
 end
