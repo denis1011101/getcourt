@@ -85,10 +85,14 @@ module Telegram
         private
 
         def fetch_stats
+          total_hours = PlayerStatistic.sum(:singles_hours).to_f + PlayerStatistic.sum(:doubles_hours).to_f
+          total_hours_value = total_hours.round(1)
+          total_hours_value = total_hours_value.to_i if total_hours_value == total_hours_value.to_i
+
           {
-            games: Game.count,
-            courts: Court.count,
-            participations: Participation.count
+            hours_played: total_hours_value,
+            players_in_rating: fetch_rating_rows(limit: nil).size,
+            courts: Court.count
           }
         end
 
@@ -96,16 +100,16 @@ module Telegram
           if locale.to_s.start_with?("ru")
             [
               "Статистика GetCourt:",
-              "• Игр: #{stats[:games]}",
-              "• Кортов: #{stats[:courts]}",
-              "• Участий: #{stats[:participations]}"
+              "• Сыграно часов: #{stats[:hours_played]}",
+              "• Игроков в рейтинге: #{stats[:players_in_rating]}",
+              "• Кортов: #{stats[:courts]}"
             ]
           else
             [
               "GetCourt stats",
-              "• Games: #{stats[:games]}",
+              "• Hours played: #{stats[:hours_played]}",
+              "• Players in rating: #{stats[:players_in_rating]}",
               "• Courts: #{stats[:courts]}",
-              "• Participations: #{stats[:participations]}"
             ]
           end
         end
@@ -121,7 +125,7 @@ module Telegram
             .includes(:user)
             .where("COALESCE(player_statistics.singles_games, 0) + COALESCE(player_statistics.doubles_games, 0) > 0")
 
-          stats.map do |ps|
+          rows = stats.map do |ps|
             games = ps.singles_games.to_i + ps.doubles_games.to_i
             wins = ps.singles_wins.to_i + ps.doubles_wins.to_i
             pct = games.positive? ? (wins.to_f / games * 100).round(1) : 0.0
@@ -129,7 +133,8 @@ module Telegram
             { user: ps.user, games: games, wins: wins, pct: pct }
           end
           .sort_by { |row| [ -row[:pct], -row[:wins], -row[:games] ] }
-          .first(limit)
+
+          limit ? rows.first(limit) : rows
         end
 
         def display_name_for(user)
