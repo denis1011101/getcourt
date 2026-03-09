@@ -109,7 +109,7 @@ module Telegram
               "GetCourt stats",
               "• Hours played: #{stats[:hours_played]}",
               "• Players in rating: #{stats[:players_in_rating]}",
-              "• Courts: #{stats[:courts]}",
+              "• Courts: #{stats[:courts]}"
             ]
           end
         end
