@@ -99,7 +99,7 @@ class TournamentsControllerTest < ActionDispatch::IntegrationTest
     assert ts.index(local_t) < ts.index(other_t),
            "Same-city tournament should appear before other-city tournament"
   ensure
-    TournamentCourt.where(tournament_id: [local_t&.id, other_t&.id].compact).delete_all
+    TournamentCourt.where(tournament_id: [ local_t&.id, other_t&.id ].compact).delete_all
     local_t&.destroy
     other_t&.destroy
     city_user&.destroy
@@ -129,7 +129,7 @@ class TournamentsControllerTest < ActionDispatch::IntegrationTest
     assert ts.index(local_t) < ts.index(other_t),
            "Same-city tournament should appear before other-city tournament in my_tournaments"
   ensure
-    TournamentCourt.where(tournament_id: [local_t&.id, other_t&.id].compact).delete_all
+    TournamentCourt.where(tournament_id: [ local_t&.id, other_t&.id ].compact).delete_all
     local_t&.destroy
     other_t&.destroy
     city_user&.destroy

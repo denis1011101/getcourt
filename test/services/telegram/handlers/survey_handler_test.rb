@@ -93,7 +93,7 @@ class Telegram::Handlers::SurveyHandlerTest < ActiveSupport::TestCase
     with_memory_cache do
       Conversation.start(CHAT, "step" => "ask_city", "language" => "en")
       Telegram::Handlers::SurveyHandler.handle_message(CHAT, "skip")
-      assert_nil     Conversation.get(CHAT)["city"]
+      assert_nil Conversation.get(CHAT)["city"]
       assert_equal "ask_sports", Conversation.get(CHAT)["step"]
     end
   end
@@ -118,7 +118,7 @@ class Telegram::Handlers::SurveyHandlerTest < ActiveSupport::TestCase
 
   test "sport:toggle removes sport if already selected" do
     with_memory_cache do
-      Conversation.start(CHAT, "step" => "ask_sports", "language" => "en", "selected_sports" => ["tennis"])
+      Conversation.start(CHAT, "step" => "ask_sports", "language" => "en", "selected_sports" => [ "tennis" ])
       Telegram::Handlers::SurveyHandler.handle_callback(cb("sport:toggle:tennis"))
       assert_not_includes Conversation.get(CHAT)["selected_sports"], "tennis"
     end
@@ -128,21 +128,21 @@ class Telegram::Handlers::SurveyHandlerTest < ActiveSupport::TestCase
 
   test "sport:skip_all clears sports and moves to ask_coach" do
     with_memory_cache do
-      Conversation.start(CHAT, "step" => "ask_sports", "language" => "en", "selected_sports" => ["tennis"])
+      Conversation.start(CHAT, "step" => "ask_sports", "language" => "en", "selected_sports" => [ "tennis" ])
       Telegram::Handlers::SurveyHandler.handle_callback(cb("sport:skip_all"))
       state = Conversation.get(CHAT)
-      assert_equal [],          state["selected_sports"]
+      assert_equal [], state["selected_sports"]
       assert_equal "ask_coach", state["step"]
     end
   end
 
   test "sport:done sets skill_queue and moves to ask_skill" do
     with_memory_cache do
-      Conversation.start(CHAT, "step" => "ask_sports", "language" => "en", "selected_sports" => ["tennis", "padel"])
+      Conversation.start(CHAT, "step" => "ask_sports", "language" => "en", "selected_sports" => [ "tennis", "padel" ])
       Telegram::Handlers::SurveyHandler.handle_callback(cb("sport:done"))
       state = Conversation.get(CHAT)
       assert_equal "ask_skill", state["step"]
-      assert_equal ["tennis", "padel"], state["skill_queue"]
+      assert_equal [ "tennis", "padel" ], state["skill_queue"]
     end
   end
 
@@ -151,11 +151,11 @@ class Telegram::Handlers::SurveyHandlerTest < ActiveSupport::TestCase
   test "skill:set records skill and moves to ask_coach when queue is empty" do
     with_memory_cache do
       Conversation.start(CHAT, "step" => "ask_skill", "language" => "en",
-                         "selected_sports" => ["tennis"], "skill_queue" => ["tennis"])
+                         "selected_sports" => [ "tennis" ], "skill_queue" => [ "tennis" ])
       Telegram::Handlers::SurveyHandler.handle_callback(cb("skill:set:tennis:beginner"))
       state = Conversation.get(CHAT)
       assert_equal "beginner",  state.dig("skills", "tennis")
-      assert_equal [],          state["skill_queue"]
+      assert_equal [], state["skill_queue"]
       assert_equal "ask_coach", state["step"]
     end
   end
@@ -165,7 +165,7 @@ class Telegram::Handlers::SurveyHandlerTest < ActiveSupport::TestCase
   test "skill:skip advances queue without storing skill; moves to ask_coach when done" do
     with_memory_cache do
       Conversation.start(CHAT, "step" => "ask_skill", "language" => "en",
-                         "selected_sports" => ["tennis"], "skill_queue" => ["tennis"])
+                         "selected_sports" => [ "tennis" ], "skill_queue" => [ "tennis" ])
       Telegram::Handlers::SurveyHandler.handle_callback(cb("skill:skip:tennis"))
       state = Conversation.get(CHAT)
       assert_nil                state.dig("skills", "tennis")
@@ -234,7 +234,7 @@ class Telegram::Handlers::SurveyHandlerTest < ActiveSupport::TestCase
     with_memory_cache do
       Conversation.start(CHAT, "step" => "ask_notifications", "language" => "en")
       stub_singleton(User, :find_by, ->(**_kw) { user }) do
-        stub_singleton(Telegram::Handlers::MenuHandler, :menu, ->(_) {}) do
+        stub_singleton(Telegram::Handlers::MenuHandler, :menu, ->(_) { }) do
           Telegram::Handlers::SurveyHandler.handle_callback(cb("notifications:skip"))
         end
       end

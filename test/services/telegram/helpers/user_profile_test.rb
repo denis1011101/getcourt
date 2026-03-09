@@ -27,14 +27,14 @@ class Telegram::Helpers::UserProfileTest < ActiveSupport::TestCase
 
   test "maps selected_sports to preferred_sports as an Array" do
     u = build_user
-    apply(u, "selected_sports" => ["Tennis", "Padel"])
+    apply(u, "selected_sports" => [ "Tennis", "Padel" ])
     assert_instance_of Array, u.preferred_sports
     assert_includes u.preferred_sports, "Tennis"
   ensure; u.destroy; end
 
   test "preferred_sports is NOT a JSON string (regression)" do
     u = build_user
-    apply(u, "selected_sports" => ["Tennis"])
+    apply(u, "selected_sports" => [ "Tennis" ])
     refute_kind_of String, u.preferred_sports
   ensure; u.destroy; end
 

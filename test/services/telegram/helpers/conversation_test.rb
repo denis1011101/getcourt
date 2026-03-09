@@ -65,7 +65,7 @@ class Telegram::Helpers::ConversationTest < ActiveSupport::TestCase
   test "toggle_sport removes sport when already present" do
     with_memory_cache do
       chat_id = "conv_#{SecureRandom.hex(4)}"
-      Conversation.start(chat_id, "selected_sports" => ["tennis", "padel"])
+      Conversation.start(chat_id, "selected_sports" => [ "tennis", "padel" ])
       Conversation.toggle_sport(chat_id, "tennis")
       assert_not_includes Conversation.get(chat_id)["selected_sports"], "tennis"
       assert_includes     Conversation.get(chat_id)["selected_sports"], "padel"
