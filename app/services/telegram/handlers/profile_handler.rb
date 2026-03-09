@@ -33,6 +33,7 @@ module Telegram
           lines << t.(:coach_label, value: presenter.coach_label)
           lines << t.(:notify_label, value: presenter.notify_label)
           lines << t.(:language_label, value: lang_label)
+          lines << t.(:about_me_label, value: presenter.about_me_label)
           text = lines.join("\n")
 
           buttons = [

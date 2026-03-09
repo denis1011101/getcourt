@@ -1,15 +1,15 @@
 <div class="max-w-5xl mx-auto px-4 py-6">
   <!-- Breadcrumb -->
-  <nav class="text-sm text-gray-500 mb-4">
-    <%= link_to "Home", root_path, class: "hover:text-gray-700" %> &rsaquo;
-    <%= link_to "Tournaments", tournaments_path, class: "hover:text-gray-700" %> &rsaquo;
-    <span class="text-gray-900"><%= @tournament.name.presence || "Tournament" %></span>
+  <nav class="text-sm text-gray-500 dark:text-slate-400 mb-4">
+    <%= link_to "Home", root_path, class: "hover:text-gray-700 dark:hover:text-slate-300" %> &rsaquo;
+    <%= link_to "Tournaments", tournaments_path, class: "hover:text-gray-700 dark:hover:text-slate-300" %> &rsaquo;
+    <span class="text-gray-900 dark:text-slate-100"><%= @tournament.name.presence || "Tournament" %></span>
   </nav>
 
   <div class="flex items-center justify-between mb-6">
     <div>
       <h1 class="text-2xl font-semibold"><%= @tournament.name.presence || "Tournament" %></h1>
-      <p class="text-gray-600">Tournament details and results.</p>
+      <p class="text-gray-600 dark:text-slate-400">Tournament details and results.</p>
     </div>
     <% if user_signed_in? && @tournament.user_id == current_user.id %>
       <%= link_to options_tournaments_path(tournament_id: @tournament.id), class: "inline-flex items-center gap-1.5 rounded-full bg-purple-600 px-5 py-2 text-sm font-medium text-white hover:bg-purple-700 transition" do %>
@@ -18,27 +18,27 @@
     <% end %>
   </div>
 
-  <div class="bg-white rounded-lg border p-6 shadow-sm">
+  <div class="bg-white dark:bg-slate-800/80 rounded-lg border dark:border-white/10 p-6 shadow-sm">
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
       <div>
-        <p class="text-sm text-gray-500">Format</p>
-        <p class="text-lg font-medium text-gray-900"><%= @tournament.format&.humanize || "—" %></p>
+        <p class="text-sm text-gray-500 dark:text-slate-400">Format</p>
+        <p class="text-lg font-medium text-gray-900 dark:text-slate-100"><%= @tournament.format&.humanize || "—" %></p>
       </div>
 
       <div>
-        <p class="text-sm text-gray-500">Players</p>
-        <p class="text-lg font-medium text-gray-900">
+        <p class="text-sm text-gray-500 dark:text-slate-400">Players</p>
+        <p class="text-lg font-medium text-gray-900 dark:text-slate-100">
           <%= @tournament.tournament_participants.count %> / <%= @tournament.players_count || "?" %>
         </p>
       </div>
 
       <% if @tournament.start_date.present? %>
         <div>
-          <p class="text-sm text-gray-500">Start</p>
-          <p class="text-lg font-medium text-gray-900">
+          <p class="text-sm text-gray-500 dark:text-slate-400">Start</p>
+          <p class="text-lg font-medium text-gray-900 dark:text-slate-100">
             <%= @tournament.start_date.strftime("%B %d, %Y") %>
             <% if @tournament.time.present? %>
-              <span class="text-base text-gray-500"><%= @tournament.time.strftime("%H:%M") %></span>
+              <span class="text-base text-gray-500 dark:text-slate-400"><%= @tournament.time.strftime("%H:%M") %></span>
             <% end %>
           </p>
         </div>
@@ -46,35 +46,35 @@
 
       <% if @tournament.end_date.present? %>
         <div>
-          <p class="text-sm text-gray-500">End date</p>
-          <p class="text-lg font-medium text-gray-900"><%= @tournament.end_date.strftime("%B %d, %Y") %></p>
+          <p class="text-sm text-gray-500 dark:text-slate-400">End date</p>
+          <p class="text-lg font-medium text-gray-900 dark:text-slate-100"><%= @tournament.end_date.strftime("%B %d, %Y") %></p>
         </div>
       <% end %>
 
       <% if @tournament.respond_to?(:courts) && @tournament.courts.any? %>
         <div class="sm:col-span-2">
-          <p class="text-sm text-gray-500">Courts</p>
-          <p class="text-lg font-medium text-gray-900"><%= @tournament.courts.map(&:name).to_sentence %></p>
+          <p class="text-sm text-gray-500 dark:text-slate-400">Courts</p>
+          <p class="text-lg font-medium text-gray-900 dark:text-slate-100"><%= @tournament.courts.map(&:name).to_sentence %></p>
         </div>
       <% end %>
 
       <% if @tournament.respond_to?(:games_count) && @tournament.games_count.present? %>
         <div>
-          <p class="text-sm text-gray-500">Planned games</p>
-          <p class="text-lg font-medium text-gray-900"><%= @tournament.games_count %></p>
+          <p class="text-sm text-gray-500 dark:text-slate-400">Planned games</p>
+          <p class="text-lg font-medium text-gray-900 dark:text-slate-100"><%= @tournament.games_count %></p>
         </div>
       <% end %>
     </div>
 
     <!-- Participants section -->
-    <div class="border-t pt-4 mt-4">
-      <h2 class="text-sm font-semibold text-gray-700 mb-2">Participants</h2>
+    <div class="border-t dark:border-white/10 pt-4 mt-4">
+      <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Participants</h2>
       <% participants = @tournament.tournament_participants.includes(:user) %>
       <% if participants.any? %>
         <div class="flex flex-wrap gap-2">
           <% participants.each do |tp| %>
-            <span class="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700">
-              <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-gray-100 dark:bg-slate-700/50 px-3 py-1 text-sm text-gray-700 dark:text-slate-300">
+              <svg class="w-4 h-4 text-gray-400 dark:text-slate-500" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/>
               </svg>
               <%= tp.name.presence || tp.user&.name.presence || tp.user&.email || "Player" %>
@@ -82,7 +82,7 @@
           <% end %>
         </div>
       <% else %>
-        <p class="text-sm text-gray-500">No participants yet.</p>
+        <p class="text-sm text-gray-500 dark:text-slate-400">No participants yet.</p>
       <% end %>
 
       <!-- Join/Leave buttons -->
@@ -103,37 +103,37 @@
 
   <!-- Standings -->
   <div class="mt-6">
-    <h2 class="text-lg font-semibold text-gray-900 mb-4">Standings</h2>
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">Standings</h2>
     <% standings = TournamentStandings.compute(@tournament) %>
     <% if standings.any? %>
-      <div class="bg-white rounded-lg border shadow-sm overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
+      <div class="bg-white dark:bg-slate-800/80 rounded-lg border dark:border-white/10 shadow-sm overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-white/10">
+          <thead class="bg-gray-50 dark:bg-slate-700/50">
             <tr>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Player</th>
-              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">W</th>
-              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">L</th>
-              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Sets</th>
-              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Games</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">#</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Player</th>
+              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">W</th>
+              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">L</th>
+              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Sets</th>
+              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Games</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-100">
+          <tbody class="divide-y divide-gray-100 dark:divide-white/10">
             <% standings.each_with_index do |row, idx| %>
-              <tr class="<%= idx == 0 ? 'bg-yellow-50' : '' %>">
-                <td class="px-4 py-3 text-sm font-medium text-gray-900"><%= idx + 1 %></td>
-                <td class="px-4 py-3 text-sm font-medium text-gray-900"><%= row[:user].name.presence || row[:user].email %></td>
+              <tr class="<%= idx == 0 ? 'bg-yellow-50 dark:bg-yellow-500/10' : '' %>">
+                <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-slate-100"><%= idx + 1 %></td>
+                <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-slate-100"><%= row[:user].name.presence || row[:user].email %></td>
                 <td class="px-4 py-3 text-sm text-center text-green-700 font-semibold"><%= row[:wins] %></td>
                 <td class="px-4 py-3 text-sm text-center text-red-600"><%= row[:losses] %></td>
-                <td class="px-4 py-3 text-sm text-center text-gray-600"><%= row[:sets_won] %>-<%= row[:sets_lost] %></td>
-                <td class="px-4 py-3 text-sm text-center text-gray-600"><%= row[:games_won] %>-<%= row[:games_lost] %></td>
+                <td class="px-4 py-3 text-sm text-center text-gray-600 dark:text-slate-400"><%= row[:sets_won] %>-<%= row[:sets_lost] %></td>
+                <td class="px-4 py-3 text-sm text-center text-gray-600 dark:text-slate-400"><%= row[:games_won] %>-<%= row[:games_lost] %></td>
               </tr>
             <% end %>
           </tbody>
         </table>
       </div>
     <% else %>
-      <div class="rounded-lg border border-dashed p-6 text-center text-gray-500">
+      <div class="rounded-lg border border-dashed dark:border-white/10 p-6 text-center text-gray-500 dark:text-slate-400">
         No matches yet.
       </div>
     <% end %>
@@ -141,45 +141,45 @@
 
   <!-- Matches -->
   <div class="mt-6">
-    <h2 class="text-lg font-semibold text-gray-900 mb-4">Matches</h2>
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-4">Matches</h2>
     <% matches = @tournament.tournament_matches.includes(:player_a, :player_b).order(:played_at, :id) %>
     <% if matches.any? %>
-      <div class="bg-white rounded-lg border shadow-sm overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
+      <div class="bg-white dark:bg-slate-800/80 rounded-lg border dark:border-white/10 shadow-sm overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-white/10">
+          <thead class="bg-gray-50 dark:bg-slate-700/50">
             <tr>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Player A</th>
-              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Score</th>
-              <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Player B</th>
-              <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Date</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">#</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Player A</th>
+              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Score</th>
+              <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Player B</th>
+              <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Date</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-100">
+          <tbody class="divide-y divide-gray-100 dark:divide-white/10">
             <% matches.each_with_index do |m, idx| %>
               <tr>
-                <td class="px-4 py-3 text-sm text-gray-500"><%= idx + 1 %></td>
+                <td class="px-4 py-3 text-sm text-gray-500 dark:text-slate-400"><%= idx + 1 %></td>
                 <td class="px-4 py-3 text-sm font-medium <%= m.result == 'player_a' ? 'text-green-700' : 'text-gray-900' %>">
                   <%= m.player_a.name.presence || m.player_a.email %>
                   <% if m.result == "player_a" %>
                     <span class="text-xs text-green-600">W</span>
                   <% end %>
                 </td>
-                <td class="px-4 py-3 text-sm text-center font-mono font-medium text-gray-900"><%= m.score %></td>
+                <td class="px-4 py-3 text-sm text-center font-mono font-medium text-gray-900 dark:text-slate-100"><%= m.score %></td>
                 <td class="px-4 py-3 text-sm text-right font-medium <%= m.result == 'player_b' ? 'text-green-700' : 'text-gray-900' %>">
                   <% if m.result == "player_b" %>
                     <span class="text-xs text-green-600">W</span>
                   <% end %>
                   <%= m.player_b.name.presence || m.player_b.email %>
                 </td>
-                <td class="px-4 py-3 text-sm text-right text-gray-500"><%= m.played_at.strftime("%d.%m %H:%M") %></td>
+                <td class="px-4 py-3 text-sm text-right text-gray-500 dark:text-slate-400"><%= m.played_at.strftime("%d.%m %H:%M") %></td>
               </tr>
             <% end %>
           </tbody>
         </table>
       </div>
     <% else %>
-      <div class="rounded-lg border border-dashed p-6 text-center text-gray-500">
+      <div class="rounded-lg border border-dashed dark:border-white/10 p-6 text-center text-gray-500 dark:text-slate-400">
         No matches yet.
       </div>
     <% end %>
@@ -188,41 +188,41 @@
     <% if user_signed_in? && @tournament.user_id == current_user.id %>
       <div class="mt-4">
         <% if @tournament.started? %>
-          <div class="bg-white rounded-lg border p-4 shadow-sm">
-            <h3 class="text-sm font-semibold text-gray-700 mb-3">Add match</h3>
+          <div class="bg-white dark:bg-slate-800/80 rounded-lg border dark:border-white/10 p-4 shadow-sm">
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-slate-300 mb-3">Add match</h3>
             <% participant_options = @tournament.tournament_participants.includes(:user).map { |tp| [tp.name.presence || tp.user&.name.presence || tp.user&.email || "Player", tp.user_id] } %>
             <% doubles = @tournament.format == "doubles" %>
             <%= form_tag add_match_tournament_path(@tournament), method: :post, class: "flex flex-wrap items-end gap-3" do %>
               <div>
-                <label class="block text-xs text-gray-500 mb-1"><%= doubles ? "Team A / Player 1" : "Player A" %></label>
-                <%= select_tag :player_a_id, options_for_select(participant_options), include_blank: "Select", class: "block w-44 rounded-md border-gray-300 shadow-sm text-sm" %>
+                <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1"><%= doubles ? "Team A / Player 1" : "Player A" %></label>
+                <%= select_tag :player_a_id, options_for_select(participant_options), include_blank: "Select", class: "block w-44 rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm text-sm" %>
               </div>
               <% if doubles %>
                 <div>
-                  <label class="block text-xs text-gray-500 mb-1">Team A / Player 2</label>
-                  <%= select_tag :player_a2_id, options_for_select(participant_options), include_blank: "Select", class: "block w-44 rounded-md border-gray-300 shadow-sm text-sm" %>
+                  <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">Team A / Player 2</label>
+                  <%= select_tag :player_a2_id, options_for_select(participant_options), include_blank: "Select", class: "block w-44 rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm text-sm" %>
                 </div>
               <% end %>
-              <div class="flex items-end pb-2 text-gray-400 font-medium">vs</div>
+              <div class="flex items-end pb-2 text-gray-400 dark:text-slate-500 font-medium">vs</div>
               <div>
-                <label class="block text-xs text-gray-500 mb-1"><%= doubles ? "Team B / Player 1" : "Player B" %></label>
-                <%= select_tag :player_b_id, options_for_select(participant_options), include_blank: "Select", class: "block w-44 rounded-md border-gray-300 shadow-sm text-sm" %>
+                <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1"><%= doubles ? "Team B / Player 1" : "Player B" %></label>
+                <%= select_tag :player_b_id, options_for_select(participant_options), include_blank: "Select", class: "block w-44 rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm text-sm" %>
               </div>
               <% if doubles %>
                 <div>
-                  <label class="block text-xs text-gray-500 mb-1">Team B / Player 2</label>
-                  <%= select_tag :player_b2_id, options_for_select(participant_options), include_blank: "Select", class: "block w-44 rounded-md border-gray-300 shadow-sm text-sm" %>
+                  <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">Team B / Player 2</label>
+                  <%= select_tag :player_b2_id, options_for_select(participant_options), include_blank: "Select", class: "block w-44 rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm text-sm" %>
                 </div>
               <% end %>
               <div>
-                <label class="block text-xs text-gray-500 mb-1">Score</label>
-                <%= text_field_tag :score, nil, placeholder: "6-4 6-3", class: "block w-36 rounded-md border-gray-300 shadow-sm text-sm" %>
+                <label class="block text-xs text-gray-500 dark:text-slate-400 mb-1">Score</label>
+                <%= text_field_tag :score, nil, placeholder: "6-4 6-3", class: "block w-36 rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm text-sm" %>
               </div>
               <%= submit_tag "Add match", class: "inline-flex items-center rounded-full bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition cursor-pointer" %>
             <% end %>
           </div>
         <% else %>
-          <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+          <div class="rounded-lg border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/15 p-4 text-sm text-amber-700 dark:text-amber-200">
             Matches can be added after the tournament starts
             <% if @tournament.start_date.present? %>
               (<%= @tournament.start_date.strftime("%B %d, %Y") %><% if @tournament.time.present? %> at <%= @tournament.time.strftime("%H:%M") %><% end %>).

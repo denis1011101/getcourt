@@ -146,6 +146,7 @@ module Telegram
       coach_label: "Тренер: %{value}",
       notify_label: "Уведомлениять о поиске рядом: %{value}",
       language_label: "Язык: %{value}",
+      about_me_label: "О себе: %{value}",
       edit_profile: "Редактировать профиль",
       select_field_to_edit: "Выберите поле для редактирования:",
       field_email: "Email",
@@ -215,9 +216,11 @@ module Telegram
 
       # Survey / onboarding
       greeting: "Добро пожаловать в GetCourt! Я помогу настроить ваш профиль для поиска соперников.",
+      ask_language: "Выберите язык интерфейса:",
       ask_city: "В каком городе вы находитесь? Введите название города (или напишите 'skip').",
       ask_sports: "Какими видами спорта вы занимаетесь? Выберите все подходящие (нажмите для переключения), затем нажмите Готово (или Пропустить).",
       ask_skill: "Какой у вас уровень в %{sport}? Выберите один (или нажмите Пропустить):",
+      ask_coach: "Вы тренер? (или нажмите Пропустить)",
       ask_notifications: "Хотите получать уведомления, когда рядом ищут соперников? (или нажмите Пропустить)",
       survey_completion: "Спасибо — ваши предпочтения сохранены. Вы будете получать уведомления, если включили их.",
 
@@ -527,6 +530,7 @@ module Telegram
       coach_label: "Coach: %{value}",
       notify_label: "Notify nearby searches: %{value}",
       language_label: "Language: %{value}",
+      about_me_label: "About me: %{value}",
       edit_profile: "Edit profile",
       select_field_to_edit: "Select field to edit:",
       field_email: "Email",
@@ -597,9 +601,11 @@ module Telegram
 
       # Survey / onboarding
       greeting: "Welcome to GetCourt! I will help set up your profile to find opponents.",
+      ask_language: "Choose your language:",
       ask_city: "Which city are you located in? Please type the city name (or type 'skip').",
       ask_sports: "Which sports do you play? Select all that apply (tap to toggle), then press Done (or press Skip).",
       ask_skill: "What is your skill level in %{sport}? Choose one (or press Skip):",
+      ask_coach: "Are you a coach? (or press Skip)",
       ask_notifications: "Do you want to enable notifications when opponents are searched in your city? (or press Skip)",
       survey_completion: "Thanks — your preferences have been saved. You will receive notifications if enabled.",
 

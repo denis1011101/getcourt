@@ -15,57 +15,41 @@ module Telegram
           false
         end
 
-        # Map conversation state to user attributes and assign (does not save).
+        # Map conversation state to real user attributes and assign (does not save).
         def apply_to_user(user, state)
           attrs = {}
 
-          attrs[:telegram_city] = state["city"] if state["city"].present?
+          # language → telegram_locale
+          if state["language"].present?
+            attrs[:telegram_locale] = state["language"]
+          end
 
+          # city → city_name
+          if state["city"].present?
+            attrs[:city_name] = state["city"]
+          end
+
+          # selected_sports → preferred_sports (virtual :json attribute, assign array directly)
           if state["selected_sports"].is_a?(Array) && state["selected_sports"].any?
-            if user_has_column?(user, :telegram_sports)
-              # Try to assign array directly; DB type may be array/json/text
-              attrs[:telegram_sports] = state["selected_sports"]
-            else
-              attrs[:telegram_sports] = state["selected_sports"].join(",")
-            end
+            attrs[:preferred_sports] = state["selected_sports"]
           end
 
+          # skills → skill_levels (json column)
           if state["skills"].is_a?(Hash) && state["skills"].any?
-            if user_has_column?(user, :telegram_skills)
-              col = safe_column(user, "telegram_skills")
-              if col && [ :json, :jsonb ].include?(col.type)
-                attrs[:telegram_skills] = state["skills"]
-              else
-                attrs[:telegram_skills] = state["skills"].to_json
-              end
-            else
-              attrs[:telegram_skills] = state["skills"].to_json
-            end
+            attrs[:skill_levels] = state["skills"]
           end
 
-          if state.key?("notifications")
-            if user_has_column?(user, :telegram_notifications)
-              attrs[:telegram_notifications] = !!state["notifications"]
-            else
-              # fallback: try generic notifications flag
-              user.respond_to?(:notifications=) ? attrs[:notifications] = !!state["notifications"] : nil
-            end
+          # coach → coach (nullable boolean: true/false/nil)
+          if state.key?("coach")
+            attrs[:coach] = state["coach"] # nil means skipped
+          end
+
+          # notifications → notify_nearby
+          if state.key?("notifications") && !state["notifications"].nil?
+            attrs[:notify_nearby] = !!state["notifications"]
           end
 
           user.assign_attributes(attrs) if attrs.any?
-        end
-
-        private
-
-        def user_has_column?(user, col)
-          user.class.respond_to?(:column_names) && user.class.column_names.include?(col.to_s)
-        end
-
-        def safe_column(user, name)
-          return nil unless user.class.respond_to?(:columns_hash)
-          user.class.columns_hash[name]
-        rescue
-          nil
         end
       end
     end

@@ -6,7 +6,7 @@ class User < ApplicationRecord
   after_create :ensure_player_statistic
 
   SKILL_LEVELS = %w[beginner intermediate advanced pro].freeze
-  SPORTS = [ "Tennis", "Padel", "Squash", "Table Tennis" ].freeze
+  SPORTS = SportCatalog::SPORTS
 
   TIMEZONES = (
     TZInfo::Timezone.all_identifiers + ActiveSupport::TimeZone.all.map(&:name)

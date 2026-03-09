@@ -26,8 +26,15 @@ module Telegram
           t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
           page = [ page.to_i, 1 ].max
+          user = Telegram::Helpers::UserLookup.find_user(chat_id)
 
-          tournaments = Tournament.includes(:tournament_participants).order(created_at: :desc).to_a
+          tournaments = Tournament.includes(:tournament_participants, :courts).order(created_at: :desc).to_a
+
+          if user&.city_name.present?
+            user_city = user.city_name.downcase
+            local, other = tournaments.partition { |t| t.courts.any? { |c| c.city_name.to_s.downcase == user_city } }
+            tournaments = local + other
+          end
 
           total = tournaments.size
           pages = [ (total.to_f / PER_PAGE).ceil, 1 ].max
@@ -68,9 +75,15 @@ module Telegram
 
           page = [ page.to_i, 1 ].max
 
-          tournaments = Tournament.includes(:tournament_participants)
+          tournaments = Tournament.includes(:tournament_participants, :courts)
                                   .where("tournaments.user_id = :uid OR tournaments.id IN (SELECT tournament_id FROM tournament_participants WHERE user_id = :uid)", uid: user.id)
                                   .order(created_at: :desc).to_a
+
+          if user.city_name.present?
+            user_city = user.city_name.downcase
+            local, other = tournaments.partition { |t| t.courts.any? { |c| c.city_name.to_s.downcase == user_city } }
+            tournaments = local + other
+          end
 
           total = tournaments.size
           pages = [ (total.to_f / PER_PAGE).ceil, 1 ].max

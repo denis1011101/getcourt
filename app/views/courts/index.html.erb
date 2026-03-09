@@ -1,6 +1,31 @@
 <% content_for :meta_title, "Tennis, Padel & Squash Courts — GetCourt" %>
 <% content_for :meta_description, "Browse tennis, padel, squash and table tennis courts. Find a court near you, see upcoming games and join the community." %>
 <div class="max-w-6xl mx-auto">
+  <div class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-indigo-600 via-indigo-500 to-purple-500 px-6 py-8 md:px-10 md:py-12 mb-6 text-white ring-1 ring-white/15 shadow-[0_20px_60px_rgba(79,70,229,0.18)] dark:from-indigo-950 dark:via-indigo-900 dark:to-fuchsia-900 dark:ring-white/10 dark:shadow-[0_24px_70px_rgba(15,23,42,0.45)]">
+    <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/14 via-white/5 to-transparent dark:from-white/6 dark:via-transparent dark:to-indigo-950/35"></div>
+    <div class="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/30 dark:bg-white/10"></div>
+
+    <div class="relative">
+      <h1 class="text-2xl md:text-4xl font-bold tracking-tight">Find your court</h1>
+      <p class="mt-2 text-indigo-100 text-sm md:text-base max-w-xl">Tennis, padel, squash, table tennis - discover courts near you.</p>
+
+      <div class="mt-5 flex flex-col sm:flex-row gap-2 max-w-2xl">
+        <%= form_with url: courts_path, method: :get, local: true, class: "flex flex-col sm:flex-row gap-2 w-full" do |f| %>
+          <div class="relative flex-1">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            <%= f.select :city,
+                  options_for_select(@cities, params[:city]),
+                  { include_blank: "Any city" },
+                  class: "w-full rounded-full border border-white/40 bg-white/95 pl-9 pr-4 py-2.5 text-sm text-gray-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] focus:ring-2 focus:ring-white/50 appearance-none dark:border-white/15 dark:bg-slate-800/95 dark:text-slate-100 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]" %>
+          </div>
+          <%= f.submit "Search", class: "rounded-full border border-white/50 bg-white px-6 py-2.5 text-sm font-semibold text-indigo-600 shadow-[0_10px_30px_rgba(255,255,255,0.18)] hover:bg-indigo-50 transition cursor-pointer dark:border-white/15 dark:bg-slate-800 dark:text-slate-100 dark:shadow-[0_12px_30px_rgba(15,23,42,0.35)] dark:hover:bg-slate-700" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
   <div class="flex items-center justify-between mb-6">
     <div>
       <h1 class="text-2xl font-bold text-gray-900">Tennis, Padel & Squash Courts</h1>
@@ -35,6 +60,13 @@
             <h3 class="text-base font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors mb-1">
               <%= court.name %>
             </h3>
+            <% if court.sport.present? %>
+              <p class="mb-2">
+                <span class="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-200">
+                  <%= court.sport %>
+                </span>
+              </p>
+            <% end %>
             <p class="text-sm <%= unknown ? 'text-gray-400' : 'text-gray-500' %> flex items-center gap-1">
               <svg class="w-3.5 h-3.5 flex-shrink-0 <%= unknown ? 'text-gray-300' : 'text-indigo-400' %>" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 2a6 6 0 00-6 6c0 4.418 6 10 6 10s6-5.582 6-10a6 6 0 00-6-6zm0 8a2 2 0 110-4 2 2 0 010 4z" clip-rule="evenodd"/>

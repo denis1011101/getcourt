@@ -1,4 +1,4 @@
-<div class="group relative rounded-xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
+<div class="group relative rounded-xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden dark:border-white/10 dark:bg-slate-800/80">
   <%= link_to "", game_path(game), class: "absolute inset-0 z-0" %>
 
   <!-- Color accent bar based on sport -->
@@ -9,7 +9,7 @@
     <!-- Date & Time -->
     <div class="flex items-center justify-between mb-3">
       <div class="flex items-center gap-2">
-        <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600">
+        <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300">
           <% display_date = game.display_date_for_show || game.date %>
           <% if display_date %>
             <div class="text-center leading-none">
@@ -24,17 +24,17 @@
         </div>
         <div>
           <% if display_date %>
-            <p class="text-sm font-medium text-gray-900"><%= display_date.strftime("%A") %></p>
+            <p class="text-sm font-medium text-gray-900 dark:text-slate-100"><%= display_date.strftime("%A") %></p>
           <% end %>
           <% game_time = game.next_time || game.time %>
           <% if game_time %>
-            <p class="text-xs text-gray-500"><%= game_time.strftime("%I:%M %p") %></p>
+            <p class="text-xs text-gray-500 dark:text-slate-400"><%= game_time.strftime("%I:%M %p") %></p>
           <% end %>
         </div>
       </div>
 
       <% if can_manage?(game) %>
-        <%= link_to edit_game_path(game), class: "relative z-10 p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition", title: "Edit" do %>
+        <%= link_to edit_game_path(game), class: "relative z-10 p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition dark:hover:bg-white/10 dark:text-slate-400 dark:hover:text-slate-200", title: "Edit" do %>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/>
           </svg>
@@ -43,7 +43,7 @@
     </div>
 
     <!-- Court name -->
-    <h3 class="text-base font-semibold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors">
+    <h3 class="text-base font-semibold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors dark:text-slate-100">
       <%= game.court.name %>
     </h3>
 
@@ -55,39 +55,39 @@
       <% spots_left = required - taken %>
 
       <% if game.respond_to?(:sport) && game.sport.present? %>
-        <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700">
+        <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:bg-slate-700 dark:text-slate-100">
           <%= game.sport.to_s.titleize %>
         </span>
       <% end %>
 
       <% skill_attr = %w[min_skill skill_level level].find { |a| game.respond_to?(a) && game.public_send(a).present? } %>
       <% if skill_attr %>
-        <span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700">
+        <span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-200">
           <%= game.public_send(skill_attr).to_s.titleize %>
         </span>
       <% end %>
 
       <% if game.respond_to?(:with_coach) && game.with_coach? %>
-        <span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+        <span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-500/15 dark:text-blue-200">
           Coach
         </span>
       <% end %>
 
       <% if game.respond_to?(:recurring) && game.recurring? %>
-        <span class="inline-flex items-center rounded-full bg-purple-50 px-2.5 py-0.5 text-xs font-medium text-purple-700">
+        <span class="inline-flex items-center rounded-full bg-purple-50 px-2.5 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-500/15 dark:text-purple-200">
           Weekly
         </span>
       <% end %>
 
       <% if game.respond_to?(:urgent_player_search?) && game.urgent_player_search? %>
-        <span class="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-medium text-rose-700">
+        <span class="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-medium text-rose-700 dark:bg-rose-500/15 dark:text-rose-200">
           Urgent search
         </span>
       <% end %>
     </div>
 
     <% if game.tournament.present? %>
-      <div class="mb-3 text-xs text-gray-500 truncate">
+      <div class="mb-3 text-xs text-gray-500 truncate dark:text-slate-400">
         Tournament:
         <%= link_to (game.tournament.respond_to?(:name) ? game.tournament.name : "##{game.tournament.id}"),
                     tournament_path(game.tournament),
@@ -101,7 +101,7 @@
         <!-- Player dots -->
         <div class="flex -space-x-1">
           <% [taken, 4].min.times do %>
-            <div class="w-6 h-6 rounded-full bg-indigo-100 border-2 border-white flex items-center justify-center">
+            <div class="w-6 h-6 rounded-full bg-indigo-100 border-2 border-white flex items-center justify-center dark:bg-indigo-500/20 dark:border-slate-800">
               <svg class="w-3 h-3 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/>
               </svg>
@@ -109,7 +109,7 @@
           <% end %>
           <% if spots_left > 0 %>
             <% [spots_left, 3].min.times do %>
-              <div class="w-6 h-6 rounded-full bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center">
+              <div class="w-6 h-6 rounded-full bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center dark:bg-slate-700 dark:border-slate-500">
                 <svg class="w-3 h-3 text-gray-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
                 </svg>
@@ -117,7 +117,7 @@
             <% end %>
           <% end %>
         </div>
-        <span class="text-xs text-gray-500"><%= taken %>/<%= required %></span>
+        <span class="text-xs text-gray-500 dark:text-slate-400"><%= taken %>/<%= required %></span>
       </div>
 
       <% if spots_left > 0 %>

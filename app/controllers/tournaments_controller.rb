@@ -5,14 +5,24 @@ class TournamentsController < ApplicationController
   before_action :authorize_organizer!, only: %i[select_bracket reset_bracket add_match]
 
   def index
-    @tournaments = Tournament.includes(:tournament_participants).order(created_at: :desc)
+    scope = Tournament.includes(:tournament_participants, :courts).order(created_at: :desc)
 
     if params[:my_tournaments].present? && current_user
-      @tournaments = @tournaments.where(
+      scope = scope.where(
         "tournaments.user_id = :uid OR tournaments.id IN (SELECT tournament_id FROM tournament_participants WHERE user_id = :uid)",
         uid: current_user.id
       )
     end
+
+    tournaments = scope.to_a
+
+    if current_user&.city_name.present?
+      user_city = current_user.city_name.downcase
+      local, other = tournaments.partition { |t| t.courts.any? { |c| c.city_name.to_s.downcase == user_city } }
+      tournaments = local + other
+    end
+
+    @tournaments = tournaments
   end
 
   def new

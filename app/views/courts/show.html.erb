@@ -16,18 +16,25 @@
 
 <div class="max-w-6xl mx-auto py-4">
   <!-- Breadcrumb -->
-  <nav class="text-sm text-gray-500 mb-4">
-    <%= link_to "Home", root_path, class: "hover:text-gray-700" %> &rsaquo;
-    <%= link_to "Courts", courts_path, class: "hover:text-gray-700" %> &rsaquo;
-    <span class="text-gray-900"><%= @court.name %></span>
+  <nav class="text-sm text-gray-500 dark:text-slate-400 mb-4">
+    <%= link_to "Home", root_path, class: "hover:text-gray-700 dark:hover:text-white" %> &rsaquo;
+    <%= link_to "Courts", courts_path, class: "hover:text-gray-700 dark:hover:text-white" %> &rsaquo;
+    <span class="text-gray-900 dark:text-slate-100"><%= @court.name %></span>
   </nav>
 
   <!-- Court header -->
   <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
     <div>
-      <h1 class="text-2xl md:text-3xl font-bold text-gray-900"><%= @court.name %></h1>
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-slate-100"><%= @court.name %></h1>
+      <% if @court.sport.present? %>
+        <p class="mt-2">
+          <span class="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-sm font-medium text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-200">
+            <%= @court.sport %>
+          </span>
+        </p>
+      <% end %>
       <% if @court.address.present? && @court.address != "Unknown address" && @court.address != "Geocoding error" %>
-        <p class="mt-1 text-gray-500 flex items-center gap-1">
+        <p class="mt-1 text-gray-500 dark:text-slate-400 flex items-center gap-1">
           <svg class="w-4 h-4 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M10 2a6 6 0 00-6 6c0 4.418 6 10 6 10s6-5.582 6-10a6 6 0 00-6-6zm0 8a2 2 0 110-4 2 2 0 010 4z" clip-rule="evenodd"/>
           </svg>
@@ -37,13 +44,13 @@
     </div>
     <div class="flex items-center gap-2 flex-shrink-0">
       <% if can_manage?(@court) %>
-        <%= link_to "Edit", edit_court_path(@court), class: "inline-flex items-center rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition" %>
+        <%= link_to "Edit", edit_court_path(@court), class: "inline-flex items-center rounded-full border border-gray-300 dark:border-white/15 px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-white/5 transition" %>
       <% end %>
     </div>
   </div>
 
   <% if @court.pending? %>
-    <div class="mb-4 rounded-xl border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800">
+    <div class="mb-4 rounded-xl border border-yellow-200 bg-yellow-50 dark:bg-yellow-500/10 dark:border-yellow-500/20 p-4 text-sm text-yellow-800 dark:text-yellow-200">
       This court is under moderation.
     </div>
     <% if current_user&.admin? %>
@@ -57,7 +64,7 @@
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Left column: Map & Details -->
     <div class="lg:col-span-1 space-y-4">
-      <div class="bg-white rounded-xl border overflow-hidden">
+      <div class="bg-white rounded-xl border overflow-hidden dark:bg-slate-800/80 dark:border-white/10">
         <% lat, lng = @court.coordinates.to_s.split(",").map(&:to_f) %>
 
         <%= render "shared/map_panel" do %>
@@ -67,7 +74,7 @@
                  data-map-show-lng-value="<%= lng %>"
                  class="h-48 w-full"></div>
           <% else %>
-            <div class="h-48 w-full bg-gray-50 flex items-center justify-center text-gray-400">
+            <div class="h-48 w-full bg-gray-50 dark:bg-slate-700 flex items-center justify-center text-gray-400 dark:text-slate-500">
               Coordinates not available
             </div>
           <% end %>
@@ -76,15 +83,22 @@
         <div class="p-4 space-y-3">
           <% if @court.address.present? && @court.address != "Unknown address" %>
             <div>
-              <p class="text-xs text-gray-400 uppercase tracking-wide font-medium">Address</p>
-              <p class="text-sm font-medium text-gray-900 mt-0.5"><%= @court.address %></p>
+              <p class="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wide font-medium">Address</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-slate-100 mt-0.5"><%= @court.address %></p>
+            </div>
+          <% end %>
+
+          <% if @court.sport.present? %>
+            <div>
+              <p class="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wide font-medium">Sport</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-slate-100 mt-0.5"><%= @court.sport %></p>
             </div>
           <% end %>
 
           <% if lat && lng && !(lat.zero? && lng.zero?) %>
             <div>
-              <p class="text-xs text-gray-400 uppercase tracking-wide font-medium">Coordinates</p>
-              <p class="text-sm font-mono text-gray-600 mt-0.5"><%= lat.round(6) %>, <%= lng.round(6) %></p>
+              <p class="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wide font-medium">Coordinates</p>
+              <p class="text-sm font-mono text-gray-600 dark:text-slate-400 mt-0.5"><%= lat.round(6) %>, <%= lng.round(6) %></p>
             </div>
           <% end %>
 
@@ -126,13 +140,13 @@
               end %>
 
             <div>
-              <p class="text-xs text-gray-400 uppercase tracking-wide font-medium">Contact</p>
+              <p class="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wide font-medium">Contact</p>
               <p class="text-sm font-medium mt-0.5">
                 <% if href.present? %>
-                  <% if @court.contact_label.present? %><span class="text-gray-600"><%= @court.contact_label %>:</span> <% end %>
+                  <% if @court.contact_label.present? %><span class="text-gray-600 dark:text-slate-400"><%= @court.contact_label %>:</span> <% end %>
                   <%= link_to contact_value, href, class: "text-indigo-600 hover:text-indigo-800 underline", target: "_blank", rel: "noopener" %>
                 <% else %>
-                  <span class="text-gray-900"><%= @court.formatted_contact %></span>
+                  <span class="text-gray-900 dark:text-slate-100"><%= @court.formatted_contact %></span>
                 <% end %>
               </p>
             </div>
@@ -144,9 +158,9 @@
     <!-- Right column: Games at this court -->
     <div class="lg:col-span-2">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-bold text-gray-900">Games at this court</h2>
+        <h2 class="text-lg font-bold text-gray-900 dark:text-slate-100">Games at this court</h2>
         <div class="flex items-center gap-2">
-        <%= link_to "Back to Courts", courts_path, class: "inline-flex items-center rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition" %>
+        <%= link_to "Back to Courts", courts_path, class: "inline-flex items-center rounded-full border border-gray-300 dark:border-white/15 px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-white/5 transition" %>
         <% sign_in_path = (respond_to?(:new_session_path) && new_session_path) || '/sign_in' rescue '/sign_in' %>
         <% if user_signed_in? %>
           <%= link_to new_game_path(court_id: @court.id), class: "inline-flex items-center gap-1.5 rounded-full bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition" do %>
@@ -170,12 +184,12 @@
           <% end %>
         </div>
       <% else %>
-        <div class="rounded-2xl border-2 border-dashed border-gray-200 p-10 text-center">
-          <svg class="mx-auto w-10 h-10 text-gray-300 mb-2" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24">
+        <div class="rounded-2xl border-2 border-dashed border-gray-200 dark:border-white/10 p-10 text-center">
+          <svg class="mx-auto w-10 h-10 text-gray-300 dark:text-slate-600 mb-2" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
           </svg>
-          <p class="text-gray-500 font-medium">No games scheduled</p>
-          <p class="text-gray-400 text-sm mt-1">Be the first to create a game at this court!</p>
+          <p class="text-gray-500 dark:text-slate-400 font-medium">No games scheduled</p>
+          <p class="text-gray-400 dark:text-slate-500 text-sm mt-1">Be the first to create a game at this court!</p>
         </div>
       <% end %>
     </div>

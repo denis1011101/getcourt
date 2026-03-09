@@ -29,12 +29,17 @@ class TennisLifeController < ApplicationController
 
     rating_rows = build_rating_rows
     @rating_rows = rating_rows.first(RATING_LIMIT)
+    total_hours = PlayerStatistic.sum(:singles_hours).to_f + PlayerStatistic.sum(:doubles_hours).to_f
+    total_hours_value = total_hours.round(1)
+    total_hours_value = total_hours_value.to_i if total_hours_value == total_hours_value.to_i
 
     @stats_cards = [
-      { title: "Сыграно игр", value: Game.count },
-      { title: "Игроков в рейтинге", value: rating_rows.size },
-      { title: "Кортов", value: Court.count },
-      { title: "Участий в играх", value: Participation.count }
+      { title: "Games played", value: Game.count },
+      { title: "Hours played", value: total_hours_value },
+      { title: "Players in rating", value: rating_rows.size },
+      { title: "Courts", value: Court.count },
+      { title: "Tournaments", value: Tournament.count },
+      { title: "Game participations", value: Participation.count }
     ]
   end
 

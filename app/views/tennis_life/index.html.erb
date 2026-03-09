@@ -6,13 +6,13 @@
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <main class="lg:col-span-2 space-y-4">
-      <section class="bg-white border rounded-lg p-4">
-        <h2 class="text-sm font-semibold text-gray-900 mb-3">GetCourt Stats</h2>
+      <section class="bg-white border rounded-lg dark:bg-slate-800/80 dark:border-white/10 p-4">
+        <h2 class="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-3">GetCourt Stats</h2>
         <div class="grid grid-cols-2 gap-3">
           <% @stats_cards.each do |card| %>
-            <div class="rounded-md border p-3">
-              <p class="text-xs text-gray-500"><%= card[:title] %></p>
-              <p class="text-xl font-semibold text-gray-900"><%= card[:value] %></p>
+            <div class="rounded-md border p-3 dark:border-white/10">
+              <p class="text-xs text-gray-500 dark:text-slate-400"><%= card[:title] %></p>
+              <p class="text-xl font-semibold text-gray-900 dark:text-slate-100"><%= card[:value] %></p>
             </div>
           <% end %>
         </div>
@@ -21,12 +21,12 @@
       <%= render "scoreboard", tennis_score_html: tennis_scoreboard_html(@tennis_score_raw) %>
 
       <section class="space-y-3">
-        <h2 class="text-sm font-semibold text-gray-900">Telegram Feed</h2>
+        <h2 class="text-sm font-semibold text-gray-900 dark:text-slate-100">Telegram Feed</h2>
 
         <% if @feed_posts.any? %>
           <% @feed_posts.each do |post| %>
             <% channel = post.telegram_channel.username.to_s.delete_prefix("@") %>
-            <article class="bg-white border rounded-lg p-2">
+            <article class="bg-white border rounded-lg dark:bg-slate-800/80 dark:border-white/10 p-2">
               <script async src="https://telegram.org/js/telegram-widget.js?22"
                       data-telegram-post="<%= "#{channel}/#{post.message_id}" %>"
                       data-width="100%"
@@ -35,13 +35,19 @@
           <% end %>
         <% elsif @random_telegram_post %>
           <% rpost = @random_telegram_post %>
+          <% channel_url = rpost["channel_url"].to_s[%r{\Ahttps://t\.me/[\w-]+\z}] %>
+          <% post_url = rpost["url"].to_s[%r{\Ahttps://t\.me/[\w-]+/\d+\z}] %>
           <% tg_post_path = rpost["url"].to_s.sub(%r{\Ahttps://t\.me/}, "") %>
-          <article class="bg-white border rounded-lg p-4">
-            <p class="text-xs text-gray-500 mb-1">
-              <a href="<%= rpost["channel_url"] %>" class="text-indigo-600 hover:underline" target="_blank" rel="noopener"><%= rpost["channel_name"] %></a>
-            </p>
-            <p class="text-sm text-gray-800 whitespace-pre-line"><%= rpost["text"] %></p>
-            <a href="<%= rpost["url"] %>" class="mt-2 inline-block text-xs text-indigo-500 hover:underline" target="_blank" rel="noopener">Читать в Telegram →</a>
+          <article class="bg-white border rounded-lg dark:bg-slate-800/80 dark:border-white/10 p-4">
+            <% if channel_url.present? %>
+              <p class="text-xs text-gray-500 dark:text-slate-400 mb-1">
+                <a href="<%= channel_url %>" class="text-indigo-600 hover:underline" target="_blank" rel="noopener"><%= rpost["channel_name"] %></a>
+              </p>
+            <% end %>
+            <p class="text-sm text-gray-800 dark:text-slate-200 whitespace-pre-line"><%= rpost["text"] %></p>
+            <% if post_url.present? %>
+              <a href="<%= post_url %>" class="mt-2 inline-block text-xs text-indigo-500 hover:underline" target="_blank" rel="noopener">Read on Telegram →</a>
+            <% end %>
             <% if tg_post_path.match?(%r{\A[\w-]+/\d+\z}) %>
               <div class="mt-3">
                 <script async src="https://telegram.org/js/telegram-widget.js?22"
@@ -52,7 +58,7 @@
             <% end %>
           </article>
         <% else %>
-          <div class="rounded-lg border p-6 text-center text-gray-700 bg-white">
+          <div class="rounded-lg border p-6 text-center text-gray-700 dark:text-slate-300 bg-white dark:bg-slate-800/80">
             No posts yet. Subscribe to the channels below.
           </div>
         <% end %>
@@ -60,7 +66,7 @@
     </main>
 
     <aside class="lg:col-span-1 space-y-4 lg:sticky lg:top-24 self-start">
-      <section class="border rounded-lg p-4 bg-white">
+      <section class="border rounded-lg p-4 bg-white dark:bg-slate-800/80 dark:border-white/10">
         <h3 class="text-sm font-semibold mb-2">Player Rating (top 10)</h3>
 
         <% if @rating_rows.any? %>
@@ -74,21 +80,21 @@
               else
                 user&.id.present? ? "User ##{user.id}" : "Anonymous player"
               end %>
-              <li class="flex items-start justify-between gap-2 border-b border-gray-100 pb-2">
+              <li class="flex items-start justify-between gap-2 border-b border-gray-100 dark:border-white/10 pb-2">
                 <div>
-                  <p class="font-medium text-gray-900"><%= "#{idx + 1}. #{name}" %></p>
-                  <p class="text-xs text-gray-500"><%= "#{row[:wins]} wins / #{row[:games]} games" %></p>
+                  <p class="font-medium text-gray-900 dark:text-slate-100"><%= "#{idx + 1}. #{name}" %></p>
+                  <p class="text-xs text-gray-500 dark:text-slate-400"><%= "#{row[:wins]} wins / #{row[:games]} games" %></p>
                 </div>
                 <span class="text-xs font-semibold text-indigo-600"><%= "#{row[:pct]}%" %></span>
               </li>
             <% end %>
           </ol>
         <% else %>
-          <p class="text-sm text-gray-500">No rating data yet.</p>
+          <p class="text-sm text-gray-500 dark:text-slate-400">No rating data yet.</p>
         <% end %>
       </section>
 
-      <section class="border rounded-lg p-4 bg-white">
+      <section class="border rounded-lg p-4 bg-white dark:bg-slate-800/80 dark:border-white/10">
         <h3 class="text-sm font-semibold mb-2">Telegram Channels</h3>
         <ul class="space-y-2 text-sm">
           <% TennisLifeController::TELEGRAM_CHANNELS.each do |c| %>

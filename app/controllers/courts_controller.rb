@@ -3,12 +3,17 @@ class CourtsController < ApplicationController
   skip_before_action :authenticate_user!, only: %i[index show]
 
   def index
+    @cities = Court.where.not(city_name: [ nil, "" ]).distinct.order(:city_name).pluck(:city_name)
     courts = Court.visible_to(current_user).to_a
-    if current_user&.city_name.present?
+
+    if params[:city].present?
+      courts = courts.select { |c| c.city_name == params[:city] }
+    elsif current_user&.city_name.present?
       user_city = current_user.city_name.downcase
       local, other = courts.partition { |c| c.city_name.to_s.downcase == user_city }
       courts = local + other
     end
+
     Rails.logger.info "Courts#index current_user_id=#{current_user&.id} courts=#{courts.map { |c| [ c.id, c.user_id ] }.inspect}"
     @pagy, @courts = pagy_array(courts)
   end
@@ -84,7 +89,7 @@ class CourtsController < ApplicationController
   end
 
   def court_params
-    params.require(:court).permit(:name, :coordinates, :user_id, :contact_type, :contact_value)
+    params.require(:court).permit(:name, :sport, :coordinates, :user_id, :contact_type, :contact_value)
   end
 
   def normalize_contact_type!(court)

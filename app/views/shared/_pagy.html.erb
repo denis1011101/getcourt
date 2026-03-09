@@ -4,14 +4,14 @@
     <%# Prev button %>
     <% if pagy.previous %>
       <%= link_to pagy_url_for(pagy, pagy.previous),
-            class: "flex items-center gap-1 px-3 py-2 rounded-full text-sm font-medium border border-gray-200 bg-white text-gray-700 hover:border-indigo-300 hover:text-indigo-600 transition" do %>
+            class: "flex items-center gap-1 px-3 py-2 rounded-full text-sm font-medium border border-gray-200 bg-white text-gray-700 dark:border-white/10 dark:bg-slate-800 dark:text-slate-200 hover:border-indigo-300 hover:text-indigo-600 transition" do %>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
         </svg>
         Prev
       <% end %>
     <% else %>
-      <span class="flex items-center gap-1 px-3 py-2 rounded-full text-sm font-medium text-gray-300 cursor-not-allowed">
+      <span class="flex items-center gap-1 px-3 py-2 rounded-full text-sm font-medium text-gray-300 dark:text-slate-600 cursor-not-allowed">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
         </svg>
@@ -26,9 +26,9 @@
 
     <% if start_page > 1 %>
       <%= link_to "1", pagy_url_for(pagy, 1),
-            class: "w-9 h-9 flex items-center justify-center rounded-full text-sm font-medium border border-gray-200 bg-white text-gray-700 hover:border-indigo-300 hover:text-indigo-600 transition" %>
+            class: "w-9 h-9 flex items-center justify-center rounded-full text-sm font-medium border border-gray-200 bg-white text-gray-700 dark:border-white/10 dark:bg-slate-800 dark:text-slate-200 hover:border-indigo-300 hover:text-indigo-600 transition" %>
       <% if start_page > 2 %>
-        <span class="px-1 py-2 text-sm text-gray-400 leading-none">…</span>
+        <span class="px-1 py-2 text-sm text-gray-400 dark:text-slate-500 leading-none">…</span>
       <% end %>
     <% end %>
 
@@ -39,29 +39,29 @@
         </span>
       <% else %>
         <%= link_to item.to_s, pagy_url_for(pagy, item),
-              class: "w-9 h-9 flex items-center justify-center rounded-full text-sm font-medium border border-gray-200 bg-white text-gray-700 hover:border-indigo-300 hover:text-indigo-600 transition" %>
+              class: "w-9 h-9 flex items-center justify-center rounded-full text-sm font-medium border border-gray-200 bg-white text-gray-700 dark:border-white/10 dark:bg-slate-800 dark:text-slate-200 hover:border-indigo-300 hover:text-indigo-600 transition" %>
       <% end %>
     <% end %>
 
     <% if end_page < pagy.pages %>
       <% if end_page < pagy.pages - 1 %>
-        <span class="px-1 py-2 text-sm text-gray-400 leading-none">…</span>
+        <span class="px-1 py-2 text-sm text-gray-400 dark:text-slate-500 leading-none">…</span>
       <% end %>
       <%= link_to pagy.pages.to_s, pagy_url_for(pagy, pagy.pages),
-            class: "w-9 h-9 flex items-center justify-center rounded-full text-sm font-medium border border-gray-200 bg-white text-gray-700 hover:border-indigo-300 hover:text-indigo-600 transition" %>
+            class: "w-9 h-9 flex items-center justify-center rounded-full text-sm font-medium border border-gray-200 bg-white text-gray-700 dark:border-white/10 dark:bg-slate-800 dark:text-slate-200 hover:border-indigo-300 hover:text-indigo-600 transition" %>
     <% end %>
 
     <%# Next button %>
     <% if pagy.next %>
       <%= link_to pagy_url_for(pagy, pagy.next),
-            class: "flex items-center gap-1 px-3 py-2 rounded-full text-sm font-medium border border-gray-200 bg-white text-gray-700 hover:border-indigo-300 hover:text-indigo-600 transition" do %>
+            class: "flex items-center gap-1 px-3 py-2 rounded-full text-sm font-medium border border-gray-200 bg-white text-gray-700 dark:border-white/10 dark:bg-slate-800 dark:text-slate-200 hover:border-indigo-300 hover:text-indigo-600 transition" do %>
         Next
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
         </svg>
       <% end %>
     <% else %>
-      <span class="flex items-center gap-1 px-3 py-2 rounded-full text-sm font-medium text-gray-300 cursor-not-allowed">
+      <span class="flex items-center gap-1 px-3 py-2 rounded-full text-sm font-medium text-gray-300 dark:text-slate-600 cursor-not-allowed">
         Next
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>

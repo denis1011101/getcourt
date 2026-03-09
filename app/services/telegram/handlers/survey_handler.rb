@@ -1,6 +1,8 @@
 module Telegram
   module Handlers
     class SurveyHandler
+      Conversation = Telegram::Helpers::Conversation
+
       class << self
         # Entry from /start
         def start(chat_id, user = nil)
@@ -9,12 +11,19 @@ module Telegram
 
           Telegram::Api.send_simple(chat_id, t.(:greeting))
           Conversation.start(chat_id)
-          Telegram::Api.send_force_reply(chat_id, t.(:ask_city))
+          send_language_picker(chat_id, locale: locale)
         end
 
         # Handle plain text messages (e.g. force-reply for city)
         def handle_message(chat_id, text, user = nil)
-          locale = user ? Telegram::I18n.locale_for(user) : Telegram::I18n::DEFAULT_LOCALE
+          conv_locale = Conversation.get(chat_id)["language"].to_s
+          locale = if Telegram::I18n::LOCALES.include?(conv_locale)
+            conv_locale
+          elsif user
+            Telegram::I18n.locale_for(user)
+          else
+            Telegram::I18n::DEFAULT_LOCALE
+          end
           t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
           state = Conversation.get(chat_id)
@@ -49,10 +58,29 @@ module Telegram
           chat_id = (callback.dig("message", "chat", "id") || from["id"]).to_s
           user = find_user_by_chat(chat_id)
 
-          locale = user ? Telegram::I18n.locale_for(user) : Telegram::I18n::DEFAULT_LOCALE
+          # Use language from conversation state if already chosen, else fall back to user/default
+          conv_locale = Conversation.get(chat_id)["language"].to_s
+          locale = if Telegram::I18n::LOCALES.include?(conv_locale)
+            conv_locale
+          elsif user
+            Telegram::I18n.locale_for(user)
+          else
+            Telegram::I18n::DEFAULT_LOCALE
+          end
           t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
           case
+          when data.start_with?("survey_lang:set:")
+            lang = data.split(":", 3).last
+            Conversation.update(chat_id, "language" => lang)
+            Conversation.set_step(chat_id, "ask_city")
+            Telegram::Api.answer_callback(cb_id)
+            city_locale = Telegram::I18n::LOCALES.include?(lang) ? lang : locale
+            Telegram::Api.send_force_reply(chat_id, Telegram::I18n.t(:ask_city, locale: city_locale))
+          when data == "survey_lang:skip"
+            Conversation.set_step(chat_id, "ask_city")
+            Telegram::Api.answer_callback(cb_id)
+            Telegram::Api.send_force_reply(chat_id, t.(:ask_city))
           when data.start_with?("sport:toggle:")
             sport = data.split(":", 3).last
             Conversation.toggle_sport(chat_id, sport)
@@ -70,9 +98,9 @@ module Telegram
             ask_next_skill(chat_id, locale: locale)
           when data == "sport:skip_all"
             Conversation.update(chat_id, "selected_sports" => [], "skill_queue" => [])
-            Conversation.set_step(chat_id, "ask_notifications")
+            Conversation.set_step(chat_id, "ask_coach")
             Telegram::Api.answer_callback(cb_id)
-            send_notifications_picker(chat_id, locale: locale)
+            send_coach_picker(chat_id, locale: locale)
           when data.start_with?("skill:set:")
             parts = data.split(":")
             sport = parts[2]
@@ -85,8 +113,8 @@ module Telegram
             if queue.any?
               ask_next_skill(chat_id, locale: locale)
             else
-              Conversation.set_step(chat_id, "ask_notifications")
-              send_notifications_picker(chat_id, locale: locale)
+              Conversation.set_step(chat_id, "ask_coach")
+              send_coach_picker(chat_id, locale: locale)
             end
           when data.start_with?("skill:skip:")
             queue = (Conversation.get(chat_id)["skill_queue"] || [])
@@ -96,31 +124,29 @@ module Telegram
             if queue.any?
               ask_next_skill(chat_id, locale: locale)
             else
-              Conversation.set_step(chat_id, "ask_notifications")
-              send_notifications_picker(chat_id, locale: locale)
+              Conversation.set_step(chat_id, "ask_coach")
+              send_coach_picker(chat_id, locale: locale)
             end
+          when data.start_with?("coach:set:")
+            val = data.split(":", 3).last
+            Conversation.update(chat_id, "coach" => (val == "yes"))
+            Conversation.set_step(chat_id, "ask_notifications")
+            Telegram::Api.answer_callback(cb_id)
+            send_notifications_picker(chat_id, locale: locale)
+          when data == "coach:skip"
+            Conversation.update(chat_id, "coach" => nil)
+            Conversation.set_step(chat_id, "ask_notifications")
+            Telegram::Api.answer_callback(cb_id)
+            send_notifications_picker(chat_id, locale: locale)
           when data.start_with?("notifications:set:")
             val = data.split(":", 2).last
             Conversation.set_notifications(chat_id, val == "yes")
             Telegram::Api.answer_callback(cb_id)
-            if user
-              Telegram::Helpers::UserProfile.persist_from_conversation(chat_id, user, finish: true)
-            else
-              Conversation.finish(chat_id)
-            end
-            Telegram::Api.send_simple(chat_id, t.(:survey_completion))
-            # Show main menu after survey
-            Telegram::Handlers::MenuHandler.menu(chat_id)
+            finish_survey(chat_id, user, t)
           when data == "notifications:skip"
             Conversation.set_notifications(chat_id, nil)
             Telegram::Api.answer_callback(cb_id)
-            if user
-              Telegram::Helpers::UserProfile.persist_from_conversation(chat_id, user, finish: true)
-            else
-              Conversation.finish(chat_id)
-            end
-            Telegram::Api.send_simple(chat_id, t.(:survey_completion))
-            Telegram::Handlers::MenuHandler.menu(chat_id)
+            finish_survey(chat_id, user, t)
           else
             Telegram::Api.answer_callback(cb_id, t.(:unknown_action), show_alert: false)
           end
@@ -129,6 +155,27 @@ module Telegram
         end
 
         private
+
+        def finish_survey(chat_id, user, t)
+          if user
+            Telegram::Helpers::UserProfile.persist_from_conversation(chat_id, user, finish: true)
+            user.update(onboarded_at: Time.current)
+          else
+            Conversation.finish(chat_id)
+          end
+          Telegram::Api.send_simple(chat_id, t.(:survey_completion))
+          Telegram::Handlers::MenuHandler.menu(chat_id)
+        end
+
+        def send_language_picker(chat_id, locale: "ru")
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+          buttons = [
+            [ { text: "Русский 🇷🇺", callback_data: "survey_lang:set:ru" } ],
+            [ { text: "English 🇬🇧",  callback_data: "survey_lang:set:en" } ],
+            [ { text: t.(:skip),      callback_data: "survey_lang:skip" } ]
+          ]
+          Telegram::Api.send_with_buttons(chat_id, t.(:ask_language), buttons)
+        end
 
         def send_sports_picker(chat_id, answer: nil, locale: "ru")
           t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
@@ -152,6 +199,16 @@ module Telegram
           buttons = skill_levels_list.map { |label, key| [ { text: label, callback_data: "skill:set:#{sport}:#{key}" } ] }
           buttons << [ { text: t.(:skip), callback_data: "skill:skip:#{sport}" } ]
           Telegram::Api.send_with_buttons(chat_id, t.(:ask_skill, sport: sport_label), buttons)
+        end
+
+        def send_coach_picker(chat_id, locale: "ru")
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+          buttons = [
+            [ { text: t.(:yes_label), callback_data: "coach:set:yes" } ],
+            [ { text: t.(:no_label),  callback_data: "coach:set:no" } ],
+            [ { text: t.(:skip),      callback_data: "coach:skip" } ]
+          ]
+          Telegram::Api.send_with_buttons(chat_id, t.(:ask_coach), buttons)
         end
 
         def send_notifications_picker(chat_id, locale: "ru")

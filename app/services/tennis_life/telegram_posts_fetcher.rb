@@ -5,14 +5,10 @@ module TennisLife
 
     class << self
       def random_post
-        posts = all_posts
+        posts = fetch_posts
         return nil if posts.empty?
 
         posts.sample
-      end
-
-      def all_posts
-        fetch_posts
       end
 
       private

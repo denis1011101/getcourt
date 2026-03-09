@@ -2,22 +2,27 @@
 <% content_for :meta_description, "Join or create tennis, padel, table tennis and squash games. Find players and courts near you. Quick setup with Telegram reminders." %>
 <div class="max-w-6xl mx-auto">
   <!-- Hero section -->
-  <div class="rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-500 to-purple-500 px-6 py-8 md:px-10 md:py-12 mb-6 text-white">
-    <h1 class="text-2xl md:text-4xl font-bold tracking-tight">Find your next game</h1>
-    <p class="mt-2 text-indigo-100 text-sm md:text-base max-w-xl">Tennis, padel, table tennis — join a match near you or create your own.</p>
+  <div class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-indigo-600 via-indigo-500 to-purple-500 px-6 py-8 md:px-10 md:py-12 mb-6 text-white ring-1 ring-white/15 shadow-[0_20px_60px_rgba(79,70,229,0.18)] dark:from-indigo-950 dark:via-indigo-900 dark:to-fuchsia-900 dark:ring-white/10 dark:shadow-[0_24px_70px_rgba(15,23,42,0.45)]">
+    <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/14 via-white/5 to-transparent dark:from-white/6 dark:via-transparent dark:to-indigo-950/35"></div>
+    <div class="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/30 dark:bg-white/10"></div>
 
-    <!-- Inline search bar -->
-    <div class="mt-5 flex flex-col sm:flex-row gap-2 max-w-2xl">
-      <%= form_with url: root_path, method: :get, local: true, class: "flex flex-col sm:flex-row gap-2 w-full" do |f| %>
-        <div class="relative flex-1">
-          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-          </svg>
-          <%= f.select :city, options_for_select(@cities, params[:city]), { include_blank: "Any city" },
-              class: "w-full rounded-full pl-9 pr-4 py-2.5 text-gray-900 text-sm bg-white border-0 focus:ring-2 focus:ring-white/50 appearance-none" %>
-        </div>
-        <%= f.submit "Search", class: "rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-indigo-600 hover:bg-indigo-50 transition cursor-pointer" %>
-      <% end %>
+    <div class="relative">
+      <h1 class="text-2xl md:text-4xl font-bold tracking-tight">Find your next game</h1>
+      <p class="mt-2 text-indigo-100 text-sm md:text-base max-w-xl">Tennis, padel, table tennis — join a match near you or create your own.</p>
+
+      <!-- Inline search bar -->
+      <div class="mt-5 flex flex-col sm:flex-row gap-2 max-w-2xl">
+        <%= form_with url: root_path, method: :get, local: true, class: "flex flex-col sm:flex-row gap-2 w-full" do |f| %>
+          <div class="relative flex-1">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            <%= f.select :city, options_for_select(@cities, params[:city]), { include_blank: "Any city" },
+                class: "w-full rounded-full border border-white/40 bg-white/95 pl-9 pr-4 py-2.5 text-sm text-gray-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] focus:ring-2 focus:ring-white/50 appearance-none dark:border-white/15 dark:bg-slate-800/95 dark:text-slate-100 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]" %>
+          </div>
+          <%= f.submit "Search", class: "rounded-full border border-white/50 bg-white px-6 py-2.5 text-sm font-semibold text-indigo-600 shadow-[0_10px_30px_rgba(255,255,255,0.18)] hover:bg-indigo-50 transition cursor-pointer dark:border-white/15 dark:bg-slate-800 dark:text-slate-100 dark:shadow-[0_12px_30px_rgba(15,23,42,0.35)] dark:hover:bg-slate-700" %>
+        <% end %>
+      </div>
     </div>
   </div>
 
@@ -47,7 +52,7 @@
           <% my_active = params[:my_games].present? %>
           <button type="submit" name="my_games" value="<%= my_active ? '' : '1' %>"
                   class="flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium border transition
-                         <%= my_active ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-700 border-gray-200 hover:border-gray-400' %>">
+                         <%= my_active ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-700 border-gray-200 hover:border-gray-400 dark:bg-slate-800 dark:text-slate-200 dark:border-white/10 dark:hover:border-white/25' %>">
             <span class="inline-flex items-center gap-1">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"/>
@@ -63,7 +68,7 @@
           <% active = params[:sport] == sport %>
           <button type="submit" name="sport" value="<%= active ? '' : sport %>"
                   class="flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium border transition
-                         <%= active ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-200 hover:border-gray-400' %>">
+                         <%= active ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-200 hover:border-gray-400 dark:bg-slate-800 dark:text-slate-200 dark:border-white/10 dark:hover:border-white/25' %>">
             <%= sport.titleize %>
           </button>
         <% end %>
@@ -74,7 +79,7 @@
           <% active = params[:skill_level] == level %>
           <button type="submit" name="skill_level" value="<%= active ? '' : level %>"
                   class="flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium border transition
-                         <%= active ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-200 hover:border-gray-400' %>">
+                         <%= active ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-200 hover:border-gray-400 dark:bg-slate-800 dark:text-slate-200 dark:border-white/10 dark:hover:border-white/25' %>">
             <%= level.titleize %>
           </button>
         <% end %>
@@ -83,7 +88,7 @@
         <% spots_active = params[:with_spots].present? %>
         <button type="submit" name="with_spots" value="<%= spots_active ? '' : '1' %>"
                 class="flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium border transition
-                       <%= spots_active ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-700 border-gray-200 hover:border-gray-400' %>">
+                       <%= spots_active ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-700 border-gray-200 hover:border-gray-400 dark:bg-slate-800 dark:text-slate-200 dark:border-white/10 dark:hover:border-white/25' %>">
           <span class="inline-flex items-center gap-1">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"/>
@@ -134,7 +139,7 @@
 
   <!-- Games grid -->
   <% if @games.empty? %>
-    <div class="rounded-2xl border-2 border-dashed border-gray-200 p-12 text-center">
+    <div class="rounded-2xl border-2 border-dashed border-gray-200 p-12 text-center dark:border-white/10">
       <svg class="mx-auto w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
       </svg>

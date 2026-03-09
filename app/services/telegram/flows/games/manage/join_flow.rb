@@ -79,13 +79,15 @@ module Telegram
                   if participation
                     if participation.respond_to?(:pending?) && participation.pending?
                       participation.update(status: "approved", approved_at: Time.current) rescue nil
+                      Telegram::ParticipationNotifier.notify_owner(game, user, action: :joined) rescue nil
                       poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id, text: "You joined the game", show_alert: false }) rescue nil
                     else
                       poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id, text: "You already joined", show_alert: false }) rescue nil
                     end
                   else
-                    # Invited users are auto-approved without notifying the owner
+                    # Invited users are auto-approved and the owner is notified about the join.
                     Participation.create!(game: game, user: user, status: "approved", approved_at: Time.current) rescue nil
+                    Telegram::ParticipationNotifier.notify_owner(game, user, action: :joined) rescue nil
                     poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id, text: "You joined the game", show_alert: false }) rescue nil
                   end
                 rescue => e

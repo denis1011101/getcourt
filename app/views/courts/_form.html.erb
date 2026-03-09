@@ -10,29 +10,38 @@
     </div>
   <% end %>
 
-  <div class="bg-white rounded-lg border p-6 shadow-sm">
+  <div class="bg-white dark:bg-slate-800/80 rounded-lg border dark:border-white/10 p-6 shadow-sm">
     <div class="grid grid-cols-1 gap-4">
       <div>
-        <%= form.label :name, class: "block text-sm font-semibold text-gray-800" %>
+        <%= form.label :name, class: "block text-sm font-semibold text-gray-800 dark:text-slate-200" %>
         <%= form.text_field :name,
               autofocus: true,
               placeholder: "Court name (e.g. Central Court)",
-              class: "mt-1 block w-full rounded-md border border-gray-300 bg-white text-lg text-gray-900 shadow-sm px-3 py-2 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" %>
-        <p class="mt-1 text-xs text-gray-500">Enter a clear short name for the court.</p>
+              class: "mt-1 block w-full rounded-md border border-gray-300 dark:border-white/15 bg-white dark:bg-slate-700 text-lg text-gray-900 dark:text-slate-100 shadow-sm px-3 py-2 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" %>
+        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">Enter a clear short name for the court.</p>
+      </div>
+
+      <div>
+        <%= form.label :sport, "Sport", class: "block text-sm font-semibold text-gray-800 dark:text-slate-200" %>
+        <%= form.select :sport,
+              options_for_select(Court::SPORTS.map { |sport| [sport, sport] }, court.sport),
+              { include_blank: "Select a sport" },
+              class: "mt-1 block w-full rounded-md border border-gray-300 dark:border-white/15 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 shadow-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" %>
+        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">Choose the main sport for this court.</p>
       </div>
 
       <div class="space-y-3" data-controller="map-picker"
            data-map-picker-default-lat-value="56.838011"
            data-map-picker-default-lng-value="60.597465">
-        <label class="block text-sm font-medium text-gray-700">Select on the map</label>
+        <label class="block text-sm font-medium text-gray-700 dark:text-slate-300">Select on the map</label>
         <%= render "shared/map_panel" do %>
-          <div data-map-picker-target="map" class="h-72 w-full rounded border bg-white"></div>
+          <div data-map-picker-target="map" class="h-72 w-full rounded border dark:border-white/10 bg-white dark:bg-slate-700"></div>
         <% end %>
         <div class="flex items-center gap-3">
           <button type="button" class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-500" data-action="click->map-picker#geolocate">
             Use my location
           </button>
-          <span class="text-xs text-gray-500">Click on the map or drag the marker</span>
+          <span class="text-xs text-gray-500 dark:text-slate-400">Click on the map or drag the marker</span>
         </div>
 
         <%= form.hidden_field :coordinates,
@@ -41,28 +50,28 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4 items-center">
         <div class="sm:col-span-1">
-          <label class="block text-sm text-gray-600">Contact type</label>
+          <label class="block text-sm text-gray-600 dark:text-slate-400">Contact type</label>
           <% base_contact_types = (Court::CONTACT_TYPES rescue %w[phone whatsapp telegram viber other]) %>
           <% contact_types = (base_contact_types + %w[website email]).uniq %>
           <%= form.select :contact_type,
                 contact_types.map { |t| [t.capitalize, t] },
                 { include_blank: "Select" },
                 onchange: "const v=this.value;const i=document.getElementById('court_contact_value');if(!i)return;const p={phone:'Phone number',email:'name@example.com',website:'example.com',telegram:'@username or https://t.me/username',whatsapp:'+123456789',viber:'+123456789',other:'Link or contact'};i.placeholder=p[v]||'Phone, website, email or messenger';",
-                class: "mt-1 block w-full rounded-md border-gray-300" %>
+                class: "mt-1 block w-full rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
         </div>
 
         <div class="sm:col-span-2">
-          <label class="block text-sm text-gray-600">Contact</label>
+          <label class="block text-sm text-gray-600 dark:text-slate-400">Contact</label>
           <%= form.text_field :contact_value,
                 placeholder: "Phone, website, email or messenger",
-                class: "mt-1 block w-full rounded-md border-gray-300" %>
-          <p class="text-xs text-gray-500 mt-1">Enter phone, username or link.</p>
+                class: "mt-1 block w-full rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+          <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Enter phone, username or link.</p>
         </div>
       </div>
 
       <div class="flex items-center gap-2">
         <%= form.submit "Save Court", class: "rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition" %>
-        <%= link_to "Cancel", courts_path, class: "block inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition" %>
+        <%= link_to "Cancel", courts_path, class: "block inline-flex items-center rounded-md border border-gray-300 dark:border-white/10 px-3 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/5 transition" %>
       </div>
     </div>
   </div>

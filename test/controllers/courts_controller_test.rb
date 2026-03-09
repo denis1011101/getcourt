@@ -83,4 +83,61 @@ class CourtsControllerTest < ActionDispatch::IntegrationTest
 
     assert_equal 2, assigns(:pagy).pages
   end
+
+  # ---- city filter --------------------------------------------------------
+
+  test "index filters by params[:city] when provided" do
+    moscow = Court.create!(name: "Moscow Court", city_name: "Moscow", moderation_status: "approved", approved_at: Time.current)
+    kazan  = Court.create!(name: "Kazan Court",  city_name: "Kazan",  moderation_status: "approved", approved_at: Time.current)
+
+    get courts_url, params: { city: "Moscow" }
+
+    assert_includes     assigns(:courts), moscow
+    assert_not_includes assigns(:courts), kazan
+  end
+
+  test "city filter excludes courts from other cities" do
+    other = Court.create!(name: "Other Court", city_name: "Kazan", moderation_status: "approved", approved_at: Time.current)
+
+    get courts_url, params: { city: "Moscow" }
+
+    assert_not_includes assigns(:courts), other
+  end
+
+  test "city filter still paginates" do
+    created_ids = []
+    13.times do |i|
+      created_ids << Court.create!(name: "Moscow Court #{i}", city_name: "Moscow", moderation_status: "approved", approved_at: Time.current).id
+    end
+
+    get courts_url, params: { city: "Moscow" }
+
+    assert_response :success
+    assert_not_nil assigns(:pagy)
+    assert assigns(:courts).all? { |court| court.city_name == "Moscow" }
+  ensure
+    Court.where(id: created_ids).delete_all if created_ids
+  end
+
+  # ---- city-first ordering for signed-in user ----------------------------
+
+  test "same-city court appears before other-city court for signed-in user" do
+    user_email = "courts_city_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: user_email }
+    user = User.find_by!(email: user_email)
+    user.update_column(:city_name, "Kazan")
+
+    other = Court.create!(name: "Other City Court", city_name: "Moscow", moderation_status: "approved", approved_at: Time.current)
+    local = Court.create!(name: "Local City Court", city_name: "Kazan",  moderation_status: "approved", approved_at: Time.current)
+
+    get courts_url
+
+    courts = assigns(:courts)
+    assert courts.index(local) < courts.index(other),
+           "Same-city court should appear before other-city court"
+  ensure
+    local&.destroy
+    other&.destroy
+    user&.destroy
+  end
 end

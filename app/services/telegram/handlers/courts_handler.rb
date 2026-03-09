@@ -28,11 +28,18 @@ module Telegram
 
           page = page.to_i < 1 ? 1 : page.to_i
           user = Telegram::Helpers::UserLookup.find_user(chat_id)
-          scope = Court.visible_to(user)
-          total = scope.count
+          courts = Court.visible_to(user).order("id ASC").to_a
+
+          if user&.city_name.present?
+            user_city = user.city_name.downcase
+            local, other = courts.partition { |c| c.city_name.to_s.downcase == user_city }
+            courts = local + other
+          end
+
+          total = courts.size
           pages = [ (total.to_f / PER_PAGE).ceil, 1 ].max
           offset = (page - 1) * PER_PAGE
-          courts = scope.order("id ASC").offset(offset).limit(PER_PAGE)
+          courts = courts.slice(offset, PER_PAGE) || []
           header = t.(:courts_page, page: page, pages: pages)
 
           if courts.empty?

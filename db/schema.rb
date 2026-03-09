@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_25_225808) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_09_120000) do
   create_table "cities", force: :cascade do |t|
     t.string "asciiname"
     t.string "country_code"
@@ -37,10 +37,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_25_225808) do
     t.datetime "created_at", null: false
     t.string "moderation_status", default: "pending", null: false
     t.string "name"
+    t.string "sport"
     t.datetime "updated_at", null: false
     t.integer "user_id"
     t.index ["city_name"], name: "index_courts_on_city_name"
     t.index ["moderation_status"], name: "index_courts_on_moderation_status"
+    t.index ["sport"], name: "index_courts_on_sport"
     t.index ["user_id"], name: "index_courts_on_user_id"
   end
 
@@ -270,9 +272,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_25_225808) do
   end
 
   create_table "users", force: :cascade do |t|
+    t.text "about_me"
     t.boolean "admin", default: false, null: false
     t.string "city_name"
-    t.boolean "coach", default: false, null: false
+    t.boolean "coach"
     t.datetime "created_at", null: false
     t.string "email"
     t.string "login_code"
@@ -280,6 +283,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_25_225808) do
     t.string "login_via"
     t.string "name"
     t.boolean "notify_nearby", default: false, null: false
+    t.datetime "onboarded_at"
     t.string "preferred_login_via"
     t.text "preferred_sports"
     t.string "registration_source", default: "email", null: false

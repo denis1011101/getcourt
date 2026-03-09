@@ -6,36 +6,36 @@
   <%= form_with model: @user, url: account_path, method: :patch, local: true do |f| %>
     
     <!-- Блок настроек верификации -->
-    <div class="mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-300 rounded text-sm text-gray-700">
+    <div class="mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-300 rounded text-sm text-gray-700 dark:text-slate-300 dark:bg-yellow-500/10 dark:border-yellow-500/30 dark:text-slate-300">
       <p class="font-medium">Account verification recommended</p>
       <p class="mt-1">If you plan to create courts or host games, we recommend enabling sign-in verification (email or Telegram). This helps build trust and prevents abuse.</p>
 
       <div class="mt-3 flex items-center gap-4">
         <label class="inline-flex items-center gap-2">
           <%= f.check_box :require_verification, class: "h-4 w-4 text-indigo-600" %>
-          <span class="text-sm text-gray-700">Require verification for sensitive actions</span>
+          <span class="text-sm text-gray-700 dark:text-slate-300">Require verification for sensitive actions</span>
         </label>
 
         <div class="flex items-center gap-2">
-          <span class="text-sm text-gray-600 mr-2">Verification method:</span>
+          <span class="text-sm text-gray-600 dark:text-slate-400 mr-2">Verification method:</span>
           <%= f.select :preferred_login_via,
                 options_for_select([["Telegram", "telegram"]], @user.preferred_login_via),
-                {}, class: "mt-1 block rounded border px-3 py-2 text-sm" %>
+                {}, class: "mt-1 block rounded border px-3 py-2 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
         </div>
       </div>
 
-      <p class="text-xs text-gray-500 mt-2">
+      <p class="text-xs text-gray-500 dark:text-slate-400 mt-2">
         By default you sign in without a code. Enable verification + Telegram to require a one‑time code sent to your bot chat.
       </p>
     </div>
 
     <!-- Информационный блок Telegram (просто HTML внутри формы) -->
-    <p class="mb-4 text-sm text-gray-700">
+    <p class="mb-4 text-sm text-gray-700 dark:text-slate-300">
       To receive Telegram notifications, please open a chat with our bot...
       <a href="https://t.me/GetCourtBot" class="text-indigo-600 hover:underline" target="_blank" rel="noopener">https://t.me/GetCourtBot</a> and send:
     </p>
 
-    <div class="mb-4 p-3 bg-gray-50 border rounded">
+    <div class="mb-4 p-3 bg-gray-50 border rounded dark:bg-slate-700/50 dark:border-white/10">
       <code>/register <%= @registration_token %></code>
     </div>
 
@@ -51,50 +51,55 @@
     <!-- Блок личных данных (Name, Email, Skills) -->
     <div class="grid grid-cols-1 gap-4">
       <div>
-        <%= f.label :name, "Name", class: "block text-sm font-medium text-gray-700" %>
-        <%= f.text_field :name, class: "mt-1 block w-full rounded border px-3 py-2" %>
+        <%= f.label :name, "Name", class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+        <%= f.text_field :name, class: "mt-1 block w-full rounded border px-3 py-2 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
       </div>
 
       <div>
-        <%= f.label :email, "Email", class: "block text-sm font-medium text-gray-700" %>
-        <%= f.email_field :email, class: "mt-1 block w-full rounded border px-3 py-2" %>
+        <%= f.label :email, "Email", class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+        <%= f.email_field :email, class: "mt-1 block w-full rounded border px-3 py-2 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
       </div>
 
       <div>
-        <p class="block text-sm font-medium text-gray-700 mb-2">Skill levels</p>
+        <p class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Skill levels</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <% User::SPORTS.each do |sport| %>
             <div>
-              <label class="block text-sm text-gray-600"><%= sport %></label>
+              <label class="block text-sm text-gray-600 dark:text-slate-400"><%= sport %></label>
               <%= select_tag "user[skill_levels][#{sport}]",
                     options_for_select([["—", ""]] + User::SKILL_LEVELS.map { |s| [s.titleize, s] }, @user.skill_level_for(sport)),
-                    class: "mt-1 block w-full rounded border px-3 py-2" %>
+                    class: "mt-1 block w-full rounded border px-3 py-2 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
             </div>
           <% end %>
         </div>
-        <p class="text-xs text-gray-500 mt-1">Set your skill level for each sport.</p>
+        <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Set your skill level for each sport.</p>
       </div>
 
       <div>
         <label class="inline-flex items-center gap-2">
           <%= f.check_box :coach, class: "h-4 w-4 text-indigo-600" %>
-          <span class="text-sm text-gray-700">I am a coach</span>
+          <span class="text-sm text-gray-700 dark:text-slate-300">I am a coach</span>
         </label>
-        <p class="text-xs text-gray-500 mt-1">Tick if you coach — this helps others find and hire coaches in the future.</p>
+        <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Tick if you coach — this helps others find and hire coaches in the future.</p>
       </div>
 
       <div>
-        <%= f.label :city_name, "City", class: "block text-sm font-medium text-gray-700" %>
-        <%= f.text_field :city_name, value: (params[:city_query].presence || @user.city_name || @selected_city_name), placeholder: "e.g. Moskva", class: "mt-1 block w-full rounded border px-3 py-2" %>
-        <p class="text-sm text-gray-600 mt-2">Enter a place. The system will transliterate names and try to detect timezone automatically on save. Press "Save Changes".</p>
+        <%= f.label :city_name, "City", class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+        <%= f.text_field :city_name, value: (params[:city_query].presence || @user.city_name || @selected_city_name), placeholder: "e.g. Moskva", class: "mt-1 block w-full rounded border px-3 py-2 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+        <p class="text-sm text-gray-600 dark:text-slate-400 mt-2">Enter a place. The system will transliterate names and try to detect timezone automatically on save. Press "Save Changes".</p>
       </div>
 
       <div>
         <label class="inline-flex items-center gap-2">
           <%= f.check_box :notify_nearby, class: "h-4 w-4 text-indigo-600" %>
-          <span class="text-sm text-gray-700">Notify me about nearby searches</span>
+          <span class="text-sm text-gray-700 dark:text-slate-300">Notify me about nearby searches</span>
         </label>
-        <p class="text-xs text-gray-500 mt-1">Receive notifications when someone searches for players near you.</p>
+        <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Receive notifications when someone searches for players near you.</p>
+      </div>
+
+      <div>
+        <%= f.label :about_me, "About me", class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+        <%= f.text_area :about_me, rows: 4, placeholder: "Tell others a bit about yourself…", class: "mt-1 block w-full rounded border px-3 py-2 text-sm" %>
       </div>
 
       <!-- Кнопки действий -->
@@ -102,7 +107,7 @@
         <%= f.submit "Save Changes", class: "rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 cursor-pointer" %>
         
         <%= link_to "Back", root_path,
-          class: "inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition" %>
+          class: "inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 transition dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5" %>
       </div>
     </div>
 

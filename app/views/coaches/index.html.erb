@@ -1,32 +1,40 @@
 <% content_for :meta_description, "Browse tennis coaches and find a trainer in your city." %>
 
 <div class="max-w-4xl mx-auto px-4 py-6">
-  <h1 class="text-2xl font-semibold text-gray-900">Coaches</h1>
-  <p class="mt-1 text-sm text-gray-600">Find a coach and contact them in chat or by Telegram username.</p>
+  <h1 class="text-2xl font-semibold text-gray-900 dark:text-slate-100">Coaches</h1>
+  <p class="mt-1 text-sm text-gray-600 dark:text-slate-400">Find a coach and contact them in chat or by Telegram username.</p>
 
   <% if @coaches.any? %>
     <div class="mt-5 space-y-3">
       <% @coaches.each do |coach| %>
-        <article class="rounded-xl border border-gray-200 bg-white p-4">
-          <h2 class="text-base font-semibold text-gray-900">
+        <article class="rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-slate-800/80 p-4">
+          <h2 class="text-base font-semibold text-gray-900 dark:text-slate-100">
             <%= coach.name.presence || coach.email %>
           </h2>
 
-          <p class="mt-1 text-sm text-gray-700">
-            <span class="font-medium text-gray-800">Sports:</span>
+          <p class="mt-1 text-sm text-gray-700 dark:text-slate-300">
+            <span class="font-medium text-gray-800 dark:text-slate-200">Sports:</span>
             <%= coach.preferred_sports.present? ? Array(coach.preferred_sports).join(", ") : "Not specified" %>
           </p>
 
-          <p class="mt-1 text-sm text-gray-700">
-            <span class="font-medium text-gray-800">City:</span>
+          <p class="mt-1 text-sm text-gray-700 dark:text-slate-300">
+            <span class="font-medium text-gray-800 dark:text-slate-200">City:</span>
             <%= coach.city_name.presence || "Not specified" %>
           </p>
         </article>
       <% end %>
     </div>
   <% else %>
-    <p class="mt-5 rounded-xl border border-dashed border-gray-300 bg-white p-4 text-sm text-gray-600">
+    <p class="mt-5 rounded-xl border border-dashed border-gray-300 bg-white dark:border-white/10 dark:bg-slate-800/80 p-4 text-sm text-gray-600 dark:text-slate-400">
       No coaches yet.
     </p>
   <% end %>
+
+  <div class="mt-6 flex flex-wrap gap-3 text-sm text-gray-500 dark:text-slate-400">
+    <%= link_to "NTRP Guide", ntrp_level_guide_path, class: "hover:text-indigo-600" %>
+    <%= link_to "Formats & Rules", tennis_formats_and_rules_path, class: "hover:text-indigo-600" %>
+    <%= link_to "Partnership", partnership_path, class: "hover:text-indigo-600" %>
+    <%= link_to "Contact", contacts_path, class: "hover:text-indigo-600" %>
+    <%= link_to "Mission", mission_path, class: "hover:text-indigo-600" %>
+  </div>
 </div>

@@ -1,8 +1,8 @@
-# TODO: перевести fetch_raw_text с сырого raw-URL (TENNIS_SCORE_GIST_URL + normalize_gist_url)
-#       на GitHub API (GET /gists/:id + dig("files", filename, "content")),
-#       по аналогии с TennisLife::TelegramPostsFetcher.
 module TennisScoreboard
   class Fetcher
+    GIST_API = "https://api.github.com"
+    FILENAME = "sport_events.txt"
+
     class << self
       def raw_text
         fetch_raw_text
@@ -31,25 +31,48 @@ module TennisScoreboard
         gist_url = ENV["TENNIS_SCORE_GIST_URL"].to_s.strip
         return if gist_url.blank?
 
+        gist_id = extract_gist_id(gist_url)
+        unless gist_id
+          Rails.logger.warn("TennisScoreboard::Fetcher invalid gist URL: #{gist_url}")
+          return nil
+        end
+
         Rails.cache.fetch("tennis_life/tennis_score_raw", expires_in: 30.minutes) do
-          uri = URI.parse(normalize_gist_url(gist_url))
-          allowed_hosts = %w[gist.github.com gist.githubusercontent.com]
-          raise ArgumentError, "Unsupported scoreboard host: #{uri.host}" unless allowed_hosts.include?(uri.host)
-
-          req = Net::HTTP::Get.new(uri)
-          token = ENV["TENNIS_SCORE_GIST_TOKEN"].to_s.strip
-          req["Authorization"] = "Bearer #{token}" if token.present?
-
-          Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == "https", read_timeout: 10, open_timeout: 5) do |http|
-            res = http.request(req)
-            raise "HTTP #{res.code}" unless res.is_a?(Net::HTTPSuccess)
-
-            res.body.to_s
-          end
+          fetch_from_api(gist_id)
         end
       rescue StandardError => e
         Rails.logger.warn("TennisScoreboard::Fetcher fetch failed: #{e.class}: #{e.message}")
         nil
+      end
+
+      def fetch_from_api(gist_id)
+        uri = URI.parse("#{GIST_API}/gists/#{gist_id}")
+        req = Net::HTTP::Get.new(uri)
+        req["Accept"] = "application/vnd.github+json"
+        req["X-GitHub-Api-Version"] = "2022-11-28"
+        token = ENV["TENNIS_SCORE_GIST_TOKEN"].to_s.strip
+        req["Authorization"] = "Bearer #{token}" if token.present?
+
+        Net::HTTP.start(uri.host, uri.port, use_ssl: true, read_timeout: 10, open_timeout: 5) do |http|
+          res = http.request(req)
+          raise "HTTP #{res.code}" unless res.is_a?(Net::HTTPSuccess)
+
+          extract_file_content(JSON.parse(res.body))
+        end
+      rescue StandardError => e
+        Rails.logger.warn("TennisScoreboard::Fetcher API error: #{e.class}: #{e.message}")
+        nil
+      end
+
+      def extract_file_content(body)
+        entry = body.dig("files", FILENAME)
+        raise "#{FILENAME} not found in gist" unless entry
+
+        entry["content"].to_s
+      end
+
+      def extract_gist_id(url)
+        url.match(%r{\Ahttps?://gist\.github(?:usercontent)?\.com/[^/]+/([a-f0-9]+)})&.captures&.first
       end
 
       def extract_tennis_block(raw_text)
@@ -70,15 +93,6 @@ module TennisScoreboard
           .gsub(%r{<[^>]+>}, "")
           .gsub(/[ \t]+\n/, "\n")
           .gsub(/\n{3,}/, "\n\n")
-      end
-
-      def normalize_gist_url(url)
-        return url if url.include?("gist.githubusercontent.com")
-
-        match = url.match(%r{\Ahttps?://gist\.github\.com/([^/]+)/([a-f0-9]+)})
-        return url unless match
-
-        "https://gist.githubusercontent.com/#{match[1]}/#{match[2]}/raw"
       end
     end
   end

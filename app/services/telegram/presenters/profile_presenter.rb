@@ -45,11 +45,16 @@ module Telegram
       end
 
       def coach_label
-        if @user.respond_to?(:coach)
-          @user.coach ? "Yes" : "No"
-        else
-          "—"
+        return "—" unless @user.respond_to?(:coach)
+        case @user.coach
+        when true  then "Yes"
+        when false then "No"
+        else "—"
         end
+      end
+
+      def about_me_label
+        @user.respond_to?(:about_me) ? (@user.about_me.to_s.presence || "—") : "—"
       end
 
       def notify_label
@@ -85,7 +90,12 @@ module Telegram
             ""
           end
         when "coach"
-          @user.respond_to?(:coach) ? (@user.coach ? "Yes" : "No") : ""
+          return "" unless @user.respond_to?(:coach)
+          case @user.coach
+          when true  then "Yes"
+          when false then "No"
+          else ""
+          end
         when "notify"
           @user.respond_to?(:notify_nearby) ? (@user.notify_nearby ? "Yes" : "No") : ""
         else

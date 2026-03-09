@@ -103,17 +103,6 @@ class TennisLife::TelegramPostsFetcherTest < ActiveSupport::TestCase
   # but exercising JSON parsing and all downstream logic in fetch_posts / random_post.
   def with_api_raw(raw, &block)
     Rails.cache.clear
-    with_stubbed_singleton_method(TennisLife::TelegramPostsFetcher, :fetch_from_api, ->(*) { raw }, &block)
-  end
-
-  def with_stubbed_singleton_method(target, method_name, replacement)
-    singleton = target.singleton_class
-    had_method = singleton.method_defined?(method_name) || singleton.private_method_defined?(method_name)
-    original = singleton.instance_method(method_name) if had_method
-    callable = replacement.respond_to?(:call) ? replacement : ->(*) { replacement }
-    singleton.define_method(method_name) { |*args, **kwargs, &blk| callable.call(*args, **kwargs, &blk) }
-    yield
-  ensure
-    had_method ? singleton.define_method(method_name, original) : singleton.remove_method(method_name)
+    stub_singleton(TennisLife::TelegramPostsFetcher, :fetch_from_api, ->(*) { raw }, &block)
   end
 end

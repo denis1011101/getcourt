@@ -96,7 +96,7 @@ module Telegram
 
           future_items, past_items = mapped_games.partition { |item| item[:is_future] }
 
-          sorter = ->(item) { [ item[:date], item[:time] ] }
+          sorter = ->(item) { [ item[:city_rank], item[:date], item[:time] ] }
 
           sorted_future = future_items.sort_by(&sorter)
           sorted_past   = past_items.sort_by(&sorter)

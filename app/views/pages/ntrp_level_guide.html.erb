@@ -28,10 +28,10 @@
 <% end %>
 
 <div class="max-w-5xl mx-auto px-4 py-6">
-  <div class="bg-white rounded-lg border p-6 shadow-sm mb-6">
+  <div class="bg-white dark:bg-slate-800/80 rounded-lg border dark:border-white/10 p-6 shadow-sm mb-6">
     <h1 class="text-2xl font-semibold mb-4">How to Find Your NTRP Level</h1>
 
-    <p class="text-gray-700 mb-4">
+    <p class="text-gray-700 dark:text-slate-300 mb-4">
       NTRP (National Tennis Rating Program) is a standardized system for rating tennis players.
       It helps you find balanced matches by matching with players of a similar skill level.
       You can estimate your rating by evaluating your consistency, shot variety, movement, serve, and match results.
@@ -39,8 +39,8 @@
 
     <%# ── Interactive Quiz ── %>
     <div class="mb-6" data-controller="ntrp-quiz">
-      <h2 class="text-lg font-medium text-gray-900 mb-3">Quick quiz: estimate your level</h2>
-      <p class="text-gray-600 text-sm mb-3">Answer 5 questions to get an approximate NTRP rating.</p>
+      <h2 class="text-lg font-medium text-gray-900 dark:text-slate-100 mb-3">Quick quiz: estimate your level</h2>
+      <p class="text-gray-600 dark:text-slate-400 text-sm mb-3">Answer 5 questions to get an approximate NTRP rating.</p>
 
       <button data-ntrp-quiz-target="startBtn" data-action="ntrp-quiz#start"
               class="px-5 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm font-medium">
@@ -49,65 +49,65 @@
 
       <div data-ntrp-quiz-target="quizSection" class="hidden">
         <%# Q1: Rally consistency %>
-        <div data-ntrp-quiz-target="question" class="border rounded-lg p-4">
-          <p class="font-medium text-gray-900 mb-3">1/5 &mdash; How consistent are your rallies?</p>
+        <div data-ntrp-quiz-target="question" class="border dark:border-white/10 rounded-lg p-4">
+          <p class="font-medium text-gray-900 dark:text-slate-100 mb-3">1/5 &mdash; How consistent are your rallies?</p>
           <div class="space-y-2">
-            <button data-action="ntrp-quiz#answer" data-score="2.5" class="w-full text-left px-4 py-2 border rounded hover:bg-gray-50 text-sm">I can keep the ball in play for a few shots but often miss</button>
-            <button data-action="ntrp-quiz#answer" data-score="3.0" class="w-full text-left px-4 py-2 border rounded hover:bg-gray-50 text-sm">I can sustain rallies at a moderate pace on most shots</button>
-            <button data-action="ntrp-quiz#answer" data-score="3.5" class="w-full text-left px-4 py-2 border rounded hover:bg-gray-50 text-sm">I rally consistently and can direct the ball with purpose</button>
-            <button data-action="ntrp-quiz#answer" data-score="4.5" class="w-full text-left px-4 py-2 border rounded hover:bg-gray-50 text-sm">I rarely miss in rallies and can control pace and depth</button>
+            <button data-action="ntrp-quiz#answer" data-score="2.5" class="w-full text-left px-4 py-2 border dark:border-white/10 rounded hover:bg-gray-50 dark:hover:bg-white/5 text-sm dark:text-slate-300">I can keep the ball in play for a few shots but often miss</button>
+            <button data-action="ntrp-quiz#answer" data-score="3.0" class="w-full text-left px-4 py-2 border dark:border-white/10 rounded hover:bg-gray-50 dark:hover:bg-white/5 text-sm dark:text-slate-300">I can sustain rallies at a moderate pace on most shots</button>
+            <button data-action="ntrp-quiz#answer" data-score="3.5" class="w-full text-left px-4 py-2 border dark:border-white/10 rounded hover:bg-gray-50 dark:hover:bg-white/5 text-sm dark:text-slate-300">I rally consistently and can direct the ball with purpose</button>
+            <button data-action="ntrp-quiz#answer" data-score="4.5" class="w-full text-left px-4 py-2 border dark:border-white/10 rounded hover:bg-gray-50 dark:hover:bg-white/5 text-sm dark:text-slate-300">I rarely miss in rallies and can control pace and depth</button>
           </div>
         </div>
 
         <%# Q2: Serve %>
-        <div data-ntrp-quiz-target="question" class="hidden border rounded-lg p-4">
-          <p class="font-medium text-gray-900 mb-3">2/5 &mdash; Describe your serve</p>
+        <div data-ntrp-quiz-target="question" class="hidden border dark:border-white/10 rounded-lg p-4">
+          <p class="font-medium text-gray-900 dark:text-slate-100 mb-3">2/5 &mdash; Describe your serve</p>
           <div class="space-y-2">
-            <button data-action="ntrp-quiz#answer" data-score="2.5" class="w-full text-left px-4 py-2 border rounded hover:bg-gray-50 text-sm">I can get the serve in but with little pace or spin</button>
-            <button data-action="ntrp-quiz#answer" data-score="3.5" class="w-full text-left px-4 py-2 border rounded hover:bg-gray-50 text-sm">I have a reliable first serve and a consistent second serve</button>
-            <button data-action="ntrp-quiz#answer" data-score="4.0" class="w-full text-left px-4 py-2 border rounded hover:bg-gray-50 text-sm">I can place my serve, vary speed, and sometimes use spin</button>
-            <button data-action="ntrp-quiz#answer" data-score="5.0" class="w-full text-left px-4 py-2 border rounded hover:bg-gray-50 text-sm">My serve is a weapon &mdash; I use pace, spin, and placement to win free points</button>
+            <button data-action="ntrp-quiz#answer" data-score="2.5" class="w-full text-left px-4 py-2 border dark:border-white/10 rounded hover:bg-gray-50 dark:hover:bg-white/5 text-sm dark:text-slate-300">I can get the serve in but with little pace or spin</button>
+            <button data-action="ntrp-quiz#answer" data-score="3.5" class="w-full text-left px-4 py-2 border dark:border-white/10 rounded hover:bg-gray-50 dark:hover:bg-white/5 text-sm dark:text-slate-300">I have a reliable first serve and a consistent second serve</button>
+            <button data-action="ntrp-quiz#answer" data-score="4.0" class="w-full text-left px-4 py-2 border dark:border-white/10 rounded hover:bg-gray-50 dark:hover:bg-white/5 text-sm dark:text-slate-300">I can place my serve, vary speed, and sometimes use spin</button>
+            <button data-action="ntrp-quiz#answer" data-score="5.0" class="w-full text-left px-4 py-2 border dark:border-white/10 rounded hover:bg-gray-50 dark:hover:bg-white/5 text-sm dark:text-slate-300">My serve is a weapon &mdash; I use pace, spin, and placement to win free points</button>
           </div>
         </div>
 
         <%# Q3: Net play %>
-        <div data-ntrp-quiz-target="question" class="hidden border rounded-lg p-4">
-          <p class="font-medium text-gray-900 mb-3">3/5 &mdash; How comfortable are you at the net?</p>
+        <div data-ntrp-quiz-target="question" class="hidden border dark:border-white/10 rounded-lg p-4">
+          <p class="font-medium text-gray-900 dark:text-slate-100 mb-3">3/5 &mdash; How comfortable are you at the net?</p>
           <div class="space-y-2">
-            <button data-action="ntrp-quiz#answer" data-score="2.5" class="w-full text-left px-4 py-2 border rounded hover:bg-gray-50 text-sm">I avoid the net or struggle with volleys</button>
-            <button data-action="ntrp-quiz#answer" data-score="3.5" class="w-full text-left px-4 py-2 border rounded hover:bg-gray-50 text-sm">I can volley when I get an easy ball but don't come to the net often</button>
-            <button data-action="ntrp-quiz#answer" data-score="4.0" class="w-full text-left px-4 py-2 border rounded hover:bg-gray-50 text-sm">I approach the net with confidence and finish points with volleys</button>
-            <button data-action="ntrp-quiz#answer" data-score="5.0" class="w-full text-left px-4 py-2 border rounded hover:bg-gray-50 text-sm">I play aggressive net tennis, can handle passing shots and lobs</button>
+            <button data-action="ntrp-quiz#answer" data-score="2.5" class="w-full text-left px-4 py-2 border dark:border-white/10 rounded hover:bg-gray-50 dark:hover:bg-white/5 text-sm dark:text-slate-300">I avoid the net or struggle with volleys</button>
+            <button data-action="ntrp-quiz#answer" data-score="3.5" class="w-full text-left px-4 py-2 border dark:border-white/10 rounded hover:bg-gray-50 dark:hover:bg-white/5 text-sm dark:text-slate-300">I can volley when I get an easy ball but don't come to the net often</button>
+            <button data-action="ntrp-quiz#answer" data-score="4.0" class="w-full text-left px-4 py-2 border dark:border-white/10 rounded hover:bg-gray-50 dark:hover:bg-white/5 text-sm dark:text-slate-300">I approach the net with confidence and finish points with volleys</button>
+            <button data-action="ntrp-quiz#answer" data-score="5.0" class="w-full text-left px-4 py-2 border dark:border-white/10 rounded hover:bg-gray-50 dark:hover:bg-white/5 text-sm dark:text-slate-300">I play aggressive net tennis, can handle passing shots and lobs</button>
           </div>
         </div>
 
         <%# Q4: Movement %>
-        <div data-ntrp-quiz-target="question" class="hidden border rounded-lg p-4">
-          <p class="font-medium text-gray-900 mb-3">4/5 &mdash; How would you describe your movement?</p>
+        <div data-ntrp-quiz-target="question" class="hidden border dark:border-white/10 rounded-lg p-4">
+          <p class="font-medium text-gray-900 dark:text-slate-100 mb-3">4/5 &mdash; How would you describe your movement?</p>
           <div class="space-y-2">
-            <button data-action="ntrp-quiz#answer" data-score="3.0" class="w-full text-left px-4 py-2 border rounded hover:bg-gray-50 text-sm">I cover the court but am often late to wide balls</button>
-            <button data-action="ntrp-quiz#answer" data-score="3.5" class="w-full text-left px-4 py-2 border rounded hover:bg-gray-50 text-sm">I move well enough but get pulled out of position sometimes</button>
-            <button data-action="ntrp-quiz#answer" data-score="4.5" class="w-full text-left px-4 py-2 border rounded hover:bg-gray-50 text-sm">I recover quickly and use split-steps and lateral movement</button>
-            <button data-action="ntrp-quiz#answer" data-score="5.5" class="w-full text-left px-4 py-2 border rounded hover:bg-gray-50 text-sm">I anticipate shots and use footwork to set up offensive positions</button>
+            <button data-action="ntrp-quiz#answer" data-score="3.0" class="w-full text-left px-4 py-2 border dark:border-white/10 rounded hover:bg-gray-50 dark:hover:bg-white/5 text-sm dark:text-slate-300">I cover the court but am often late to wide balls</button>
+            <button data-action="ntrp-quiz#answer" data-score="3.5" class="w-full text-left px-4 py-2 border dark:border-white/10 rounded hover:bg-gray-50 dark:hover:bg-white/5 text-sm dark:text-slate-300">I move well enough but get pulled out of position sometimes</button>
+            <button data-action="ntrp-quiz#answer" data-score="4.5" class="w-full text-left px-4 py-2 border dark:border-white/10 rounded hover:bg-gray-50 dark:hover:bg-white/5 text-sm dark:text-slate-300">I recover quickly and use split-steps and lateral movement</button>
+            <button data-action="ntrp-quiz#answer" data-score="5.5" class="w-full text-left px-4 py-2 border dark:border-white/10 rounded hover:bg-gray-50 dark:hover:bg-white/5 text-sm dark:text-slate-300">I anticipate shots and use footwork to set up offensive positions</button>
           </div>
         </div>
 
         <%# Q5: Match play %>
-        <div data-ntrp-quiz-target="question" class="hidden border rounded-lg p-4">
-          <p class="font-medium text-gray-900 mb-3">5/5 &mdash; How do you perform in matches?</p>
+        <div data-ntrp-quiz-target="question" class="hidden border dark:border-white/10 rounded-lg p-4">
+          <p class="font-medium text-gray-900 dark:text-slate-100 mb-3">5/5 &mdash; How do you perform in matches?</p>
           <div class="space-y-2">
-            <button data-action="ntrp-quiz#answer" data-score="3.0" class="w-full text-left px-4 py-2 border rounded hover:bg-gray-50 text-sm">I lose focus and make many unforced errors under pressure</button>
-            <button data-action="ntrp-quiz#answer" data-score="3.5" class="w-full text-left px-4 py-2 border rounded hover:bg-gray-50 text-sm">I can compete but struggle to close out tight games</button>
-            <button data-action="ntrp-quiz#answer" data-score="4.5" class="w-full text-left px-4 py-2 border rounded hover:bg-gray-50 text-sm">I construct points and adapt my game to different opponents</button>
-            <button data-action="ntrp-quiz#answer" data-score="5.5" class="w-full text-left px-4 py-2 border rounded hover:bg-gray-50 text-sm">I thrive under pressure and can change tactics mid-match</button>
+            <button data-action="ntrp-quiz#answer" data-score="3.0" class="w-full text-left px-4 py-2 border dark:border-white/10 rounded hover:bg-gray-50 dark:hover:bg-white/5 text-sm dark:text-slate-300">I lose focus and make many unforced errors under pressure</button>
+            <button data-action="ntrp-quiz#answer" data-score="3.5" class="w-full text-left px-4 py-2 border dark:border-white/10 rounded hover:bg-gray-50 dark:hover:bg-white/5 text-sm dark:text-slate-300">I can compete but struggle to close out tight games</button>
+            <button data-action="ntrp-quiz#answer" data-score="4.5" class="w-full text-left px-4 py-2 border dark:border-white/10 rounded hover:bg-gray-50 dark:hover:bg-white/5 text-sm dark:text-slate-300">I construct points and adapt my game to different opponents</button>
+            <button data-action="ntrp-quiz#answer" data-score="5.5" class="w-full text-left px-4 py-2 border dark:border-white/10 rounded hover:bg-gray-50 dark:hover:bg-white/5 text-sm dark:text-slate-300">I thrive under pressure and can change tactics mid-match</button>
           </div>
         </div>
       </div>
 
       <%# Result %>
-      <div data-ntrp-quiz-target="result" class="hidden border-2 border-indigo-200 bg-indigo-50 rounded-lg p-5">
+      <div data-ntrp-quiz-target="result" class="hidden border-2 border-indigo-200 dark:border-indigo-500/30 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg p-5">
         <p class="text-lg font-semibold text-indigo-900 mb-1">Your estimated level: <span data-ntrp-quiz-target="resultLevel" class="text-2xl">—</span></p>
-        <p data-ntrp-quiz-target="resultDescription" class="text-gray-700 mb-3"></p>
+        <p data-ntrp-quiz-target="resultDescription" class="text-gray-700 dark:text-slate-300 mb-3"></p>
         <div class="flex gap-3">
           <button data-action="ntrp-quiz#restart" class="text-sm text-indigo-600 hover:underline">Retake quiz</button>
           <%= link_to "Find players at your level", root_path, class: "text-sm text-indigo-600 hover:underline font-medium" %>
@@ -117,79 +117,82 @@
 
     <%# ── Detailed level table ── %>
     <div class="mb-6">
-      <h2 class="text-lg font-medium text-gray-900 mb-3">NTRP rating chart</h2>
+      <h2 class="text-lg font-medium text-gray-900 dark:text-slate-100 mb-3">NTRP rating chart</h2>
       <div class="overflow-x-auto">
         <table class="min-w-full text-sm border-collapse">
           <thead>
-            <tr class="bg-gray-50">
-              <th class="border px-3 py-2 text-left font-medium text-gray-700 w-20">Level</th>
-              <th class="border px-3 py-2 text-left font-medium text-gray-700">Groundstrokes</th>
-              <th class="border px-3 py-2 text-left font-medium text-gray-700">Serve & Return</th>
-              <th class="border px-3 py-2 text-left font-medium text-gray-700">Tactics & Movement</th>
+            <tr class="bg-gray-50 dark:bg-slate-700/50">
+              <th class="border dark:border-white/10 px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-300 w-20">Level</th>
+              <th class="border dark:border-white/10 px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-300">Groundstrokes</th>
+              <th class="border dark:border-white/10 px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-300">Serve & Return</th>
+              <th class="border dark:border-white/10 px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-300">Tactics & Movement</th>
             </tr>
           </thead>
-          <tbody class="text-gray-700">
+          <tbody class="text-gray-700 dark:text-slate-300">
             <tr>
-              <td class="border px-3 py-2 font-semibold">2.5&ndash;3.0</td>
-              <td class="border px-3 py-2">Can rally at a moderate pace. Limited consistency under pressure. Forehand is stronger than backhand.</td>
-              <td class="border px-3 py-2">Gets the serve in but with little pace. Return is mostly defensive.</td>
-              <td class="border px-3 py-2">Covers the court but is often late. Relies on opponent errors rather than constructing points.</td>
+              <td class="border dark:border-white/10 px-3 py-2 font-semibold">2.5&ndash;3.0</td>
+              <td class="border dark:border-white/10 px-3 py-2">Can rally at a moderate pace. Limited consistency under pressure. Forehand is stronger than backhand.</td>
+              <td class="border dark:border-white/10 px-3 py-2">Gets the serve in but with little pace. Return is mostly defensive.</td>
+              <td class="border dark:border-white/10 px-3 py-2">Covers the court but is often late. Relies on opponent errors rather than constructing points.</td>
             </tr>
-            <tr class="bg-gray-50">
-              <td class="border px-3 py-2 font-semibold">3.5</td>
-              <td class="border px-3 py-2">More reliable strokes on both sides. Starting to hit with direction and moderate topspin.</td>
-              <td class="border px-3 py-2">Reliable first serve with some pace. Second serve is consistent. Can return most serves.</td>
-              <td class="border px-3 py-2">Uses basic tactics: crosscourt rallies, approaches on short balls. Better court positioning.</td>
-            </tr>
-            <tr>
-              <td class="border px-3 py-2 font-semibold">4.0</td>
-              <td class="border px-3 py-2">Consistent groundstrokes with directional control. Can hit winners from favorable positions.</td>
-              <td class="border px-3 py-2">Can place serves and vary speed. Aggressive returns on second serves.</td>
-              <td class="border px-3 py-2">Constructs points with depth and angles. Good movement and recovery. Comfortable at the net.</td>
-            </tr>
-            <tr class="bg-gray-50">
-              <td class="border px-3 py-2 font-semibold">4.5</td>
-              <td class="border px-3 py-2">Strong all-court game. Controls pace and spin. Handles high balls and low slices effectively.</td>
-              <td class="border px-3 py-2">Serve is a weapon with pace and spin variation. Returns are offensive.</td>
-              <td class="border px-3 py-2">Advanced patterns and court awareness. Uses split-steps and anticipation. Adapts tactics to opponents.</td>
+            <tr class="bg-gray-50 dark:bg-slate-700/50">
+              <td class="border dark:border-white/10 px-3 py-2 font-semibold">3.5</td>
+              <td class="border dark:border-white/10 px-3 py-2">More reliable strokes on both sides. Starting to hit with direction and moderate topspin.</td>
+              <td class="border dark:border-white/10 px-3 py-2">Reliable first serve with some pace. Second serve is consistent. Can return most serves.</td>
+              <td class="border dark:border-white/10 px-3 py-2">Uses basic tactics: crosscourt rallies, approaches on short balls. Better court positioning.</td>
             </tr>
             <tr>
-              <td class="border px-3 py-2 font-semibold">5.0</td>
-              <td class="border px-3 py-2">Powerful, reliable strokes with tactical flexibility. Can dictate rallies from both wings.</td>
-              <td class="border px-3 py-2">Consistent first-serve percentage with placement. Effective kick and slice serves.</td>
-              <td class="border px-3 py-2">Exceptional movement and shot selection. Dominates weaker opponents and competes with top-level players.</td>
+              <td class="border dark:border-white/10 px-3 py-2 font-semibold">4.0</td>
+              <td class="border dark:border-white/10 px-3 py-2">Consistent groundstrokes with directional control. Can hit winners from favorable positions.</td>
+              <td class="border dark:border-white/10 px-3 py-2">Can place serves and vary speed. Aggressive returns on second serves.</td>
+              <td class="border dark:border-white/10 px-3 py-2">Constructs points with depth and angles. Good movement and recovery. Comfortable at the net.</td>
             </tr>
-            <tr class="bg-gray-50">
-              <td class="border px-3 py-2 font-semibold">5.5</td>
-              <td class="border px-3 py-2">Tournament-quality strokes. High consistency even under pressure. Shot variety includes dropshots, angles.</td>
-              <td class="border px-3 py-2">Serve sets up the point. Can ace opponents and hit second-serve winners.</td>
-              <td class="border px-3 py-2">Match management under pressure. Changes tactics mid-match. Plays at a high competitive level.</td>
+            <tr class="bg-gray-50 dark:bg-slate-700/50">
+              <td class="border dark:border-white/10 px-3 py-2 font-semibold">4.5</td>
+              <td class="border dark:border-white/10 px-3 py-2">Strong all-court game. Controls pace and spin. Handles high balls and low slices effectively.</td>
+              <td class="border dark:border-white/10 px-3 py-2">Serve is a weapon with pace and spin variation. Returns are offensive.</td>
+              <td class="border dark:border-white/10 px-3 py-2">Advanced patterns and court awareness. Uses split-steps and anticipation. Adapts tactics to opponents.</td>
             </tr>
             <tr>
-              <td class="border px-3 py-2 font-semibold">6.0+</td>
-              <td class="border px-3 py-2">Elite-level strokes. Has had intensive training and national/international results.</td>
-              <td class="border px-3 py-2">Professional-level serve and return game.</td>
-              <td class="border px-3 py-2">Complete game. Competing at national or international level.</td>
+              <td class="border dark:border-white/10 px-3 py-2 font-semibold">5.0</td>
+              <td class="border dark:border-white/10 px-3 py-2">Powerful, reliable strokes with tactical flexibility. Can dictate rallies from both wings.</td>
+              <td class="border dark:border-white/10 px-3 py-2">Consistent first-serve percentage with placement. Effective kick and slice serves.</td>
+              <td class="border dark:border-white/10 px-3 py-2">Exceptional movement and shot selection. Dominates weaker opponents and competes with top-level players.</td>
+            </tr>
+            <tr class="bg-gray-50 dark:bg-slate-700/50">
+              <td class="border dark:border-white/10 px-3 py-2 font-semibold">5.5</td>
+              <td class="border dark:border-white/10 px-3 py-2">Tournament-quality strokes. High consistency even under pressure. Shot variety includes dropshots, angles.</td>
+              <td class="border dark:border-white/10 px-3 py-2">Serve sets up the point. Can ace opponents and hit second-serve winners.</td>
+              <td class="border dark:border-white/10 px-3 py-2">Match management under pressure. Changes tactics mid-match. Plays at a high competitive level.</td>
+            </tr>
+            <tr>
+              <td class="border dark:border-white/10 px-3 py-2 font-semibold">6.0+</td>
+              <td class="border dark:border-white/10 px-3 py-2">Elite-level strokes. Has had intensive training and national/international results.</td>
+              <td class="border dark:border-white/10 px-3 py-2">Professional-level serve and return game.</td>
+              <td class="border dark:border-white/10 px-3 py-2">Complete game. Competing at national or international level.</td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <p class="text-gray-700 mb-4">
+    <p class="text-gray-700 dark:text-slate-300 mb-4">
       The best way to validate your estimate is to play several competitive matches against players with known ratings and compare results.
     </p>
 
     <%# ── CTA ── %>
-    <div class="bg-indigo-50 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <p class="text-gray-800 text-sm">Know your level? Find players and games that match your skill on GetCourt.</p>
+    <div class="bg-indigo-50 dark:bg-indigo-500/10 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <p class="text-gray-800 dark:text-slate-200 text-sm">Know your level? Find players and games that match your skill on GetCourt.</p>
       <%= link_to "Browse games", root_path, class: "inline-block px-5 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 text-sm font-medium text-center" %>
     </div>
   </div>
 
   <%# ── Related pages ── %>
-  <div class="text-sm text-gray-500 flex gap-4">
+  <div class="text-sm text-gray-500 dark:text-slate-400 flex flex-wrap gap-4">
+    <%= link_to "Coaches", coaches_path, class: "hover:text-indigo-600" %>
+    <%= link_to "Contact", contacts_path, class: "hover:text-indigo-600" %>
     <%= link_to "Tennis Formats & Rules", tennis_formats_and_rules_path, class: "hover:text-indigo-600" %>
     <%= link_to "Partnership", partnership_path, class: "hover:text-indigo-600" %>
+    <%= link_to "Mission", mission_path, class: "hover:text-indigo-600" %>
   </div>
 </div>

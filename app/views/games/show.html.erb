@@ -16,24 +16,24 @@
 <% end %>
 <div class="max-w-5xl mx-auto px-4 py-6">
   <!-- Breadcrumb -->
-  <nav class="text-sm text-gray-500 mb-4">
-    <%= link_to "Home", root_path, class: "hover:text-gray-700" %> &rsaquo;
-    <%= link_to "Games", root_path, class: "hover:text-gray-700" %> &rsaquo;
-    <span class="text-gray-900">Game <%= display_date(@game) %></span>
+  <nav class="text-sm text-gray-500 dark:text-slate-400 mb-4">
+    <%= link_to "Home", root_path, class: "hover:text-gray-700 dark:hover:text-white" %> &rsaquo;
+    <%= link_to "Games", root_path, class: "hover:text-gray-700 dark:hover:text-white" %> &rsaquo;
+    <span class="text-gray-900 dark:text-slate-100">Game <%= display_date(@game) %></span>
   </nav>
 
   <div class="flex items-center justify-between mb-6">
     <div>
       <h1 class="text-2xl font-semibold">Game details</h1>
-      <p class="text-gray-600">Full information about the game and participants.</p>
+      <p class="text-gray-600 dark:text-slate-400">Full information about the game and participants.</p>
     </div>
   </div>
 
-  <div class="bg-white rounded-lg border p-6 shadow-sm">
+  <div class="bg-white rounded-lg border p-6 shadow-sm dark:bg-slate-800/80 dark:border-white/10">
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
       <div>
-        <p class="text-sm text-gray-500">Date</p>
-        <p class="text-lg font-medium text-gray-900">
+        <p class="text-sm text-gray-500 dark:text-slate-400">Date</p>
+        <p class="text-lg font-medium text-gray-900 dark:text-slate-100">
           <% game_badges(@game).each do |b| %>
             <span class="<%= b[:classes] %>"><%= b[:text] %></span>
           <% end %>
@@ -42,19 +42,19 @@
       </div>
 
       <div>
-        <p class="text-sm text-gray-500">Time</p>
-        <p class="text-lg font-medium text-gray-900"><%= display_time(@game) %></p>
+        <p class="text-sm text-gray-500 dark:text-slate-400">Time</p>
+        <p class="text-lg font-medium text-gray-900 dark:text-slate-100"><%= display_time(@game) %></p>
       </div>
 
       <div class="sm:col-span-2">
-        <p class="text-sm text-gray-500">Court</p>
+        <p class="text-sm text-gray-500 dark:text-slate-400">Court</p>
         <p class="text-lg font-medium text-indigo-700">
           <%= link_to @game.court.name, court_path(@game.court), class: "hover:underline" %>
         </p>
       </div>
     </div>
 
-    <h2 class="text-sm font-semibold text-gray-700 mb-2">Participants</h2>
+    <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Participants</h2>
     <%= render "participations/list", game: @game %>
     <%= render "participations/controls", game: @game %>
 
@@ -90,7 +90,7 @@
            true
          end %>
 
-    <div class="mt-6 border-t pt-4">
+    <div class="mt-6 border-t dark:border-white/10 pt-4">
       <% last_reset = @game.last_participations_reset_at %>
       <% stats_filled =
            if last_reset.present?
@@ -100,11 +100,11 @@
              PlayerStatisticEntry.where(game: @game).exists? || Match.where(game_id: @game.id).exists?
            end %>
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-sm font-semibold text-gray-700">Enter statistics</h2>
+        <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300">Enter statistics</h2>
         <% if stats_filled %>
-          <span class="text-xs font-medium text-green-700 bg-green-50 px-2 py-1 rounded">Statistics saved</span>
+          <span class="text-xs font-medium text-green-700 bg-green-50 dark:bg-green-500/15 dark:text-green-200 px-2 py-1 rounded">Statistics saved</span>
         <% else %>
-          <span class="text-xs font-medium text-amber-700 bg-amber-50 px-2 py-1 rounded">
+          <span class="text-xs font-medium text-amber-700 bg-amber-50 dark:bg-amber-500/15 dark:text-amber-200 px-2 py-1 rounded">
             <%= game_started ? "Fill in the statistics" : "Fill in the statistics after game starts" %>
           </span>
         <% end %>
@@ -121,9 +121,9 @@
           <% participants = participants.compact.uniq { |u| u.id } %>
 
           <!-- Teams Selection -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b dark:border-white/10">
             <div>
-              <h3 class="text-sm font-semibold text-gray-700 mb-2">Team A</h3>
+              <h3 class="text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Team A</h3>
               <div class="space-y-1">
                 <% participants.each do |u| %>
                   <% label = if u.respond_to?(:name) && u.name.present?
@@ -131,8 +131,8 @@
                              else
                                u.email
                              end %>
-                  <label class="flex items-center gap-2 text-sm text-gray-700">
-                    <%= check_box_tag "team_a_user_ids[]", u.id, false, class: "rounded border-gray-300" %>
+                  <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
+                    <%= check_box_tag "team_a_user_ids[]", u.id, false, class: "rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
                     <span><%= label %></span>
                   </label>
                 <% end %>
@@ -140,7 +140,7 @@
             </div>
 
             <div>
-              <h3 class="text-sm font-semibold text-gray-700 mb-2">Team B</h3>
+              <h3 class="text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Team B</h3>
               <div class="space-y-1">
                 <% participants.each do |u| %>
                   <% label = if u.respond_to?(:name) && u.name.present?
@@ -148,8 +148,8 @@
                              else
                                u.email
                              end %>
-                  <label class="flex items-center gap-2 text-sm text-gray-700">
-                    <%= check_box_tag "team_b_user_ids[]", u.id, false, class: "rounded border-gray-300" %>
+                  <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
+                    <%= check_box_tag "team_b_user_ids[]", u.id, false, class: "rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
                     <span><%= label %></span>
                   </label>
                 <% end %>
@@ -160,43 +160,43 @@
           <!-- Winner & Main Stats -->
           <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
             <div>
-              <span class="block text-sm text-gray-600 mb-2">Winner</span>
-              <label class="flex items-center gap-2 text-sm text-gray-700 mb-1">
+              <span class="block text-sm text-gray-600 dark:text-slate-400 mb-2">Winner</span>
+              <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300 mb-1">
                 <%= radio_button_tag "winner_team", "a" %>
                 <span>Team A</span>
               </label>
-              <label class="flex items-center gap-2 text-sm text-gray-700">
+              <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
                 <%= radio_button_tag "winner_team", "b" %>
                 <span>Team B</span>
               </label>
-              <label class="flex items-center gap-2 text-sm text-gray-700">
+              <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
                 <%= radio_button_tag "winner_team", "draw" %>
                 <span>Draw</span>
               </label>
             </div>
 
             <div>
-              <label class="block text-sm text-gray-600 mb-1">Score</label>
-              <%= text_field_tag "statistics[score]", nil, placeholder: "6-4 6-7(5) 10-8", class: "w-full rounded border-gray-300 text-sm" %>
+              <label class="block text-sm text-gray-600 dark:text-slate-400 mb-1">Score</label>
+              <%= text_field_tag "statistics[score]", nil, placeholder: "6-4 6-7(5) 10-8", class: "w-full rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 text-sm" %>
             </div>
 
             <div>
-              <label class="block text-sm text-gray-600 mb-1">Hours</label>
-              <%= number_field_tag "statistics[hours]", nil, step: 0.1, min: 0, class: "w-full rounded border-gray-300 text-sm" %>
+              <label class="block text-sm text-gray-600 dark:text-slate-400 mb-1">Hours</label>
+              <%= number_field_tag "statistics[hours]", nil, step: 0.1, min: 0, class: "w-full rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 text-sm" %>
             </div>
           </div>
 
           <% if false %>
-          <details class="border rounded p-3 bg-gray-50">
-            <summary class="cursor-pointer text-sm font-medium text-gray-700 hover:text-indigo-600">
+          <details class="border rounded p-3 bg-gray-50 dark:bg-slate-700/50">
+            <summary class="cursor-pointer text-sm font-medium text-gray-700 dark:text-slate-300 hover:text-indigo-600">
               Additional match statistics
             </summary>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
               <% StatisticsPresenter.fields.reject { |f| %i[singles_hours doubles_hours].include?(f[:key]) }.each do |f| %>
                 <div>
-                  <label class="block text-xs text-gray-600 mb-1"><%= f[:label] %></label>
+                  <label class="block text-xs text-gray-600 dark:text-slate-400 mb-1"><%= f[:label] %></label>
                   <% step = (StatisticsPresenter.field_type(f[:key]) == :float ? 0.1 : 1) %>
-                  <%= number_field_tag "statistics[#{f[:key]}]", nil, step: step, min: 0, placeholder: f[:example], class: "w-full rounded border-gray-300 text-sm" %>
+                  <%= number_field_tag "statistics[#{f[:key]}]", nil, step: step, min: 0, placeholder: f[:example], class: "w-full rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 text-sm" %>
                 </div>
               <% end %>
             </div>
@@ -208,7 +208,7 @@
           </div>
         <% end %>
       <% else %>
-        <p class="text-gray-600 text-sm">Statistics entry is available after the game starts and only for the creator or admin.</p>
+        <p class="text-gray-600 dark:text-slate-400 text-sm">Statistics entry is available after the game starts and only for the creator or admin.</p>
       <% end %>
     </div>
   </div>

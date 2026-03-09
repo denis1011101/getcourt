@@ -75,6 +75,68 @@ class TournamentsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Select both players.", flash[:alert]
   end
 
+  # ---- city-first ordering ------------------------------------------------
+
+  test "same-city tournament appears before other-city tournament on index" do
+    user_email = "tournaments_city_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: user_email }
+    city_user = User.find_by!(email: user_email)
+    city_user.update_column(:city_name, "Kazan")
+
+    local_court = Court.create!(name: "Kazan Court #{SecureRandom.hex(4)}", city_name: "Kazan")
+    other_court = Court.create!(name: "Moscow Court #{SecureRandom.hex(4)}", city_name: "Moscow")
+
+    local_t = Tournament.create!(user: city_user, name: "Local T", players_count: 4,
+                                 format: "singles", start_date: Date.tomorrow)
+    other_t = Tournament.create!(user: city_user, name: "Other T", players_count: 4,
+                                 format: "singles", start_date: Date.tomorrow)
+    local_t.courts << local_court
+    other_t.courts << other_court
+
+    get tournaments_url
+
+    ts = assigns(:tournaments)
+    assert ts.index(local_t) < ts.index(other_t),
+           "Same-city tournament should appear before other-city tournament"
+  ensure
+    TournamentCourt.where(tournament_id: [local_t&.id, other_t&.id].compact).delete_all
+    local_t&.destroy
+    other_t&.destroy
+    city_user&.destroy
+    local_court&.destroy
+    other_court&.destroy
+  end
+
+  test "same-city tournament appears before other-city tournament on my_tournaments" do
+    user_email = "my_tournaments_city_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: user_email }
+    city_user = User.find_by!(email: user_email)
+    city_user.update_column(:city_name, "Kazan")
+
+    local_court = Court.create!(name: "My Kazan Court #{SecureRandom.hex(4)}", city_name: "Kazan")
+    other_court = Court.create!(name: "My Moscow Court #{SecureRandom.hex(4)}", city_name: "Moscow")
+
+    local_t = Tournament.create!(user: city_user, name: "My Local T", players_count: 4,
+                                 format: "singles", start_date: Date.tomorrow)
+    other_t = Tournament.create!(user: city_user, name: "My Other T", players_count: 4,
+                                 format: "singles", start_date: Date.tomorrow)
+    local_t.courts << local_court
+    other_t.courts << other_court
+
+    get tournaments_url, params: { my_tournaments: "1" }
+
+    ts = assigns(:tournaments)
+    assert ts.index(local_t) < ts.index(other_t),
+           "Same-city tournament should appear before other-city tournament in my_tournaments"
+  ensure
+    TournamentCourt.where(tournament_id: [local_t&.id, other_t&.id].compact).delete_all
+    local_t&.destroy
+    other_t&.destroy
+    city_user&.destroy
+    local_court&.destroy
+    other_court&.destroy
+  end
+
   test "add_match is blocked before tournament starts" do
     post session_url, params: { email: @organizer_email }
     future_tournament = Tournament.create!(

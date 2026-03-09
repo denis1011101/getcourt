@@ -76,6 +76,7 @@ class UsersController < ApplicationController
       :email,
       :telegram_username,
       :coach,
+      :about_me,
       :require_verification,
       :preferred_login_via,
       :timezone,

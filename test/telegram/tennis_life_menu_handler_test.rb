@@ -9,10 +9,10 @@ class TennisLifeMenuHandlerTest < ActiveSupport::TestCase
   test "sends tennis life menu with refresh button and updated timestamp" do
     sent = nil
 
-    with_stubbed_singleton_method(Telegram::Helpers::UserLookup, :locale_for, :ru) do
-      with_stubbed_singleton_method(TennisScoreboard::Fetcher, :telegram_text, "Live scoreboard") do
-        with_stubbed_singleton_method(Time, :current, @fixed_time) do
-          with_stubbed_singleton_method(Telegram::Api, :send_with_buttons, ->(*args) { sent = args }) do
+    stub_singleton(Telegram::Helpers::UserLookup, :locale_for, :ru) do
+      stub_singleton(TennisScoreboard::Fetcher, :telegram_text, "Live scoreboard") do
+        stub_singleton(Time, :current, @fixed_time) do
+          stub_singleton(Telegram::Api, :send_with_buttons, ->(*args) { sent = args }) do
             Telegram::Handlers::TennisLifeMenuHandler.show(@chat_id)
           end
         end
@@ -38,13 +38,13 @@ class TennisLifeMenuHandlerTest < ActiveSupport::TestCase
       "published_at" => "2024-06-01T12:00:00Z"
     }
 
-    with_stubbed_singleton_method(Telegram::Helpers::UserLookup, :locale_for, :ru) do
-      with_stubbed_singleton_method(TennisScoreboard::Fetcher, :telegram_text, nil) do
-        with_stubbed_singleton_method(Time, :current, @fixed_time) do
-          with_stubbed_singleton_method(TennisLife::TelegramPostsFetcher, :random_post, gist_post) do
-            with_stubbed_singleton_method(Telegram::Api, :send_with_buttons, ->(*args) { sent = args }) do
+    stub_singleton(Telegram::Helpers::UserLookup, :locale_for, :ru) do
+      stub_singleton(TennisScoreboard::Fetcher, :telegram_text, nil) do
+        stub_singleton(Time, :current, @fixed_time) do
+          stub_singleton(TennisLife::TelegramPostsFetcher, :random_post, gist_post) do
+            stub_singleton(Telegram::Api, :send_with_buttons, ->(*args) { sent = args }) do
               handler = Telegram::Handlers::TennisLifeMenuHandler
-              with_stubbed_singleton_method(handler, :fetch_recent_posts, []) do
+              stub_singleton(handler, :fetch_recent_posts, []) do
                 handler.show(@chat_id)
               end
             end
@@ -62,13 +62,13 @@ class TennisLifeMenuHandlerTest < ActiveSupport::TestCase
   test "shows no_posts text when both db posts and gist post are absent" do
     sent = nil
 
-    with_stubbed_singleton_method(Telegram::Helpers::UserLookup, :locale_for, :ru) do
-      with_stubbed_singleton_method(TennisScoreboard::Fetcher, :telegram_text, nil) do
-        with_stubbed_singleton_method(Time, :current, @fixed_time) do
-          with_stubbed_singleton_method(TennisLife::TelegramPostsFetcher, :random_post, nil) do
-            with_stubbed_singleton_method(Telegram::Api, :send_with_buttons, ->(*args) { sent = args }) do
+    stub_singleton(Telegram::Helpers::UserLookup, :locale_for, :ru) do
+      stub_singleton(TennisScoreboard::Fetcher, :telegram_text, nil) do
+        stub_singleton(Time, :current, @fixed_time) do
+          stub_singleton(TennisLife::TelegramPostsFetcher, :random_post, nil) do
+            stub_singleton(Telegram::Api, :send_with_buttons, ->(*args) { sent = args }) do
               handler = Telegram::Handlers::TennisLifeMenuHandler
-              with_stubbed_singleton_method(handler, :fetch_recent_posts, []) do
+              stub_singleton(handler, :fetch_recent_posts, []) do
                 handler.show(@chat_id)
               end
             end
@@ -85,12 +85,12 @@ class TennisLifeMenuHandlerTest < ActiveSupport::TestCase
     sent = nil
     handler = Telegram::Handlers::TennisLifeMenuHandler
 
-    with_stubbed_singleton_method(Telegram::Helpers::UserLookup, :locale_for, :ru) do
-      with_stubbed_singleton_method(TennisScoreboard::Fetcher, :telegram_text, nil) do
-        with_stubbed_singleton_method(Time, :current, @fixed_time) do
-          with_stubbed_singleton_method(TennisLife::TelegramPostsFetcher, :random_post, nil) do
-            with_stubbed_singleton_method(Telegram::Api, :send_with_buttons, ->(*args) { sent = args }) do
-              with_stubbed_singleton_method(handler, :fetch_recent_posts, []) do
+    stub_singleton(Telegram::Helpers::UserLookup, :locale_for, :ru) do
+      stub_singleton(TennisScoreboard::Fetcher, :telegram_text, nil) do
+        stub_singleton(Time, :current, @fixed_time) do
+          stub_singleton(TennisLife::TelegramPostsFetcher, :random_post, nil) do
+            stub_singleton(Telegram::Api, :send_with_buttons, ->(*args) { sent = args }) do
+              stub_singleton(handler, :fetch_recent_posts, []) do
                 handler.show(@chat_id)
               end
             end
@@ -107,10 +107,10 @@ class TennisLifeMenuHandlerTest < ActiveSupport::TestCase
   test "edits existing tennis life menu when message id is provided" do
     edited = nil
 
-    with_stubbed_singleton_method(Telegram::Helpers::UserLookup, :locale_for, :en) do
-      with_stubbed_singleton_method(TennisScoreboard::Fetcher, :telegram_text, nil) do
-        with_stubbed_singleton_method(Time, :current, @fixed_time) do
-          with_stubbed_singleton_method(Telegram::Api, :edit_message_with_buttons, ->(*args) { edited = args }) do
+    stub_singleton(Telegram::Helpers::UserLookup, :locale_for, :en) do
+      stub_singleton(TennisScoreboard::Fetcher, :telegram_text, nil) do
+        stub_singleton(Time, :current, @fixed_time) do
+          stub_singleton(Telegram::Api, :edit_message_with_buttons, ->(*args) { edited = args }) do
             Telegram::Handlers::TennisLifeMenuHandler.show(@chat_id, message_id: 555)
           end
         end
@@ -124,26 +124,5 @@ class TennisLifeMenuHandlerTest < ActiveSupport::TestCase
     assert_equal [ { text: "Refresh", callback_data: "menu:tennis_life" } ], edited[3][0]
     assert_equal [ { text: "Main menu", callback_data: "menu:main" } ], edited[3][1]
     assert_nil edited[4][:parse_mode]
-  end
-
-  private
-
-  def with_stubbed_singleton_method(target, method_name, replacement)
-    singleton = target.singleton_class
-    had_method = singleton.method_defined?(method_name) || singleton.private_method_defined?(method_name)
-    original = singleton.instance_method(method_name) if had_method
-    callable = replacement.respond_to?(:call) ? replacement : ->(*) { replacement }
-
-    singleton.define_method(method_name) do |*args, **kwargs, &block|
-      callable.call(*args, **kwargs, &block)
-    end
-
-    yield
-  ensure
-    if had_method
-      singleton.define_method(method_name, original)
-    else
-      singleton.remove_method(method_name)
-    end
   end
 end

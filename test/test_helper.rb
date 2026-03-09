@@ -11,6 +11,7 @@ Coverage.start(lines: true, branches: true) if COVERAGE_ENABLED
 ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"
 require "rails/test_help"
+Dir[Rails.root.join("test/support/**/*.rb")].sort.each { |file| require file }
 
 Minitest.after_run do
   next unless COVERAGE_ENABLED
@@ -82,5 +83,6 @@ module ActiveSupport
   class TestCase
     parallelize(workers: :number_of_processors)
     fixtures :all
+    include StubHelper if defined?(StubHelper)
   end
 end
