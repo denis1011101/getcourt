@@ -82,15 +82,16 @@ class CleanupPastTournamentsJobTest < ActiveJob::TestCase
     participant_user&.destroy
   end
 
-  test "removes dependent TournamentMatch, Game and Participation records" do
+  test "removes dependent tournament and game-linked records before destroying games" do
     organizer = create_user("graph_owner")
     p1 = create_user("graph_p1")
     p2 = create_user("graph_p2")
+    actor = create_user("graph_actor")
     court = Court.create!(name: "Graph Court #{SecureRandom.hex(4)}")
     tournament = create_tournament(organizer, end_date: Date.yesterday, start_date: Date.yesterday - 1)
     tournament.courts << court
 
-    match = TournamentMatch.create!(
+    tournament_match = TournamentMatch.create!(
       tournament: tournament,
       player_a: p1,
       player_b: p2,
@@ -104,21 +105,40 @@ class CleanupPastTournamentsJobTest < ActiveJob::TestCase
       court: court,
       user: organizer,
       date: Date.yesterday,
-      sport: "tennis",
+      sport: "Tennis",
       players_count: 2
     )
 
     participation = Participation.create!(game: game, user: p1, status: "approved")
+    game_match = Match.create!(
+      user: p1,
+      opponent: p2,
+      game: game,
+      mode: "singles",
+      outcome: "win",
+      played_at: Time.current
+    )
+    stat_entry = PlayerStatisticEntry.create!(
+      user: p1,
+      actor: actor,
+      game: game,
+      source: "telegram",
+      recorded_at: Time.current,
+      data: { "score" => "6-4 6-3" }
+    )
 
     CleanupPastTournamentsJob.perform_now
 
-    assert_nil TournamentMatch.find_by(id: match.id)
+    assert_nil TournamentMatch.find_by(id: tournament_match.id)
     assert_nil Game.find_by(id: game.id)
     assert_nil Participation.find_by(id: participation.id)
+    assert_nil Match.find_by(id: game_match.id)
+    assert_nil PlayerStatisticEntry.find_by(id: stat_entry.id)
   ensure
     court&.destroy
     organizer&.destroy
     p1&.destroy
     p2&.destroy
+    actor&.destroy
   end
 end

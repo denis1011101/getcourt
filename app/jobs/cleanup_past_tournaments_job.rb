@@ -17,9 +17,11 @@ class CleanupPastTournamentsJob < ApplicationJob
 
       game_ids = Game.where(tournament_id: id).pluck(:id)
       if game_ids.any?
+        Match.where(game_id: game_ids).delete_all
+        PlayerStatisticEntry.where(game_id: game_ids).delete_all
         Participation.where(game_id: game_ids).delete_all
         Game.where(id: game_ids).destroy_all
-        Rails.logger.info "Deleted #{game_ids.size} Games (and their participations) for Tournament##{id}"
+        Rails.logger.info "Deleted #{game_ids.size} Games (and their related records) for Tournament##{id}"
       end
 
       TournamentParticipant.where(tournament_id: id).delete_all
