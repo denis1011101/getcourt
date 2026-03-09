@@ -34,12 +34,12 @@ class TennisLifeController < ApplicationController
     total_hours_value = total_hours_value.to_i if total_hours_value == total_hours_value.to_i
 
     @stats_cards = [
-      { title: "Games played", value: Game.count },
+      # { title: "Games played", value: Game.count }, # TODO: придумать как считать, наверное надо в статистику класть просто
       { title: "Hours played", value: total_hours_value },
       { title: "Players in rating", value: rating_rows.size },
-      { title: "Courts", value: Court.count },
-      { title: "Tournaments", value: Tournament.count },
-      { title: "Game participations", value: Participation.count }
+      { title: "Courts", value: Court.count }
+      # { title: "Tournaments played", value: Tournament.count },
+      # { title: "Game participations", value: Participation.count }
     ]
   end
 
