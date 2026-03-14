@@ -77,7 +77,7 @@
             <div class="mt-3 flex items-center justify-between">
               <% games_count = court.respond_to?(:games) ? court.games.size : 0 %>
               <span class="text-xs text-gray-400"><%= games_count %> game<%= games_count == 1 ? '' : 's' %></span>
-              <span class="text-xs font-medium text-indigo-600 group-hover:underline">View &rarr;</span>
+              <span class="text-xs font-medium text-indigo-600 dark:text-indigo-400 group-hover:underline">View &rarr;</span>
             </div>
           </div>
 

@@ -41,7 +41,7 @@
           <article class="bg-white border rounded-lg dark:bg-slate-800/80 dark:border-white/10 p-4">
             <% if channel_url.present? %>
               <p class="text-xs text-gray-500 dark:text-slate-400 mb-1">
-                <a href="<%= channel_url %>" class="text-indigo-600 hover:underline" target="_blank" rel="noopener"><%= rpost["channel_name"] %></a>
+                <a href="<%= channel_url %>" class="text-indigo-600 dark:text-indigo-400 hover:underline" target="_blank" rel="noopener"><%= rpost["channel_name"] %></a>
               </p>
             <% end %>
             <p class="text-sm text-gray-800 dark:text-slate-200 whitespace-pre-line"><%= rpost["text"] %></p>
@@ -85,7 +85,7 @@
                   <p class="font-medium text-gray-900 dark:text-slate-100"><%= "#{idx + 1}. #{name}" %></p>
                   <p class="text-xs text-gray-500 dark:text-slate-400"><%= "#{row[:wins]} wins / #{row[:games]} games" %></p>
                 </div>
-                <span class="text-xs font-semibold text-indigo-600"><%= "#{row[:pct]}%" %></span>
+                <span class="text-xs font-semibold text-indigo-600 dark:text-indigo-400"><%= "#{row[:pct]}%" %></span>
               </li>
             <% end %>
           </ol>
@@ -99,7 +99,7 @@
         <ul class="space-y-2 text-sm">
           <% TennisLifeController::TELEGRAM_CHANNELS.each do |c| %>
             <li>
-              <a href="<%= c[:url] %>" class="text-indigo-600 hover:underline" target="_blank" rel="noopener">
+              <a href="<%= c[:url] %>" class="text-indigo-600 dark:text-indigo-400 hover:underline" target="_blank" rel="noopener">
                 <%= c[:name] %>
               </a>
             </li>
