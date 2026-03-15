@@ -137,6 +137,7 @@ GEM
     erubi (1.13.1)
     et-orbi (1.4.0)
       tzinfo
+    event_stream_parser (1.0.0)
     faraday (2.14.1)
       faraday-net_http (>= 2.0, < 3.5)
       json
@@ -436,6 +437,17 @@ GEM
     ruby-vips (2.3.0)
       ffi (~> 1.12)
       logger
+    ruby_llm (1.13.2)
+      base64
+      event_stream_parser (~> 1)
+      faraday (>= 2.0)
+      faraday-multipart (>= 1)
+      faraday-net_http (>= 1)
+      faraday-retry (>= 2.0)
+      marcel (~> 1)
+      ruby_llm-schema (~> 0)
+      zeitwerk (~> 2)
+    ruby_llm-schema (0.3.0)
     rubyzip (3.2.2)
     russian (0.6.0)
       i18n (>= 0.5.0)
@@ -557,6 +569,7 @@ DEPENDENCIES
   rails (~> 8.1.2)
   rails-controller-testing
   rubocop-rails-omakase
+  ruby_llm
   russian
   selenium-webdriver
   solid_cable

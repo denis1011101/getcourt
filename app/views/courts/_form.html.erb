@@ -48,25 +48,33 @@
               data: { "map-picker-target": "coordinates", action: "input->map-picker#syncFromInput" } %>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4 items-center">
-        <div class="sm:col-span-1">
-          <label class="block text-sm text-gray-600 dark:text-slate-400">Contact type</label>
-          <% base_contact_types = (Court::CONTACT_TYPES rescue %w[phone whatsapp telegram viber other]) %>
-          <% contact_types = (base_contact_types + %w[website email]).uniq %>
-          <%= form.select :contact_type,
-                contact_types.map { |t| [t.capitalize, t] },
-                { include_blank: "Select" },
-                onchange: "const v=this.value;const i=document.getElementById('court_contact_value');if(!i)return;const p={phone:'Phone number',email:'name@example.com',website:'example.com',telegram:'@username or https://t.me/username',whatsapp:'+123456789',viber:'+123456789',other:'Link or contact'};i.placeholder=p[v]||'Phone, website, email or messenger';",
-                class: "mt-1 block w-full rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+      <div class="mb-4">
+        <div class="flex items-center justify-between gap-3">
+          <label class="block text-sm text-gray-600 dark:text-slate-400">Contacts</label>
+          <p class="text-xs text-gray-500 dark:text-slate-400">Up to 3 contacts, each with its own type.</p>
         </div>
+        <% base_contact_types = (Court::CONTACT_TYPES rescue %w[phone whatsapp telegram viber other]) %>
+        <% contact_types = (base_contact_types + %w[website email]).uniq %>
+        <% court.contact_entries_for_form(3).each_with_index do |entry, index| %>
+          <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
+            <div class="sm:col-span-1">
+              <label class="block text-sm text-gray-600 dark:text-slate-400">Contact type <%= index + 1 %></label>
+              <%= select_tag "court[contact_entries][][contact_type]",
+                    options_for_select(contact_types.map { |t| [t.capitalize, t] }, entry["contact_type"]),
+                    include_blank: "Select",
+                    class: "mt-1 block w-full rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+            </div>
 
-        <div class="sm:col-span-2">
-          <label class="block text-sm text-gray-600 dark:text-slate-400">Contact</label>
-          <%= form.text_field :contact_value,
-                placeholder: "Phone, website, email or messenger",
-                class: "mt-1 block w-full rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
-          <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Enter phone, username or link.</p>
-        </div>
+            <div class="sm:col-span-2">
+              <label class="block text-sm text-gray-600 dark:text-slate-400">Contact <%= index + 1 %></label>
+              <%= text_field_tag "court[contact_entries][][contact_value]",
+                    entry["contact_value"],
+                    placeholder: "Phone, website, email or messenger",
+                    class: "mt-1 block w-full rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+            </div>
+          </div>
+        <% end %>
+        <p class="text-xs text-gray-500 dark:text-slate-400 mt-2">Example: Telegram + Viber + website, or any other combination.</p>
       </div>
 
       <div class="flex items-center gap-2">

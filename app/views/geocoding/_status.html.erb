@@ -3,7 +3,7 @@
     Google geocoding quota exceeded for today (limit: <%= @limit %>). Address lookup via Google is disabled.
     <% if Rails.env.development? || (defined?(current_user) && current_user&.admin?) %>
       <%= form_with url: geocoding_reset_path, method: :post, data: { turbo_frame: "geocoding-status" } do %>
-        <%= submit_tag "Reset quota", class: "ml-3 inline-flex items-center text-sm font-medium text-indigo-600 hover:underline" %>
+        <%= submit_tag "Reset quota", class: "ml-3 inline-flex items-center text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline" %>
       <% end %>
     <% end %>
   </div>

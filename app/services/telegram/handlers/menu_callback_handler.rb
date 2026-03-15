@@ -39,6 +39,11 @@ module Telegram
           Telegram::Handlers::TennisLifeMenuHandler.show(cb.chat_id, message_id: cb.message_id) rescue nil
           true
 
+        when "menu:ai_assistant"
+          Telegram::Api.answer_callback(cb.cb_id, "") rescue nil
+          Telegram::Handlers::AiAssistantHandler.show(cb.chat_id, message_id: cb.message_id) rescue nil
+          true
+
         when /\Amenu:my_games(?::page:(\d+))?\z/
           page = ($1 || 1).to_i
           Telegram::Api.answer_callback(cb.cb_id, "") rescue nil

@@ -89,18 +89,39 @@ class CourtsController < ApplicationController
   end
 
   def court_params
-    params.require(:court).permit(:name, :sport, :coordinates, :user_id, :contact_type, :contact_value)
+    permitted = params.require(:court).permit(:name, :sport, :coordinates, :user_id, :contact_type, :contact_value, contact_entries: [ :contact_type, :contact_value ])
+    contact_entries = permitted.delete(:contact_entries)
+
+    if contact_entries.present?
+      prepared_entries = contact_entries.filter_map do |entry|
+        type = normalize_contact_type_value(entry[:contact_type])
+        value = entry[:contact_value].to_s.strip
+        next if value.blank?
+
+        { type: type.presence, value: value }
+      end
+
+      permitted[:contact_type] = prepared_entries.first&.dig(:type)
+      permitted[:contact_value] = prepared_entries.map { |entry| [ entry[:type], entry[:value] ].compact.join(": ") }.join("\n")
+    end
+
+    permitted
   end
 
   def normalize_contact_type!(court)
-    court.contact_type =
-      case court.contact_type.to_s
-      when "other", "site"
-        "website"
-      when "mail"
-        "email"
-      else
-        court.contact_type
-      end
+    court.contact_type = normalize_contact_type_value(court.contact_type)
+
+    court.contact_value = court.contact_value.to_s.lines.map(&:strip).reject(&:blank?).join("\n")
+  end
+
+  def normalize_contact_type_value(value)
+    case value.to_s
+    when "site"
+      "website"
+    when "mail"
+      "email"
+    else
+      value.to_s
+    end
   end
 end

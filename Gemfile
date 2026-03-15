@@ -59,6 +59,7 @@ gem "tdlib-ruby"
 
 # For counting google map request
 gem "google-cloud-monitoring", require: false
+gem "ruby_llm"
 
 # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
 gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"

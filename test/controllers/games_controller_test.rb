@@ -33,6 +33,15 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to game_path(Game.order(:id).last)
   end
 
+  test "new form shows urgent player search option" do
+    post session_url, params: { email: "games_form_user@example.com" }
+
+    get new_game_url
+
+    assert_response :success
+    assert_includes response.body, "Urgent player search"
+  end
+
   # ---- pagination ---------------------------------------------------------
 
   test "index assigns @pagy" do

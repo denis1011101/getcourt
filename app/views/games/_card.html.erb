@@ -91,7 +91,7 @@
         Tournament:
         <%= link_to (game.tournament.respond_to?(:name) ? game.tournament.name : "##{game.tournament.id}"),
                     tournament_path(game.tournament),
-                    class: "relative z-10 font-medium text-indigo-600 hover:text-indigo-800" %>
+                    class: "relative z-10 font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800" %>
       </div>
     <% end %>
 

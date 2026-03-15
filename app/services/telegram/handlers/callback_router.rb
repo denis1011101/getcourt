@@ -42,6 +42,11 @@ module Telegram
           return true
         end
 
+        if data.match?(/\Aai:/)
+          Telegram::Flows::AiAssistantFlow.handle_callback(callback_query)
+          return true
+        end
+
         false
       rescue => e
         Rails.logger.error "[Telegram::Handlers::CallbackRouter] #{e.class}: #{e.message}"

@@ -19,6 +19,7 @@ module Telegram
             [ { text: t.(:find_coach),                callback_data: "menu:find_coach:page:1" } ],
             [ { text: t.(:games_looking_for_player),  callback_data: "menu:games_need_players:page:1" } ],
             [ { text: t.(:tennis_life),               callback_data: "menu:tennis_life" } ],
+            [ { text: t.(:ai_assistant),              callback_data: "menu:ai_assistant" } ],
             [ { text: t.(:profile),                   callback_data: "profile:show" } ]
           ]
 

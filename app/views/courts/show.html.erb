@@ -103,52 +103,20 @@
           <% end %>
 
           <% if @court.formatted_contact.present? %>
-            <% contact_type = @court.contact_type.to_s %>
-            <% contact_value = @court.contact_value.to_s %>
-            <% digits = contact_value.gsub(/[^\d]/, "") %>
-            <% href =
-              case contact_type
-              when "phone"
-                digits.present? ? "tel:+#{digits}" : nil
-              when "email"
-                contact_value.present? ? "mailto:#{contact_value}" : nil
-              when "website"
-                if contact_value.match?(/\Ahttps?:\/\//)
-                  contact_value
-                elsif contact_value.present?
-                  "https://#{contact_value}"
-                end
-              when "other"
-                if contact_value.match?(/\Ahttps?:\/\//)
-                  contact_value
-                elsif contact_value.present?
-                  "https://#{contact_value}"
-                end
-              when "telegram"
-                if contact_value.match?(/\Ahttps?:\/\//)
-                  contact_value
-                else
-                  username = contact_value.sub(/\A@/, "")
-                  username.present? ? "https://t.me/#{username}" : nil
-                end
-              when "whatsapp"
-                digits.present? ? "https://wa.me/#{digits}" : nil
-              when "viber"
-                digits.present? ? "viber://chat?number=+#{digits}" : nil
-              else
-                nil
-              end %>
-
             <div>
               <p class="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wide font-medium">Contact</p>
-              <p class="text-sm font-medium mt-0.5">
-                <% if href.present? %>
-                  <% if @court.contact_label.present? %><span class="text-gray-600 dark:text-slate-400"><%= @court.contact_label %>:</span> <% end %>
-                  <%= link_to contact_value, href, class: "text-indigo-600 hover:text-indigo-800 underline", target: "_blank", rel: "noopener" %>
-                <% else %>
-                  <span class="text-gray-900 dark:text-slate-100"><%= @court.formatted_contact %></span>
+              <div class="mt-0.5 space-y-1 text-sm font-medium">
+                <% @court.contact_links.each do |contact| %>
+                  <p>
+                    <% if contact[:href].present? %>
+                      <% if contact[:label].present? %><span class="text-gray-600 dark:text-slate-400"><%= contact[:label] %>:</span> <% end %>
+                      <%= link_to contact[:value], contact[:href], class: "text-indigo-600 transition-colors hover:text-indigo-800 underline dark:text-indigo-400 dark:hover:text-indigo-300", target: "_blank", rel: "nofollow noopener" %>
+                    <% else %>
+                      <span class="text-gray-900 dark:text-slate-100"><%= contact[:formatted] %></span>
+                    <% end %>
+                  </p>
                 <% end %>
-              </p>
+              </div>
             </div>
           <% end %>
         </div>

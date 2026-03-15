@@ -36,6 +36,7 @@ module Telegram
       find_coach: "Найти тренера",
       games_looking_for_player: "Игры ищут игрока",
       tennis_life: "Теннис лайф",
+      ai_assistant: "AI Assistant",
       profile: "Профиль",
       rating: "Рейтинг",
 
@@ -213,6 +214,15 @@ module Telegram
       tennis_life_title: "Теннис лайф",
       tennis_life_feed_title: "Telegram Feed",
       tennis_life_no_posts: "Пока постов нет. Подпишитесь на каналы ниже.",
+      ai_assistant_welcome: "AI Assistant\n\nЗадайте вопрос о поиске соперника, корта или игры, либо выберите готовый сценарий ниже.",
+      ai_snippet_find_opponent: "Найти соперника",
+      ai_snippet_find_court: "Найти корт",
+      ai_snippet_find_opponent_prompt: "Найди соперника в моем городе.",
+      ai_snippet_find_court_prompt: "Найди корты в моем городе.",
+      ai_thinking: "Думаю...",
+      ai_rate_limit: "Превышен лимит запросов к AI. Пожалуйста, попробуйте через несколько минут.",
+      ai_timeout: "AI assistant не успел ответить. Попробуйте ещё раз.",
+      ai_back_to_menu: "← Меню",
 
       # Survey / onboarding
       greeting: "Добро пожаловать в GetCourt! Я помогу настроить ваш профиль для поиска соперников.",
@@ -420,6 +430,7 @@ module Telegram
       find_coach: "Find coach",
       games_looking_for_player: "Games looking for player",
       tennis_life: "Tennis life",
+      ai_assistant: "AI Assistant",
       profile: "Profile",
       rating: "Rating",
 
@@ -598,6 +609,15 @@ module Telegram
       tennis_life_text: "Section under development. News, tips, and interesting tennis content coming soon.",
       tennis_life_feed_title: "Telegram Feed",
       tennis_life_no_posts: "No posts yet. Subscribe to the channels below.",
+      ai_assistant_welcome: "AI Assistant\n\nAsk about finding an opponent, court, or game, or use one of the quick actions below.",
+      ai_snippet_find_opponent: "Find opponent",
+      ai_snippet_find_court: "Find court",
+      ai_snippet_find_opponent_prompt: "Find an opponent in my city.",
+      ai_snippet_find_court_prompt: "Find courts in my city.",
+      ai_thinking: "Thinking...",
+      ai_rate_limit: "AI request limit exceeded. Please try again in a few minutes.",
+      ai_timeout: "AI assistant took too long to respond. Please try again.",
+      ai_back_to_menu: "← Menu",
 
       # Survey / onboarding
       greeting: "Welcome to GetCourt! I will help set up your profile to find opponents.",
