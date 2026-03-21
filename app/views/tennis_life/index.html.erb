@@ -50,9 +50,9 @@
                 <a href="<%= channel_url %>" class="text-indigo-600 dark:text-indigo-400 hover:underline" target="_blank" rel="nofollow noopener"><%= rpost["channel_name"] %></a>
               </p>
             <% end %>
-            <p class="text-sm text-gray-800 dark:text-slate-200 whitespace-pre-line"><%= rpost["text"] %></p>
+            <p class="text-sm text-gray-800 dark:text-slate-200 whitespace-pre-line"><%= @random_post_text_en.presence || rpost["text"] %></p>
             <% if post_url.present? %>
-              <a href="<%= post_url %>" class="mt-2 inline-block text-xs text-indigo-500 hover:underline" target="_blank" rel="nofollow noopener">Read on Telegram →</a>
+              <a href="<%= post_url %>" class="mt-2 inline-block text-xs text-indigo-600 dark:text-indigo-400 hover:underline" target="_blank" rel="nofollow noopener">Read on Telegram →</a>
             <% end %>
             <% if tg_post_path.match?(%r{\A[\w-]+/\d+\z}) %>
               <div class="mt-3">

@@ -15,6 +15,9 @@ class TennisLifeController < ApplicationController
   def index
     @tennis_score_raw = TennisScoreboard::Fetcher.raw_text
     @random_telegram_post = TennisLife::TelegramPostsFetcher.random_post
+    if @random_telegram_post && (text = @random_telegram_post["text"].to_s.strip).present?
+      @random_post_text_en = TranslationCache.fetch(text)
+    end
 
     allowed_usernames = TELEGRAM_CHANNELS.map { |c| c[:username].to_s.delete_prefix("@").downcase }
 
