@@ -22,6 +22,11 @@ module Telegram
             Telegram::Helpers::Conversation.update(cb.chat_id, "flow" => "ai_assistant", "message_id" => cb.message_id)
             respond(cb.chat_id, t.(:ai_snippet_find_court_prompt), locale: locale)
             true
+          when "ai:snippet:find_coach"
+            Telegram::Api.answer_callback(cb.cb_id, "") rescue nil
+            Telegram::Helpers::Conversation.update(cb.chat_id, "flow" => "ai_assistant", "message_id" => cb.message_id)
+            respond(cb.chat_id, t.(:ai_snippet_find_coach_prompt), locale: locale)
+            true
           when "ai:back"
             Telegram::Api.answer_callback(cb.cb_id, "") rescue nil
             Telegram::Helpers::Conversation.finish(cb.chat_id)

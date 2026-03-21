@@ -25,13 +25,15 @@ module Ai
           }
         end
 
+        host = ENV.fetch("APP_HOST", ENV.fetch("HOSTNAME", "https://getcourt.co"))
         {
           city: search_city,
           courts: courts.map do |court|
             {
               name: court.name,
               city: court.city_name,
-              sport: court.sport.presence || "unknown"
+              sport: court.sport.presence || "unknown",
+              url: "#{host}/courts/#{court.id}"
             }
           end
         }

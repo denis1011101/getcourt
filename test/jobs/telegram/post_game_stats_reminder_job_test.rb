@@ -21,10 +21,10 @@ module Telegram
 
       assert_equal 123_456, sent[0]
       assert_includes sent[1], "Please fill in the statistics via Telegram"
-      assert_equal "Fill stats", sent[2][0][:text]
-      assert_equal "tg_fill:#{game.id}", sent[2][0][:callback_data]
-      assert_equal "Game did not happen", sent[2][1][:text]
-      assert_includes sent[2][1][:url], "mark_not_happened="
+      assert_equal "Fill stats", sent[2][0][0][:text]
+      assert_equal "tg_fill:#{game.id}", sent[2][0][0][:callback_data]
+      assert_equal "Game did not happen", sent[2][1][0][:text]
+      assert_includes sent[2][1][0][:url], "mark_not_happened="
     end
 
     test "recurring game reschedules next reminder and stores new job id" do

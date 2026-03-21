@@ -20,13 +20,7 @@ class NotifyPrebookingOwnerJob < ApplicationJob
     pending_prebookings = game.prebookings.where(user_id: user.id, status: "pending")
     return if pending_prebookings.empty?
 
-    requester = if user.respond_to?(:telegram_username) && user.telegram_username.present?
-                  "@#{user.telegram_username}"
-    elsif user.respond_to?(:username) && user.username.present?
-                  "@#{user.username}"
-    else
-                  user.name.presence || user.email.presence || "User"
-    end
+    requester = Telegram::Helpers::UserLookup.display_name(user)
 
     dates_text = pending_prebookings.map { |pb| pb.date.strftime("%Y-%m-%d") }.sort.join(", ")
     host = ENV.fetch("APP_HOST", ENV.fetch("HOSTNAME", "https://getcourt.co"))

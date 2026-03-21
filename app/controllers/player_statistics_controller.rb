@@ -11,7 +11,7 @@ class PlayerStatisticsController < ApplicationController
 
     names_by_id =
       if related_ids.any?
-        User.where(id: related_ids).map { |u| [ u.id, (u.name.to_s.strip.presence || u.telegram_username.to_s.strip.presence || u.email.to_s) ] }.to_h
+        User.where(id: related_ids).map { |u| [ u.id, Telegram::Helpers::UserLookup.display_name(u, fallback: "User ##{u.id}") ] }.to_h
       else
         {}
       end

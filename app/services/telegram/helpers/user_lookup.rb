@@ -26,7 +26,9 @@ module Telegram
         elsif user.respond_to?(:username) && user.username.to_s.strip.present?
           "@#{user.username.to_s.strip.delete_prefix('@')}"
         else
-          user.name.to_s.strip.presence || fallback
+          user.name.to_s.strip.presence ||
+            (user.respond_to?(:email) && user.email.to_s.strip.presence) ||
+            fallback
         end
       end
     end

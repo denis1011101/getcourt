@@ -108,18 +108,7 @@ module Telegram
           end
 
           def target_label(u)
-            return "User" unless u
-            if u.respond_to?(:telegram_username) && u.telegram_username.present?
-              "@#{u.telegram_username}"
-            elsif u.respond_to?(:username) && u.username.present?
-              "@#{u.username}"
-            elsif u.respond_to?(:name) && u.name.present?
-              u.name.to_s
-            elsif u.respond_to?(:email) && u.email.present?
-              u.email.to_s
-            else
-              "user##{u.id}"
-            end
+            Telegram::Helpers::UserLookup.display_name(u, fallback: u&.id ? "user##{u.id}" : "User")
           end
         end
       end

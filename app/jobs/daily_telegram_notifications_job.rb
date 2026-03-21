@@ -25,7 +25,7 @@ class DailyTelegramNotificationsJob < ApplicationJob
       when_text = day_offset == 1 ? "tomorrow" : "today"
       court_name = game.court&.name || "unknown court"
       participants = recipients.map do |u|
-        u.telegram_username.presence ? "@#{u.telegram_username}" : (u.name.presence || u.email.presence)
+        Telegram::Helpers::UserLookup.display_name(u)
       end.compact
 
       participants_text = participants.join("\n")

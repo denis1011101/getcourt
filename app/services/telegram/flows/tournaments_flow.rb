@@ -1336,7 +1336,7 @@ module Telegram
           owner_chat_id = tournament&.user&.telegram_chat_id
           return unless owner_chat_id.present?
 
-          name = decliner&.name.presence || decliner&.telegram_username.presence || "User"
+          name = Telegram::Helpers::UserLookup.display_name(decliner)
           Telegram::Api.send_simple(owner_chat_id.to_s, t.(:tournament_invite_declined_owner, name: name, id: tournament_id)) rescue nil
         end
 

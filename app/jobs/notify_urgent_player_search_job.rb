@@ -41,8 +41,7 @@ class NotifyUrgentPlayerSearchJob < ApplicationJob
 
   def owner_label(owner)
     return "—" unless owner
-    return "@#{owner.telegram_username.delete_prefix('@')}" if owner.telegram_username.present?
-    owner.name.presence || owner.email.presence || "User ##{owner.id}"
+    Telegram::Helpers::UserLookup.display_name(owner, fallback: "User ##{owner.id}")
   end
 
   def fallback(locale, type)

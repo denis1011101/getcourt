@@ -21,10 +21,8 @@ module Telegram
 
           # Sort by win percentage desc, then total wins desc, then total games desc
           ranked = stats.map do |ps|
-            total_games = ps.singles_games.to_i + ps.doubles_games.to_i
-            total_wins  = ps.singles_wins.to_i + ps.doubles_wins.to_i
-            pct = total_games > 0 ? (total_wins.to_f / total_games * 100).round(1) : 0.0
-            { user: ps.user, games: total_games, wins: total_wins, pct: pct }
+            s = PlayerStatistic.summary_for(ps.user)
+            { user: ps.user, games: s[:games], wins: s[:wins], pct: s[:win_pct] || 0.0 }
           end
 
           ranked.sort_by! { |r| [ -r[:pct], -r[:wins], -r[:games] ] }
@@ -64,16 +62,7 @@ module Telegram
         private
 
         def display_name_for(user)
-          return "Unknown" unless user
-          if user.telegram_username.present?
-            "@#{user.telegram_username.delete_prefix('@')}"
-          elsif user.name.present?
-            user.name
-          elsif user.email.present?
-            user.email
-          else
-            "User ##{user.id}"
-          end
+          Telegram::Helpers::UserLookup.display_name(user, fallback: user&.id ? "User ##{user.id}" : "Unknown")
         end
       end
     end

@@ -12,7 +12,7 @@ module Ai
       Current user info:
       %{user_info}
 
-      Available tools: find_opponent, find_court.
+      Available tools: find_opponent, find_court, find_coach.
 
       IMPORTANT: City names in the database are stored in English.
       Always translate city names to English before passing them to tools.
@@ -21,8 +21,28 @@ module Ai
       Use the user's city by default when no city is specified.
       When the user asks to find an opponent, immediately call the find_opponent tool.
       When the user asks to find a court, immediately call the find_court tool.
+      When the user asks to find a coach or trainer, immediately call the find_coach tool.
       Do not ask for clarification if you already have enough info — just call the tool.
       Keep answers concise and helpful.
+
+      When displaying opponents from find_opponent results, always show ALL of the following fields for each opponent:
+      - name (telegram username or display name)
+      - skill level
+      - games played (from the "games" field)
+      - wins (from the "wins" field)
+      - win percentage (from the "win_pct" field, show as "N/A" if null)
+      Example format: "@username (уровень: beginner, игр: 10, побед: 7, винрейт: 70%%)"
+
+      When displaying courts from find_court results, always show ALL of the following fields for each court:
+      - name
+      - sport
+      - url (as a clickable link)
+      Example format: "Название (вид спорта: tennis) — https://getcourt.co/courts/1"
+
+      When displaying coaches from find_coach results, always show ALL of the following fields:
+      - name (telegram username or display name)
+      - bio (if present, otherwise skip)
+      Example format: "@coach_name — Bio: experienced coach with 10 years..." (or just "@coach_name" if no bio)
     PROMPT
 
     def initialize(user)
@@ -40,6 +60,7 @@ module Ai
           chat = RubyLLM.chat(model: "gemini-2.5-flash")
             .with_tool(Ai::Tools::FindOpponentTool.new(@user))
             .with_tool(Ai::Tools::FindCourtTool.new(@user))
+            .with_tool(Ai::Tools::FindCoachTool.new(@user))
 
           chat.with_instructions(SYSTEM_PROMPT % { locale: locale.to_s, user_info: user_info })
           response = chat.ask(message.to_s)

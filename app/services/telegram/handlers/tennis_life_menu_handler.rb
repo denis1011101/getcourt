@@ -138,17 +138,7 @@ module Telegram
         end
 
         def display_name_for(user)
-          return "Unknown" unless user
-
-          if user.telegram_username.present?
-            "@#{user.telegram_username.delete_prefix('@')}"
-          elsif user.name.present?
-            user.name
-          elsif user.email.present?
-            user.email
-          else
-            "User ##{user.id}"
-          end
+          Telegram::Helpers::UserLookup.display_name(user, fallback: user&.id ? "User ##{user.id}" : "Unknown")
         end
 
         def fetch_recent_posts(limit: 5)

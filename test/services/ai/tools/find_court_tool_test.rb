@@ -3,7 +3,7 @@ require "test_helper"
 class Ai::Tools::FindCourtToolTest < ActiveSupport::TestCase
   test "uses explicit city and sport filter" do
     requester = User.new(city_name: "Moscow")
-    matching = Court.new(name: "Center Court", city_name: "Moscow", sport: "tennis")
+    matching = Court.new(id: 42, name: "Center Court", city_name: "Moscow", sport: "tennis")
     relation = FakeCourtRelation.new([ matching ])
 
     stub_singleton(Court, :approved, relation) do
@@ -11,7 +11,10 @@ class Ai::Tools::FindCourtToolTest < ActiveSupport::TestCase
 
       assert_equal "Moscow", result[:city]
       assert_equal 1, result[:courts].size
-      assert_equal matching.name, result[:courts][0][:name]
+      court = result[:courts][0]
+      assert_equal matching.name, court[:name]
+      assert_equal "tennis", court[:sport]
+      assert_match %r{/courts/42\z}, court[:url]
       assert_equal [ [ "LOWER(city_name) LIKE LOWER(?)", "%Moscow%" ] ], relation.where_calls
       assert_equal [ { sport: "tennis" } ], relation.extra_where_calls
     end

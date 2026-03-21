@@ -13,7 +13,9 @@ module Ai
         search_city = city.to_s.strip.presence || @user&.city_name.to_s.strip.presence
         return { error: "City is required. Ask the user to set their city in profile or specify a city." } if search_city.blank?
 
-        scope = User.where("LOWER(city_name) LIKE LOWER(?)", "%#{search_city}%").where.not(id: @user&.id)
+        scope = User.where("LOWER(city_name) LIKE LOWER(?)", "%#{search_city}%")
+                    .where(coach: [ false, nil ])
+                    .where.not(id: @user&.id)
         scope = scope.where(skill_level: skill_level.to_s.strip) if skill_level.to_s.strip.present?
         users = scope.limit(5)
 
@@ -28,10 +30,14 @@ module Ai
         {
           city: search_city,
           opponents: users.map do |user|
+            s = PlayerStatistic.summary_for(user)
             {
               name: Telegram::Helpers::UserLookup.display_name(user, fallback: "User ##{user.id}"),
               skill: user.skill_level.presence || "unknown",
-              city: user.city_name
+              city: user.city_name,
+              games: s[:games],
+              wins: s[:wins],
+              win_pct: s[:win_pct]
             }
           end
         }

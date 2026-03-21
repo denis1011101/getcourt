@@ -16,6 +16,7 @@ module Telegram
           buttons = [
             [ { text: t.(:ai_snippet_find_opponent), callback_data: "ai:snippet:find_opponent" } ],
             [ { text: t.(:ai_snippet_find_court), callback_data: "ai:snippet:find_court" } ],
+            [ { text: t.(:ai_snippet_find_coach), callback_data: "ai:snippet:find_coach" } ],
             [ { text: t.(:ai_back_to_menu), callback_data: "ai:back" } ]
           ]
 

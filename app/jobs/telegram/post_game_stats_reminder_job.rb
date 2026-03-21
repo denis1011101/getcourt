@@ -27,9 +27,9 @@ module Telegram
         creator.telegram_chat_id,
         text.strip,
         [
-          { text: "Fill stats", callback_data: "tg_fill:#{game.id}" },
+          [ { text: "Fill stats", callback_data: "tg_fill:#{game.id}" } ],
           # short id here — signed token is too long for callback_data
-          { text: "Game did not happen", url: "#{game_url}?mark_not_happened=#{CGI.escape(signed)}" }
+          [ { text: "Game did not happen", url: "#{game_url}?mark_not_happened=#{CGI.escape(signed)}" } ]
         ]
       )
     end

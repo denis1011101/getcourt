@@ -18,6 +18,15 @@ class PlayerStatistic < ApplicationRecord
     :int
   end
 
+  # Summary stats for a user (used in rating & AI tools)
+  def self.summary_for(user)
+    ps = find_by(user_id: user.id)
+    total_games = ps ? ps.singles_games.to_i + ps.doubles_games.to_i : 0
+    total_wins  = ps ? ps.singles_wins.to_i  + ps.doubles_wins.to_i  : 0
+    pct = total_games > 0 ? (total_wins.to_f / total_games * 100).round(1) : nil
+    { games: total_games, wins: total_wins, win_pct: pct }
+  end
+
   # convenience readers
   def total_hours
     (singles_hours.to_f + doubles_hours.to_f).round(2)
