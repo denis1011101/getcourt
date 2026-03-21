@@ -1,5 +1,5 @@
 <% content_for :meta_title, "Fun Tennis Game Formats and Group Drills — GetCourt" %>
-<% content_for :meta_description, "Popular tennis group formats with rules and court diagrams: King of the Court, 2v2 with two balls, 3-courts promotion system, and Round Robin." %>
+<% content_for :meta_description, "Popular tennis group formats with rules: King of the Court, 2v2 with two balls, 3 pairs scoreboard format, Round Robin. Plus classic drills: cross-court rally, volley-to-volley, figure-8 and more." %>
 <% content_for :head do %>
   <script type="application/ld+json">
     <%= json_escape({
@@ -92,19 +92,18 @@
       <div class="grid md:grid-cols-2 gap-4">
         <div>
           <p class="text-gray-700 dark:text-slate-300 mb-2">
-            Standard doubles positioning, but two balls are served simultaneously from both sides. Each team plays one ball on their half. Both rallies happen at the same time, creating a fast-paced and chaotic game.
+            Standard 2v2 doubles, but the serving team feeds <strong>two balls at once</strong> from one side. Both rallies run simultaneously — chaos, speed, and great fun. When one ball goes out of play, someone shouts <strong>"Ball!"</strong> and both teams switch to playing the remaining (main) ball with standard doubles rules.
           </p>
           <h3 class="text-sm font-medium text-gray-900 dark:text-slate-100 mt-3 mb-1">Scoring</h3>
           <ul class="list-disc pl-5 text-gray-700 dark:text-slate-300 text-sm space-y-1">
-            <li>A team must win <strong>both</strong> rallies to score a point</li>
-            <li>If each team wins one rally, no point is awarded</li>
-            <li>First team to 11 points (or set your own target)</li>
+            <li>Points are scored with the <strong>main ball</strong> only (after one ball drops out)</li>
+            <li>First team to 10 points wins (or set your own target)</li>
+            <li>Serve switches after each point as in regular doubles</li>
           </ul>
           <h3 class="text-sm font-medium text-gray-900 dark:text-slate-100 mt-3 mb-1">Safety tip</h3>
-          <p class="text-gray-700 dark:text-slate-300 text-sm">Both players should be aware of both balls at all times. Pause immediately if balls cross paths.</p>
+          <p class="text-gray-700 dark:text-slate-300 text-sm">Stay aware of both balls at all times. Shout "Ball!" clearly so everyone switches focus to the main ball immediately.</p>
         </div>
         <div class="flex justify-center">
-          <%# Court diagram: 2v2 two balls %>
           <svg viewBox="0 0 240 320" class="w-48 h-auto" xmlns="http://www.w3.org/2000/svg">
             <rect x="10" y="10" width="220" height="300" fill="#4a7c59" stroke="#fff" stroke-width="2" rx="2"/>
             <line x1="10" y1="160" x2="230" y2="160" stroke="#fff" stroke-width="3"/>
@@ -115,82 +114,74 @@
             <line x1="120" y1="70" x2="120" y2="250" stroke="#fff" stroke-width="1.5"/>
             <line x1="10" y1="70" x2="230" y2="70" stroke="#fff" stroke-width="1.5"/>
             <line x1="10" y1="250" x2="230" y2="250" stroke="#fff" stroke-width="1.5"/>
-            <%# Team A (blue) %>
-            <circle cx="70" cy="90" r="10" fill="#6366f1"/>
-            <text x="70" y="94" text-anchor="middle" fill="#fff" font-size="9" font-weight="bold">A</text>
-            <circle cx="170" cy="90" r="10" fill="#6366f1"/>
-            <text x="170" y="94" text-anchor="middle" fill="#fff" font-size="9" font-weight="bold">A</text>
+            <%# Team A (blue) — serving side %>
+            <circle cx="70" cy="230" r="10" fill="#6366f1"/>
+            <text x="70" y="234" text-anchor="middle" fill="#fff" font-size="9" font-weight="bold">A</text>
+            <circle cx="170" cy="230" r="10" fill="#6366f1"/>
+            <text x="170" y="234" text-anchor="middle" fill="#fff" font-size="9" font-weight="bold">A</text>
             <%# Team B (amber) %>
-            <circle cx="70" cy="230" r="10" fill="#f59e0b"/>
-            <text x="70" y="234" text-anchor="middle" fill="#fff" font-size="9" font-weight="bold">B</text>
-            <circle cx="170" cy="230" r="10" fill="#f59e0b"/>
-            <text x="170" y="234" text-anchor="middle" fill="#fff" font-size="9" font-weight="bold">B</text>
-            <%# Ball 1 %>
-            <circle cx="80" cy="150" r="5" fill="#d4f542" stroke="#fff" stroke-width="1"/>
-            <text x="80" y="140" text-anchor="middle" fill="#fff" font-size="8">ball 1</text>
-            <%# Ball 2 %>
-            <circle cx="160" cy="170" r="5" fill="#d4f542" stroke="#fff" stroke-width="1"/>
-            <text x="160" y="185" text-anchor="middle" fill="#fff" font-size="8">ball 2</text>
+            <circle cx="70" cy="90" r="10" fill="#f59e0b"/>
+            <text x="70" y="94" text-anchor="middle" fill="#fff" font-size="9" font-weight="bold">B</text>
+            <circle cx="170" cy="90" r="10" fill="#f59e0b"/>
+            <text x="170" y="94" text-anchor="middle" fill="#fff" font-size="9" font-weight="bold">B</text>
+            <%# Two balls from one side %>
+            <circle cx="75" cy="175" r="5" fill="#d4f542" stroke="#fff" stroke-width="1"/>
+            <circle cx="155" cy="165" r="5" fill="#d4f542" stroke="#fff" stroke-width="1"/>
+            <text x="120" y="155" text-anchor="middle" fill="#fff" font-size="8">2 balls →</text>
+            <%# Arrow from serving side %>
+            <path d="M 70 220 Q 75 195 75 185" fill="none" stroke="#d4f542" stroke-width="1.5" marker-end="url(#arrowBall)"/>
+            <path d="M 170 220 Q 160 195 155 175" fill="none" stroke="#d4f542" stroke-width="1.5" marker-end="url(#arrowBall)"/>
+            <defs><marker id="arrowBall" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#d4f542"/></marker></defs>
           </svg>
         </div>
       </div>
     </div>
 
-    <%# ── 3 Courts Format ── %>
+    <%# ── 3 Pairs Format ── %>
     <div class="mb-8">
-      <h2 class="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">3 Courts Promotion Format</h2>
+      <h2 class="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">3 Pairs — Scoreboard Format</h2>
       <div class="flex flex-wrap gap-2 mb-3">
-        <span class="inline-block bg-gray-100 dark:bg-slate-700/50 text-gray-700 dark:text-slate-300 text-xs font-medium px-2 py-1 rounded">6&ndash;12 players</span>
-        <span class="inline-block bg-gray-100 dark:bg-slate-700/50 text-gray-700 dark:text-slate-300 text-xs font-medium px-2 py-1 rounded">3 courts</span>
-        <span class="inline-block bg-gray-100 dark:bg-slate-700/50 text-gray-700 dark:text-slate-300 text-xs font-medium px-2 py-1 rounded">Singles or Doubles</span>
+        <span class="inline-block bg-gray-100 dark:bg-slate-700/50 text-gray-700 dark:text-slate-300 text-xs font-medium px-2 py-1 rounded">3 players</span>
+        <span class="inline-block bg-gray-100 dark:bg-slate-700/50 text-gray-700 dark:text-slate-300 text-xs font-medium px-2 py-1 rounded">1 court</span>
+        <span class="inline-block bg-gray-100 dark:bg-slate-700/50 text-gray-700 dark:text-slate-300 text-xs font-medium px-2 py-1 rounded">Singles</span>
       </div>
       <div class="grid md:grid-cols-2 gap-4">
         <div>
           <p class="text-gray-700 dark:text-slate-300 mb-2">
-            Players are split across three courts ranked by level (Court 1 = top, Court 3 = bottom). After each timed round, winners move one court up and losers move one court down. Players on Court 1 who win stay; players on Court 3 who lose stay.
+            Three players share one court. Two play a singles point while the third stands at the net post and keeps score. After each point, the loser steps off and the scorer steps in — the scorer becomes the new challenger, and the previous loser takes over scoring.
           </p>
-          <h3 class="text-sm font-medium text-gray-900 dark:text-slate-100 mt-3 mb-1">Scoring</h3>
+          <h3 class="text-sm font-medium text-gray-900 dark:text-slate-100 mt-3 mb-1">Scoreboard</h3>
+          <p class="text-gray-700 dark:text-slate-300 text-sm mb-1">A standard tennis scoreboard tracks each player combination separately — one row per pair (A vs B, A vs C, B vs C). The scorer updates the row for the current match after each point.</p>
           <ul class="list-disc pl-5 text-gray-700 dark:text-slate-300 text-sm space-y-1">
-            <li>Each round is timed (e.g., 10 minutes) or played to a set number of games</li>
-            <li>Winner of each court moves up, loser moves down</li>
-            <li>Track total rounds on Court 1 to crown the overall champion</li>
+            <li>Each row is played to a set score (e.g., 6 points)</li>
+            <li>Winner stays on court, loser becomes the new scorer</li>
+            <li>Most wins across all rows at the end of the session wins</li>
           </ul>
           <h3 class="text-sm font-medium text-gray-900 dark:text-slate-100 mt-3 mb-1">Why it works</h3>
-          <p class="text-gray-700 dark:text-slate-300 text-sm">Creates naturally balanced matches. Stronger players gravitate to Court 1 while newcomers find fair competition on Court 3.</p>
+          <p class="text-gray-700 dark:text-slate-300 text-sm">Nobody waits idly — the third player is always involved as scorer. Rotations are fast and the session never drags.</p>
         </div>
-        <div class="flex justify-center">
-          <%# 3 Courts diagram %>
-          <svg viewBox="0 0 240 320" class="w-48 h-auto" xmlns="http://www.w3.org/2000/svg">
-            <%# Court 1 (top) %>
-            <rect x="30" y="10" width="180" height="80" fill="#4a7c59" stroke="#fff" stroke-width="2" rx="2"/>
-            <line x1="30" y1="50" x2="210" y2="50" stroke="#fff" stroke-width="2"/>
-            <text x="120" y="35" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold">Court 1 (Top)</text>
-            <text x="120" y="72" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="9">strongest players</text>
-            <%# Court 2 (middle) %>
-            <rect x="30" y="110" width="180" height="80" fill="#4a7c59" stroke="#fff" stroke-width="2" rx="2"/>
-            <line x1="30" y1="150" x2="210" y2="150" stroke="#fff" stroke-width="2"/>
-            <text x="120" y="135" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold">Court 2 (Mid)</text>
-            <text x="120" y="172" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="9">middle level</text>
-            <%# Court 3 (bottom) %>
-            <rect x="30" y="210" width="180" height="80" fill="#4a7c59" stroke="#fff" stroke-width="2" rx="2"/>
-            <line x1="30" y1="250" x2="210" y2="250" stroke="#fff" stroke-width="2"/>
-            <text x="120" y="235" text-anchor="middle" fill="#fff" font-size="11" font-weight="bold">Court 3 (Bottom)</text>
-            <text x="120" y="272" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="9">developing players</text>
-            <%# Promotion arrows (green, up) %>
-            <path d="M 20 140 L 20 100" stroke="#22c55e" stroke-width="2.5" fill="none" marker-end="url(#arrowUp)"/>
-            <path d="M 20 240 L 20 200" stroke="#22c55e" stroke-width="2.5" fill="none" marker-end="url(#arrowUp)"/>
-            <text x="8" y="120" fill="#22c55e" font-size="8" text-anchor="middle" transform="rotate(-90, 8, 120)">win</text>
-            <text x="8" y="220" fill="#22c55e" font-size="8" text-anchor="middle" transform="rotate(-90, 8, 220)">win</text>
-            <%# Relegation arrows (red, down) %>
-            <path d="M 228 100 L 228 140" stroke="#ef4444" stroke-width="2.5" fill="none" marker-end="url(#arrowDown)"/>
-            <path d="M 228 200 L 228 240" stroke="#ef4444" stroke-width="2.5" fill="none" marker-end="url(#arrowDown)"/>
-            <text x="238" y="120" fill="#ef4444" font-size="8" text-anchor="middle" transform="rotate(90, 238, 120)">lose</text>
-            <text x="238" y="220" fill="#ef4444" font-size="8" text-anchor="middle" transform="rotate(90, 238, 220)">lose</text>
-            <defs>
-              <marker id="arrowUp" markerWidth="6" markerHeight="6" refX="3" refY="5" orient="auto"><path d="M0,6 L3,0 L6,6 Z" fill="#22c55e"/></marker>
-              <marker id="arrowDown" markerWidth="6" markerHeight="6" refX="3" refY="1" orient="auto"><path d="M0,0 L3,6 L6,0 Z" fill="#ef4444"/></marker>
-            </defs>
-          </svg>
+        <div class="flex justify-center items-start pt-2">
+          <%# Scoreboard diagram %>
+          <div class="w-48">
+            <div class="rounded border border-gray-300 dark:border-white/20 overflow-hidden text-sm font-mono">
+              <div class="bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-300 text-xs px-2 py-1 font-semibold">Scoreboard</div>
+              <div class="divide-y divide-gray-200 dark:divide-white/10">
+                <div class="flex items-center px-2 py-1.5 bg-white dark:bg-slate-800">
+                  <span class="flex-1 text-xs text-gray-800 dark:text-slate-200">Pair A vs B</span>
+                  <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400">6 — 4</span>
+                </div>
+                <div class="flex items-center px-2 py-1.5 bg-white dark:bg-slate-800">
+                  <span class="flex-1 text-xs text-gray-800 dark:text-slate-200">Pair A vs C</span>
+                  <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400">3 — 6</span>
+                </div>
+                <div class="flex items-center px-2 py-1.5 bg-white dark:bg-slate-800">
+                  <span class="flex-1 text-xs text-gray-800 dark:text-slate-200">Pair B vs C</span>
+                  <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400">6 — 2</span>
+                </div>
+              </div>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-slate-400 mt-2 text-center">Resting pair keeps score</p>
+          </div>
         </div>
       </div>
     </div>
@@ -212,6 +203,44 @@
         <li>Tiebreaker: head-to-head result, then games difference</li>
       </ul>
       <p class="text-gray-700 dark:text-slate-300 text-sm mt-2">Round Robin ensures everyone plays the same number of matches and is the fairest format for small groups.</p>
+    </div>
+
+    <%# ── Drills ── %>
+    <div class="mb-8">
+      <h2 class="text-lg font-medium text-gray-900 dark:text-slate-100 mb-1">Classic Group Drills</h2>
+      <p class="text-sm text-gray-600 dark:text-slate-400 mb-4">Warm-up or practice exercises to run before a game session. No scoring — focus is on technique and movement.</p>
+
+      <div class="space-y-4">
+        <div class="border dark:border-white/10 rounded-lg p-4">
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-1">Cross-Court Rally</h3>
+          <p class="text-sm text-gray-700 dark:text-slate-300">Two players rally crosscourt continuously — one hitting forehands, the other backhands. Switch sides after 3–5 minutes. Great for consistency and footwork warm-up.</p>
+          <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">2 players · 1 half of the court</p>
+        </div>
+
+        <div class="border dark:border-white/10 rounded-lg p-4">
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-1">Basket Feed — Down the Line</h3>
+          <p class="text-sm text-gray-700 dark:text-slate-300">One player feeds balls from a basket at the net while the other hits down the line from the baseline, alternating forehand and backhand. Focuses on placement and swing path.</p>
+          <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">2 players · 1 basket of balls</p>
+        </div>
+
+        <div class="border dark:border-white/10 rounded-lg p-4">
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-1">Volley-to-Volley</h3>
+          <p class="text-sm text-gray-700 dark:text-slate-300">Both players stand at their respective service lines and volley back and forth without letting the ball bounce. Keep the rally going as long as possible. Excellent for reflexes and net technique.</p>
+          <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">2 players · 1 court</p>
+        </div>
+
+        <div class="border dark:border-white/10 rounded-lg p-4">
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-1">Figure-8 Rally</h3>
+          <p class="text-sm text-gray-700 dark:text-slate-300">Player A always hits crosscourt, Player B always hits down the line — the ball traces a figure-8 pattern across the net. Switch roles every 5 minutes. Builds directional control and anticipation.</p>
+          <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">2 players · full court</p>
+        </div>
+
+        <div class="border dark:border-white/10 rounded-lg p-4">
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-1">Australian Formation Serve Practice</h3>
+          <p class="text-sm text-gray-700 dark:text-slate-300">Doubles drill: server and net partner line up on the same side of the center line (Australian formation). Server practices T-serves while net partner practices aggressive volleying. Receiver practices returning wide.</p>
+          <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">4 players · full court</p>
+        </div>
+      </div>
     </div>
 
     <%# ── CTA ── %>

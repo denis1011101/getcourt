@@ -10,6 +10,10 @@
         <article class="rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-slate-800/80 p-4">
           <h2 class="text-base font-semibold text-gray-900 dark:text-slate-100">
             <%= coach.name.presence || coach.email %>
+            <% tg = coach.telegram_username.to_s.strip.delete_prefix("@") %>
+            <% if tg.present? %>
+              (<%= link_to tg, "https://t.me/#{tg}", target: "_blank", rel: "noopener nofollow", class: "text-sm font-normal text-indigo-600 dark:text-indigo-400 hover:underline" %>)
+            <% end %>
           </h2>
 
           <p class="mt-1 text-sm text-gray-700 dark:text-slate-300">
@@ -21,6 +25,10 @@
             <span class="font-medium text-gray-800 dark:text-slate-200">City:</span>
             <%= coach.city_name.presence || "Not specified" %>
           </p>
+
+          <% if coach.about_me.present? %>
+            <p class="mt-2 text-sm text-gray-600 dark:text-slate-400"><%= coach.about_me %></p>
+          <% end %>
         </article>
       <% end %>
     </div>

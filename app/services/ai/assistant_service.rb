@@ -33,11 +33,8 @@ module Ai
       - win percentage (from the "win_pct" field, show as "N/A" if null)
       Example format: "@username (уровень: beginner, игр: 10, побед: 7, винрейт: 70%%)"
 
-      When displaying courts from find_court results, always show ALL of the following fields for each court:
-      - name
-      - sport
-      - url (as a clickable link)
-      Example format: "Название (вид спорта: tennis) — https://getcourt.co/courts/1"
+      When displaying courts from find_court results, always format each court as a list item:
+      * Название (вид спорта: tennis) — https://getcourt.co/courts/1
 
       When displaying coaches from find_coach results, always show ALL of the following fields:
       - name (telegram username or display name)
@@ -57,7 +54,7 @@ module Ai
           Rails.logger.info "[Ai::AssistantService] chat attempt=#{attempts} key_index=#{self.class.current_key_index} message=#{message.inspect}"
           self.class.apply_current_key!
 
-          chat = RubyLLM.chat(model: "gemini-2.5-flash")
+          chat = RubyLLM.chat(model: ENV.fetch("GEMINI_MODEL", "gemini-2.5-flash"))
             .with_tool(Ai::Tools::FindOpponentTool.new(@user))
             .with_tool(Ai::Tools::FindCourtTool.new(@user))
             .with_tool(Ai::Tools::FindCoachTool.new(@user))

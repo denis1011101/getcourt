@@ -6,6 +6,7 @@ Rails.application.routes.draw do
   get "/tennis-formats-and-rules", to: "pages#tennis_formats_and_rules", as: :tennis_formats_and_rules
   get "/ntrp-level-guide", to: "pages#ntrp_level_guide", as: :ntrp_level_guide
   get "/coaches",  to: "coaches#index", as: :coaches
+  post "/ai/chat", to: "ai_chat#chat", as: :ai_chat
   get "tennis_life/index"
   # geocoding quota status and reset
   get  "/geocoding/status", to: "geocoding#status",  as: :geocoding_status

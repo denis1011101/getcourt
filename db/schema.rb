@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_09_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_21_182236) do
   create_table "cities", force: :cascade do |t|
     t.string "asciiname"
     t.string "country_code"
@@ -197,6 +197,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_09_120000) do
     t.datetime "published_at"
     t.integer "telegram_channel_id", null: false
     t.text "text"
+    t.text "text_en"
     t.datetime "updated_at", null: false
     t.index ["published_at"], name: "index_telegram_posts_on_published_at"
     t.index ["telegram_channel_id", "message_id"], name: "index_telegram_posts_on_telegram_channel_id_and_message_id", unique: true
