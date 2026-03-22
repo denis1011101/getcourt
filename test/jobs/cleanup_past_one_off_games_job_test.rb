@@ -50,6 +50,24 @@ class CleanupPastOneOffGamesJobTest < ActiveJob::TestCase
     game&.destroy
   end
 
+  test "nullifies game_id on player_statistic_entries when game is destroyed" do
+    game = Game.create!(user: @user, court: @court, date: Date.yesterday, recurring: false)
+    entry = PlayerStatisticEntry.create!(
+      user: @user,
+      actor: @user,
+      game: game,
+      source: "manual",
+      data: { "score" => 1 }.to_json,
+      recorded_at: Date.yesterday
+    )
+
+    CleanupPastOneOffGamesJob.perform_now
+
+    assert_nil Game.find_by(id: game.id), "game should be destroyed"
+    assert_not_nil PlayerStatisticEntry.find_by(id: entry.id), "statistic entry should survive"
+    assert_nil entry.reload.game_id, "game_id should be nullified so history is preserved for recalculation"
+  end
+
   test "destroys participations before removing the game" do
     game = Game.create!(user: @user, court: @court, date: Date.yesterday, recurring: false)
     game.participations.create!(user: @user)

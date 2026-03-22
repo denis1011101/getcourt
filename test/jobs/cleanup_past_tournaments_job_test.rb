@@ -132,9 +132,11 @@ class CleanupPastTournamentsJobTest < ActiveJob::TestCase
     assert_nil TournamentMatch.find_by(id: tournament_match.id)
     assert_nil Game.find_by(id: game.id)
     assert_nil Participation.find_by(id: participation.id)
-    assert_nil Match.find_by(id: game_match.id)
-    assert_nil PlayerStatisticEntry.find_by(id: stat_entry.id)
+    assert_nil game_match.reload.game_id, "match.game_id should be nullified to preserve history"
+    assert_nil stat_entry.reload.game_id, "stat entry should survive with game_id nullified"
   ensure
+    Match.where(id: game_match&.id).delete_all
+    PlayerStatisticEntry.where(id: stat_entry&.id).delete_all
     court&.destroy
     organizer&.destroy
     p1&.destroy

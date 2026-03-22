@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_22_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_22_134842) do
   create_table "cities", force: :cascade do |t|
     t.string "asciiname"
     t.string "country_code"
@@ -110,7 +110,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_22_120000) do
     t.integer "actor_id", null: false
     t.datetime "created_at", null: false
     t.json "data", default: {}, null: false
-    t.integer "game_id", null: false
+    t.integer "game_id"
     t.datetime "recorded_at", null: false
     t.string "source", default: "telegram", null: false
     t.datetime "updated_at", null: false

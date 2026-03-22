@@ -1,6 +1,6 @@
 class PlayerStatisticEntry < ApplicationRecord
   belongs_to :user
-  belongs_to :game
+  belongs_to :game, optional: true
   belongs_to :actor, class_name: "User"
 
   validates :source, presence: true
