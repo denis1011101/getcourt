@@ -1,8 +1,9 @@
-<% content_for :meta_description, "Browse tennis coaches and find a trainer in your city." %>
+<% content_for :meta_title, "Find a Tennis Coach — GetCourt" %>
+<% content_for :meta_description, "Find a professional tennis coach near you. Browse instructor profiles, see their sports and city, and contact them directly via Telegram on GetCourt." %>
 
 <div class="max-w-4xl mx-auto px-4 py-6">
-  <h1 class="text-2xl font-semibold text-gray-900 dark:text-slate-100">Coaches</h1>
-  <p class="mt-1 text-sm text-gray-600 dark:text-slate-400">Find a coach and contact them in chat or by Telegram username.</p>
+  <h1 class="text-2xl font-semibold text-gray-900 dark:text-slate-100">Find a Tennis Coach</h1>
+  <p class="mt-1 text-sm text-gray-600 dark:text-slate-400">Browse tennis instructors and contact them directly in chat or by Telegram username.</p>
 
   <% if @coaches.any? %>
     <div class="mt-5 space-y-3">
@@ -33,16 +34,31 @@
       <% end %>
     </div>
   <% else %>
-    <p class="mt-5 rounded-xl border border-dashed border-gray-300 bg-white dark:border-white/10 dark:bg-slate-800/80 p-4 text-sm text-gray-600 dark:text-slate-400">
-      No coaches yet.
-    </p>
+    <div class="mt-6 space-y-4 text-sm text-gray-600 dark:text-slate-400">
+      <p>
+        No coaches have joined yet. If you are a tennis instructor, you can
+        <%= link_to "create an account", new_session_path, class: "text-indigo-600 dark:text-indigo-400 hover:underline" %>
+        and enable the coach profile in your account settings — your profile will appear here.
+      </p>
+
+      <div>
+        <h2 class="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2">How to choose a tennis coach</h2>
+        <ul class="list-disc list-inside space-y-1">
+          <li>Look for a coach whose skill level matches yours — beginner, intermediate, or advanced.</li>
+          <li>Check the city so you can find someone who trains locally or online.</li>
+          <li>Reach out directly via Telegram to discuss schedule, price, and format.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2">For coaches</h2>
+        <p>
+          GetCourt is a free platform for organising tennis games and connecting with players.
+          Register, fill in your sport and city, and players in your area will be able to find and contact you.
+        </p>
+      </div>
+    </div>
   <% end %>
 
-  <div class="mt-6 flex flex-wrap gap-3 text-sm text-gray-500 dark:text-slate-400">
-    <%= link_to "NTRP Guide", ntrp_level_guide_path, class: "hover:text-indigo-600" %>
-    <%= link_to "Formats & Rules", tennis_formats_and_rules_path, class: "hover:text-indigo-600" %>
-    <%= link_to "Partnership", partnership_path, class: "hover:text-indigo-600" %>
-    <%= link_to "Contact", contacts_path, class: "hover:text-indigo-600" %>
-    <%= link_to "Mission", mission_path, class: "hover:text-indigo-600" %>
-  </div>
+  <%= render "shared/pages_nav" %>
 </div>

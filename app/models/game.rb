@@ -8,6 +8,7 @@ class Game < ApplicationRecord
   has_many :participations, dependent: :destroy
   has_many :prebookings, dependent: :destroy
   has_many :prebooking_cancellations, dependent: :destroy
+  has_many :matches, dependent: :nullify
 
   validates :date, presence: { message: "must be present" }
 

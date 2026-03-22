@@ -1,0 +1,14 @@
+<div class="mt-6 flex flex-wrap gap-3 text-sm">
+  <% [
+    [ "Coaches",          coaches_path ],
+    [ "Contact",          contacts_path ],
+    [ "NTRP Guide",       ntrp_level_guide_path ],
+    [ "Formats & Rules",  tennis_formats_and_rules_path ],
+    [ "Partnership",      partnership_path ],
+    [ "Mission",          mission_path ],
+  ].each do |label, path| %>
+    <% unless current_page?(path) %>
+      <%= link_to label, path, class: "text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300" %>
+    <% end %>
+  <% end %>
+</div>

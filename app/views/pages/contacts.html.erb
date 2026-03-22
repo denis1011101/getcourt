@@ -25,11 +25,5 @@
     </p>
   </div>
 
-  <div class="mt-6 flex flex-wrap gap-3 text-sm text-gray-500 dark:text-slate-400">
-    <%= link_to "Coaches", coaches_path, class: "hover:text-indigo-600" %>
-    <%= link_to "Partnership", partnership_path, class: "hover:text-indigo-600" %>
-    <%= link_to "Formats & Rules", tennis_formats_and_rules_path, class: "hover:text-indigo-600" %>
-    <%= link_to "NTRP Guide", ntrp_level_guide_path, class: "hover:text-indigo-600" %>
-    <%= link_to "Mission", mission_path, class: "hover:text-indigo-600" %>
-  </div>
+  <%= render "shared/pages_nav" %>
 </div>
