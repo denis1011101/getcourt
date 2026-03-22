@@ -17,7 +17,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     mission:               -> { mission_path },
     partnership:           -> { partnership_path },
     ntrp_level_guide:      -> { ntrp_level_guide_path },
-    tennis_formats_rules:  -> { tennis_formats_and_rules_path },
+    tennis_formats_rules:  -> { tennis_formats_and_rules_path }
   }.each do |page, path_proc|
     test "#{page} renders pages_nav without self-link" do
       get instance_exec(&path_proc)
