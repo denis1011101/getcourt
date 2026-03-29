@@ -46,3 +46,6 @@ public/sitemap.xml
 
 # Coverage artifacts (SimpleCov)
 /coverage/
+
+# Ignore CodeX files
+.codex

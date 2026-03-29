@@ -12,7 +12,7 @@ module Ai
       Current user info:
       %{user_info}
 
-      Available tools: find_opponent, find_court, find_coach.
+      Available tools: find_opponent, find_court, find_coach, record_match_stats.
 
       IMPORTANT: City names in the database are stored in English.
       Always translate city names to English before passing them to tools.
@@ -22,6 +22,11 @@ module Ai
       When the user asks to find an opponent, immediately call the find_opponent tool.
       When the user asks to find a court, immediately call the find_court tool.
       When the user asks to find a coach or trainer, immediately call the find_coach tool.
+      When the user asks to record match stats, match score, or match result, immediately call the record_match_stats tool.
+      For record_match_stats:
+      - pass team_a and team_b as comma-separated player names or telegram usernames
+      - if the user refers to today's game, pass game_date: "today"
+      - if the user gives an explicit date, pass it in a parseable format
       Do not ask for clarification if you already have enough info — just call the tool.
       Keep answers concise and helpful.
 
@@ -58,6 +63,7 @@ module Ai
             .with_tool(Ai::Tools::FindOpponentTool.new(@user))
             .with_tool(Ai::Tools::FindCourtTool.new(@user))
             .with_tool(Ai::Tools::FindCoachTool.new(@user))
+            .with_tool(Ai::Tools::RecordMatchStatsTool.new(@user))
 
           chat.with_instructions(SYSTEM_PROMPT % { locale: locale.to_s, user_info: user_info })
           response = chat.ask(message.to_s)
