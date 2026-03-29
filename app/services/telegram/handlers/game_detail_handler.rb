@@ -168,7 +168,6 @@ module Telegram
             t.(:coach_no)
           end
         end
-
       end
     end
   end
