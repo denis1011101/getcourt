@@ -75,9 +75,9 @@ module PlayerStatistics
         end
       end
 
-      # Skip games/training increment if any stat entry was already recorded for this
-      # user+game in the current cycle — increment_activity_for_game already counted it.
-      activity_counted = if new_record
+      # Skip activity increment only for coach sessions where stats entry already
+      # counted the training visit for this user+game in the current cycle.
+      activity_counted = if new_record && training_key.present?
         cycle_start = @game.respond_to?(:current_cycle_start) ? @game.current_cycle_start : nil
         scope = PlayerStatisticEntry.where(user: @user, game: @game)
         scope = scope.where("recorded_at >= ?", cycle_start) if cycle_start.present?
