@@ -49,6 +49,7 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'input[type="hidden"][name="game[prebooking_enabled]"][value="0"]'
+    assert_select "#game_prebooking_enabled", 1
   end
 
   test "prebooking fragment includes hidden prebooking field when recurring is disabled" do
@@ -58,6 +59,7 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'input[type="hidden"][name="game[prebooking_enabled]"][value="0"]'
+    assert_select "#game_prebooking_enabled", 0
   end
 
   # ---- pagination ---------------------------------------------------------

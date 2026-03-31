@@ -12,9 +12,9 @@ export default class extends Controller {
 
   updatePrebooking(enabled) {
     const prebooking = document.getElementById('game_prebooking_enabled')
-    if (prebooking) prebooking.disabled = !enabled
-    // keep hidden field in sync if you still use it elsewhere
-    const hidden = document.getElementById('prebooking_recurring_hidden')
-    if (hidden) hidden.value = enabled ? '1' : '0'
+    if (!prebooking) return
+
+    prebooking.disabled = !enabled
+    if (!enabled) prebooking.checked = false
   }
 }

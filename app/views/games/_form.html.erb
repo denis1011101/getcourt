@@ -25,7 +25,7 @@
 
     <div class="mb-4">
       <label class="inline-flex items-center gap-2">
-        <%= hidden_field_tag "game[prebooking_enabled]", "0" %>
+        <%= hidden_field_tag "game[prebooking_enabled]", "0", id: nil %>
         <%= check_box_tag "game[prebooking_enabled]", "1", game.prebooking_enabled?,
               class: "h-4 w-4 text-indigo-600", id: "game_prebooking_enabled", disabled: !game.recurring? %>
         <span class="text-sm text-gray-700 dark:text-slate-300">Enable prebooking</span>
