@@ -1,4 +1,5 @@
 <%# renders inside turbo frame — shows checkbox or informational note %>
+<%= hidden_field_tag "game[prebooking_enabled]", "0" %>
 <% if game.recurring? %>
   <div class="mb-4">
     <label class="inline-flex items-center gap-2">

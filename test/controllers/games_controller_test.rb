@@ -42,6 +42,24 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Urgent player search"
   end
 
+  test "new form includes hidden prebooking field" do
+    post session_url, params: { email: "games_form_hidden_prebooking@example.com" }
+
+    get new_game_url
+
+    assert_response :success
+    assert_select 'input[type="hidden"][name="game[prebooking_enabled]"][value="0"]'
+  end
+
+  test "prebooking fragment includes hidden prebooking field when recurring is disabled" do
+    post session_url, params: { email: "games_fragment_hidden_prebooking@example.com" }
+
+    get prebooking_fragment_games_url, params: { recurring: "0" }
+
+    assert_response :success
+    assert_select 'input[type="hidden"][name="game[prebooking_enabled]"][value="0"]'
+  end
+
   # ---- pagination ---------------------------------------------------------
 
   test "index assigns @pagy" do
