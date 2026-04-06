@@ -1,0 +1,15 @@
+<div class="flex items-center justify-between mb-4">
+  <div>
+    <% if filters.any? %>
+      <p class="text-sm text-gray-500" data-testid="results-summary">
+        <%= count %> <%= noun %><%= count == 1 ? "" : "s" %> &middot; <%= safe_join(filters, " &middot; ".html_safe) %>
+      </p>
+    <% else %>
+      <p class="text-sm text-gray-500" data-testid="results-summary">
+        <%= count %> <%= noun %><%= count == 1 ? "" : "s" %> available
+      </p>
+    <% end %>
+  </div>
+
+  <%= yield if block_given? %>
+</div>

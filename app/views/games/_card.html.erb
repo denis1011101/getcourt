@@ -1,5 +1,9 @@
 <div class="group relative rounded-xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden dark:border-white/10 dark:bg-slate-800/80">
   <%= link_to "", game_path(game), class: "absolute inset-0 z-0" %>
+  <% participations = game.participations.loaded? ? game.participations.target : game.participations.to_a %>
+  <% taken = participations.count(&:approved?) %>
+  <% required = (game.respond_to?(:players_count) && game.players_count.to_i > 0) ? game.players_count.to_i : 4 %>
+  <% spots_left = required - taken %>
 
   <!-- Color accent bar based on sport -->
   <% sport_colors = { "tennis" => "bg-green-500", "padel" => "bg-blue-500", "table_tennis" => "bg-orange-500", "squash" => "bg-purple-500" } %>
@@ -49,11 +53,6 @@
 
     <!-- Badges row -->
     <div class="flex flex-wrap gap-1.5 mb-3">
-      <% required = (game.respond_to?(:players_count) && game.players_count.to_i > 0) ? game.players_count.to_i : 4 %>
-      <% approved = game.participations.respond_to?(:approved) ? game.participations.approved : game.participations %>
-      <% taken = approved.size %>
-      <% spots_left = required - taken %>
-
       <% if game.respond_to?(:sport) && game.sport.present? %>
         <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:bg-slate-700 dark:text-slate-100">
           <%= game.sport.to_s.titleize %>

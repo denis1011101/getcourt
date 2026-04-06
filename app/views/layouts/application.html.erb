@@ -25,13 +25,13 @@
         <link rel="manifest" href="/site.webmanifest">
     <!-- FAVICONS END -->
 
-    <link rel="canonical" href="https://getcourt.co<%= request.path %>" />
+    <link rel="canonical" href="<%= content_for?(:canonical_url) ? content_for(:canonical_url) : "https://getcourt.co#{request.path}" %>" />
 
     <!-- Open Graph -->
     <meta property="og:title" content="<%= meta_title %>"/>
     <meta property="og:description" content="<%= meta_description %>"/>
     <meta property="og:type" content="website"/>
-    <meta property="og:url" content="<%= request.original_url %>"/>
+    <meta property="og:url" content="<%= content_for?(:canonical_url) ? content_for(:canonical_url) : request.original_url %>"/>
     <meta property="og:image" content="<%= meta_image %>"/>
 
     <!-- Twitter -->

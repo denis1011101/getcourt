@@ -1,5 +1,6 @@
-<% content_for :meta_title, "GetCourt — Find Tennis, Padel & Squash Games Near You" %>
-<% content_for :meta_description, "Join or create tennis, padel, table tennis and squash games. Find players and courts near you. Quick setup with Telegram reminders." %>
+<% content_for :meta_title, @games_meta_title %>
+<% content_for :meta_description, @games_meta_description %>
+<% content_for :canonical_url, @canonical_games_url %>
 <div class="max-w-6xl mx-auto">
   <!-- Hero section -->
   <div class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-indigo-600 via-indigo-500 to-purple-500 px-6 py-8 md:px-10 md:py-12 mb-6 text-white ring-1 ring-white/15 shadow-[0_20px_60px_rgba(79,70,229,0.18)] dark:from-indigo-900 dark:via-indigo-800 dark:to-fuchsia-800 dark:ring-white/10 dark:shadow-[0_24px_70px_rgba(15,23,42,0.45)]">
@@ -10,30 +11,26 @@
     <!-- Decorative tennis court lines -->
     <svg class="pointer-events-none absolute right-4 md:right-10 top-1/2 -translate-y-1/2 w-36 h-48 md:w-48 md:h-64 opacity-[0.08] dark:opacity-[0.06]" viewBox="0 0 120 160" fill="none" stroke="currentColor" stroke-width="1.5">
       <rect x="4" y="4" width="112" height="152" rx="2"/>
-      <line x1="60" y1="4" x2="60" y2="156"/>
+      <line x1="18" y1="4" x2="18" y2="156"/>
+      <line x1="102" y1="4" x2="102" y2="156"/>
       <line x1="4" y1="80" x2="116" y2="80"/>
-      <rect x="20" y="30" width="80" height="100" rx="1"/>
-      <line x1="20" y1="80" x2="100" y2="80"/>
-      <circle cx="60" cy="80" r="12"/>
+      <line x1="18" y1="52" x2="102" y2="52"/>
+      <line x1="18" y1="108" x2="102" y2="108"/>
+      <line x1="60" y1="52" x2="60" y2="108"/>
+      <line x1="56" y1="4" x2="64" y2="4"/>
+      <line x1="56" y1="156" x2="64" y2="156"/>
     </svg>
 
     <div class="relative">
       <h1 class="text-2xl md:text-4xl font-bold tracking-tight">Find your next game</h1>
       <p class="mt-2 text-white/90 dark:text-indigo-100 text-sm md:text-base max-w-xl">Tennis, padel, table tennis — join a match near you or create your own.</p>
 
-      <!-- Inline search bar -->
-      <div class="mt-5 flex flex-col sm:flex-row gap-2 max-w-2xl">
-        <%= form_with url: root_path, method: :get, local: true, class: "flex flex-col sm:flex-row gap-2 w-full" do |f| %>
-          <div class="relative flex-1">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-            </svg>
-            <%= f.select :city, options_for_select(@cities, params[:city]), { include_blank: "Any city" },
-                class: "w-full rounded-full border border-white/40 bg-white/95 pl-9 pr-4 py-2.5 text-sm text-gray-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] focus:ring-2 focus:ring-white/50 appearance-none dark:border-white/15 dark:bg-slate-800/95 dark:text-slate-100 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]" %>
-          </div>
-          <%= f.submit "Search", class: "rounded-full border border-white/50 bg-white px-6 py-2.5 text-sm font-semibold text-indigo-600 shadow-[0_10px_30px_rgba(255,255,255,0.18)] hover:bg-indigo-50 transition cursor-pointer dark:border-white/15 dark:bg-slate-800 dark:text-slate-100 dark:shadow-[0_12px_30px_rgba(15,23,42,0.35)] dark:hover:bg-slate-700" %>
-        <% end %>
-      </div>
+      <%= render "shared/location_filters",
+            url: root_path,
+            countries: @countries,
+            cities: @cities,
+            selected_country: params[:country],
+            selected_city: params[:city] %>
     </div>
   </div>
 
@@ -42,6 +39,9 @@
     <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
       <%= form_with url: root_path, method: :get, local: true, id: "filter-form", class: "contents" do |f| %>
         <!-- Hidden fields to preserve other filters -->
+        <% if params[:country].present? %>
+          <%= f.hidden_field :country, value: params[:country] %>
+        <% end %>
         <% if params[:city].present? %>
           <%= f.hidden_field :city, value: params[:city] %>
         <% end %>
@@ -109,7 +109,7 @@
         </button>
       <% end %>
 
-      <% if params[:sport].present? || params[:skill_level].present? || params[:city].present? || params[:with_spots].present? || params[:my_games].present? %>
+      <% if params[:country].present? || params[:sport].present? || params[:skill_level].present? || params[:city].present? || params[:with_spots].present? || params[:my_games].present? %>
         <%= link_to root_path, class: "flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition" do %>
           <span class="inline-flex items-center gap-1">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -123,21 +123,13 @@
   </div>
 
   <!-- Active filter summary -->
-  <% active_filters = [] %>
-  <% active_filters << params[:city] if params[:city].present? %>
+  <% active_filters = location_filter_labels %>
   <% active_filters << params[:sport]&.titleize if params[:sport].present? %>
   <% active_filters << params[:skill_level]&.titleize if params[:skill_level].present? %>
   <% active_filters << "Free spots" if params[:with_spots].present? %>
   <% active_filters << "My Games" if params[:my_games].present? %>
 
-  <div class="flex items-center justify-between mb-4">
-    <div>
-      <% if active_filters.any? %>
-        <p class="text-sm text-gray-500"><%= @games.size %> game<%= @games.size == 1 ? '' : 's' %> &middot; <%= safe_join(active_filters, ' &middot; '.html_safe) %></p>
-      <% else %>
-        <p class="text-sm text-gray-500"><%= @games.size %> game<%= @games.size == 1 ? '' : 's' %> available</p>
-      <% end %>
-    </div>
+  <%= render "shared/results_summary", count: @games.size, noun: "game", filters: active_filters do %>
     <% if user_signed_in? %>
       <%= link_to new_game_path, class: "hidden md:inline-flex items-center gap-1.5 rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition" do %>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -146,7 +138,7 @@
         New Game
       <% end %>
     <% end %>
-  </div>
+  <% end %>
 
   <!-- Games grid -->
   <% if @games.empty? %>

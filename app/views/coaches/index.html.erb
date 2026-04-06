@@ -27,16 +27,20 @@
             <%= coach.city_name.presence || "Not specified" %>
           </p>
 
-          <% courts_text =
-               if coach.court_preferences_note.present?
-                 coach.court_preferences_note
-               elsif coach.favorite_courts.any?
-                 coach.favorite_courts.map(&:name).join(", ")
-               end %>
-          <% if courts_text.present? %>
+          <% if coach.court_preferences_note.present? %>
             <p class="mt-1 text-sm text-gray-700 dark:text-slate-300">
               <span class="font-medium text-gray-800 dark:text-slate-200"><%= t(".courts_label") %>:</span>
-              <%= courts_text %>
+              <%= coach.court_preferences_note %>
+            </p>
+          <% elsif coach.favorite_courts.any? %>
+            <p class="mt-1 text-sm text-gray-700 dark:text-slate-300">
+              <span class="font-medium text-gray-800 dark:text-slate-200"><%= t(".courts_label") %>:</span>
+              <%= safe_join(
+                    coach.favorite_courts.map do |court|
+                      link_to court.name, court_path(court), class: "text-indigo-600 hover:underline dark:text-indigo-400"
+                    end,
+                    ", "
+                  ) %>
             </p>
           <% end %>
 

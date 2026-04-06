@@ -1,4 +1,8 @@
 class GamesController < ApplicationController
+  include LocationFilters
+
+  SEO_HOST = "https://getcourt.co".freeze
+
   before_action :handle_mark_not_happened, only: [ :show ]
   before_action :set_game, only: %i[show edit update destroy toggle_urgent_player_search]
   before_action :authorize_manage_game!, only: %i[edit update destroy toggle_urgent_player_search]
@@ -9,11 +13,32 @@ class GamesController < ApplicationController
   def index
     @sports = SportCatalog::SPORTS
     @skill_levels = Game.where.not(skill_level: [ nil, "" ]).distinct.order(:skill_level).pluck(:skill_level)
-    @cities = Court.where.not(city_name: [ nil, "" ]).distinct.order(:city_name).pluck(:city_name)
 
-    scoped_games = Game.includes(:court, :tournament, :participations).order(:date, :time)
+    court_city_names = Court.where.not(city_name: [ nil, "" ]).distinct.pluck(:city_name)
+    city_country_map = build_city_country_map(court_city_names)
+    normalize_location_params!(city_country_map)
+
+    canonical_path = canonical_games_path_for(city_country_map)
+    if request.get? && canonical_path.present? && request.fullpath != canonical_path
+      redirect_to canonical_path, status: :moved_permanently and return
+    end
+
+    prepare_location_filters(court_city_names)
+    @canonical_games_url = "#{SEO_HOST}#{canonical_path || request.path}"
+    @games_meta_title = games_meta_title_for(city_country_map)
+    @games_meta_description = games_meta_description_for(city_country_map)
+
+    if params[:country].present?
+      cities_in_country = cities_for_country(params[:country])
+    end
+
+    scoped_games = Game.includes(:court, :tournament, :participations, :prebooking_cancellations).order(:date, :time)
     scoped_games = scoped_games.where(sport: params[:sport]) if params[:sport].present?
     scoped_games = scoped_games.where(skill_level: params[:skill_level]) if params[:skill_level].present?
+
+    if params[:country].present? && params[:city].blank?
+      scoped_games = scoped_games.joins(:court).where(courts: { city_name: cities_in_country }) if cities_in_country.any?
+    end
 
     if params[:city].present?
       scoped_games = scoped_games.joins(:court).where(courts: { city_name: params[:city] })
@@ -26,23 +51,33 @@ class GamesController < ApplicationController
       )
     end
 
-    games = scoped_games.to_a
+    if params[:with_spots].present? || current_user&.city_name.present?
+      games = scoped_games.to_a
 
-    if params[:with_spots].present?
-      games = games.select do |game|
-        required = game.players_count.to_i > 0 ? game.players_count.to_i : 4
-        approved_participations = game.participations.respond_to?(:approved) ? game.participations.approved : game.participations
-        approved_participations.size < required
+      if params[:with_spots].present?
+        games = games.select do |game|
+          required = game.players_count.to_i > 0 ? game.players_count.to_i : 4
+          approved_count =
+            if game.participations.loaded?
+              game.participations.target.count(&:approved?)
+            else
+              game.participations.approved.count
+            end
+
+          approved_count < required
+        end
       end
-    end
 
-    if current_user&.city_name.present?
-      user_city = current_user.city_name.downcase
-      local, other = games.partition { |g| g.court&.city_name.to_s.downcase == user_city }
-      games = local + other
-    end
+      if current_user&.city_name.present?
+        user_city = current_user.city_name.downcase
+        local, other = games.partition { |g| g.court&.city_name.to_s.downcase == user_city }
+        games = local + other
+      end
 
-    @pagy, @games = pagy_array(games)
+      @pagy, @games = pagy_array(games)
+    else
+      @pagy, @games = pagy(scoped_games)
+    end
   end
 
   def show
@@ -201,5 +236,110 @@ class GamesController < ApplicationController
     gp["sport"] = gp["sport"].presence if gp.key?("sport")
     gp["skill_level"] = gp["skill_level"].presence if gp.key?("skill_level")
     gp
+  end
+
+  def build_city_country_map(city_names)
+    City.where(name: city_names)
+      .pluck(:name, :country_code, :population)
+      .group_by(&:first)
+      .transform_values { |rows| rows.max_by { |(_, _, population)| population.to_i }[1] }
+  end
+
+  def normalize_location_params!(city_country_map)
+    if params[:country_slug].present?
+      params[:country] = country_code_for_slug(params[:country_slug], city_country_map)
+    end
+
+    if params[:city_slug].present?
+      params[:city] = city_name_for_slug(params[:city_slug], params[:country], city_country_map)
+    end
+
+    params[:country] = effective_country_code(city_country_map)
+  end
+
+  def effective_country_code(city_country_map)
+    params[:country].presence || city_country_map[params[:city].to_s]
+  end
+
+  def country_code_for_slug(country_slug, city_country_map)
+    city_country_map.values.uniq.find do |country_code|
+      country_name_for(country_code).parameterize == country_slug.to_s
+    end
+  end
+
+  def city_name_for_slug(city_slug, country_code, city_country_map)
+    city_country_map.keys.find do |city_name|
+      next false if country_code.present? && city_country_map[city_name] != country_code
+
+      city_name.to_s.parameterize == city_slug.to_s
+    end
+  end
+
+  def canonical_games_path_for(city_country_map)
+    query = request.query_parameters.except("commit", "country", "city", "country_slug", "city_slug")
+    fallback_query = request.query_parameters.except("commit", "country_slug", "city_slug")
+    country_code = effective_country_code(city_country_map)
+    country_slug = country_code.present? ? country_name_for(country_code).parameterize : nil
+    city_slug = params[:city].present? ? params[:city].to_s.parameterize : nil
+
+    base_path =
+      if country_slug.present?
+        games_browse_path(country_slug: country_slug, city_slug: city_slug.presence)
+      elsif params[:country].present? || params[:city].present?
+        request.path
+      else
+        root_path
+      end
+
+    if country_slug.blank? && (params[:country].present? || params[:city].present?)
+      return base_path if fallback_query.empty?
+
+      uri = URI(base_path)
+      uri.query = fallback_query.to_query
+      return uri.to_s
+    end
+
+    return base_path if query.empty?
+
+    uri = URI(base_path)
+    uri.query = query.to_query
+    uri.to_s
+  end
+
+  def games_meta_title_for(city_country_map)
+    location = games_meta_location(city_country_map)
+    sport = params[:sport].to_s.titleize.presence
+
+    if location.present? && sport.present?
+      "#{sport} games in #{location} — GetCourt"
+    elsif location.present?
+      "Tennis games in #{location} — GetCourt"
+    elsif sport.present?
+      "#{sport} games near you — GetCourt"
+    else
+      "GetCourt — Find Tennis, Padel & Squash Games Near You"
+    end
+  end
+
+  def games_meta_description_for(city_country_map)
+    location = games_meta_location(city_country_map)
+    sport = params[:sport].to_s.downcase.presence
+
+    if location.present? && sport.present?
+      "Find #{sport} games in #{location}. Join a match or create your own on GetCourt."
+    elsif location.present?
+      "Find tennis, padel, table tennis and squash games in #{location}. Join a match or create your own on GetCourt."
+    elsif sport.present?
+      "Find #{sport} games near you. Join a match or create your own on GetCourt."
+    else
+      "Join or create tennis, padel, table tennis and squash games. Find players and courts near you. Quick setup with Telegram reminders."
+    end
+  end
+
+  def games_meta_location(city_country_map)
+    labels = []
+    labels << params[:city] if params[:city].present?
+    labels << country_name_for(effective_country_code(city_country_map)) if effective_country_code(city_country_map).present?
+    labels.uniq.join(", ").presence
   end
 end

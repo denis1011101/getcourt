@@ -17,6 +17,7 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "index shows random telegram post link when present" do
+    TelegramPost.delete_all
     stub_singleton(TennisLife::TelegramPostsFetcher, :random_post, SAMPLE_POST) do
       get tennis_life_index_url
       assert_response :success

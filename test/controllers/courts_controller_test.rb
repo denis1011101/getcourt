@@ -119,6 +119,63 @@ class CourtsControllerTest < ActionDispatch::IntegrationTest
     Court.where(id: created_ids).delete_all if created_ids
   end
 
+  test "index country filter shows full country name in summary and filters courts" do
+    city_ids = []
+    city_ids << City.create!(name: "Kitzbuhel", country_code: "AT", population: 8_000).id
+    city_ids << City.create!(name: "Yekaterinburg", country_code: "RU", population: 1_500_000).id
+    austrian_court = Court.create!(name: "Kitz Court", city_name: "Kitzbuhel", moderation_status: "approved", approved_at: Time.current)
+    russian_court = Court.create!(name: "Ekb Court", city_name: "Yekaterinburg", moderation_status: "approved", approved_at: Time.current)
+
+    get courts_url, params: { country: "AT" }
+
+    assert_response :success
+    assert_includes assigns(:courts), austrian_court
+    assert_not_includes assigns(:courts), russian_court
+    assert_select "[data-testid='results-summary']", text: /Austria/
+  ensure
+    austrian_court&.destroy
+    russian_court&.destroy
+    City.where(id: city_ids).delete_all if city_ids
+  end
+
+  test "country to city mapping prefers the most populous matching city on courts index" do
+    city_ids = []
+    city_ids << City.create!(name: "Minsk", country_code: "BY", population: 1_742_124).id
+    city_ids << City.create!(name: "Minsk", country_code: "RU", population: 0).id
+    city_ids << City.create!(name: "Yekaterinburg", country_code: "RU", population: 1_500_000).id
+    minsk_court = Court.create!(name: "Minsk Court", city_name: "Minsk", moderation_status: "approved", approved_at: Time.current)
+    ekb_court = Court.create!(name: "Ekb Court", city_name: "Yekaterinburg", moderation_status: "approved", approved_at: Time.current)
+
+    get courts_url, params: { country: "RU" }
+
+    assert_response :success
+    assert_not_includes assigns(:cities), "Minsk"
+    assert_includes assigns(:courts), ekb_court
+    assert_not_includes assigns(:courts), minsk_court
+  ensure
+    minsk_court&.destroy
+    ekb_court&.destroy
+    City.where(id: city_ids).delete_all if city_ids
+  end
+
+  test "index renders location filters stimulus payload for client-side city updates" do
+    city_ids = []
+    city_ids << City.create!(name: "Kitzbuhel", country_code: "AT", population: 8_000).id
+    city_ids << City.create!(name: "Yekaterinburg", country_code: "RU", population: 1_500_000).id
+    Court.create!(name: "Kitz Court", city_name: "Kitzbuhel", moderation_status: "approved", approved_at: Time.current)
+    Court.create!(name: "Ekb Court", city_name: "Yekaterinburg", moderation_status: "approved", approved_at: Time.current)
+
+    get courts_url
+
+    assert_response :success
+    assert_includes response.body, 'data-controller="location-filters"'
+    assert_includes response.body, "Kitzbuhel"
+    assert_includes response.body, "Yekaterinburg"
+  ensure
+    Court.where(name: [ "Kitz Court", "Ekb Court" ]).delete_all
+    City.where(id: city_ids).delete_all if city_ids
+  end
+
   # ---- city-first ordering for signed-in user ----------------------------
 
   test "same-city court appears before other-city court for signed-in user" do

@@ -1,0 +1,24 @@
+<div class="mt-5 flex flex-col sm:flex-row gap-2 max-w-2xl"
+     data-controller="location-filters"
+     data-location-filters-country-cities-value="<%= country_cities_map_for_select.to_json %>">
+  <%= form_with url: url, method: :get, local: true, class: "flex flex-col sm:flex-row gap-2 w-full" do |f| %>
+    <div class="relative flex-shrink-0">
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <%= f.select :country,
+            options_for_select(countries, selected_country),
+            { include_blank: "Any country" },
+            class: "w-full rounded-full border border-white/40 bg-white/95 pl-9 pr-4 py-2.5 text-sm text-gray-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] focus:ring-2 focus:ring-white/50 appearance-none dark:border-white/15 dark:bg-slate-800/95 dark:text-slate-100 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]",
+            data: { action: "change->location-filters#countryChanged", location_filters_target: "country" } %>
+    </div>
+    <div class="relative flex-1">
+      <%= f.select :city,
+            options_for_select(cities, selected_city),
+            { include_blank: "Any city" },
+            class: "w-full rounded-full border border-white/40 bg-white/95 pl-4 pr-4 py-2.5 text-sm text-gray-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] focus:ring-2 focus:ring-white/50 appearance-none dark:border-white/15 dark:bg-slate-800/95 dark:text-slate-100 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]",
+            data: { location_filters_target: "city", placeholder: "Any city" } %>
+    </div>
+    <%= f.submit "Search", class: "rounded-full border border-white/50 bg-white px-6 py-2.5 text-sm font-semibold text-indigo-600 shadow-[0_10px_30px_rgba(255,255,255,0.18)] hover:bg-indigo-50 transition cursor-pointer dark:border-white/15 dark:bg-slate-800 dark:text-slate-100 dark:shadow-[0_12px_30px_rgba(15,23,42,0.35)] dark:hover:bg-slate-700" %>
+  <% end %>
+</div>

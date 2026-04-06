@@ -53,7 +53,7 @@ Rails.application.routes.draw do
     end
   end
   root "games#index"
-  resources :games, except: [ :index ] do
+  resources :games, except: [ :index ], constraints: { id: /\d+/ } do
     member do
       post :toggle_urgent_player_search
     end
@@ -80,6 +80,8 @@ Rails.application.routes.draw do
 
     resources :prebooking_cancellations, only: [ :create, :destroy ]
   end
+  get "/games(/:country_slug)(/:city_slug)", to: "games#index", as: :games_browse,
+      constraints: { country_slug: /[a-z][a-z0-9-]*/, city_slug: /[a-z0-9-]+/ }
   resources :searches, only: [ :index ]
 
   resources :tournaments do

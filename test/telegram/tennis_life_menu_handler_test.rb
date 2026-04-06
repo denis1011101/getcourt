@@ -81,27 +81,23 @@ class TennisLifeMenuHandlerTest < ActiveSupport::TestCase
     assert_includes sent[1], "Пока постов нет"
   end
 
-  test "channels section appears before feed section" do
+  test "does not include channels section" do
     sent = nil
-    handler = Telegram::Handlers::TennisLifeMenuHandler
 
     stub_singleton(Telegram::Helpers::UserLookup, :locale_for, :ru) do
       stub_singleton(TennisScoreboard::Fetcher, :telegram_text, nil) do
         stub_singleton(Time, :current, @fixed_time) do
           stub_singleton(TennisLife::TelegramPostsFetcher, :random_post, nil) do
             stub_singleton(Telegram::Api, :send_with_buttons, ->(*args) { sent = args }) do
-              stub_singleton(handler, :fetch_recent_posts, []) do
-                handler.show(@chat_id)
-              end
+              Telegram::Handlers::TennisLifeMenuHandler.show(@chat_id)
             end
           end
         end
       end
     end
 
-    text = sent[1]
-    assert text.index("Каналы:") < text.index("Telegram Feed"),
-           "Expected 'Каналы:' to appear before 'Telegram Feed'"
+    assert sent.present?
+    assert_not_includes sent[1], "Каналы:"
   end
 
   test "edits existing tennis life menu when message id is provided" do

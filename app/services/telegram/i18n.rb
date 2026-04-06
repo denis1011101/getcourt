@@ -222,7 +222,7 @@ module Telegram
       # Tennis life (placeholder)
       tennis_life_title: "Теннис лайф",
       tennis_life_feed_title: "Telegram Feed",
-      tennis_life_no_posts: "Пока постов нет. Подпишитесь на каналы ниже.",
+      tennis_life_no_posts: "Пока постов нет.",
       ai_assistant_welcome: "AI Assistant\n\nЗадайте вопрос о поиске соперника, корта или игры, либо выберите готовый сценарий ниже.",
       ai_snippet_find_opponent: "Найти соперника",
       ai_snippet_find_court: "Найти корт",
@@ -628,7 +628,7 @@ module Telegram
       tennis_life_title: "Tennis life",
       tennis_life_text: "Section under development. News, tips, and interesting tennis content coming soon.",
       tennis_life_feed_title: "Telegram Feed",
-      tennis_life_no_posts: "No posts yet. Subscribe to the channels below.",
+      tennis_life_no_posts: "No posts yet.",
       ai_assistant_welcome: "AI Assistant\n\nAsk about finding an opponent, court, or game, or use one of the quick actions below.",
       ai_snippet_find_opponent: "Find opponent",
       ai_snippet_find_court: "Find court",

@@ -1,12 +1,18 @@
 class CourtsController < ApplicationController
+  include LocationFilters
+
   before_action :set_court, only: %i[show edit update destroy approve reject]
   skip_before_action :authenticate_user!, only: %i[index show]
 
   def index
-    @cities = Court.where.not(city_name: [ nil, "" ]).distinct.order(:city_name).pluck(:city_name)
-    courts = Court.visible_to(current_user).to_a
+    visible_courts = Court.visible_to(current_user)
+    prepare_location_filters(visible_courts.where.not(city_name: [ nil, "" ]).distinct.pluck(:city_name))
+    courts = visible_courts.to_a
 
-    if params[:city].present?
+    if params[:country].present? && params[:city].blank?
+      cities_in_country = cities_for_country(params[:country])
+      courts = courts.select { |c| cities_in_country.include?(c.city_name) }
+    elsif params[:city].present?
       courts = courts.select { |c| c.city_name == params[:city] }
     elsif current_user&.city_name.present?
       user_city = current_user.city_name.downcase

@@ -61,7 +61,7 @@ class CoachesControllerTest < ActionDispatch::IntegrationTest
 
     get coaches_url
 
-    assert_match "Center Court", @response.body
+    assert_select "a[href='#{court_path(court)}']", text: "Center Court"
   ensure
     coach&.destroy
     court&.destroy

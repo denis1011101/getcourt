@@ -105,6 +105,104 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_not_nil assigns(:pagy)
   end
 
+  test "index country filter shows full country name in summary and filters games" do
+    city_ids = []
+    city_ids << City.create!(name: "Kitzbuhel", country_code: "AT", population: 8_000).id
+    city_ids << City.create!(name: "Yekaterinburg", country_code: "RU", population: 1_500_000).id
+    austrian_court = Court.create!(name: "Kitz Court", city_name: "Kitzbuhel", moderation_status: "approved", approved_at: Time.current)
+    russian_court = Court.create!(name: "Ekb Court", city_name: "Yekaterinburg", moderation_status: "approved", approved_at: Time.current)
+    austrian_game = Game.create!(court: austrian_court, user: users(:one), date: Date.current + 1.day, time: "10:00")
+    russian_game = Game.create!(court: russian_court, user: users(:one), date: Date.current + 2.days, time: "11:00")
+
+    get games_browse_url(country_slug: "austria")
+
+    assert_response :success
+    assert_includes assigns(:games), austrian_game
+    assert_not_includes assigns(:games), russian_game
+    assert_select "[data-testid='results-summary']", text: /Austria/
+  ensure
+    austrian_game&.destroy
+    russian_game&.destroy
+    austrian_court&.destroy
+    russian_court&.destroy
+    City.where(id: city_ids).delete_all if city_ids
+  end
+
+  test "country to city mapping prefers the most populous matching city" do
+    city_ids = []
+    city_ids << City.create!(name: "Minsk", country_code: "BY", population: 1_742_124).id
+    city_ids << City.create!(name: "Minsk", country_code: "RU", population: 0).id
+    city_ids << City.create!(name: "Yekaterinburg", country_code: "RU", population: 1_500_000).id
+    minsk_court = Court.create!(name: "Minsk Court", city_name: "Minsk", moderation_status: "approved", approved_at: Time.current)
+    ekb_court = Court.create!(name: "Ekb Court", city_name: "Yekaterinburg", moderation_status: "approved", approved_at: Time.current)
+    minsk_game = Game.create!(court: minsk_court, user: users(:one), date: Date.current + 1.day, time: "10:00")
+    ekb_game = Game.create!(court: ekb_court, user: users(:one), date: Date.current + 2.days, time: "11:00")
+
+    get games_browse_url(country_slug: "russia")
+
+    assert_response :success
+    assert_not_includes assigns(:cities), "Minsk"
+    assert_includes assigns(:games), ekb_game
+    assert_not_includes assigns(:games), minsk_game
+  ensure
+    minsk_game&.destroy
+    ekb_game&.destroy
+    minsk_court&.destroy
+    ekb_court&.destroy
+    City.where(id: city_ids).delete_all if city_ids
+  end
+
+  test "query location filters redirect to pretty games url without commit parameter" do
+    city_ids = []
+    city_ids << City.create!(name: "Yekaterinburg", country_code: "RU", population: 1_500_000).id
+    court = Court.create!(name: "Ekb Court", city_name: "Yekaterinburg", moderation_status: "approved", approved_at: Time.current)
+    Game.create!(court: court, user: users(:one), date: Date.current + 1.day, time: "10:00")
+
+    get root_url, params: { country: "RU", city: "Yekaterinburg", commit: "Search" }
+
+    assert_redirected_to games_browse_path(country_slug: "russia", city_slug: "yekaterinburg")
+  ensure
+    Game.where(court_id: court&.id).delete_all
+    court&.destroy
+    City.where(id: city_ids).delete_all if city_ids
+  end
+
+  test "pretty games url renders canonical title and description for location" do
+    city_ids = []
+    city_ids << City.create!(name: "Yekaterinburg", country_code: "RU", population: 1_500_000).id
+    court = Court.create!(name: "Ekb Court", city_name: "Yekaterinburg", moderation_status: "approved", approved_at: Time.current)
+    Game.create!(court: court, user: users(:one), date: Date.current + 1.day, time: "10:00")
+
+    get games_browse_url(country_slug: "russia", city_slug: "yekaterinburg")
+
+    assert_response :success
+    assert_select "title", text: "Tennis games in Yekaterinburg, Russia — GetCourt"
+    assert_select "meta[name='description'][content='Find tennis, padel, table tennis and squash games in Yekaterinburg, Russia. Join a match or create your own on GetCourt.']", count: 1
+    assert_select "link[rel='canonical'][href='https://getcourt.co/games/russia/yekaterinburg']", count: 1
+  ensure
+    Game.where(court_id: court&.id).delete_all
+    court&.destroy
+    City.where(id: city_ids).delete_all if city_ids
+  end
+
+  test "index renders location filters stimulus payload for client-side city updates" do
+    city_ids = []
+    city_ids << City.create!(name: "Kitzbuhel", country_code: "AT", population: 8_000).id
+    city_ids << City.create!(name: "Yekaterinburg", country_code: "RU", population: 1_500_000).id
+    Court.create!(name: "Kitz Court", city_name: "Kitzbuhel", moderation_status: "approved", approved_at: Time.current)
+    Court.create!(name: "Ekb Court", city_name: "Yekaterinburg", moderation_status: "approved", approved_at: Time.current)
+
+    get root_url
+
+    assert_response :success
+    assert_includes response.body, 'data-controller="location-filters"'
+    assert_includes response.body, "Kitzbuhel"
+    assert_includes response.body, "Yekaterinburg"
+  ensure
+    Court.where(name: [ "Kitz Court", "Ekb Court" ]).delete_all
+    City.where(id: city_ids).delete_all if city_ids
+  end
+
   test "owner can update own game" do
     post session_url, params: { email: "owner_update@example.com" }
     owner = User.find_by!(email: "owner_update@example.com")

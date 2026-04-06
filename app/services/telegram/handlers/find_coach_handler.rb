@@ -70,15 +70,22 @@ module Telegram
           name = Telegram::Helpers::UserLookup.display_name(coach)
           sports = coach.respond_to?(:preferred_sports) && coach.preferred_sports.present? ? Array(coach.preferred_sports).join(", ") : "—"
           city = coach.city_name.to_s.titleize.presence || "—"
+          host = ENV.fetch("APP_HOST", "https://getcourt.co")
           courts = if coach.court_preferences_note.present?
             coach.court_preferences_note
           elsif coach.favorite_courts.any?
-            coach.favorite_courts.map(&:name).join(", ")
+            coach.favorite_courts.map do |court|
+              court_url = Rails.application.routes.url_helpers.court_url(court, host: host)
+              "[#{court.name}](#{court_url})"
+            end.join(", ")
           else
             "—"
           end
 
           text = t.(:coach_card, name: name, sports: sports, city: city, courts: courts)
+          if coach.about_me.present?
+            text = "#{text}\n#{t.(:about_me_label, value: coach.about_me)}"
+          end
 
           buttons = [
             [ { text: t.(:back), callback_data: "menu:find_coach:page:1" } ],
