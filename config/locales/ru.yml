@@ -1,0 +1,14 @@
+ru:
+  users:
+    edit:
+      court_preferences_title: "Предпочтения по кортам"
+      court_preferences_mode_favorites: "Выбрать любимые корты"
+      court_preferences_mode_note: "Указать текст вместо списка кортов"
+      favorite_courts_label: "Любимые корты"
+      favorite_courts_help: "Выберите корты, которые нужно показывать и использовать для приоритизации."
+      court_note_label: "Текст о кортах"
+      court_note_placeholder: "Например: Работаю на всех кортах города"
+      court_note_help: "Если выбран этот режим, список любимых кортов будет очищен."
+  coaches:
+    index:
+      courts_label: "Корты"

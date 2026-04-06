@@ -29,3 +29,16 @@
 
 en:
   hello: "Hello world"
+  users:
+    edit:
+      court_preferences_title: "Court preferences"
+      court_preferences_mode_favorites: "Choose favorite courts"
+      court_preferences_mode_note: "Use free text instead of court list"
+      favorite_courts_label: "Favorite courts"
+      favorite_courts_help: "Choose courts to show in your profile and use for prioritization."
+      court_note_label: "Court note"
+      court_note_placeholder: "For example: I work on all courts in the city"
+      court_note_help: "If this mode is selected, favorite courts will be cleared."
+  coaches:
+    index:
+      courts_label: "Courts"

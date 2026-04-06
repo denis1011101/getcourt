@@ -30,7 +30,9 @@ module Telegram
           lines << t.(:email_label, value: presenter.email_label)
           lines << t.(:sports_label, value: presenter.sports_label)
           lines << t.(:city_label, value: presenter.city_label)
+          lines << t.(:favorite_courts_label, value: presenter.favorite_courts_label)
           lines << t.(:coach_label, value: presenter.coach_label)
+          lines << t.(:court_note_label, value: presenter.court_note_label) if user.coach? || user.court_preferences_note.present?
           lines << t.(:notify_label, value: presenter.notify_label)
           lines << t.(:language_label, value: lang_label)
           lines << t.(:about_me_label, value: presenter.about_me_label)

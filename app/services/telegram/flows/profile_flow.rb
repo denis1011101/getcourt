@@ -25,6 +25,11 @@ module Telegram
             arg = Regexp.last_match(2)
             Profile::SportsFlow.process_sports_callback(cb.chat_id, action, (arg && CGI.unescape(arg)), cb_id: cb.cb_id, message_id: cb.message_id)
             nil
+          when /\Aprofile:favorite_courts:(toggle|page|save|cancel)(?::(.+))?\z/
+            action = Regexp.last_match(1)
+            arg = Regexp.last_match(2)
+            Profile::FavoriteCourtsFlow.process_favorite_courts_callback(cb.chat_id, action, arg, cb_id: cb.cb_id, message_id: cb.message_id)
+            nil
           when /\Aprofile:lang:(ru|en)\z/
             new_locale = Regexp.last_match(1)
             process_language_change(cb.chat_id, new_locale, cb_id: cb.cb_id, message_id: cb.message_id)
@@ -83,22 +88,26 @@ module Telegram
             t.(:email_label, value: presenter.email_label),
             t.(:sports_label, value: presenter.sports_label),
             t.(:city_label, value: presenter.city_label),
+            t.(:favorite_courts_label, value: presenter.favorite_courts_label),
             t.(:coach_label, value: presenter.coach_label),
+            (t.(:court_note_label, value: presenter.court_note_label) if user.coach? || user.court_preferences_note.present?),
             t.(:notify_label, value: presenter.notify_label),
             t.(:language_label, value: lang_label),
             "",
             t.(:select_field_to_edit)
-          ].join("\n")
+          ].compact.join("\n")
 
           buttons = [
             [ { text: t.(:field_email),    callback_data: "profile:field:email" } ],
             [ { text: t.(:field_sports),   callback_data: "profile:field:sports" } ],
             [ { text: t.(:field_city),     callback_data: "profile:field:city" } ],
+            [ { text: t.(:field_favorite_courts), callback_data: "profile:field:favorite_courts" } ],
             [ { text: t.(:field_coach),    callback_data: "profile:field:coach" } ],
             [ { text: t.(:field_notify),   callback_data: "profile:field:notify" } ],
             [ { text: t.(:field_language), callback_data: "profile:field:language" } ],
             [ { text: t.(:back),           callback_data: "profile:show" } ]
           ]
+          buttons.insert(4, [ { text: t.(:field_court_note), callback_data: "profile:field:court_note" } ]) if user.coach?
 
           send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
           Telegram::Api.answer_callback(cb_id) rescue nil

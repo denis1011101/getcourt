@@ -64,6 +64,8 @@ class User < ApplicationRecord
 
   has_many :games
   has_many :participations
+  has_many :favorite_court_links, class_name: "FavoriteCourt", dependent: :destroy
+  has_many :favorite_courts, through: :favorite_court_links, source: :court
 
   validates :email, presence: true, uniqueness: { case_sensitive: false }
   validates :telegram_username, format: { with: /\A@?[\w\d_]{5,32}\z/, message: "is invalid" }, allow_blank: true

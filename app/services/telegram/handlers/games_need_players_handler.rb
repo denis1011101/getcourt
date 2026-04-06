@@ -12,17 +12,18 @@ module Telegram
 
           page = page.to_i < 1 ? 1 : page.to_i
           user = Telegram::Helpers::UserLookup.find_user(chat_id)
+          favorite_ids = user&.favorite_court_ids || []
 
           # Future games where urgent player search is enabled
-          open_games = Game.includes(:user, :participations)
+          open_games = Game.includes(:user, :participations, :court)
                            .where(urgent_player_search: true)
                            .where("recurring = ? OR date >= ?", true, Date.current)
                            .to_a
 
-          # Sort by date (nearest first)
+          # Sort by favorite courts first, then by date (nearest first)
           open_games.sort_by! do |g|
             d = g.respond_to?(:display_date_for_show) ? g.display_date_for_show : g.date
-            d || Date.new(9999, 12, 31)
+            [ favorite_ids.include?(g.court_id) ? 0 : 1, d || Date.new(9999, 12, 31) ]
           end
 
           total = open_games.size

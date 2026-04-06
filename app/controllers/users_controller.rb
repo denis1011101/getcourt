@@ -5,21 +5,15 @@ class UsersController < ApplicationController
 
   def edit
     @user = current_user
-    @registration_token = @user.ensure_telegram_registration_token!
-    @limit = params[:limit].to_i.nonzero? || CITY_SEARCH_DEFAULT_LIMIT
-    # show selected city name either from params (after click) or from saved timezone
-    if params[:selected_city_name].present?
-      @selected_city_name = params[:selected_city_name]
-    else
-      c = City.find_by(timezone: @user.timezone)
-      @selected_city_name = "#{c.name}, #{c.country_code} — #{c.timezone}" if c.present?
-    end
+    prepare_edit_form_state
   end
 
   def update
     @user = current_user
 
     user_attrs = user_update_params.to_h
+    court_preferences_mode = params.dig(:user, :court_preferences_mode).presence || default_court_preferences_mode(@user)
+    favorite_court_ids = Array(params.dig(:user, :favorite_court_ids)).reject(&:blank?)
 
     query = user_attrs["city_name"].to_s.strip
     if query.present?
@@ -28,6 +22,15 @@ class UsersController < ApplicationController
       unless query =~ coords_regex
         user_attrs["city_name"] = translit_str(query)
       end
+    end
+
+    case court_preferences_mode
+    when "note"
+      user_attrs["court_preferences_note"] = user_attrs["court_preferences_note"].to_s.strip.presence
+      user_attrs["favorite_court_ids"] = []
+    else
+      user_attrs["court_preferences_note"] = nil
+      user_attrs["favorite_court_ids"] = favorite_court_ids
     end
 
     Rails.logger.info "[UsersController#update] saving user_attrs=#{user_attrs.inspect}"
@@ -45,6 +48,8 @@ class UsersController < ApplicationController
       end
     else
       Rails.logger.info "[UsersController#update] update failed errors=#{@user.errors.full_messages.inspect}"
+      @court_preferences_mode = court_preferences_mode
+      prepare_edit_form_state
       respond_to do |format|
         format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: { success: false, errors: @user.errors.full_messages }, status: :unprocessable_entity }
@@ -81,9 +86,38 @@ class UsersController < ApplicationController
       :preferred_login_via,
       :timezone,
       :city_name,
+      :court_preferences_note,
       :notify_nearby,
+      favorite_court_ids: [],
       preferred_sports: [],
       skill_levels: {} # permit JSON object
     )
+  end
+
+  def prepare_edit_form_state
+    @registration_token = @user.ensure_telegram_registration_token!
+    @limit = params[:limit].to_i.nonzero? || CITY_SEARCH_DEFAULT_LIMIT
+    @available_courts = sorted_available_courts_for(@user)
+    @court_preferences_mode ||= default_court_preferences_mode(@user)
+
+    if params[:selected_city_name].present?
+      @selected_city_name = params[:selected_city_name]
+    else
+      c = City.find_by(timezone: @user.timezone)
+      @selected_city_name = "#{c.name}, #{c.country_code} — #{c.timezone}" if c.present?
+    end
+  end
+
+  def sorted_available_courts_for(user)
+    courts = Court.visible_to(user).to_a
+    user_city = user&.city_name.to_s.strip.downcase.presence
+    return courts unless user_city
+
+    local, other = courts.partition { |court| court.city_name.to_s.strip.downcase == user_city }
+    local + other
+  end
+
+  def default_court_preferences_mode(user)
+    user.court_preferences_note.present? ? "note" : "favorites"
   end
 end

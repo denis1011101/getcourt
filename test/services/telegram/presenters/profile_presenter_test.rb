@@ -42,4 +42,21 @@ class Telegram::Presenters::ProfilePresenterTest < ActiveSupport::TestCase
     p = Telegram::Presenters::ProfilePresenter.new(user)
     assert_equal "—", p.about_me_label
   end
+
+  test "favorite_courts_label returns joined court names" do
+    user = User.create!(email: "presenter_favorites_#{SecureRandom.hex(4)}@example.com", name: "Coach")
+    court_a = Court.create!(name: "Court A")
+    court_b = Court.create!(name: "Court B")
+    user.favorite_courts << [ court_a, court_b ]
+
+    assert_equal "Court A, Court B", Telegram::Presenters::ProfilePresenter.new(user).favorite_courts_label
+  ensure
+    user&.destroy
+    court_a&.destroy
+    court_b&.destroy
+  end
+
+  test "court_note_label returns note when present" do
+    assert_equal "All city courts", presenter(court_preferences_note: "All city courts").court_note_label
+  end
 end

@@ -50,6 +50,41 @@ class CoachesControllerTest < ActionDispatch::IntegrationTest
     assert_select "h2 a[href^='https://t.me/']", count: 0
   end
 
+  test "shows favorite courts when coach selected them" do
+    coach = User.create!(
+      email: "courtcoach@example.com",
+      name: "Court Coach",
+      coach: true
+    )
+    court = Court.create!(name: "Center Court")
+    coach.favorite_courts << court
+
+    get coaches_url
+
+    assert_match "Center Court", @response.body
+  ensure
+    coach&.destroy
+    court&.destroy
+  end
+
+  test "shows court note instead of favorite courts when note present" do
+    coach = User.create!(
+      email: "notecoach@example.com",
+      name: "Note Coach",
+      coach: true,
+      court_preferences_note: "All courts in the city"
+    )
+    court = Court.create!(name: "Center Court")
+    coach.favorite_courts << court
+
+    get coaches_url
+
+    assert_match "All courts in the city", @response.body
+  ensure
+    coach&.destroy
+    court&.destroy
+  end
+
   test "sets seo title and meta description" do
     get coaches_url
 

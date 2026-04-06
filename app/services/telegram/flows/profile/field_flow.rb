@@ -49,6 +49,19 @@ module Telegram
             return
           end
 
+          if field.to_s == "favorite_courts"
+            selections = user.favorite_court_ids
+            conv = { "flow" => "profile_favorite_courts", "selections" => selections, "page" => 1, "created_at" => Time.current }
+            begin
+              Rails.cache.write("tg:conv:#{chat_id}", conv, expires_in: 2.hours)
+            rescue => e
+              Rails.logger.error "[Telegram::Flows::Profile::FieldFlow] start_edit_field: cache write failed for chat=#{chat_id}: #{e.class}: #{e.message}"
+            end
+
+            Profile::FavoriteCourtsFlow.render_menu(chat_id, selections, 1, message_id, cb_id)
+            return
+          end
+
           # handle notify as inline checkbox (Yes/No)
           if field.to_s == "notify"
             conv = { "flow" => "profile_field", "field" => "notify", "created_at" => Time.current }
@@ -112,7 +125,8 @@ module Telegram
             Rails.logger.error "[Telegram::Flows::Profile::FieldFlow] start_edit_field: cache write failed for chat=#{chat_id}: #{e.class}: #{e.message}"
           end
           current = presenter.current_value_for(field)
-          text = t.(:editing_field, field: field, current: current, hint: t.(:send_new_value))
+          field_label = t(:"field_#{field}", default: field.to_s.humanize)
+          text = t.(:editing_field, field: field_label, current: current, hint: t.(:send_new_value))
 
           if message_id
             buttons = [ [ { text: t.(:back), callback_data: "profile:field:cancel" } ] ]
@@ -180,6 +194,9 @@ module Telegram
             val = (text.downcase == "yes" || text == "1" || text.downcase == "true" || text.downcase == "да")
             user.notify_nearby = val if user.respond_to?(:notify_nearby=)
             user.notify = val if user.respond_to?(:notify=)
+          when "court_note"
+            user.court_preferences_note = text if user.respond_to?(:court_preferences_note=)
+            user.favorite_court_ids = [] if user.respond_to?(:favorite_court_ids=)
           else
             return Telegram::Api.send_simple(chat_id, t.(:unknown_field))
           end

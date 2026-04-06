@@ -23,4 +23,50 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   ensure
     user&.destroy
   end
+
+  test "favorites mode saves favorite courts and clears court note" do
+    user_email = "favorite_courts_#{SecureRandom.hex(4)}@example.com"
+    court = Court.create!(name: "Favorite Court")
+    post session_url, params: { email: user_email }
+    user = User.find_by!(email: user_email)
+    user.update!(court_preferences_note: "All city courts")
+
+    patch account_url, params: {
+      user: {
+        court_preferences_mode: "favorites",
+        favorite_court_ids: [ court.id.to_s ],
+        court_preferences_note: "Should be cleared"
+      }
+    }
+
+    user.reload
+    assert_equal [ court.id ], user.favorite_court_ids
+    assert_nil user.court_preferences_note
+  ensure
+    user&.destroy
+    court&.destroy
+  end
+
+  test "note mode saves court note and clears favorite courts" do
+    user_email = "court_note_#{SecureRandom.hex(4)}@example.com"
+    court = Court.create!(name: "Favorite Court")
+    post session_url, params: { email: user_email }
+    user = User.find_by!(email: user_email)
+    user.favorite_courts << court
+
+    patch account_url, params: {
+      user: {
+        court_preferences_mode: "note",
+        favorite_court_ids: [ court.id.to_s ],
+        court_preferences_note: "Work on all courts"
+      }
+    }
+
+    user.reload
+    assert_equal "Work on all courts", user.court_preferences_note
+    assert_empty user.favorite_courts
+  ensure
+    user&.destroy
+    court&.destroy
+  end
 end

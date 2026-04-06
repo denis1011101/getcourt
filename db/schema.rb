@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_22_134842) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_05_090000) do
   create_table "cities", force: :cascade do |t|
     t.string "asciiname"
     t.string "country_code"
@@ -44,6 +44,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_22_134842) do
     t.index ["moderation_status"], name: "index_courts_on_moderation_status"
     t.index ["sport"], name: "index_courts_on_sport"
     t.index ["user_id"], name: "index_courts_on_user_id"
+  end
+
+  create_table "favorite_courts", force: :cascade do |t|
+    t.integer "court_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["court_id"], name: "index_favorite_courts_on_court_id"
+    t.index ["user_id", "court_id"], name: "index_favorite_courts_on_user_id_and_court_id", unique: true
+    t.index ["user_id"], name: "index_favorite_courts_on_user_id"
   end
 
   create_table "games", force: :cascade do |t|
@@ -285,6 +295,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_22_134842) do
     t.boolean "admin", default: false, null: false
     t.string "city_name"
     t.boolean "coach"
+    t.text "court_preferences_note"
     t.datetime "created_at", null: false
     t.string "email"
     t.string "login_code"
@@ -316,6 +327,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_22_134842) do
   end
 
   add_foreign_key "courts", "users"
+  add_foreign_key "favorite_courts", "courts"
+  add_foreign_key "favorite_courts", "users"
   add_foreign_key "games", "courts"
   add_foreign_key "games", "tournaments"
   add_foreign_key "games", "users"

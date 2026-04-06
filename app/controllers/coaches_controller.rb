@@ -2,7 +2,7 @@ class CoachesController < ApplicationController
   skip_before_action :authenticate_user!, only: :index
 
   def index
-    scope = User.where(coach: true)
+    scope = User.where(coach: true).includes(:favorite_courts)
     user_city = current_user&.city_name.to_s.strip.downcase.presence
 
     @coaches =

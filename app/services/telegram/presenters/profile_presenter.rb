@@ -57,6 +57,17 @@ module Telegram
         @user.respond_to?(:about_me) ? (@user.about_me.to_s.presence || "—") : "—"
       end
 
+      def favorite_courts_label
+        return "—" unless @user.respond_to?(:favorite_courts)
+
+        names = @user.favorite_courts.map(&:name).reject(&:blank?)
+        names.any? ? names.join(", ") : "—"
+      end
+
+      def court_note_label
+        @user.respond_to?(:court_preferences_note) ? (@user.court_preferences_note.to_s.presence || "—") : "—"
+      end
+
       def notify_label
         if @user.respond_to?(:notify_nearby)
           @user.notify_nearby ? "Yes" : "No"
@@ -96,6 +107,10 @@ module Telegram
           when false then "No"
           else ""
           end
+        when "favorite_courts"
+          @user.respond_to?(:favorite_courts) ? favorite_courts_label : ""
+        when "court_note"
+          @user.respond_to?(:court_preferences_note) ? @user.court_preferences_note.to_s : ""
         when "notify"
           @user.respond_to?(:notify_nearby) ? (@user.notify_nearby ? "Yes" : "No") : ""
         else
