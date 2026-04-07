@@ -1,5 +1,5 @@
 class TennisLifeController < ApplicationController
-  skip_before_action :authenticate_user!, only: [ :index ]
+  skip_before_action :authenticate_user!, only: %i[index statistics]
 
   FEED_LIMIT = 20
   RATING_LIMIT = 10
@@ -8,7 +8,8 @@ class TennisLifeController < ApplicationController
     @tennis_score_raw = TennisScoreboard::Fetcher.raw_text
     @random_telegram_post = TennisLife::TelegramPostsFetcher.random_post
     if @random_telegram_post && (text = @random_telegram_post["text"].to_s.strip).present?
-      @random_post_text_en = TranslationCache.fetch(text)
+      @random_post_text_en = TranslationCache.read(text)
+      TranslationCache.enqueue(text) if @random_post_text_en.blank?
     end
 
     @feed_posts = TelegramPost
@@ -18,6 +19,7 @@ class TennisLifeController < ApplicationController
       .where.not(telegram_channels: { username: [ nil, "" ] })
       .order(published_at: :desc)
       .limit(FEED_LIMIT)
+    enqueue_feed_post_translations(@feed_posts)
 
     rating_rows = build_rating_rows
     @rating_rows = rating_rows.first(RATING_LIMIT)
@@ -35,7 +37,21 @@ class TennisLifeController < ApplicationController
     ]
   end
 
+  def statistics
+    @rating_rows = build_rating_rows
+    @recent_matches = Match.includes(:user, :opponent, :game).order(played_at: :desc).limit(50)
+  end
+
   private
+
+  def enqueue_feed_post_translations(posts)
+    posts.each do |post|
+      next if post.text_en.present?
+      next if post.text.to_s.strip.blank?
+
+      TranslateTelegramPostJob.perform_later(post.id)
+    end
+  end
 
   def build_rating_rows
     stats = PlayerStatistic
@@ -52,7 +68,9 @@ class TennisLifeController < ApplicationController
         user: ps.user,
         games: games,
         wins: wins,
-        pct: pct
+        pct: pct,
+        singles_rating: (ps.singles_rating || 1500.0),
+        doubles_rating: (ps.doubles_rating || 1500.0)
       }
     end.sort_by { |row| [ -row[:pct], -row[:wins], -row[:games] ] }
   end

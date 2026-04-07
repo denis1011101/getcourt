@@ -6,7 +6,16 @@ class CourtsController < ApplicationController
 
   def index
     visible_courts = Court.visible_to(current_user)
-    prepare_location_filters(visible_courts.where.not(city_name: [ nil, "" ]).distinct.pluck(:city_name))
+    court_city_names = visible_courts.where.not(city_name: [ nil, "" ]).distinct.pluck(:city_name)
+    city_country_map = build_city_country_map(court_city_names)
+    normalize_location_params!(city_country_map)
+
+    canonical_path = canonical_courts_path_for(city_country_map)
+    if request.get? && canonical_path.present? && request.fullpath != canonical_path
+      redirect_to canonical_path, status: :moved_permanently and return
+    end
+
+    prepare_location_filters(court_city_names)
     courts = visible_courts.to_a
 
     if params[:country].present? && params[:city].blank?
@@ -129,5 +138,73 @@ class CourtsController < ApplicationController
     else
       value.to_s
     end
+  end
+
+  def build_city_country_map(city_names)
+    City.where(name: city_names)
+      .pluck(:name, :country_code, :population)
+      .group_by(&:first)
+      .transform_values { |rows| rows.max_by { |(_, _, population)| population.to_i }[1] }
+  end
+
+  def normalize_location_params!(city_country_map)
+    if params[:country_slug].present?
+      params[:country] = country_code_for_slug(params[:country_slug], city_country_map)
+    end
+
+    if params[:city_slug].present?
+      params[:city] = city_name_for_slug(params[:city_slug], params[:country], city_country_map)
+    end
+
+    params[:country] = effective_country_code(city_country_map)
+  end
+
+  def effective_country_code(city_country_map)
+    params[:country].presence || city_country_map[params[:city].to_s]
+  end
+
+  def country_code_for_slug(country_slug, city_country_map)
+    city_country_map.values.uniq.find do |country_code|
+      country_name_for(country_code).parameterize == country_slug.to_s
+    end
+  end
+
+  def city_name_for_slug(city_slug, country_code, city_country_map)
+    city_country_map.keys.find do |city_name|
+      next false if country_code.present? && city_country_map[city_name] != country_code
+
+      city_name.to_s.parameterize == city_slug.to_s
+    end
+  end
+
+  def canonical_courts_path_for(city_country_map)
+    query = request.query_parameters.except("commit", "country", "city", "country_slug", "city_slug")
+    fallback_query = request.query_parameters.except("commit", "country_slug", "city_slug")
+    country_code = effective_country_code(city_country_map)
+    country_slug = country_code.present? ? country_name_for(country_code).parameterize : nil
+    city_slug = params[:city].present? ? params[:city].to_s.parameterize : nil
+
+    base_path =
+      if country_slug.present?
+        courts_browse_path(country_slug: country_slug, city_slug: city_slug.presence)
+      elsif params[:country].present? || params[:city].present?
+        request.path
+      else
+        courts_path
+      end
+
+    if country_slug.blank? && (params[:country].present? || params[:city].present?)
+      return base_path if fallback_query.empty?
+
+      uri = URI(base_path)
+      uri.query = fallback_query.to_query
+      return uri.to_s
+    end
+
+    return base_path if query.empty?
+
+    uri = URI(base_path)
+    uri.query = query.to_query
+    uri.to_s
   end
 end

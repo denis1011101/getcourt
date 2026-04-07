@@ -33,10 +33,11 @@ module Ai
       When displaying opponents from find_opponent results, always show ALL of the following fields for each opponent:
       - name (telegram username or display name)
       - skill level
+      - favorite courts (from the "favorite_courts" field, if present; otherwise skip)
       - games played (from the "games" field)
       - wins (from the "wins" field)
       - win percentage (from the "win_pct" field, show as "N/A" if null)
-      Example format: "@username (уровень: beginner, игр: 10, побед: 7, винрейт: 70%%)"
+      Example format: "@username (уровень: beginner, любимые корты: Court A, Court B, игр: 10, побед: 7, винрейт: 70%%)"
 
       When displaying courts from find_court results, always format each court as a list item:
       * Название (вид спорта: tennis) — https://getcourt.co/courts/1
@@ -51,7 +52,7 @@ module Ai
       @user = user
     end
 
-    def chat(message, locale:, timeout_seconds: REQUEST_TIMEOUT)
+    def chat(message, locale:, history: [], timeout_seconds: REQUEST_TIMEOUT)
       attempts = 0
       Timeout.timeout(timeout_seconds) do
         begin
@@ -66,6 +67,7 @@ module Ai
             .with_tool(Ai::Tools::RecordMatchStatsTool.new(@user))
 
           chat.with_instructions(SYSTEM_PROMPT % { locale: locale.to_s, user_info: user_info })
+          hydrate_history(chat, history)
           response = chat.ask(message.to_s)
           Rails.logger.info "[Ai::AssistantService] response=#{response.content.to_s.truncate(200)}"
           response.content.to_s
@@ -112,6 +114,17 @@ module Ai
       parts << "City: #{@user.city_name}" if @user.city_name.present?
       parts << "Skill level: #{@user.skill_level}" if @user.try(:skill_level).present?
       parts.join(", ")
+    end
+
+    def hydrate_history(chat, history)
+      Array(history).each do |entry|
+        role = entry[:role] || entry["role"]
+        content = entry[:content] || entry["content"]
+        next unless %w[user assistant].include?(role.to_s)
+        next if content.to_s.blank?
+
+        chat.add_message(role: role.to_sym, content: content.to_s)
+      end
     end
   end
 end

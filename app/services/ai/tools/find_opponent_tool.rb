@@ -35,6 +35,7 @@ module Ai
               name: Telegram::Helpers::UserLookup.display_name(user, fallback: "User ##{user.id}"),
               skill: user.skill_level.presence || "unknown",
               city: user.city_name,
+              favorite_courts: user.favorite_courts.map(&:name),
               games: s[:games],
               wins: s[:wins],
               win_pct: s[:win_pct]

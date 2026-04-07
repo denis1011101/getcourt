@@ -21,6 +21,7 @@ module LocationFilters
     "EC" => "Ecuador",
     "ES" => "Spain",
     "FR" => "France",
+    "GE" => "Georgia",
     "GB" => "United Kingdom",
     "HR" => "Croatia",
     "HT" => "Haiti",
@@ -31,6 +32,7 @@ module LocationFilters
     "KR" => "South Korea",
     "LR" => "Liberia",
     "MA" => "Morocco",
+    "MC" => "Monaco",
     "NL" => "Netherlands",
     "NO" => "Norway",
     "NZ" => "New Zealand",
@@ -50,6 +52,10 @@ module LocationFilters
     "ZA" => "South Africa"
   }.freeze
 
+  CITY_COUNTRY_OVERRIDES = {
+    "Koto" => "JP"
+  }.freeze
+
   included do
     helper_method :country_name_for, :location_filter_labels, :country_cities_map_for_select
   end
@@ -63,6 +69,7 @@ module LocationFilters
       .pluck(:name, :country_code, :population)
       .group_by(&:first)
       .transform_values { |rows| rows.max_by { |(_, _, population)| population.to_i }[1] }
+      .merge(CITY_COUNTRY_OVERRIDES.slice(*city_names))
 
     @country_names_by_code = @city_country_map.values.uniq.compact.sort.each_with_object({}) do |country_code, names|
       names[country_code] = country_name_for(country_code)

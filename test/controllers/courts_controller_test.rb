@@ -51,6 +51,15 @@ class CourtsControllerTest < ActionDispatch::IntegrationTest
     assert assigns(:courts).size <= 12
   end
 
+  test "results summary shows total courts count instead of current page size" do
+    13.times { |i| Court.create!(name: "Paged Court #{i}", moderation_status: "approved", approved_at: Time.current) }
+
+    get courts_url
+
+    assert_response :success
+    assert_select "[data-testid='results-summary']", text: /13 courts available/
+  end
+
   test "index page 2 returns the overflow record" do
     13.times { |i| Court.create!(name: "Paged Court #{i}", moderation_status: "approved", approved_at: Time.current) }
 
@@ -128,6 +137,10 @@ class CourtsControllerTest < ActionDispatch::IntegrationTest
 
     get courts_url, params: { country: "AT" }
 
+    assert_redirected_to courts_browse_path(country_slug: "austria")
+
+    get courts_browse_url(country_slug: "austria")
+
     assert_response :success
     assert_includes assigns(:courts), austrian_court
     assert_not_includes assigns(:courts), russian_court
@@ -147,6 +160,10 @@ class CourtsControllerTest < ActionDispatch::IntegrationTest
     ekb_court = Court.create!(name: "Ekb Court", city_name: "Yekaterinburg", moderation_status: "approved", approved_at: Time.current)
 
     get courts_url, params: { country: "RU" }
+
+    assert_redirected_to courts_browse_path(country_slug: "russia")
+
+    get courts_browse_url(country_slug: "russia")
 
     assert_response :success
     assert_not_includes assigns(:cities), "Minsk"
@@ -173,6 +190,19 @@ class CourtsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Yekaterinburg"
   ensure
     Court.where(name: [ "Kitz Court", "Ekb Court" ]).delete_all
+    City.where(id: city_ids).delete_all if city_ids
+  end
+
+  test "index redirects city filters to canonical slug path" do
+    city_ids = []
+    city_ids << City.create!(name: "Yekaterinburg", country_code: "RU", population: 1_500_000).id
+    Court.create!(name: "Ekb Court", city_name: "Yekaterinburg", moderation_status: "approved", approved_at: Time.current)
+
+    get courts_url, params: { country: "RU", city: "Yekaterinburg" }
+
+    assert_redirected_to courts_browse_path(country_slug: "russia", city_slug: "yekaterinburg")
+  ensure
+    Court.where(name: "Ekb Court").delete_all
     City.where(id: city_ids).delete_all if city_ids
   end
 

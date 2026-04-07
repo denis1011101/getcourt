@@ -21,14 +21,32 @@ class Ai::AssistantServiceTest < ActiveSupport::TestCase
     end
   end
 
+  test "hydrates short history before asking" do
+    user = User.new(email: "assistant@example.test", city_name: "Moscow")
+
+    response = Struct.new(:content).new("done")
+    fake_chat = FakeRubyLLMChat.new(response)
+    history = [
+      { role: "user", content: "Hi" },
+      { role: "assistant", content: "Hello" }
+    ]
+
+    stub_singleton(RubyLLM, :chat, ->(**) { fake_chat }) do
+      Ai::AssistantService.new(user).chat("Find opponent", locale: :en, history: history, timeout_seconds: 1)
+
+      assert_equal history, fake_chat.history_messages
+    end
+  end
+
   private
 
   class FakeRubyLLMChat
-    attr_reader :tools, :instructions, :asked_message
+    attr_reader :tools, :instructions, :asked_message, :history_messages
 
     def initialize(response)
       @response = response
       @tools = []
+      @history_messages = []
     end
 
     def with_tool(tool)
@@ -38,6 +56,11 @@ class Ai::AssistantServiceTest < ActiveSupport::TestCase
 
     def with_instructions(text)
       @instructions = text
+      self
+    end
+
+    def add_message(role:, content:)
+      @history_messages << { role: role.to_s, content: content }
       self
     end
 

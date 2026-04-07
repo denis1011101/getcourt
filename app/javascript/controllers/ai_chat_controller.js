@@ -40,7 +40,7 @@ export default class extends Controller {
         body: JSON.stringify({ message })
       })
       const data = await response.json()
-      this.appendMessage("assistant", data.reply || data.error || "Error")
+      this.appendMessage("assistant", data.reply || data.error || "Error", data.reply_html)
     } catch {
       this.appendMessage("assistant", "Connection error. Try again.")
     } finally {
@@ -67,7 +67,7 @@ export default class extends Controller {
     }
   }
 
-  appendMessage(role, text) {
+  appendMessage(role, text, html = null) {
     const isUser = role === "user"
     const div = document.createElement("div")
     div.className = isUser
@@ -79,7 +79,11 @@ export default class extends Controller {
       ? "max-w-[80%] rounded-2xl rounded-br-sm bg-indigo-600 text-white px-3 py-2 text-sm whitespace-pre-wrap"
       : "max-w-[80%] rounded-2xl rounded-bl-sm bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-slate-100 px-3 py-2 text-sm whitespace-pre-wrap"
 
-    bubble.textContent = text
+    if (!isUser && html) {
+      bubble.innerHTML = html
+    } else {
+      bubble.textContent = text
+    }
     div.appendChild(bubble)
     this.messagesTarget.appendChild(div)
     this.scrollToBottom()

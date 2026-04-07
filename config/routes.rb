@@ -20,6 +20,7 @@ Rails.application.routes.draw do
   end
 
   get "/tennis_life", to: "tennis_life#index", as: :tennis_life
+  get "/tennis_life/statistics", to: "tennis_life#statistics", as: :tennis_life_statistics
 
   resource :account, only: %i[edit update], controller: :users do
     post :regenerate_token
@@ -46,12 +47,14 @@ Rails.application.routes.draw do
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
 
-  resources :courts do
+  resources :courts, constraints: { id: /\d+/ } do
     member do
       post :approve
       post :reject
     end
   end
+  get "/courts(/:country_slug)(/:city_slug)", to: "courts#index", as: :courts_browse,
+      constraints: { country_slug: /[a-z][a-z0-9-]*/, city_slug: /[a-z0-9-]+/ }
   root "games#index"
   resources :games, except: [ :index ], constraints: { id: /\d+/ } do
     member do

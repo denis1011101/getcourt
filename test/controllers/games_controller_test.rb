@@ -80,6 +80,15 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert assigns(:games).size <= 12
   end
 
+  test "results summary shows total games count instead of current page size" do
+    11.times { |i| Game.create!(court: courts(:one), user: users(:one), date: Date.current + (i + 3).days, time: "10:00") }
+
+    get root_url
+
+    assert_response :success
+    assert_select "[data-testid='results-summary']", text: /13 games available/
+  end
+
   test "index page 2 returns overflow games" do
     11.times { |i| Game.create!(court: courts(:one), user: users(:one), date: Date.current + (i + 3).days, time: "10:00") }
 
@@ -200,6 +209,39 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Yekaterinburg"
   ensure
     Court.where(name: [ "Kitz Court", "Ekb Court" ]).delete_all
+    City.where(id: city_ids).delete_all if city_ids
+  end
+
+  test "index renders english country names for georgia and monaco in filters" do
+    city_ids = []
+    city_ids << City.create!(name: "Tbilisi", country_code: "GE", population: 1_100_000).id
+    city_ids << City.create!(name: "Monaco", country_code: "MC", population: 38_000).id
+    Court.create!(name: "Tbilisi Court", city_name: "Tbilisi", moderation_status: "approved", approved_at: Time.current)
+    Court.create!(name: "Monte Carlo Court", city_name: "Monaco", moderation_status: "approved", approved_at: Time.current)
+
+    get root_url
+
+    assert_response :success
+    assert_select "select[name='country'] option", text: "Georgia"
+    assert_select "select[name='country'] option", text: "Monaco"
+  ensure
+    Court.where(name: [ "Tbilisi Court", "Monte Carlo Court" ]).delete_all
+    City.where(id: city_ids).delete_all if city_ids
+  end
+
+  test "index prefers japan over haiti for koto in filters" do
+    city_ids = []
+    city_ids << City.create!(name: "Koto", country_code: "JP", population: 500_000).id
+    city_ids << City.create!(name: "Koto", country_code: "HT", population: 600_000).id
+    Court.create!(name: "Koto Court", city_name: "Koto", moderation_status: "approved", approved_at: Time.current)
+
+    get root_url
+
+    assert_response :success
+    assert_select "select[name='country'] option", text: "Japan"
+    assert_select "select[name='country'] option", text: "Haiti", count: 0
+  ensure
+    Court.where(name: "Koto Court").delete_all
     City.where(id: city_ids).delete_all if city_ids
   end
 
