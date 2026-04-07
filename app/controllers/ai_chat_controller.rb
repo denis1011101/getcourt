@@ -1,7 +1,4 @@
 class AiChatController < ApplicationController
-  HISTORY_TTL = 10.minutes
-  HISTORY_LIMIT = 6
-
   skip_before_action :authenticate_user!
 
   def chat
@@ -10,11 +7,11 @@ class AiChatController < ApplicationController
 
     locale = I18n.locale.to_s
     service = Ai::AssistantService.new(current_user)
-    history = Rails.cache.read(history_cache_key) || []
+    history = Ai::ChatContextStore.fetch(channel: :web, key: request.session.id)
 
     begin
       reply = service.chat(message, locale: locale, history: history)
-      Rails.cache.write(history_cache_key, updated_history(history, message, reply), expires_in: HISTORY_TTL)
+      Ai::ChatContextStore.append(channel: :web, key: request.session.id, user_message: message, assistant_message: reply)
       render json: {
         reply: reply,
         reply_html: helpers.link_telegram_usernames(reply, link_class: "text-indigo-600 dark:text-indigo-300 hover:underline")
@@ -23,18 +20,5 @@ class AiChatController < ApplicationController
       Rails.logger.error("[AiChatController] #{e.class}: #{e.message}")
       render json: { error: "Sorry, something went wrong. Try again." }, status: :unprocessable_entity
     end
-  end
-
-  private
-
-  def history_cache_key
-    "ai_chat/history/#{request.session.id}"
-  end
-
-  def updated_history(history, message, reply)
-    Array(history).last(HISTORY_LIMIT - 2) + [
-      { role: "user", content: message.to_s },
-      { role: "assistant", content: reply.to_s }
-    ]
   end
 end

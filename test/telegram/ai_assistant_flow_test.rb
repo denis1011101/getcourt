@@ -42,10 +42,11 @@ class Telegram::Flows::AiAssistantFlowTest < ActiveSupport::TestCase
       long_answer = "A" * 5000
       edits = []
       sends = []
+      calls = []
 
       stub_singleton(Telegram::Helpers::UserLookup, :locale_for, :en) do
         stub_singleton(Telegram::Helpers::UserLookup, :find_user, user) do
-          stub_singleton(Ai::AssistantService, :new, FakeAssistantServiceFactory.new(long_answer)) do
+          stub_singleton(Ai::AssistantService, :new, FakeAssistantServiceFactory.new(long_answer, calls)) do
             stub_singleton(Telegram::Api, :send_simple, ->(*args, **kwargs) {
               sends << [ args, kwargs ]
               { "result" => { "message_id" => 42 } }
@@ -66,6 +67,11 @@ class Telegram::Flows::AiAssistantFlowTest < ActiveSupport::TestCase
       assert_operator edits[0][0][2].length, :<=, 4096
       assert_equal 2, sends.size
       assert_operator sends[1][0][1].length, :<=, 4096
+      assert_equal [], calls[0][:history]
+      assert_equal [
+        { role: "user", content: "find opponent" },
+        { role: "assistant", content: long_answer }
+      ], Ai::ChatContextStore.fetch(channel: :telegram, key: "654")
     end
   end
 
@@ -100,25 +106,75 @@ class Telegram::Flows::AiAssistantFlowTest < ActiveSupport::TestCase
     end
   end
 
+  test "respond passes cached history from previous telegram messages" do
+    with_memory_cache do
+      user = User.new(email: "ai-history@example.test", telegram_chat_id: "656")
+      Telegram::Helpers::Conversation.start("656", "flow" => "ai_assistant")
+      sends = []
+      calls = []
+
+      stub_singleton(Telegram::Helpers::UserLookup, :locale_for, :en) do
+        stub_singleton(Telegram::Helpers::UserLookup, :find_user, user) do
+          stub_singleton(Ai::AssistantService, :new, FakeAssistantServiceFactory.new(-> { "ok" }, calls)) do
+            stub_singleton(Telegram::Api, :send_simple, ->(*args, **kwargs) {
+              sends << [ args, kwargs ]
+              { "result" => { "message_id" => 44 } }
+            }) do
+              stub_singleton(Telegram::Api, :edit_message_text, ->(*, **) { true }) do
+                Telegram::Flows::AiAssistantFlow.process_text({ "chat" => { "id" => "656" }, "text" => "first" })
+                Telegram::Flows::AiAssistantFlow.process_text({ "chat" => { "id" => "656" }, "text" => "second" })
+              end
+            end
+          end
+        end
+      end
+
+      assert_equal [], calls[0][:history]
+      assert_equal [
+        { role: "user", content: "first" },
+        { role: "assistant", content: "ok" }
+      ], calls[1][:history]
+    end
+  end
+
+  test "back callback clears shared ai context" do
+    with_memory_cache do
+      Telegram::Helpers::Conversation.start("123", "flow" => "ai_assistant")
+      Ai::ChatContextStore.append(channel: :telegram, key: "123", user_message: "hello", assistant_message: "hi")
+      callback = { "id" => "cb1", "data" => "ai:back", "message" => { "message_id" => 77, "chat" => { "id" => "123" } } }
+
+      stub_singleton(Telegram::Api, :answer_callback, ->(*) { true }) do
+        stub_singleton(Telegram::Handlers::MenuHandler, :menu, ->(*, **) { true }) do
+          assert Telegram::Flows::AiAssistantFlow.handle_callback(callback)
+        end
+      end
+
+      assert_equal [], Ai::ChatContextStore.fetch(channel: :telegram, key: "123")
+    end
+  end
+
   private
 
   class FakeAssistantServiceFactory
-    def initialize(answer_or_callable)
+    def initialize(answer_or_callable, calls = nil)
       @answer_or_callable = answer_or_callable
+      @calls = calls
     end
 
     def call(*)
-      FakeAssistantService.new(@answer_or_callable)
+      FakeAssistantService.new(@answer_or_callable, @calls)
     end
     alias_method :new, :call
   end
 
   class FakeAssistantService
-    def initialize(answer_or_callable)
+    def initialize(answer_or_callable, calls = nil)
       @answer_or_callable = answer_or_callable
+      @calls = calls
     end
 
-    def chat(*, **)
+    def chat(message = nil, **kwargs)
+      @calls << { message: message, history: kwargs[:history] } if @calls
       return @answer_or_callable.call if @answer_or_callable.respond_to?(:call)
 
       @answer_or_callable

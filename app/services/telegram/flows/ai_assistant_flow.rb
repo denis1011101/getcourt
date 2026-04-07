@@ -30,6 +30,7 @@ module Telegram
           when "ai:back"
             Telegram::Api.answer_callback(cb.cb_id, "") rescue nil
             Telegram::Helpers::Conversation.finish(cb.chat_id)
+            Ai::ChatContextStore.clear(channel: :telegram, key: cb.chat_id)
             Telegram::Handlers::MenuHandler.menu(cb.chat_id, message_id: cb.message_id)
             true
           else
@@ -50,6 +51,7 @@ module Telegram
           return false if text.blank?
           if text.start_with?("/")
             Telegram::Helpers::Conversation.finish(chat_id)
+            Ai::ChatContextStore.clear(channel: :telegram, key: chat_id)
             return false
           end
 
@@ -65,12 +67,14 @@ module Telegram
 
         def respond(chat_id, text, locale:)
           user = Telegram::Helpers::UserLookup.find_user(chat_id)
+          history = Ai::ChatContextStore.fetch(channel: :telegram, key: chat_id)
           thinking_text = Telegram::I18n.t(:ai_thinking, locale: locale)
           thinking_response = Telegram::Api.send_simple(chat_id, thinking_text, parse_mode: nil)
           thinking_message_id = extract_message_id(thinking_response)
 
-          answer = Ai::AssistantService.new(user).chat(text, locale: locale)
+          answer = Ai::AssistantService.new(user).chat(text, locale: locale, history: history)
           answer = fallback_answer(locale) if answer.blank?
+          Ai::ChatContextStore.append(channel: :telegram, key: chat_id, user_message: text, assistant_message: answer)
           deliver_answer(chat_id, answer, thinking_message_id: thinking_message_id)
         rescue RubyLLM::RateLimitError => e
           Rails.logger.error "[Telegram::Flows::AiAssistantFlow] rate limit: #{e.message}"

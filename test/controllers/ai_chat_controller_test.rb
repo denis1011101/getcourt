@@ -1,9 +1,8 @@
 require "test_helper"
+require "support/cache_helper"
 
 class AiChatControllerTest < ActionDispatch::IntegrationTest
-  setup do
-    @memory_cache = ActiveSupport::Cache::MemoryStore.new
-  end
+  include CacheHelper
 
   test "returns error for blank message" do
     post ai_chat_path, params: { message: "" }, as: :json
@@ -19,7 +18,7 @@ class AiChatControllerTest < ActionDispatch::IntegrationTest
       "Found @tennis_user and @coach_link in Moscow"
     end
 
-    stub_singleton(Rails, :cache, -> { @memory_cache }) do
+    with_memory_cache do
       stub_singleton(Ai::AssistantService, :new, ->(_user) { fake_service }) do
         post ai_chat_path, params: { message: "Find me an opponent" }, as: :json
         assert_response :success
@@ -51,7 +50,7 @@ class AiChatControllerTest < ActionDispatch::IntegrationTest
       "Reply to #{message}"
     end
 
-    stub_singleton(Rails, :cache, -> { @memory_cache }) do
+    with_memory_cache do
       stub_singleton(Ai::AssistantService, :new, ->(_user) { fake_service }) do
         post ai_chat_path, params: { message: "First" }, as: :json
         post ai_chat_path, params: { message: "Second" }, as: :json

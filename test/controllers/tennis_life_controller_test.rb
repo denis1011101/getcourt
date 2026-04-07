@@ -177,9 +177,9 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     get tennis_life_statistics_url
 
     assert_response :success
-    assert_select "h1", text: "Full Statistics"
-    assert_select "h2", text: "Full Player Rating"
-    assert_select "h2", text: "Recent Matches"
+    assert_select "h1", text: "Tennis Player Rankings & Match Results"
+    assert_select "h2", text: "Player Rankings & Win Rates"
+    assert_select "h2", text: "Recent Match Results"
     assert_select "a[href='https://t.me/stats_player']", text: "@stats_player"
     assert_includes response.body, "6-4 6-3"
     assert_includes response.body, "Stats Player vs Stats Opponent"
