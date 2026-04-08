@@ -1,4 +1,11 @@
 class PlayerStatistic < ApplicationRecord
+  BASE_ELO = 1500.0
+  ELO_RESULTS = {
+    "win" => 1.0,
+    "draw" => 0.5,
+    "loss" => 0.0
+  }.freeze
+
   belongs_to :user
 
   validates :singles_sessions, :doubles_sessions, :singles_games, :doubles_games,
@@ -43,7 +50,7 @@ class PlayerStatistic < ApplicationRecord
   end
 
   def rating(mode)
-    mode.to_sym == :singles ? (singles_rating || 1500.0) : (doubles_rating || 1500.0)
+    mode.to_sym == :singles ? (singles_rating || BASE_ELO) : (doubles_rating || BASE_ELO)
   end
 
   # ELO update via service (без update_column)
@@ -108,6 +115,122 @@ class PlayerStatistic < ApplicationRecord
 
         update!(attrs)
       end
+
+      self.class.recalculate_elo_for_mode!(mode)
     end
   end
+
+  def self.recalculate_elo_for_mode!(mode)
+    mode = mode.to_s
+    rating_column = mode == "doubles" ? :doubles_rating : :singles_rating
+    matches = Match.where(mode: mode).order(:played_at, :id).to_a
+    ratings = Hash.new(BASE_ELO)
+
+    grouped_matches(matches).each_value do |event_matches|
+      apply_elo_for_event(event_matches, ratings)
+    end
+
+    Match.where(mode: mode).distinct.pluck(:user_id).each do |user_id|
+      ps = find_or_create_by!(user_id: user_id)
+      ps.update!(rating_column => ratings[user_id])
+    end
+  end
+
+  def self.grouped_matches(matches)
+    matches.group_by { |match| elo_event_key(match) }
+          .sort_by { |(_, grouped)| [ grouped.first.played_at || Time.at(0), grouped.map(&:id).min ] }
+          .to_h
+  end
+  private_class_method :grouped_matches
+
+  def self.elo_event_key(match)
+    stats = match.stats.to_h
+
+    if match.mode == "doubles"
+      team_a_ids = Array(stats["team_a_ids"]).map(&:to_i).sort
+      team_b_ids = Array(stats["team_b_ids"]).map(&:to_i).sort
+
+      [ match.mode, match.game_id, match.played_at, [ team_a_ids, team_b_ids ].sort ]
+    else
+      opponent_id = match.opponent_id || Array(stats["opponent_ids"]).map(&:to_i).first
+
+      [ match.mode, match.game_id, match.played_at, [ match.user_id, opponent_id ].compact.sort ]
+    end
+  end
+  private_class_method :elo_event_key
+
+  def self.apply_elo_for_event(event_matches, ratings)
+    event = build_elo_event(event_matches)
+    return unless event
+
+    team_a_ids = event[:team_a_ids]
+    team_b_ids = event[:team_b_ids]
+    result_a = ELO_RESULTS.fetch(event[:team_a_outcome], 0.5)
+    result_b = ELO_RESULTS.fetch(inverse_outcome(event[:team_a_outcome]), 0.5)
+
+    team_a_rating = average_team_rating(team_a_ids, ratings)
+    team_b_rating = average_team_rating(team_b_ids, ratings)
+
+    updated_ratings = {}
+
+    team_a_ids.each do |user_id|
+      updated_ratings[user_id] = Ratings::EloRatingService.new(
+        current_rating: ratings[user_id],
+        opponent_rating: team_b_rating,
+        result: result_a
+      ).call
+    end
+
+    team_b_ids.each do |user_id|
+      updated_ratings[user_id] = Ratings::EloRatingService.new(
+        current_rating: ratings[user_id],
+        opponent_rating: team_a_rating,
+        result: result_b
+      ).call
+    end
+
+    ratings.merge!(updated_ratings)
+  end
+  private_class_method :apply_elo_for_event
+
+  def self.build_elo_event(event_matches)
+    sample = event_matches.first
+    stats = sample.stats.to_h
+
+    if sample.mode == "doubles"
+      team_a_ids = Array(stats["team_a_ids"]).map(&:to_i).uniq
+      team_b_ids = Array(stats["team_b_ids"]).map(&:to_i).uniq
+      return if team_a_ids.empty? || team_b_ids.empty?
+
+      team_a_outcome = event_matches.find { |match| team_a_ids.include?(match.user_id) }&.outcome.to_s.presence || "draw"
+      { team_a_ids:, team_b_ids:, team_a_outcome: }
+    else
+      opponent_id = sample.opponent_id || Array(stats["opponent_ids"]).map(&:to_i).first
+      opponent_id ||= (event_matches.map(&:user_id).uniq - [ sample.user_id ]).first
+      return unless opponent_id
+
+      {
+        team_a_ids: [ sample.user_id ],
+        team_b_ids: [ opponent_id ],
+        team_a_outcome: sample.outcome.to_s.presence || "draw"
+      }
+    end
+  end
+  private_class_method :build_elo_event
+
+  def self.average_team_rating(user_ids, ratings)
+    return BASE_ELO if user_ids.empty?
+
+    user_ids.sum { |user_id| ratings[user_id] } / user_ids.size.to_f
+  end
+  private_class_method :average_team_rating
+
+  def self.inverse_outcome(outcome)
+    case outcome.to_s
+    when "win" then "loss"
+    when "loss" then "win"
+    else "draw"
+    end
+  end
+  private_class_method :inverse_outcome
 end

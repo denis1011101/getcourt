@@ -35,6 +35,7 @@ module PlayerStatistics
         match.save!
 
         apply_counters_delta!(new_record: new_record, old_outcome: old_outcome, new_outcome: @outcome)
+        PlayerStatistic.recalculate_elo_for_mode!(@mode)
 
         match
       end

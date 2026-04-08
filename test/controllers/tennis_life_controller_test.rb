@@ -163,6 +163,7 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
       telegram_username: "stats_opponent",
       email: "stats_opponent@example.com"
     )
+    users(:one).player_statistic&.update!(singles_rating: 1516.0, doubles_rating: 1492.0)
 
     match = Match.create!(
       user: users(:one),
@@ -181,9 +182,77 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     assert_select "h2", text: "Player Rankings & Win Rates"
     assert_select "h2", text: "Recent Match Results"
     assert_select "a[href='https://t.me/stats_player']", text: "@stats_player"
+    assert_includes response.body, "What ELO means"
+    assert_includes response.body, "1516.0"
+    assert_includes response.body, "1492.0"
     assert_includes response.body, "6-4 6-3"
     assert_includes response.body, "Stats Player vs Stats Opponent"
   ensure
     match&.destroy
+  end
+
+  test "statistics shows doubles players from stored stats" do
+    player = users(:one)
+    player.update_columns(name: "Denis", email: "denis_stats@example.com")
+
+    partner = User.create!(email: "partner_stats@example.com", name: "Irina.Karpova.Vv")
+    opponent_one = User.create!(email: "opponent_one_stats@example.com", name: "Keklil")
+    opponent_two = User.create!(email: "opponent_two_stats@example.com", name: "Ivan")
+
+    match = Match.create!(
+      user: player,
+      mode: "doubles",
+      outcome: "loss",
+      played_at: Time.current,
+      score: "1-6 1-6",
+      stats: {
+        "partner_id" => partner.id,
+        "opponent_ids" => [ opponent_one.id, opponent_two.id ]
+      }
+    )
+
+    get tennis_life_statistics_url
+
+    assert_response :success
+    assert_includes response.body, "Denis / Irina.Karpova.Vv vs Keklil / Ivan"
+    assert_includes response.body, "2v2"
+  end
+
+  test "statistics paginates recent matches from newest to oldest" do
+    Match.delete_all
+
+    created_matches = 21.times.map do |i|
+      Match.create!(
+        user: users(:one),
+        opponent: users(:two),
+        mode: "singles",
+        outcome: "win",
+        played_at: Time.current + i.minutes,
+        score: "6-#{i} 6-0"
+      )
+    end
+
+    newest = created_matches.max_by(&:played_at)
+    oldest = created_matches.min_by(&:played_at)
+
+    get tennis_life_statistics_url
+
+    assert_response :success
+    assert_not_nil assigns(:pagy)
+    assert_equal 21, assigns(:pagy).count
+    assert_equal 2, assigns(:pagy).pages
+    assert_equal 12, assigns(:recent_matches).size
+    assert_equal newest.id, assigns(:recent_matches).first.id
+    assert_includes response.body, newest.score
+    assert_not_includes response.body, oldest.score
+
+    get tennis_life_statistics_url, params: { page: 2 }
+
+    assert_response :success
+    assert_equal 9, assigns(:recent_matches).size
+    assert_equal oldest.id, assigns(:recent_matches).last.id
+    assert_includes response.body, oldest.score
+  ensure
+    Match.delete_all
   end
 end

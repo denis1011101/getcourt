@@ -3,6 +3,7 @@ class TennisLifeController < ApplicationController
 
   FEED_LIMIT = 20
   RATING_LIMIT = 10
+  MATCHES_PER_PAGE = 20
 
   def index
     @tennis_score_raw = TennisScoreboard::Fetcher.raw_text
@@ -39,7 +40,10 @@ class TennisLifeController < ApplicationController
 
   def statistics
     @rating_rows = build_rating_rows
-    @recent_matches = Match.includes(:user, :opponent, :game).order(played_at: :desc).limit(50)
+    @pagy, @recent_matches = pagy(
+      Match.includes(:user, :opponent, :game).order(played_at: :desc, id: :desc),
+      items: MATCHES_PER_PAGE
+    )
   end
 
   private
