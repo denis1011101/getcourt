@@ -328,7 +328,7 @@ GEM
       racc (~> 1.4)
     os (1.1.4)
     ostruct (0.6.3)
-    pagy (43.4.4)
+    pagy (43.5.0)
       json
       uri
       yaml
@@ -563,7 +563,7 @@ DEPENDENCIES
   importmap-rails
   jbuilder
   kamal
-  pagy (~> 43.4)
+  pagy (~> 43.5)
   propshaft
   puma (>= 5.0)
   rails (~> 8.1.3)
