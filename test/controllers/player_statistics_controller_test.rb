@@ -72,4 +72,42 @@ class PlayerStatisticsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1484.0, opponent_one.player_statistic.reload.doubles_rating
     assert_equal 1484.0, opponent_two.player_statistic.reload.doubles_rating
   end
+
+  test "manual singles upsert without a game keeps separate matches on the same day" do
+    denis = User.create!(email: "manual_stats_denis@example.com", name: "Denis")
+    opponent_one = User.create!(email: "manual_stats_opponent_one@example.com", name: "Aleksandr")
+    opponent_two = User.create!(email: "manual_stats_opponent_two@example.com", name: "Keklil")
+    played_at = Time.zone.parse("2026-04-08 23:59:59")
+
+    PlayerStatistics::UpsertMatchForGameService.new(
+      user: denis,
+      game: nil,
+      actor: denis,
+      mode: "singles",
+      outcome: "win",
+      opponent: opponent_one,
+      played_at: played_at,
+      score: "4-2",
+      hours: 1.5,
+      stats: { "opponent_ids" => [ opponent_one.id ] }
+    ).call
+
+    PlayerStatistics::UpsertMatchForGameService.new(
+      user: denis,
+      game: nil,
+      actor: denis,
+      mode: "singles",
+      outcome: "loss",
+      opponent: opponent_two,
+      played_at: played_at,
+      score: "2-4",
+      hours: 1.0,
+      stats: { "opponent_ids" => [ opponent_two.id ] }
+    ).call
+
+    matches = Match.where(user: denis, mode: "singles", played_at: played_at.to_date.all_day)
+    assert_equal 2, matches.count
+    assert_equal [ opponent_one.id, opponent_two.id ].sort, matches.map(&:opponent_id).sort
+    assert_equal 2.5, denis.player_statistic.reload.singles_hours
+  end
 end

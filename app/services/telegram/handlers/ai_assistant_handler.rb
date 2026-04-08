@@ -6,6 +6,7 @@ module Telegram
 
         def show(chat_id, message_id: nil)
           locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          user = Telegram::Helpers::UserLookup.find_user(chat_id)
           t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
           Telegram::Helpers::Conversation.start(chat_id, {
@@ -19,6 +20,10 @@ module Telegram
             [ { text: t.(:ai_snippet_find_coach), callback_data: "ai:snippet:find_coach" } ],
             [ { text: t.(:ai_back_to_menu), callback_data: "ai:back" } ]
           ]
+
+          if user&.admin?
+            buttons.insert(3, [ { text: t.(:ai_snippet_record_result), callback_data: "ai:snippet:record_result" } ])
+          end
 
           send_or_edit_with_buttons(chat_id, t.(:ai_assistant_welcome), buttons, message_id: message_id)
         end

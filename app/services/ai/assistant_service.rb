@@ -27,6 +27,11 @@ module Ai
       - pass team_a and team_b as comma-separated player names or telegram usernames
       - if the user refers to today's game, pass game_date: "today"
       - if the user gives an explicit date, pass it in a parseable format
+      - if the user gives hours played, pass them in the hours argument
+      - if the user wants to record score for an existing scheduled game, prefer passing game_id
+      - admins can record historical or off-schedule matches without an existing game by passing team_a, team_b, score, and game_date
+      - historical matches may be either 1v1 or 2v2
+      - if one user message contains several completed match results, call record_match_stats once per result
       Do not ask for clarification if you already have enough info — just call the tool.
       Keep answers concise and helpful.
 

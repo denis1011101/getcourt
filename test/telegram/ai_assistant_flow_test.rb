@@ -106,6 +106,37 @@ class Telegram::Flows::AiAssistantFlowTest < ActiveSupport::TestCase
     end
   end
 
+  test "service unavailable edits thinking message with localized fallback" do
+    with_memory_cache do
+      user = User.new(email: "ai-unavailable@example.test", telegram_chat_id: "657")
+      Telegram::Helpers::Conversation.start("657", "flow" => "ai_assistant")
+      edits = []
+      sends = []
+
+      stub_singleton(Telegram::Helpers::UserLookup, :locale_for, :ru) do
+        stub_singleton(Telegram::Helpers::UserLookup, :find_user, user) do
+          stub_singleton(Ai::AssistantService, :new, FakeAssistantServiceFactory.new(-> { raise RubyLLM::ServiceUnavailableError, "busy" })) do
+            stub_singleton(Telegram::Api, :send_simple, ->(*args, **kwargs) {
+              sends << [ args, kwargs ]
+              { "result" => { "message_id" => 45 } }
+            }) do
+              stub_singleton(Telegram::Api, :edit_message_text, ->(*args, **kwargs) {
+                edits << [ args, kwargs ]
+                true
+              }) do
+                assert Telegram::Flows::AiAssistantFlow.process_text({ "chat" => { "id" => "657" }, "text" => "find coach" })
+              end
+            end
+          end
+        end
+      end
+
+      assert_equal "Думаю...", sends[0][0][1]
+      assert_equal Telegram::I18n.t(:ai_service_unavailable, locale: :ru), edits[0][0][2]
+      assert_equal 1, sends.size
+    end
+  end
+
   test "respond passes cached history from previous telegram messages" do
     with_memory_cache do
       user = User.new(email: "ai-history@example.test", telegram_chat_id: "656")
@@ -150,6 +181,72 @@ class Telegram::Flows::AiAssistantFlowTest < ActiveSupport::TestCase
       end
 
       assert_equal [], Ai::ChatContextStore.fetch(channel: :telegram, key: "123")
+    end
+  end
+
+  test "record result callback sends prompt without calling ai" do
+    with_memory_cache do
+      user = User.new(email: "admin@example.test", telegram_chat_id: "987", admin: true)
+      callback = { "id" => "cb2", "data" => "ai:snippet:record_result", "message" => { "message_id" => 78, "chat" => { "id" => "987" } } }
+      sends = []
+
+      stub_singleton(Telegram::Helpers::UserLookup, :locale_for, :ru) do
+        stub_singleton(Telegram::Helpers::UserLookup, :find_user, user) do
+          stub_singleton(Telegram::Api, :answer_callback, ->(*) { true }) do
+            stub_singleton(Telegram::Api, :send_simple, ->(*args, **kwargs) {
+              sends << [ args, kwargs ]
+              true
+            }) do
+              stub_singleton(Ai::AssistantService, :new, ->(*) { flunk "AI should not be called for record result snippet" }) do
+                assert Telegram::Flows::AiAssistantFlow.handle_callback(callback)
+              end
+            end
+          end
+        end
+      end
+
+      assert_equal "ai_assistant", Telegram::Helpers::Conversation.get("987")["flow"]
+      assert_equal Telegram::I18n.t(:ai_snippet_record_result_prompt, locale: :ru), sends[0][0][1]
+    end
+  end
+
+  test "structured record result message bypasses ai and records multiple matches" do
+    with_memory_cache do
+      admin = User.create!(email: "structured-admin@example.test", name: "Denis", telegram_username: "denis1011101", telegram_chat_id: "988", admin: true)
+      User.create!(email: "structured-opponent-one@example.test", name: "Aleksandr", telegram_username: "AleksanderKorobkin")
+      User.create!(email: "structured-opponent-two@example.test", name: "Keklil", telegram_username: "Keklil")
+      Telegram::Helpers::Conversation.start("988", "flow" => "ai_assistant")
+      sends = []
+      text = <<~TEXT.strip
+        Дата: 2026-04-08
+        Часы: 1.5
+        Команда A: @denis1011101
+        Команда B: @AleksanderKorobkin
+        Счет: 4:2
+
+        Дата: 2026-04-08
+        Часы: 1.5
+        Команда A: @denis1011101
+        Команда B: @Keklil
+        Счет: 2:4
+      TEXT
+
+      stub_singleton(Telegram::Helpers::UserLookup, :locale_for, :ru) do
+        stub_singleton(Telegram::Helpers::UserLookup, :find_user, admin) do
+          stub_singleton(Telegram::Api, :send_simple, ->(*args, **kwargs) {
+            sends << [ args, kwargs ]
+            true
+          }) do
+            stub_singleton(Ai::AssistantService, :new, ->(*) { flunk "AI should not be called for structured result messages" }) do
+              assert Telegram::Flows::AiAssistantFlow.process_text({ "chat" => { "id" => "988" }, "text" => text })
+            end
+          end
+        end
+      end
+
+      assert_equal 4, Match.where(mode: "singles", played_at: Date.new(2026, 4, 8).all_day).count
+      assert_includes sends[0][0][1], "1. @denis1011101 won 4-2"
+      assert_includes sends[0][0][1], "2. @Keklil won 2-4"
     end
   end
 

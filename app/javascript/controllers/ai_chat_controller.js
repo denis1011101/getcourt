@@ -57,6 +57,8 @@ export default class extends Controller {
       this.quickRepliesTarget.classList.add("hidden")
     }
     this.inputTarget.value = message
+    this.inputTarget.focus()
+    if (event.params.mode === "insert") return
     this.send(event)
   }
 
