@@ -40,10 +40,7 @@ class TennisLifeController < ApplicationController
 
   def statistics
     @rating_rows = build_rating_rows
-    @pagy, @recent_matches = pagy(
-      Match.includes(:user, :opponent, :game).order(played_at: :desc, id: :desc),
-      items: MATCHES_PER_PAGE
-    )
+    @pagy, @recent_matches = pagy_array(build_recent_match_events)
   end
 
   private
@@ -77,5 +74,52 @@ class TennisLifeController < ApplicationController
         doubles_rating: (ps.doubles_rating || 1500.0)
       }
     end.sort_by { |row| [ -row[:pct], -row[:wins], -row[:games] ] }
+  end
+
+  def build_recent_match_events
+    Match.includes(:user, :opponent, :game)
+      .order(played_at: :desc, id: :desc)
+      .to_a
+      .group_by { |match| recent_match_event_key(match) }
+      .values
+      .map { |group| select_recent_match_representative(group) }
+  end
+
+  def recent_match_event_key(match)
+    stats = match.stats.to_h
+
+    participants =
+      if match.mode == "doubles"
+        team_a_ids = normalize_match_ids(stats["team_a_ids"])
+        team_b_ids = normalize_match_ids(stats["team_b_ids"])
+
+        if team_a_ids.any? && team_b_ids.any?
+          [ team_a_ids, team_b_ids ].sort
+        else
+          [ normalize_match_ids([ match.user_id, stats["partner_id"] ]), normalize_match_ids(stats["opponent_ids"]) ].sort
+        end
+      else
+        normalize_match_ids([ match.user_id, match.opponent_id, *Array(stats["opponent_ids"]) ])
+      end
+
+    [ match.game_id, match.mode, match.played_at&.to_i, match.score.to_s, participants ]
+  end
+
+  def select_recent_match_representative(group)
+    group.min_by do |match|
+      stats = match.stats.to_h
+      participants =
+        if match.mode == "doubles"
+          normalize_match_ids([ *Array(stats["team_a_ids"]), *Array(stats["team_b_ids"]), match.user_id ])
+        else
+          normalize_match_ids([ match.user_id, match.opponent_id, *Array(stats["opponent_ids"]) ])
+        end
+
+      [ participants.index(match.user_id) || participants.length, match.id ]
+    end
+  end
+
+  def normalize_match_ids(values)
+    Array(values).map(&:to_i).reject(&:zero?).uniq.sort
   end
 end

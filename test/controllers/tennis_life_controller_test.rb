@@ -218,6 +218,40 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "2v2"
   end
 
+  test "statistics deduplicates mirrored player-centric singles rows" do
+    Match.delete_all
+    played_at = Time.current.change(usec: 0)
+
+    Match.create!(
+      user: users(:one),
+      opponent: users(:two),
+      mode: "singles",
+      outcome: "win",
+      played_at: played_at,
+      score: "6-4 6-3",
+      stats: { "opponent_ids" => [ users(:two).id ] }
+    )
+
+    Match.create!(
+      user: users(:two),
+      opponent: users(:one),
+      mode: "singles",
+      outcome: "loss",
+      played_at: played_at,
+      score: "6-4 6-3",
+      stats: { "opponent_ids" => [ users(:one).id ] }
+    )
+
+    get tennis_life_statistics_url
+
+    assert_response :success
+    assert_equal 1, assigns(:recent_matches).size
+    assert_select "article", count: 1
+    assert_includes response.body, "6-4 6-3"
+  ensure
+    Match.delete_all
+  end
+
   test "statistics paginates recent matches from newest to oldest" do
     Match.delete_all
 
