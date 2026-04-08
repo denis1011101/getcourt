@@ -93,6 +93,7 @@ module Telegram
             buttons << [ { text: t.(:delete), callback_data: "game:delete:#{game.id}:#{page}" } ]
           end
 
+          buttons << [ { text: t.(:share_game), callback_data: "game:share:#{game.id}:#{page}" } ]
           buttons << [ { text: t.(:open_in_browser), url: game_url } ] unless host.to_s.include?("localhost")
           buttons << [ { text: t.(:back_to_games), callback_data: "menu:games:page:#{page}" } ]
 

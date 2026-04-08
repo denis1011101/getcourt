@@ -1,6 +1,7 @@
 require "net/http"
 require "uri"
 require "json"
+require "securerandom"
 
 module Telegram
   module Api
@@ -38,6 +39,29 @@ module Telegram
       params = { "chat_id" => chat_id.to_s, "text" => text.to_s }
       params["parse_mode"] = parse_mode if parse_mode.present?
       post("sendMessage", params)
+    end
+
+    def self.send_photo(chat_id, photo_path, caption: nil, parse_mode: nil)
+      return false if TOKEN.to_s.empty?
+
+      uri = URI("https://api.telegram.org/bot#{TOKEN}/sendPhoto")
+      boundary = "----GetCourtTelegram#{SecureRandom.hex(12)}"
+      body = String.new.b
+
+      add_multipart_field(body, boundary, "chat_id", chat_id.to_s)
+      add_multipart_field(body, boundary, "caption", caption.to_s) if caption.present?
+      add_multipart_field(body, boundary, "parse_mode", parse_mode.to_s) if parse_mode.present?
+      add_multipart_file(body, boundary, "photo", photo_path, "image/png")
+      body << "--#{boundary}--\r\n".b
+
+      request = Net::HTTP::Post.new(uri)
+      request["Content-Type"] = "multipart/form-data; boundary=#{boundary}"
+      request.body = body
+
+      Rails.logger.debug "[Telegram::Api] POST sendPhoto chat_id=#{chat_id.inspect} photo=#{photo_path.inspect}"
+      response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(request) }
+      Rails.logger.debug "[Telegram::Api] Response sendPhoto => #{response.body}"
+      JSON.parse(response.body) rescue {}
     end
 
     def self.answer_callback(callback_id, text = nil, show_alert: false)
@@ -80,5 +104,22 @@ module Telegram
     def self.delete_message(chat_id, message_id)
       post("deleteMessage", { "chat_id" => chat_id.to_s, "message_id" => message_id.to_i })
     end
+
+    def self.add_multipart_field(body, boundary, name, value)
+      body << "--#{boundary}\r\n".b
+      body << "Content-Disposition: form-data; name=\"#{name}\"\r\n\r\n".b
+      body << value.to_s.b
+      body << "\r\n".b
+    end
+    private_class_method :add_multipart_field
+
+    def self.add_multipart_file(body, boundary, name, path, content_type)
+      body << "--#{boundary}\r\n".b
+      body << "Content-Disposition: form-data; name=\"#{name}\"; filename=\"#{File.basename(path)}\"\r\n".b
+      body << "Content-Type: #{content_type}\r\n\r\n".b
+      body << File.binread(path)
+      body << "\r\n".b
+    end
+    private_class_method :add_multipart_file
   end
 end
