@@ -49,7 +49,7 @@ gem "image_processing", "~> 1.2"
 gem "dotenv-rails"
 
 # Pagination
-gem "pagy", "~> 43.4"
+gem "pagy", "~> 43.5"
 
 # Russian transliteration support
 gem "russian"
