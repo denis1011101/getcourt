@@ -16,6 +16,10 @@ module Telegram
           png.path
         end
 
+        def render_data(game, locale: Telegram::I18n::DEFAULT_LOCALE)
+          render_image(svg_markup(game, locale: locale)).write_to_buffer(".png")
+        end
+
         private
 
         def svg_markup(game, locale:)

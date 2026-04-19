@@ -103,7 +103,7 @@ class CoachesControllerTest < ActionDispatch::IntegrationTest
   test "renders pages_nav with links to other pages but not to itself" do
     get coaches_url
 
-    assert_select "a[href='#{contacts_path}']", "Contact"
+    assert_select "a[href='#{contacts_path}']", I18n.t("layout.nav.contacts")
     assert_select "a[href='#{ntrp_level_guide_path}']", "NTRP Guide"
     assert_select "a[href='#{tennis_formats_and_rules_path}']", "Formats & Rules"
     assert_select "a[href='#{partnership_path}']", "Partnership"

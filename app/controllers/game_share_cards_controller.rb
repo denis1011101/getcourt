@@ -3,15 +3,12 @@ class GameShareCardsController < ApplicationController
 
   def show
     game = Game.includes(:court, :participations).find(params[:game_id])
-    locale = telegram_locale
-    path = Telegram::Helpers::GameCardRenderer.render(game, locale: locale)
+    data = Telegram::Helpers::GameCardRenderer.render_data(game, locale: telegram_locale)
 
-    send_data File.binread(path),
+    send_data data,
       filename: "getcourt-game-#{game.id}.png",
       type: "image/png",
       disposition: "inline"
-  ensure
-    File.delete(path) if path.present? && File.exist?(path)
   end
 
   private

@@ -91,8 +91,8 @@ class GameInvitationsController < ApplicationController
   def resolve_users_by_handles(handles)
     users_by_handle = {}
     db_handles = handles + handles.map { |handle| "@#{handle}" }
-    username_columns.each do |column|
-      User.where("LOWER(#{column}) IN (:handles)", handles: db_handles).find_each do |user|
+    username_scopes(db_handles).each do |scope, column|
+      scope.find_each do |user|
         value = user.public_send(column).to_s.delete_prefix("@").downcase
         users_by_handle[value] = user if value.present?
       end
@@ -104,7 +104,25 @@ class GameInvitationsController < ApplicationController
     handles.index_with { |handle| users_by_handle[handle] }
   end
 
-  def username_columns
-    User.column_names & %w[telegram_username username]
+  def username_scopes(handles)
+    [
+      [ users_matching_telegram_usernames(handles), :telegram_username ],
+      [ users_matching_usernames(handles), :username ]
+    ]
+  end
+
+  def users_matching_telegram_usernames(handles)
+    users_matching_lowered_column(:telegram_username, handles)
+  end
+
+  def users_matching_usernames(handles)
+    return User.none unless User.column_names.include?("username")
+
+    users_matching_lowered_column(:username, handles)
+  end
+
+  def users_matching_lowered_column(column, handles)
+    lowered_column = Arel::Nodes::NamedFunction.new("LOWER", [ User.arel_table[column] ])
+    User.where(lowered_column.in(handles))
   end
 end
