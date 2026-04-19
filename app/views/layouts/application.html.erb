@@ -155,13 +155,17 @@
             Telegram
           </a>
           <% if user_signed_in? %>
-            <%= link_to edit_account_path, class: "inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600", title: "Account" do %>
+            <%= link_to edit_account_path, class: "inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600", title: t("layout.nav.account"), aria: { label: t("layout.nav.account") } do %>
               <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
               </svg>
             <% end %>
           <% else %>
-            <%= link_to t("layout.auth.sign_in"), new_session_path, class: "text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-slate-300 dark:hover:text-white" %>
+            <%= link_to new_session_path, class: "inline-flex items-center justify-center w-9 h-9 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition dark:bg-slate-700 dark:text-slate-100 dark:hover:bg-slate-600", title: t("layout.auth.sign_in"), aria: { label: t("layout.auth.sign_in") } do %>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
+              </svg>
+            <% end %>
           <% end %>
         </div>
       </nav>

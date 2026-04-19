@@ -39,6 +39,38 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     user&.destroy
   end
 
+  test "authenticated session is shared across locale subdomains" do
+    host! "getcourt.co"
+    user_email = "shared_session_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: user_email }
+    user = User.find_by!(email: user_email)
+
+    host! "ru.getcourt.co"
+    get edit_account_url
+
+    assert_response :success
+    assert_includes response.body, user.email
+  ensure
+    user&.destroy
+  end
+
+  test "sign out clears shared session across locale subdomains" do
+    host! "getcourt.co"
+    user_email = "shared_logout_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: user_email }
+    user = User.find_by!(email: user_email)
+
+    host! "ru.getcourt.co"
+    delete destroy_session_url
+
+    host! "getcourt.co"
+    get edit_account_url
+
+    assert_redirected_to new_session_path
+  ensure
+    user&.destroy
+  end
+
   test "favorites mode saves favorite courts and clears court note" do
     user_email = "favorite_courts_#{SecureRandom.hex(4)}@example.com"
     court = Court.create!(name: "Favorite Court")
