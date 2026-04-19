@@ -2,6 +2,7 @@ class ApplicationController < ActionController::Base
   include Pagy::Method
   # Browser support check (keeps tolerant policy; skips in development and for non-HTML requests).
   before_action :check_browser_support, if: -> { request.format.html? }
+  before_action :set_locale_from_subdomain
 
   protect_from_forgery with: :exception
   before_action :authenticate_user!
@@ -9,6 +10,11 @@ class ApplicationController < ActionController::Base
   helper_method :current_user, :user_signed_in?, :sign_in, :sign_out, :geocoding_exceeded?, :can_manage?, :can_remove_participant?
 
   private
+
+  def set_locale_from_subdomain
+    locale = request.subdomains.first
+    I18n.locale = I18n.available_locales.map(&:to_s).include?(locale) ? locale : I18n.default_locale
+  end
 
   def check_browser_support
     # If Browser gem is not available or in development, skip strict checks.

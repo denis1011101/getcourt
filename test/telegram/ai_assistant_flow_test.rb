@@ -206,7 +206,13 @@ class Telegram::Flows::AiAssistantFlowTest < ActiveSupport::TestCase
       end
 
       assert_equal "ai_assistant", Telegram::Helpers::Conversation.get("987")["flow"]
-      assert_equal Telegram::I18n.t(:ai_snippet_record_result_prompt, locale: :ru), sends[0][0][1]
+      prompt = sends[0][0][1]
+      assert_equal Telegram::I18n.t(:ai_snippet_record_result_prompt, locale: :ru), prompt
+      assert_equal "Markdown", sends[0][1][:parse_mode]
+      assert_includes prompt, "Дата: ГГГГ-ММ-ДД"
+      assert_includes prompt, "2026-04-08 — это 8 апреля 2026"
+      assert_includes prompt, "```"
+      assert_includes prompt, "Время: 19:00"
     end
   end
 
@@ -219,12 +225,14 @@ class Telegram::Flows::AiAssistantFlowTest < ActiveSupport::TestCase
       sends = []
       text = <<~TEXT.strip
         Дата: 2026-04-08
+        Время: 19:00
         Часы: 1.5
         Команда A: @denis1011101
         Команда B: @AleksanderKorobkin
         Счет: 4:2
 
         Дата: 2026-04-08
+        Время: 20:30
         Часы: 1.5
         Команда A: @denis1011101
         Команда B: @Keklil
@@ -245,6 +253,8 @@ class Telegram::Flows::AiAssistantFlowTest < ActiveSupport::TestCase
       end
 
       assert_equal 4, Match.where(mode: "singles", played_at: Date.new(2026, 4, 8).all_day).count
+      assert_equal 2, Match.where(mode: "singles", played_at: Time.zone.parse("2026-04-08 19:00")).count
+      assert_equal 2, Match.where(mode: "singles", played_at: Time.zone.parse("2026-04-08 20:30")).count
       assert_includes sends[0][0][1], "1. @denis1011101 won 4-2"
       assert_includes sends[0][0][1], "2. @Keklil won 2-4"
     end

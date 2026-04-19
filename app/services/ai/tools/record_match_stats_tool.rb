@@ -4,6 +4,7 @@ module Ai
       description "Record match score for a game. Admins can also record off-schedule historical matches without an existing game."
       param :game_id, desc: "ID of the game to record stats for", required: false
       param :game_date, desc: "Game date, for example 'today' or '2026-03-24'", required: false
+      param :game_time, desc: "Game start time, for example '19:00'", required: false
       param :score, desc: 'Match score, for example "6-2 6-3"', required: true
       param :hours, desc: 'Hours played, for example "1.5"', required: false
       param :team_a, desc: "Comma-separated player names or telegram usernames for team A", required: true
@@ -32,6 +33,8 @@ module Ai
             case key.downcase
             when "date", "дата"
               attrs[:game_date] = value
+            when "time", "время"
+              attrs[:game_time] = value
             when "hours", "часы"
               attrs[:hours] = value
             when "team a", "команда a"
@@ -55,10 +58,10 @@ module Ai
         @user = user
       end
 
-      def execute(score:, team_a:, team_b:, game_id: nil, game_date: nil, hours: nil)
+      def execute(score:, team_a:, team_b:, game_id: nil, game_date: nil, game_time: nil, hours: nil)
         return { error: "User not authenticated." } unless @user
 
-        context = resolve_context(game_id: game_id, game_date: game_date)
+        context = resolve_context(game_id: game_id, game_date: game_date, game_time: game_time)
         return context if context.is_a?(Hash) && context[:error]
 
         game = context[:game]
@@ -111,7 +114,7 @@ module Ai
 
       private
 
-      def resolve_context(game_id:, game_date:)
+      def resolve_context(game_id:, game_date:, game_time:)
         if game_id.present?
           game = Game.find_by(id: game_id)
           return { game: game, played_at: game.date&.in_time_zone || Time.current } if game
@@ -122,7 +125,10 @@ module Ai
         date = parse_game_date(game_date.presence || "today")
         return { error: "Could not understand the game date: #{game_date}" } unless date
 
-        return { game: nil, played_at: date.in_time_zone.end_of_day } if @user.admin?
+        time = parse_game_time(game_time) if game_time.present?
+        return { error: "Could not understand the game time: #{game_time}" } if game_time.present? && !time
+
+        return { game: nil, played_at: historical_played_at(date, time) } if @user.admin?
 
         games = authorized_games.where(date: date).order(:time, :id).to_a
         return { game: games.first, played_at: games.first.date&.in_time_zone || Time.current } if games.one?
@@ -157,6 +163,25 @@ module Ai
         Date.parse(raw)
       rescue ArgumentError
         nil
+      end
+
+      def parse_game_time(value)
+        raw = value.to_s.strip
+        match = raw.match(/\A(\d{1,2}):(\d{2})\z/)
+        return nil unless match
+
+        hour = match[1].to_i
+        minute = match[2].to_i
+        return nil unless hour.between?(0, 23) && minute.between?(0, 59)
+
+        { hour: hour, minute: minute }
+      end
+
+      def historical_played_at(date, time)
+        played_at = date.in_time_zone
+        return played_at.end_of_day unless time
+
+        played_at.change(hour: time[:hour], min: time[:minute], sec: 0)
       end
 
       def resolve_players(raw_team, game)

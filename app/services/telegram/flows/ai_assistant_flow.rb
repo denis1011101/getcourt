@@ -33,7 +33,7 @@ module Telegram
 
             Telegram::Api.answer_callback(cb.cb_id, "") rescue nil
             Telegram::Helpers::Conversation.update(cb.chat_id, "flow" => "ai_assistant", "message_id" => cb.message_id)
-            Telegram::Api.send_simple(cb.chat_id, t.(:ai_snippet_record_result_prompt), parse_mode: nil)
+            Telegram::Api.send_simple(cb.chat_id, t.(:ai_snippet_record_result_prompt), parse_mode: "Markdown")
             true
           when "ai:back"
             Telegram::Api.answer_callback(cb.cb_id, "") rescue nil
