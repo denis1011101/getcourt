@@ -1,8 +1,6 @@
 class GamesController < ApplicationController
   include LocationFilters
 
-  SEO_HOST = "https://getcourt.co".freeze
-
   before_action :handle_mark_not_happened, only: [ :show ]
   before_action :set_game, only: %i[show edit update destroy toggle_urgent_player_search]
   before_action :authorize_manage_game!, only: %i[edit update destroy toggle_urgent_player_search]
@@ -24,7 +22,7 @@ class GamesController < ApplicationController
     end
 
     prepare_location_filters(court_city_names)
-    @canonical_games_url = "#{SEO_HOST}#{canonical_path || request.path}"
+    @canonical_games_url = "https://#{ApplicationHelper.canonical_host_for(request)}#{canonical_path || request.path}"
     @games_meta_title = games_meta_title_for(city_country_map)
     @games_meta_description = games_meta_description_for(city_country_map)
 
@@ -197,10 +195,10 @@ class GamesController < ApplicationController
 
     # with_coach / need coach
     if game.respond_to?(:with_coach) && game.with_coach?
-      badges << { text: "With coach",
+      badges << { text: I18n.t("games.badges.with_coach"),
                   classes: "inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 mr-2" }
     elsif game.respond_to?(:needs_coach) && game.needs_coach?
-      badges << { text: "Need coach",
+      badges << { text: I18n.t("games.badges.need_coach"),
                   classes: "inline-flex items-center rounded-full bg-blue-50/20 px-2 py-0.5 text-xs font-medium text-blue-700 mr-2" }
     end
 
@@ -210,14 +208,14 @@ class GamesController < ApplicationController
       taken = approved_participations.size
       spots_left = required - taken
       badges << {
-        text: "#{spots_left} spot#{'s' if spots_left != 1} left — #{taken}/#{required}",
+        text: I18n.t("games.badges.spots_left", count: spots_left, taken: taken, required: required),
         classes: "inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 mr-2"
       }
     end
 
     # recurring / weekly
     if game.respond_to?(:recurring) && game.recurring?
-      badges << { text: "Weekly",
+      badges << { text: I18n.t("games.badges.weekly"),
                   classes: "inline-flex items-center rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700 mr-2" }
     end
 
@@ -311,13 +309,13 @@ class GamesController < ApplicationController
     sport = params[:sport].to_s.titleize.presence
 
     if location.present? && sport.present?
-      "#{sport} games in #{location} — GetCourt"
+      I18n.t("games.meta.title.location_sport", sport: sport, location: location)
     elsif location.present?
-      "Tennis games in #{location} — GetCourt"
+      I18n.t("games.meta.title.location", location: location)
     elsif sport.present?
-      "#{sport} games near you — GetCourt"
+      I18n.t("games.meta.title.sport", sport: sport)
     else
-      "GetCourt — Find Tennis, Padel & Squash Games Near You"
+      I18n.t("games.meta.title.default")
     end
   end
 
@@ -326,13 +324,13 @@ class GamesController < ApplicationController
     sport = params[:sport].to_s.downcase.presence
 
     if location.present? && sport.present?
-      "Find #{sport} games in #{location}. Join a match or create your own on GetCourt."
+      I18n.t("games.meta.description.location_sport", sport: sport, location: location)
     elsif location.present?
-      "Find tennis, padel, table tennis and squash games in #{location}. Join a match or create your own on GetCourt."
+      I18n.t("games.meta.description.location", location: location)
     elsif sport.present?
-      "Find #{sport} games near you. Join a match or create your own on GetCourt."
+      I18n.t("games.meta.description.sport", sport: sport)
     else
-      "Join or create tennis, padel, table tennis and squash games. Find players and courts near you. Quick setup with Telegram reminders."
+      I18n.t("games.meta.description.default")
     end
   end
 

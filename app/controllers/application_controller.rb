@@ -3,6 +3,7 @@ class ApplicationController < ActionController::Base
   # Browser support check (keeps tolerant policy; skips in development and for non-HTML requests).
   before_action :check_browser_support, if: -> { request.format.html? }
   before_action :set_locale_from_subdomain
+  before_action :set_suggested_locale
 
   protect_from_forgery with: :exception
   before_action :authenticate_user!
@@ -14,6 +15,20 @@ class ApplicationController < ActionController::Base
   def set_locale_from_subdomain
     locale = request.subdomains.first
     I18n.locale = I18n.available_locales.map(&:to_s).include?(locale) ? locale : I18n.default_locale
+  end
+
+  def set_suggested_locale
+    return unless request.get? && request.format.html?
+    return unless request.host == ApplicationHelper::SEO_PRIMARY_HOST
+    return if cookies[:preferred_locale].present? || cookies[:locale_banner_dismissed].present?
+    return if crawler_request?
+
+    detected_locale = LocaleDetector.call(request, cookies)
+    @suggested_locale = detected_locale if detected_locale != I18n.default_locale.to_s
+  end
+
+  def crawler_request?
+    request.user_agent.to_s.match?(/Googlebot|Bingbot/i)
   end
 
   def check_browser_support

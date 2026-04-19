@@ -24,6 +24,21 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     user&.destroy
   end
 
+  test "account page shows current user statistics" do
+    user_email = "account_stats_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: user_email }
+    user = User.find_by!(email: user_email)
+    user.player_statistic.update!(singles_hours: 2.5, singles_games: 1, singles_wins: 1)
+
+    get edit_account_url
+
+    assert_response :success
+    assert_includes response.body, "Statistics"
+    assert_includes response.body, "Singles: 2.5h"
+  ensure
+    user&.destroy
+  end
+
   test "favorites mode saves favorite courts and clears court note" do
     user_email = "favorite_courts_#{SecureRandom.hex(4)}@example.com"
     court = Court.create!(name: "Favorite Court")

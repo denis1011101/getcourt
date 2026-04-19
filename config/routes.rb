@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  post "/locale/dismiss-banner", to: "locale#dismiss_banner", as: :dismiss_locale_banner
+  get "/locale/:locale", to: "locale#update", as: :set_locale, constraints: { locale: /en|ru|es/ }
   get "/contacts", to: "pages#contacts", as: :contacts
   get "/mission",  to: "pages#mission",  as: :mission
   get "/partnership", to: "pages#partnership", as: :partnership
@@ -32,6 +34,8 @@ Rails.application.routes.draw do
   end
 
   post "/games/:game_id/player_statistics", to: "player_statistics#create_for_game", as: :game_player_statistics
+  post "/games/:game_id/invitations", to: "game_invitations#create", as: :game_invitations
+  get "/games/:game_id/share-card", to: "game_share_cards#show", as: :game_share_card
 
   # auth
   get  "/sign_in",           to: "sessions#new",    as: :new_session

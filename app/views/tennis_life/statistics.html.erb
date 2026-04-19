@@ -1,30 +1,30 @@
-<% content_for :meta_title, "Tennis Player Rankings, ELO Ratings & Match Results | GetCourt" %>
-<% content_for :meta_description, "Complete amateur tennis player rankings with win rates and ELO ratings. Browse recent match results, scores and surfaces on the GetCourt platform." %>
+<% content_for :meta_title, t("tennis_life.statistics.meta_title") %>
+<% content_for :meta_description, t("tennis_life.statistics.meta_description") %>
 
 <div class="max-w-6xl mx-auto px-4 py-6 space-y-6">
   <div class="flex items-center justify-between gap-3">
     <div>
-      <h1 class="text-2xl font-semibold text-gray-900 dark:text-slate-100">Tennis Player Rankings & Match Results</h1>
-      <p class="mt-1 text-sm text-gray-600 dark:text-slate-400">Full player rankings with ELO ratings and recent match history on GetCourt.</p>
+      <h1 class="text-2xl font-semibold text-gray-900 dark:text-slate-100"><%= t("tennis_life.statistics.title") %></h1>
+      <p class="mt-1 text-sm text-gray-600 dark:text-slate-400"><%= t("tennis_life.statistics.subtitle") %></p>
     </div>
-    <%= link_to "Back to Tennis Life", tennis_life_path, class: "text-sm text-indigo-600 dark:text-indigo-400 hover:underline" %>
+    <%= link_to t("tennis_life.statistics.back"), tennis_life_path, class: "text-sm text-indigo-600 dark:text-indigo-400 hover:underline" %>
   </div>
 
   <section class="rounded-lg border bg-white p-4 dark:bg-slate-800/80 dark:border-white/10">
     <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_18rem] gap-5">
       <div>
-        <h2 class="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-4">Player Rankings & Win Rates</h2>
+        <h2 class="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-4"><%= t("tennis_life.statistics.rankings_title") %></h2>
 
         <% if @rating_rows.any? %>
           <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
               <thead>
                 <tr class="border-b border-gray-100 dark:border-white/10 text-left text-gray-500 dark:text-slate-400">
-                  <th class="py-2 pr-4 font-medium">Rank</th>
-                  <th class="py-2 pr-4 font-medium">Player</th>
+                  <th class="py-2 pr-4 font-medium"><%= t("tennis_life.statistics.rank") %></th>
+                  <th class="py-2 pr-4 font-medium"><%= t("tennis_life.statistics.player") %></th>
                   <th class="py-2 pr-4 font-medium">Telegram</th>
-                  <th class="py-2 pr-4 font-medium">Wins</th>
-                  <th class="py-2 pr-4 font-medium">Games</th>
+                  <th class="py-2 pr-4 font-medium"><%= t("tennis_life.statistics.wins") %></th>
+                  <th class="py-2 pr-4 font-medium"><%= t("tennis_life.statistics.games") %></th>
                   <th class="py-2 pr-4 font-medium">Win %</th>
                   <th class="py-2 pr-4 font-medium">Singles ELO</th>
                   <th class="py-2 font-medium">Doubles ELO</th>
@@ -56,21 +56,21 @@
             </table>
           </div>
         <% else %>
-          <p class="text-sm text-gray-500 dark:text-slate-400">No rating data yet.</p>
+          <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("tennis_life.index.no_rating_data") %></p>
         <% end %>
       </div>
 
       <aside class="self-start rounded-xl border border-indigo-100 bg-indigo-50/70 p-4 text-sm text-gray-700 dark:border-indigo-400/20 dark:bg-indigo-500/10 dark:text-slate-300">
-        <h3 class="font-semibold text-gray-900 dark:text-slate-100">What ELO means</h3>
-        <p class="mt-2">ELO is a rating that estimates player strength based on match results.</p>
-        <p class="mt-2"><span class="font-medium text-gray-900 dark:text-slate-100">Singles ELO</span> tracks 1v1 matches, and <span class="font-medium text-gray-900 dark:text-slate-100">Doubles ELO</span> tracks 2v2 matches separately.</p>
-        <p class="mt-2">Around <span class="font-medium text-gray-900 dark:text-slate-100">1500</span> is the usual starting point. The rating goes up after stronger results and down after losses.</p>
+        <h3 class="font-semibold text-gray-900 dark:text-slate-100"><%= t("tennis_life.statistics.elo_title") %></h3>
+        <p class="mt-2"><%= t("tennis_life.statistics.elo_p1") %></p>
+        <p class="mt-2"><%= t("tennis_life.statistics.elo_p2_html").html_safe %></p>
+        <p class="mt-2"><%= t("tennis_life.statistics.elo_p3_html").html_safe %></p>
       </aside>
     </div>
   </section>
 
   <section class="rounded-lg border bg-white p-4 dark:bg-slate-800/80 dark:border-white/10">
-    <h2 class="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-4">Recent Match Results</h2>
+    <h2 class="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-4"><%= t("tennis_life.statistics.recent_results") %></h2>
 
     <% if @recent_matches.any? %>
       <% related_ids = @recent_matches.flat_map { |match| match.stats.to_h.values_at("partner_id", "opponent_ids") }.flatten.compact.uniq %>
@@ -117,7 +117,7 @@
       </div>
       <%= render "shared/pagy", pagy: @pagy %>
     <% else %>
-      <p class="text-sm text-gray-500 dark:text-slate-400">No matches yet.</p>
+      <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("tennis_life.statistics.no_matches") %></p>
     <% end %>
   </section>
 

@@ -182,16 +182,55 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     court = Court.create!(name: "Ekb Court", city_name: "Yekaterinburg", moderation_status: "approved", approved_at: Time.current)
     Game.create!(court: court, user: users(:one), date: Date.current + 1.day, time: "10:00")
 
-    get games_browse_url(country_slug: "russia", city_slug: "yekaterinburg")
+    get games_browse_url(country_slug: "russia", city_slug: "yekaterinburg", host: "ru.getcourt.co")
 
     assert_response :success
-    assert_select "title", text: "Tennis games in Yekaterinburg, Russia — GetCourt"
-    assert_select "meta[name='description'][content='Find tennis, padel, table tennis and squash games in Yekaterinburg, Russia. Join a match or create your own on GetCourt.']", count: 1
-    assert_select "link[rel='canonical'][href='https://getcourt.co/games/russia/yekaterinburg']", count: 1
+    assert_select "title", text: "Теннисные игры в Yekaterinburg, Russia — GetCourt"
+    assert_select "meta[name='description'][content='Найдите игры в теннис, падел, настольный теннис и сквош в Yekaterinburg, Russia. Присоединяйтесь к матчу или создайте свой на GetCourt.']", count: 1
+    assert_select "link[rel='canonical'][href='https://ru.getcourt.co/games/russia/yekaterinburg']", count: 1
+    assert_select "link[rel='alternate'][hreflang='en'][href='https://getcourt.co/games/russia/yekaterinburg']", count: 1
+    assert_select "link[rel='alternate'][hreflang='ru'][href='https://ru.getcourt.co/games/russia/yekaterinburg']", count: 1
+    assert_select "link[rel='alternate'][hreflang='es'][href='https://es.getcourt.co/games/russia/yekaterinburg']", count: 1
+    assert_select "link[rel='alternate'][hreflang='x-default'][href='https://getcourt.co/games/russia/yekaterinburg']", count: 1
+    assert_select "meta[property='og:image'][content='https://ru.getcourt.co/og-image.png']", count: 1
   ensure
     Game.where(court_id: court&.id).delete_all
     court&.destroy
     City.where(id: city_ids).delete_all if city_ids
+  end
+
+  test "main english domain is canonical and has hreflang alternates" do
+    get root_url(host: "getcourt.co")
+
+    assert_response :success
+    assert_select "link[rel='canonical'][href='https://getcourt.co/']", count: 1
+    assert_select "link[rel='alternate'][hreflang='en'][href='https://getcourt.co/']", count: 1
+    assert_select "link[rel='alternate'][hreflang='ru'][href='https://ru.getcourt.co/']", count: 1
+    assert_select "link[rel='alternate'][hreflang='es'][href='https://es.getcourt.co/']", count: 1
+    assert_select "link[rel='alternate'][hreflang='x-default'][href='https://getcourt.co/']", count: 1
+  end
+
+  test "en subdomain canonicalizes to main domain" do
+    get root_url(host: "en.getcourt.co")
+
+    assert_response :success
+    assert_select "link[rel='canonical'][href='https://getcourt.co/']", count: 1
+  end
+
+  test "spanish locale subdomain is indexable" do
+    get root_url(host: "es.getcourt.co")
+
+    assert_response :success
+    assert_select "html[lang='es']", count: 1
+    assert_select "meta[name='robots'][content='index, follow']", count: 1
+  end
+
+  test "unsupported locale subdomain is noindex" do
+    get root_url(host: "it.getcourt.co")
+
+    assert_response :success
+    assert_select "link[rel='canonical'][href='https://getcourt.co/']", count: 1
+    assert_select "meta[name='robots'][content='noindex, follow']", count: 1
   end
 
   test "index renders location filters stimulus payload for client-side city updates" do

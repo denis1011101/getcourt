@@ -1,0 +1,19 @@
+<% if @suggested_locale.present? %>
+  <div id="locale-suggestion" class="border-b border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-950 dark:border-indigo-500/20 dark:bg-indigo-950/40 dark:text-indigo-100">
+    <div class="mx-auto flex max-w-6xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <p>
+        <%= t("locale_suggestion.body", locale: @suggested_locale, locale_name: t("language_name", locale: @suggested_locale)) %>
+      </p>
+      <div class="flex items-center gap-2">
+        <%= link_to t("locale_suggestion.yes", locale: @suggested_locale),
+                    set_locale_url(locale: @suggested_locale, return_to: request.path),
+                    class: "inline-flex items-center rounded-full bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 transition" %>
+        <%= button_to t("locale_suggestion.stay", locale: @suggested_locale),
+                      dismiss_locale_banner_url(return_to: request.path),
+                      method: :post,
+                      form: { class: "inline" },
+                      class: "inline-flex items-center rounded-full border border-indigo-200 bg-white px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-50 transition dark:border-indigo-400/30 dark:bg-indigo-950 dark:text-indigo-100 dark:hover:bg-indigo-900" %>
+      </div>
+    </div>
+  </div>
+<% end %>

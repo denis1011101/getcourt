@@ -3,5 +3,5 @@
 User-agent: *
 Disallow:
 
-# Sitemap (update HOSTNAME/APP_HOST or hardcode your production host)
+# Multilingual sitemap
 Sitemap: https://getcourt.co/sitemap.xml

@@ -1,5 +1,5 @@
 namespace :sitemap do
-  desc "Generate public/sitemap.xml (uses HOSTNAME or APP_HOST env var, default https://getcourt.co)"
+  desc "Generate multilingual public/sitemap.xml"
   task generate: :environment do
     begin
       file = SitemapGenerator.generate!

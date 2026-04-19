@@ -99,6 +99,7 @@ class UsersController < ApplicationController
     @limit = params[:limit].to_i.nonzero? || CITY_SEARCH_DEFAULT_LIMIT
     @available_courts = sorted_available_courts_for(@user)
     @court_preferences_mode ||= default_court_preferences_mode(@user)
+    prepare_player_statistics_state
 
     if params[:selected_city_name].present?
       @selected_city_name = params[:selected_city_name]
@@ -115,6 +116,16 @@ class UsersController < ApplicationController
 
     local, other = courts.partition { |court| court.city_name.to_s.strip.downcase == user_city }
     local + other
+  end
+
+  def prepare_player_statistics_state
+    @player_statistic = @user.player_statistic || @user.create_player_statistic
+    @recent_matches = Match.where(user: @user).includes(:opponent, :game).order(played_at: :desc).limit(5).to_a
+    related_ids = @recent_matches.flat_map do |match|
+      stats = match.stats.to_h
+      [ match.opponent_id, stats["partner_id"], *Array(stats["opponent_ids"]) ]
+    end.compact.uniq
+    @names_by_id = User.where(id: related_ids).map { |user| [ user.id, Telegram::Helpers::UserLookup.display_name(user, fallback: "User ##{user.id}") ] }.to_h
   end
 
   def default_court_preferences_mode(user)

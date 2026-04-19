@@ -1,37 +1,21 @@
 class SitemapGenerator
   include Rails.application.routes.url_helpers
 
-  DEFAULT_HOST = ENV.fetch("HOSTNAME") { ENV.fetch("APP_HOST", "https://getcourt.co") }
-
   def self.generate!
     new.generate!
   end
 
-  def initialize(host: DEFAULT_HOST)
-    @host = host.chomp("/")
-    Rails.application.routes.default_url_options[:host] = URI(@host).host
-    Rails.application.routes.default_url_options[:protocol] = URI(@host).scheme || "https"
-  end
-
   def generate!
     xml = +"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-    xml << "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n"
+    xml << "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\" xmlns:xhtml=\"http://www.w3.org/1999/xhtml\">\n"
 
-    add_url(xml, root_url)
-    add_url(xml, courts_url)
-    add_url(xml, games_url)
-    add_url(xml, tennis_life_url)
-    add_url(xml, contacts_url)
-    add_url(xml, mission_url)
-    add_url(xml, partnership_url)
-    add_url(xml, tennis_formats_and_rules_url)
-    add_url(xml, ntrp_level_guide_url)
-    Court.find_each do |court|
-      add_url(xml, court_url(court), court.updated_at)
-    end
+    sitemap_paths.each do |path, lastmod|
+      alternates = localized_alternates(path)
+      x_default = absolute_url_for_locale(I18n.default_locale, path)
 
-    Game.find_each do |game|
-      add_url(xml, game_url(game), game.updated_at)
+      ApplicationHelper::SEO_INDEXABLE_LOCALES.each do |locale|
+        add_url(xml, absolute_url_for_locale(locale, path), lastmod, alternates: alternates, x_default: x_default)
+      end
     end
 
     xml << "</urlset>\n"
@@ -44,54 +28,53 @@ class SitemapGenerator
 
   private
 
-  def root_url
-    "#{@host}/"
+  def sitemap_paths
+    static_paths + dynamic_paths
   end
 
-  def court_url(court)
-    "#{@host}#{Rails.application.routes.url_helpers.court_path(court)}"
+  def static_paths
+    [
+      [ root_path, nil ],
+      [ courts_path, nil ],
+      [ tennis_life_path, nil ],
+      [ contacts_path, nil ],
+      [ mission_path, nil ],
+      [ partnership_path, nil ],
+      [ tennis_formats_and_rules_path, nil ],
+      [ ntrp_level_guide_path, nil ]
+    ]
   end
 
-  def courts_url
-    "#{@host}#{Rails.application.routes.url_helpers.courts_path}"
+  def dynamic_paths
+    court_paths + game_paths
   end
 
-  def games_url
-    "#{@host}#{Rails.application.routes.url_helpers.root_path}"
+  def court_paths
+    Court.find_each.map { |court| [ court_path(court), court.updated_at ] }
   end
 
-  def game_url(game)
-    "#{@host}#{Rails.application.routes.url_helpers.game_path(game)}"
+  def game_paths
+    Game.find_each.map { |game| [ game_path(game), game.updated_at ] }
   end
 
-  def tennis_life_url
-    "#{@host}#{Rails.application.routes.url_helpers.tennis_life_path}"
+  def localized_alternates(path)
+    ApplicationHelper::SEO_INDEXABLE_LOCALES.map do |locale|
+      [ locale, absolute_url_for_locale(locale, path) ]
+    end
   end
 
-  def contacts_url
-    "#{@host}#{Rails.application.routes.url_helpers.contacts_path}"
+  def absolute_url_for_locale(locale, path)
+    "https://#{ApplicationHelper.host_for_locale(locale)}#{path}"
   end
 
-  def mission_url
-    "#{@host}#{Rails.application.routes.url_helpers.mission_path}"
-  end
-
-  def partnership_url
-    "#{@host}#{Rails.application.routes.url_helpers.partnership_path}"
-  end
-
-  def tennis_formats_and_rules_url
-    "#{@host}#{Rails.application.routes.url_helpers.tennis_formats_and_rules_path}"
-  end
-
-  def ntrp_level_guide_url
-    "#{@host}#{Rails.application.routes.url_helpers.ntrp_level_guide_path}"
-  end
-
-  def add_url(xml, loc, lastmod = nil)
+  def add_url(xml, loc, lastmod = nil, alternates: [], x_default: nil)
     xml << "  <url>\n"
     xml << "    <loc>#{CGI.escapeHTML(loc)}</loc>\n"
     xml << "    <lastmod>#{lastmod.to_date.iso8601}</lastmod>\n" if lastmod
+    alternates.each do |locale, href|
+      xml << "    <xhtml:link rel=\"alternate\" hreflang=\"#{CGI.escapeHTML(locale)}\" href=\"#{CGI.escapeHTML(href)}\" />\n"
+    end
+    xml << "    <xhtml:link rel=\"alternate\" hreflang=\"x-default\" href=\"#{CGI.escapeHTML(x_default)}\" />\n" if x_default
     xml << "  </url>\n"
   end
 end

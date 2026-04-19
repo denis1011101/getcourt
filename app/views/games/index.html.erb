@@ -22,8 +22,8 @@
     </svg>
 
     <div class="relative">
-      <h1 class="text-2xl md:text-4xl font-bold tracking-tight">Find your next game</h1>
-      <p class="mt-2 text-white/90 dark:text-indigo-100 text-sm md:text-base max-w-xl">Tennis, padel, table tennis — join a match near you or create your own.</p>
+      <h1 class="text-2xl md:text-4xl font-bold tracking-tight"><%= t("games.index.hero_title") %></h1>
+      <p class="mt-2 text-white/90 dark:text-indigo-100 text-sm md:text-base max-w-xl"><%= t("games.index.hero_subtitle") %></p>
 
       <%= render "shared/location_filters",
             url: root_path,
@@ -68,7 +68,7 @@
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"/>
               </svg>
-              My Games
+              <%= t("games.index.my_games") %>
             </span>
           </button>
         <% end %>
@@ -104,7 +104,7 @@
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"/>
             </svg>
-            Free spots
+            <%= t("games.index.free_spots") %>
           </span>
         </button>
       <% end %>
@@ -115,7 +115,7 @@
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
             </svg>
-            Reset
+            <%= t("common.reset") %>
           </span>
         <% end %>
       <% end %>
@@ -126,8 +126,8 @@
   <% active_filters = location_filter_labels %>
   <% active_filters << params[:sport]&.titleize if params[:sport].present? %>
   <% active_filters << params[:skill_level]&.titleize if params[:skill_level].present? %>
-  <% active_filters << "Free spots" if params[:with_spots].present? %>
-  <% active_filters << "My Games" if params[:my_games].present? %>
+  <% active_filters << t("games.index.free_spots") if params[:with_spots].present? %>
+  <% active_filters << t("games.index.my_games") if params[:my_games].present? %>
 
   <%= render "shared/results_summary", count: @games.size, noun: "game", filters: active_filters do %>
     <% if user_signed_in? %>
@@ -135,7 +135,7 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
         </svg>
-        New Game
+        <%= t("games.index.new_game") %>
       <% end %>
     <% end %>
   <% end %>
@@ -146,10 +146,10 @@
       <svg class="mx-auto w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
       </svg>
-      <p class="text-gray-500 font-medium">No games scheduled yet</p>
-      <p class="text-gray-400 text-sm mt-1">Be the first to create a game!</p>
+      <p class="text-gray-500 font-medium"><%= t("games.index.empty_title") %></p>
+      <p class="text-gray-400 text-sm mt-1"><%= t("games.index.empty_subtitle") %></p>
       <% if user_signed_in? %>
-        <%= link_to "Create Game", new_game_path, class: "inline-flex items-center gap-1.5 mt-4 rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition" %>
+        <%= link_to t("games.index.create_game"), new_game_path, class: "inline-flex items-center gap-1.5 mt-4 rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition" %>
       <% end %>
     </div>
   <% else %>

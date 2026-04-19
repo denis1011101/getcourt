@@ -1,45 +1,45 @@
-<% content_for :meta_title, "Our Mission — GetCourt" %>
-<% content_for :meta_description, "Our mission is to unite tennis enthusiasts and build the world’s largest community so everyone can find an opponent within 24 hours and discover new courts daily." %>
+<% content_for :meta_title, t("pages.mission.meta_title") %>
+<% content_for :meta_description, t("pages.mission.meta_description") %>
 
 <div class="max-w-5xl mx-auto px-4 py-6">
   <div class="bg-white dark:bg-slate-800/80 rounded-lg border dark:border-white/10 p-6 shadow-sm">
-    <h1 class="text-2xl font-semibold mb-4">Our Mission</h1>
+    <h1 class="text-2xl font-semibold mb-4"><%= t("pages.mission.title") %></h1>
 
     <p class="text-gray-700 dark:text-slate-300 mb-6">
-      We connect tennis lovers and aim to build the world’s largest community of players. Our goal is that anyone can find an opponent within 24 hours and discover new courts every day.
+      <%= t("pages.mission.intro") %>
     </p>
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
       <div class="space-y-3">
-        <h2 class="text-lg font-medium text-gray-900 dark:text-slate-100">Find opponents fast</h2>
-        <p class="text-gray-600 dark:text-slate-400">Create or join games and meet opponents nearby — we want you on court within 24 hours.</p>
+        <h2 class="text-lg font-medium text-gray-900 dark:text-slate-100"><%= t("pages.mission.opponents_title") %></h2>
+        <p class="text-gray-600 dark:text-slate-400"><%= t("pages.mission.opponents_text") %></p>
       </div>
 
       <div class="space-y-3">
-        <h2 class="text-lg font-medium text-gray-900 dark:text-slate-100">Discover new courts</h2>
-        <p class="text-gray-600 dark:text-slate-400">Explore and bookmark courts, learn where people play and try new locations every day.</p>
+        <h2 class="text-lg font-medium text-gray-900 dark:text-slate-100"><%= t("pages.mission.courts_title") %></h2>
+        <p class="text-gray-600 dark:text-slate-400"><%= t("pages.mission.courts_text") %></p>
       </div>
 
       <div class="space-y-3">
-        <h2 class="text-lg font-medium text-gray-900 dark:text-slate-100">Connect with coaches</h2>
-        <p class="text-gray-600 dark:text-slate-400">Browse verified coaches in your city and get matched with a trainer via our AI assistant in Telegram.</p>
+        <h2 class="text-lg font-medium text-gray-900 dark:text-slate-100"><%= t("pages.mission.coaches_title") %></h2>
+        <p class="text-gray-600 dark:text-slate-400"><%= t("pages.mission.coaches_text") %></p>
       </div>
     </div>
 
     <div class="mb-6">
-      <h2 class="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2">How you can help</h2>
+      <h2 class="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2"><%= t("pages.mission.help_title") %></h2>
       <ul class="list-disc list-inside text-gray-600 dark:text-slate-400 space-y-2">
-        <li>Create and invite players to games.</li>
-        <li>Report bugs and request features on GitHub.</li>
-        <li>Share and add courts so others can find them.</li>
+        <li><%= t("pages.mission.help_games") %></li>
+        <li><%= t("pages.mission.help_bugs") %></li>
+        <li><%= t("pages.mission.help_courts") %></li>
       </ul>
     </div>
 
     <ul class="divide-y dark:divide-white/10 border-t border-b dark:border-white/10">
       <li class="p-4 flex items-center justify-between">
         <div>
-          <p class="font-medium">Open-source</p>
-          <p class="text-sm text-gray-600 dark:text-slate-400">Contribute, report issues or suggest features on GitHub.</p>
+          <p class="font-medium"><%= t("pages.mission.open_source") %></p>
+          <p class="text-sm text-gray-600 dark:text-slate-400"><%= t("pages.mission.open_source_text") %></p>
         </div>
         <div>
           <%= link_to "GitHub", "https://github.com/denis1011101/getcourt", target: "_blank", rel: "noopener", class: "text-sm text-indigo-600 transition-colors hover:text-indigo-800 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300" %>
@@ -49,15 +49,15 @@
 
     <div class="mt-6 flex flex-wrap gap-3">
       <% sign_in_path = (respond_to?(:new_session_path) && new_session_path) || '/sign_in' rescue '/sign_in' %>
-      <% action_text = user_signed_in? ? "Create Game" : "Login to Create Game" %>
+      <% action_text = user_signed_in? ? t("games.index.create_game") : t("pages.mission.login_to_create") %>
       <%= link_to action_text, (user_signed_in? ? new_game_path : sign_in_path), class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-500" %>
 
       <%= link_to courts_path, class: "inline-flex items-center rounded-md border dark:border-white/10 px-4 py-2 text-gray-700 dark:text-slate-300 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/5" do %>
-        Explore Courts
+        <%= t("pages.mission.explore_courts") %>
       <% end %>
 
       <%= link_to contacts_path, class: "inline-flex items-center rounded-md px-4 py-2 text-sm text-indigo-600 transition-colors hover:text-indigo-800 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300" do %>
-        Contact us
+        <%= t("pages.mission.contact_us") %>
       <% end %>
     </div>
   </div>

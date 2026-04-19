@@ -1,0 +1,13 @@
+<% compact = local_assigns.fetch(:compact, false) %>
+<% wrapper_class = compact ? "inline-flex h-9 items-center rounded-full border border-gray-200 bg-white px-1 text-xs font-medium dark:border-white/10 dark:bg-slate-800" : "inline-flex h-9 items-center rounded-full border border-gray-200 bg-white px-1.5 text-sm font-medium dark:border-white/10 dark:bg-slate-800" %>
+<% link_class = compact ? "rounded-full px-1.5 py-1 transition" : "rounded-full px-2 py-1 transition" %>
+
+<nav class="<%= wrapper_class %>" aria-label="<%= t("locale_suggestion.language_label") %>">
+  <% ApplicationHelper::SEO_INDEXABLE_LOCALES.each do |loc| %>
+    <% active = I18n.locale.to_s == loc %>
+    <%= link_to loc.upcase,
+                set_locale_path(locale: loc, return_to: request.path),
+                class: "#{link_class} #{active ? 'bg-indigo-600 text-white' : 'text-gray-700 hover:bg-gray-50 dark:text-slate-100 dark:hover:bg-slate-700'}",
+                aria: { current: ("true" if active) } %>
+  <% end %>
+</nav>

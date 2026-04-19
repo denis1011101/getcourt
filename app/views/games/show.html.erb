@@ -1,6 +1,6 @@
 <% approved_count = @game.participations.respond_to?(:approved) ? @game.participations.approved.count : @game.participations.count %>
-<% content_for :meta_title, "#{@game.court&.name} — game on #{(@game.next_date || @game.date).strftime('%B %d, %Y')}" %>
-<% content_for :meta_description, "Join #{approved_count} players at #{@game.court&.name}. Create or join games for tennis, padel and table tennis on GetCourt." %>
+<% content_for :meta_title, t("games.show.meta_title", court: @game.court&.name, date: l((@game.next_date || @game.date).to_date, format: :long)) %>
+<% content_for :meta_description, t("games.show.meta_description", count: approved_count, court: @game.court&.name) %>
 <% content_for :head do %>
   <script type="application/ld+json">
     <%= json_escape({
@@ -17,22 +17,27 @@
 <div class="max-w-5xl mx-auto px-4 py-6">
   <!-- Breadcrumb -->
   <nav class="text-sm text-gray-500 dark:text-slate-400 mb-4">
-    <%= link_to "Home", root_path, class: "hover:text-gray-700 dark:hover:text-white" %> &rsaquo;
-    <%= link_to "Games", root_path, class: "hover:text-gray-700 dark:hover:text-white" %> &rsaquo;
-    <span class="text-gray-900 dark:text-slate-100">Game <%= display_date(@game) %></span>
+    <%= link_to t("layout.nav.home"), root_path, class: "hover:text-gray-700 dark:hover:text-white" %> &rsaquo;
+    <%= link_to t("layout.nav.games"), root_path, class: "hover:text-gray-700 dark:hover:text-white" %> &rsaquo;
+    <span class="text-gray-900 dark:text-slate-100"><%= t("games.show.game_on", date: display_date(@game)) %></span>
   </nav>
 
-  <div class="flex items-center justify-between mb-6">
+  <div class="flex items-center justify-between gap-4 mb-6">
     <div>
-      <h1 class="text-2xl font-semibold">Game details</h1>
-      <p class="text-gray-600 dark:text-slate-400">Full information about the game and participants.</p>
+      <h1 class="text-2xl font-semibold"><%= t("games.show.title") %></h1>
+      <p class="text-gray-600 dark:text-slate-400"><%= t("games.show.subtitle") %></p>
     </div>
+    <%= link_to "Share image",
+                game_share_card_path(@game),
+                target: "_blank",
+                rel: "noopener",
+                class: "shrink-0 inline-flex items-center rounded-md border border-indigo-300 px-3 py-2 text-sm font-medium text-indigo-700 transition hover:bg-indigo-50 dark:border-white/15 dark:text-slate-100 dark:hover:bg-slate-700/60" %>
   </div>
 
   <div class="bg-white rounded-lg border p-6 shadow-sm dark:bg-slate-800/80 dark:border-white/10">
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
       <div>
-        <p class="text-sm text-gray-500 dark:text-slate-400">Date</p>
+        <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("games.show.date") %></p>
         <p class="text-lg font-medium text-gray-900 dark:text-slate-100">
           <% game_badges(@game).each do |b| %>
             <% badge_text = b[:text].to_s %>
@@ -56,24 +61,36 @@
       </div>
 
       <div>
-        <p class="text-sm text-gray-500 dark:text-slate-400">Time</p>
+        <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("games.show.time") %></p>
         <p class="text-lg font-medium text-gray-900 dark:text-slate-100"><%= display_time(@game) %></p>
       </div>
 
       <div class="sm:col-span-2">
-        <p class="text-sm text-gray-500 dark:text-slate-400">Court</p>
+        <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("games.show.court") %></p>
         <p class="text-lg font-medium text-indigo-700 dark:text-indigo-400">
           <%= link_to @game.court.name, court_path(@game.court), class: "transition-colors hover:text-indigo-800 hover:underline dark:hover:text-indigo-300" %>
         </p>
       </div>
     </div>
 
-    <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Participants</h2>
+    <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2"><%= t("games.show.participants") %></h2>
     <%= render "participations/list", game: @game %>
     <%= render "participations/controls", game: @game %>
 
     <% if current_user.present? && (current_user == @game.user || (current_user.respond_to?(:admin?) && current_user.admin?)) %>
-      <div class="mt-4">
+      <div class="mt-4 space-y-4">
+        <div class="rounded-md border border-gray-200 p-3 dark:border-white/10">
+          <p class="mb-2 text-sm font-semibold text-gray-700 dark:text-slate-300">Invite players</p>
+          <%= form_with url: game_invitations_path(@game), method: :post, local: true, class: "flex flex-col gap-2 sm:flex-row" do %>
+            <%= text_field_tag :usernames,
+                  nil,
+                  placeholder: "@alice @bob",
+                  class: "flex-1 rounded border-gray-300 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+            <%= submit_tag "Send invites",
+                  class: "inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700" %>
+          <% end %>
+        </div>
+
         <%= button_to (@game.urgent_player_search? ? "Cancel urgent search" : "Announce urgent search"),
               toggle_urgent_player_search_game_path(@game),
               method: :post,
@@ -114,9 +131,9 @@
              PlayerStatisticEntry.where(game: @game).exists? || Match.where(game_id: @game.id).exists?
            end %>
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300">Enter statistics</h2>
+        <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("games.show.enter_statistics") %></h2>
         <% if stats_filled %>
-          <span class="text-xs font-medium text-green-700 bg-green-50 dark:bg-green-500/15 dark:text-green-200 px-2 py-1 rounded">Statistics saved</span>
+          <span class="text-xs font-medium text-green-700 bg-green-50 dark:bg-green-500/15 dark:text-green-200 px-2 py-1 rounded"><%= t("games.show.statistics_saved") %></span>
         <% else %>
           <span class="text-xs font-medium text-amber-700 bg-amber-50 dark:bg-amber-500/15 dark:text-amber-200 px-2 py-1 rounded">
             <%= game_started ? "Fill in the statistics" : "Fill in the statistics after game starts" %>
@@ -137,7 +154,7 @@
           <!-- Teams Selection -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b dark:border-white/10">
             <div>
-              <h3 class="text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Team A</h3>
+              <h3 class="text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2"><%= t("games.show.team_a") %></h3>
               <div class="space-y-1">
                 <% participants.each do |u| %>
                   <% label = if u.respond_to?(:name) && u.name.present?
@@ -154,7 +171,7 @@
             </div>
 
             <div>
-              <h3 class="text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Team B</h3>
+              <h3 class="text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2"><%= t("games.show.team_b") %></h3>
               <div class="space-y-1">
                 <% participants.each do |u| %>
                   <% label = if u.respond_to?(:name) && u.name.present?
@@ -174,28 +191,28 @@
           <!-- Winner & Main Stats -->
           <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
             <div>
-              <span class="block text-sm text-gray-600 dark:text-slate-400 mb-2">Winner</span>
+              <span class="block text-sm text-gray-600 dark:text-slate-400 mb-2"><%= t("games.show.winner") %></span>
               <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300 mb-1">
                 <%= radio_button_tag "winner_team", "a" %>
-                <span>Team A</span>
+                <span><%= t("games.show.team_a") %></span>
               </label>
               <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
                 <%= radio_button_tag "winner_team", "b" %>
-                <span>Team B</span>
+                <span><%= t("games.show.team_b") %></span>
               </label>
               <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
                 <%= radio_button_tag "winner_team", "draw" %>
-                <span>Draw</span>
+                <span><%= t("games.show.draw") %></span>
               </label>
             </div>
 
             <div>
-              <label class="block text-sm text-gray-600 dark:text-slate-400 mb-1">Score</label>
+              <label class="block text-sm text-gray-600 dark:text-slate-400 mb-1"><%= t("games.show.score") %></label>
               <%= text_field_tag "statistics[score]", nil, placeholder: "6-4 6-7(5) 10-8", class: "w-full rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 text-sm" %>
             </div>
 
             <div>
-              <label class="block text-sm text-gray-600 dark:text-slate-400 mb-1">Hours</label>
+              <label class="block text-sm text-gray-600 dark:text-slate-400 mb-1"><%= t("games.show.hours") %></label>
               <%= number_field_tag "statistics[hours]", nil, step: 0.1, min: 0, class: "w-full rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 text-sm" %>
             </div>
           </div>
@@ -222,7 +239,7 @@
           </div>
         <% end %>
       <% else %>
-        <p class="text-gray-600 dark:text-slate-400 text-sm">Statistics entry is available after the game starts and only for the creator or admin.</p>
+        <p class="text-gray-600 dark:text-slate-400 text-sm"><%= t("games.show.stats_locked") %></p>
       <% end %>
     </div>
   </div>
