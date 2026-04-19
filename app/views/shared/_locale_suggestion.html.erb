@@ -7,6 +7,7 @@
       <div class="flex items-center gap-2">
         <%= link_to t("locale_suggestion.yes", locale: @suggested_locale),
                     set_locale_url(locale: @suggested_locale, return_to: request.path),
+                    data: { turbo: false },
                     class: "inline-flex items-center rounded-full bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 transition" %>
         <%= button_to t("locale_suggestion.stay", locale: @suggested_locale),
                       dismiss_locale_banner_url(return_to: request.path),

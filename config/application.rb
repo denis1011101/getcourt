@@ -26,6 +26,6 @@ module GetCourt
     config.time_zone = ENV.fetch("APP_TIME_ZONE", "Asia/Yekaterinburg")
 
     # keep user logged in for 1 year
-    config.session_store :cookie_store, key: "_get_court_session", expire_after: 1.year, domain: :all
+    config.session_store :cookie_store, key: "_get_court_session_v2", expire_after: 1.year, domain: :all
   end
 end
