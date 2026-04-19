@@ -60,12 +60,14 @@ module DeliveryMethods
 
     def text_body(mail)
       return mail.text_part.decoded if mail.text_part
-      return mail.body.decoded if mail.mime_type == "text/plain"
+
+      mail.body.decoded if mail.mime_type == "text/plain"
     end
 
     def html_body(mail)
       return mail.html_part.decoded if mail.html_part
-      return mail.body.decoded if mail.mime_type == "text/html"
+
+      mail.body.decoded if mail.mime_type == "text/html"
     end
 
     def ensure_configured!
