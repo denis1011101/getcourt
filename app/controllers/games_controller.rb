@@ -30,7 +30,16 @@ class GamesController < ApplicationController
       cities_in_country = cities_for_country(params[:country])
     end
 
-    scoped_games = Game.includes(:court, :tournament, :participations, :prebooking_cancellations).order(:date, :time)
+    today = Date.current
+    quoted_today = ActiveRecord::Base.connection.quote(today)
+    scoped_games = Game.includes(:court, :tournament, :participations, :prebooking_cancellations).order(
+      Arel.sql(
+        "CASE WHEN games.recurring = true OR games.date IS NULL OR games.date >= #{quoted_today} THEN 0 ELSE 1 END, " \
+        "CASE WHEN games.recurring = true OR games.date IS NULL THEN #{quoted_today} WHEN games.date >= #{quoted_today} THEN games.date END ASC NULLS LAST, " \
+        "CASE WHEN games.recurring = false AND games.date IS NOT NULL AND games.date < #{quoted_today} THEN games.date END DESC NULLS LAST, " \
+        "games.time ASC"
+      )
+    )
     scoped_games = scoped_games.where(sport: params[:sport]) if params[:sport].present?
     scoped_games = scoped_games.where(skill_level: params[:skill_level]) if params[:skill_level].present?
 
@@ -66,12 +75,7 @@ class GamesController < ApplicationController
         end
       end
 
-      if current_user&.city_name.present?
-        user_city = current_user.city_name.downcase
-        local, other = games.partition { |g| g.court&.city_name.to_s.downcase == user_city }
-        games = local + other
-      end
-
+      games = sort_games_for_user(games)
       @pagy, @games = pagy_array(games)
     else
       @pagy, @games = pagy(scoped_games)
@@ -154,12 +158,84 @@ class GamesController < ApplicationController
     @game = Game.find(params[:id])
   end
 
+  def sort_games_for_user(games)
+    return games.sort_by { |game| time_sort_key(game) } unless current_user&.city_name.present?
+
+    user_city = normalized_city(current_user.city_name)
+    return games.sort_by { |game| time_sort_key(game) } unless user_city
+
+    local, other = games.partition { |game| normalized_city(game.court&.city_name) == user_city }
+    local_upcoming, local_past = local.partition { |game| upcoming_game?(game) }
+    other_upcoming, other_past = other.partition { |game| upcoming_game?(game) }
+
+    sorted_local_upcoming = local_upcoming.sort_by { |game| local_upcoming_sort_key(game, user_city) }
+    sorted_local_past = local_past.sort_by { |game| time_sort_key(game) }
+    sorted_other_upcoming = other_upcoming.sort_by { |game| time_sort_key(game) }
+    sorted_other_past = other_past.sort_by { |game| time_sort_key(game) }
+
+    sorted_local_upcoming + sorted_local_past + sorted_other_upcoming + sorted_other_past
+  end
+
+  def upcoming_game?(game)
+    date = game_sorting_date(game)
+    date.nil? || date >= Date.current
+  end
+
+  def time_sort_key(game)
+    date = game_sorting_date(game)
+
+    if upcoming_game?(game)
+      [ 0, date || Date.new(9999, 12, 31), game.time.to_s ]
+    else
+      [ 1, -date.to_time.to_i, game.time.to_s ]
+    end
+  end
+
+  def game_sorting_date(game)
+    # Recurring games should be ordered by the next occurrence shown in cards,
+    # not by their original start date.
+    return game.next_date || game.date if game.recurring?
+
+    game.date
+  end
+
+  def local_upcoming_sort_key(game, city_name)
+    [
+      game_sorting_date(game) || Date.new(9999, 12, 31),
+      proximity_sort_key(game, city_name),
+      game.time.to_s
+    ]
+  end
+
+  def proximity_sort_key(game, city_name)
+    city = user_city_record(city_name)
+    return Float::INFINITY unless city&.latitude && city&.longitude
+
+    coords = game.court&.coordinates.to_s.split(",")
+    return Float::INFINITY unless coords.length == 2
+
+    haversine_distance(city.latitude.to_f, city.longitude.to_f, coords[0].to_f, coords[1].to_f)
+  end
+
+  def user_city_record(city_name)
+    aliases = city_aliases_for(city_name)
+    @user_city_record ||= City.where("lower(name) IN (?)", aliases).order(population: :desc).first
+  end
+
+  def haversine_distance(lat1, lon1, lat2, lon2)
+    rad = Math::PI / 180
+    dlat = (lat2 - lat1) * rad
+    dlon = (lon2 - lon1) * rad
+    a = Math.sin(dlat / 2)**2 + Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin(dlon / 2)**2
+    6_371 * 2 * Math.asin(Math.sqrt(a))
+  end
+
   def game_params
     params.require(:game).permit(:court_id, :recurring, :occurrences_per_week, :with_coach, :date, :time, :players_count, :skill_level, :sport, :prebooking_enabled, :urgent_player_search)
   end
 
   def display_date(game)
-    nd = game.display_date_for_show
+    nd = game.recurring? ? (game.next_date || game.date) : (game.display_date_for_show || game.date)
     nd ? nd.strftime("%Y-%m-%d") : (game.date.presence || "—")
   end
 

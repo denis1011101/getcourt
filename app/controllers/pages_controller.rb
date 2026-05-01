@@ -1,6 +1,6 @@
 class PagesController < ApplicationController
   # public pages
-  skip_before_action :authenticate_user!, only: %i[contacts mission partnership partnership_inquiry tennis_formats_and_rules ntrp_level_guide]
+  skip_before_action :authenticate_user!, only: %i[contacts mission partnership partnership_inquiry tennis_formats_and_rules ntrp_level_guide privacy_policy]
 
   def contacts
   end
@@ -45,6 +45,9 @@ class PagesController < ApplicationController
     Rails.cache.write(cache_key, count + 1, expires_in: 1.hour)
     flash[:notice] = "Thank you! We will get back to you soon."
     redirect_to partnership_path
+  end
+
+  def privacy_policy
   end
 
   def tennis_formats_and_rules

@@ -7,7 +7,7 @@ class UserMailerTest < ActionMailer::TestCase
 
     assert_equal "Your GetCourt login code", mail.subject
     assert_equal [ "to@example.org" ], mail.to
-    assert_equal [ "no-reply@getcourt.co" ], mail.from
+    assert_equal [ "hello@getcourt.co" ], mail.from
     assert_match "User#login_code_email", mail.body.encoded
   end
 end

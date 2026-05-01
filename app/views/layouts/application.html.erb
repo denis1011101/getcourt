@@ -61,6 +61,24 @@
         }
       })();
     </script>
+    <% unless user_signed_in? %>
+      <script src="https://telegram.org/js/telegram-web-app.js"></script>
+      <script>
+        (function() {
+          var tg = window.Telegram && window.Telegram.WebApp;
+          if (!tg || !tg.initData) return;
+          if (document.cookie.indexOf("_get_court_session_v2=") !== -1) return;
+
+          fetch("/telegram/web_app_auth", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ init_data: tg.initData })
+          }).then(function(response) {
+            if (response.ok) window.location.reload();
+          });
+        })();
+      </script>
+    <% end %>
     <!-- Google Maps JavaScript API -->
     <script>window.initMap = window.initMap || function(){};</script>
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=<%= ENV['GOOGLE_MAPS_API_KEY'] %>&callback=initMap"></script>
@@ -251,19 +269,18 @@
       </div>
     </nav>
 
-    <!-- Cookie & Geolocation consent popup -->
+    <!-- Cookie notice popup -->
     <div id="consent-popup" class="hidden fixed bottom-24 md:bottom-6 right-4 z-50 max-w-sm">
       <div class="bg-white rounded-2xl shadow-2xl border p-5 dark:border-white/10 dark:bg-slate-900">
-        <div class="text-sm text-gray-700 leading-relaxed space-y-2 dark:text-slate-300">
-          <p><%= t("layout.cookies.primary") %></p>
-          <p class="text-gray-500 dark:text-slate-400"><%= t("layout.cookies.secondary") %></p>
+        <div class="text-sm text-gray-700 leading-relaxed dark:text-slate-300">
+          <p><%= t("layout.cookies.primary") %>
+            <%= link_to t("layout.cookies.learn_more"), privacy_policy_path,
+                class: "text-indigo-600 dark:text-indigo-400 hover:underline" %>
+          </p>
         </div>
         <div class="mt-4 flex gap-2">
-          <button onclick="acceptConsent()" class="flex-1 rounded-full bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition">
+          <button onclick="dismissConsent()" class="flex-1 rounded-full bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition">
             <%= t("layout.cookies.ok") %>
-          </button>
-          <button onclick="dismissConsent()" class="rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 transition dark:border-white/15 dark:text-slate-300 dark:hover:bg-white/5">
-            <%= t("layout.cookies.dismiss") %>
           </button>
         </div>
       </div>
@@ -278,11 +295,6 @@
         if (!localStorage.getItem(CONSENT_KEY)) {
           setTimeout(function() { popup.classList.remove('hidden'); }, 1500);
         }
-
-        window.acceptConsent = function() {
-          localStorage.setItem(CONSENT_KEY, 'accepted');
-          popup.classList.add('hidden');
-        };
 
         window.dismissConsent = function() {
           localStorage.setItem(CONSENT_KEY, 'dismissed');

@@ -35,16 +35,21 @@ class SessionsController < ApplicationController
       redirect_to new_session_path, alert: user.errors.full_messages.to_sentence.presence || "Could not create account" and return
     end
 
-    need_code = user.require_verification? && user.preferred_login_via == "telegram"
+    if user.require_verification?
+      case user.preferred_login_via
+      when "telegram"
+        unless user.telegram_chat_id.present?
+          redirect_to new_session_path, alert: "Telegram not connected for this account" and return
+        end
 
-    if need_code
-      unless user.telegram_chat_id.present?
-        redirect_to new_session_path, alert: "Telegram not connected for this account" and return
+        code = user.generate_login_code!(via: "telegram")
+        ::Telegram::Notifier.send_message(user.telegram_chat_id, "Your GetCourt login code: `#{code}`")
+        redirect_to verify_session_path(email: user.email), notice: "Login code sent via Telegram", status: :see_other and return
+      when "email"
+        code = user.generate_login_code!(via: "email")
+        UserMailer.login_code_email(user, code).deliver_later
+        redirect_to verify_session_path(email: user.email), notice: t("sessions.login_code_sent_email"), status: :see_other and return
       end
-
-      code = user.generate_login_code!(via: "telegram")
-      ::Telegram::Notifier.send_message(user.telegram_chat_id, "Your GetCourt login code: `#{code}`")
-      redirect_to verify_session_path(email: user.email), notice: "Login code sent via Telegram", status: :see_other and return
     end
 
     sign_in(user)

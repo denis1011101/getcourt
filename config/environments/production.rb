@@ -53,14 +53,19 @@ Rails.application.configure do
   config.active_job.queue_adapter = :solid_queue
   config.solid_queue.connects_to = { database: { writing: :queue } }
 
-  # TODO: Cloudflare Email Sending requires Workers Paid plan while in beta.
-  # Add credentials.cloudflare_email (account_id/api_token/from) before any
-  # UserMailer.deliver_* call ships, or this will raise on send.
-  config.action_mailer.delivery_method = :cloudflare_email
+  config.action_mailer.delivery_method = :smtp
   config.action_mailer.raise_delivery_errors = true
+  config.action_mailer.smtp_settings = {
+    address: "smtp.resend.com",
+    port: 465,
+    tls: true,
+    user_name: "resend",
+    password: ENV["RESEND_API_KEY"],
+    authentication: :plain
+  }
 
   # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "getcourt.co" }
+  config.action_mailer.default_url_options = { host: "getcourt.co", protocol: "https" }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).

@@ -1,0 +1,56 @@
+<% content_for :meta_title, t("pages.privacy_policy.meta_title") %>
+<% content_for :meta_robots, "noindex, follow" %>
+
+<div class="max-w-3xl mx-auto px-4 py-6">
+  <div class="bg-white dark:bg-slate-800/80 rounded-lg border dark:border-white/10 p-6 shadow-sm">
+    <h1 class="text-2xl font-semibold mb-2"><%= t("pages.privacy_policy.title") %></h1>
+    <p class="text-sm text-gray-500 dark:text-slate-400 mb-6"><%= t("pages.privacy_policy.last_updated") %></p>
+
+    <div class="space-y-6 text-sm text-gray-700 dark:text-slate-300">
+      <section>
+        <h2 class="text-base font-semibold text-gray-900 dark:text-slate-100 mb-2"><%= t("pages.privacy_policy.who_we_are_title") %></h2>
+        <p><%= t("pages.privacy_policy.who_we_are_body") %></p>
+      </section>
+
+      <section>
+        <h2 class="text-base font-semibold text-gray-900 dark:text-slate-100 mb-2"><%= t("pages.privacy_policy.data_collected_title") %></h2>
+        <p><%= t("pages.privacy_policy.data_collected_body") %></p>
+      </section>
+
+      <section>
+        <h2 class="text-base font-semibold text-gray-900 dark:text-slate-100 mb-2"><%= t("pages.privacy_policy.legal_basis_title") %></h2>
+        <ul class="list-disc pl-5 space-y-1">
+          <li><%= t("pages.privacy_policy.legal_basis_contract") %></li>
+          <li><%= t("pages.privacy_policy.legal_basis_consent") %></li>
+          <li><%= t("pages.privacy_policy.legal_basis_legitimate") %></li>
+        </ul>
+      </section>
+
+      <% %w[purposes third_parties transfers retention].each do |section| %>
+        <section>
+          <h2 class="text-base font-semibold text-gray-900 dark:text-slate-100 mb-2"><%= t("pages.privacy_policy.#{section}_title") %></h2>
+          <p><%= t("pages.privacy_policy.#{section}_body") %></p>
+        </section>
+      <% end %>
+
+      <section>
+        <h2 class="text-base font-semibold text-gray-900 dark:text-slate-100 mb-2"><%= t("pages.privacy_policy.rights_title") %></h2>
+        <ul class="list-disc pl-5 space-y-1">
+          <% %w[access rectification erasure restriction portability objection automated].each do |right| %>
+            <li><%= t("pages.privacy_policy.rights_#{right}") %></li>
+          <% end %>
+        </ul>
+        <p class="mt-2"><%= t("pages.privacy_policy.rights_how") %></p>
+      </section>
+
+      <% %w[cookies russia ccpa children changes contact].each do |section| %>
+        <section>
+          <h2 class="text-base font-semibold text-gray-900 dark:text-slate-100 mb-2"><%= t("pages.privacy_policy.#{section}_title") %></h2>
+          <p><%= t("pages.privacy_policy.#{section}_body") %></p>
+        </section>
+      <% end %>
+    </div>
+  </div>
+
+  <%= render "shared/pages_nav" %>
+</div>

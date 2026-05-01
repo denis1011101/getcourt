@@ -227,4 +227,24 @@ class CourtsControllerTest < ActionDispatch::IntegrationTest
     other&.destroy
     user&.destroy
   end
+
+  test "city alias Ekaterinburg matches court with city_name Yekaterinburg" do
+    user_email = "ekb_alias_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: user_email }
+    user = User.find_by!(email: user_email)
+    user.update_column(:city_name, "Ekaterinburg")
+
+    other = Court.create!(name: "Moscow Court",       city_name: "Moscow",        moderation_status: "approved", approved_at: Time.current)
+    local = Court.create!(name: "Yekaterinburg Court", city_name: "Yekaterinburg", moderation_status: "approved", approved_at: Time.current)
+
+    get courts_url
+
+    courts = assigns(:courts)
+    assert courts.index(local) < courts.index(other),
+           "Yekaterinburg court should appear before Moscow court for user with city Ekaterinburg"
+  ensure
+    local&.destroy
+    other&.destroy
+    user&.destroy
+  end
 end

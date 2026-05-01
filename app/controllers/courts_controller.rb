@@ -24,8 +24,8 @@ class CourtsController < ApplicationController
     elsif params[:city].present?
       courts = courts.select { |c| c.city_name == params[:city] }
     elsif current_user&.city_name.present?
-      user_city = current_user.city_name.downcase
-      local, other = courts.partition { |c| c.city_name.to_s.downcase == user_city }
+      user_city = normalized_city(current_user.city_name)
+      local, other = courts.partition { |c| normalized_city(c.city_name) == user_city }
       courts = local + other
     end
 

@@ -24,20 +24,20 @@
         <div class="flex items-center gap-2">
           <span class="text-sm text-gray-600 dark:text-slate-400 mr-2">Verification method:</span>
           <%= f.select :preferred_login_via,
-                options_for_select([["Telegram", "telegram"]], @user.preferred_login_via),
+                options_for_select([["Telegram", "telegram"], [t("users.edit.verification_method_email"), "email"]], @user.preferred_login_via),
                 {}, class: "mt-1 block rounded border px-3 py-2 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
         </div>
       </div>
 
       <p class="text-xs text-gray-500 dark:text-slate-400 mt-2">
-        By default you sign in without a code. Enable verification + Telegram to require a one‑time code sent to your bot chat.
+        By default you sign in without a code. Enable verification to require a one-time code sent via your selected method.
       </p>
     </div>
 
     <!-- Информационный блок Telegram (просто HTML внутри формы) -->
     <p class="mb-4 text-sm text-gray-700 dark:text-slate-300">
       To receive Telegram notifications, please open a chat with our bot...
-      <a href="https://t.me/GetCourtBot" class="text-indigo-600 hover:underline" target="_blank" rel="noopener">https://t.me/GetCourtBot</a> and send:
+      <a href="https://t.me/GetCourtBot" class="text-indigo-600 dark:text-indigo-400 hover:underline" target="_blank" rel="noopener">https://t.me/GetCourtBot</a> and send:
     </p>
 
     <div class="mb-4 p-3 bg-gray-50 border rounded dark:bg-slate-700/50 dark:border-white/10">
@@ -161,4 +161,18 @@
     </div>
 
   <% end %> <!-- Здесь закрывается единственная форма -->
+
+  <div class="mt-8 rounded-lg border border-red-200 dark:border-red-500/20 p-4">
+    <h2 class="text-sm font-semibold text-red-700 dark:text-red-400 mb-1">
+      <%= t("users.delete_account_title") %>
+    </h2>
+    <p class="text-xs text-gray-500 dark:text-slate-400 mb-3">
+      <%= t("users.delete_account_body") %>
+    </p>
+    <%= button_to t("users.delete_account_button"),
+        account_path,
+        method: :delete,
+        data: { turbo_confirm: t("users.delete_account_confirm") },
+        class: "rounded-md bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700 cursor-pointer" %>
+  </div>
 </div>

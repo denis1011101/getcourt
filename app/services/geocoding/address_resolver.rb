@@ -73,7 +73,7 @@ module Geocoding
       uri = URI("https://nominatim.openstreetmap.org/reverse" \
                 "?format=json&lat=#{lat}&lon=#{lng}&accept-language=en")
       data = fetch_json(uri,
-                        headers: { "User-Agent" => "GetCourt/1.0 (denisdenis9331@gmail.com)" },
+                        headers: { "User-Agent" => "GetCourt/1.0 (hello@getcourt.co)" },
                         retries: 3)
       return nil unless data
 

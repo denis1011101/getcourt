@@ -56,6 +56,10 @@ module LocationFilters
     "Koto" => "JP"
   }.freeze
 
+  CITY_ALIASES = {
+    "yekaterinburg" => "ekaterinburg"
+  }.freeze
+
   included do
     helper_method :country_name_for, :location_filter_labels, :country_cities_map_for_select
   end
@@ -91,6 +95,17 @@ module LocationFilters
     labels << country_name_for(country_code) if country_code.present?
     labels << city_name if city_name.present?
     labels
+  end
+
+  def normalized_city(value)
+    city = I18n.transliterate(value.to_s).downcase.strip.gsub(/\s+/, " ")
+    return nil if city.blank?
+
+    CITY_ALIASES.fetch(city, city)
+  end
+
+  def city_aliases_for(city_name)
+    ([ city_name ] + CITY_ALIASES.select { |_alias, canonical| canonical == city_name }.keys).uniq
   end
 
   def country_cities_map_for_select

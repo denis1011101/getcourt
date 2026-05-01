@@ -14,7 +14,8 @@
     <div class="flex items-center justify-between mb-3">
       <div class="flex items-center gap-2">
         <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300">
-          <% display_date = game.display_date_for_show || game.date %>
+          <%# Recurring games show the next occurrence, not the original start date. %>
+          <% display_date = game.recurring? ? (game.next_date || game.date) : (game.display_date_for_show || game.date) %>
           <% if display_date %>
             <div class="text-center leading-none">
               <div class="text-[10px] font-medium uppercase"><%= display_date.strftime("%b") %></div>

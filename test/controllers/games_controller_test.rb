@@ -105,6 +105,79 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_not_nil assigns(:pagy)
   end
 
+  test "index db path orders upcoming games before past games" do
+    court = Court.create!(name: "Ordering Court", moderation_status: "approved", city_name: "Ordertown")
+    past_game = Game.create!(court: court, user: users(:one), date: Date.current - 2.days, time: "10:00")
+    future_game = Game.create!(court: court, user: users(:one), date: Date.current + 2.days, time: "10:00")
+    recurring_game = Game.create!(court: court, user: users(:one), recurring: true, date: Date.current - 10.days, time: "09:00")
+
+    get root_url
+
+    assert_response :success
+    game_ids = assigns(:games).map(&:id)
+    assert_operator game_ids.index(future_game.id), :<, game_ids.index(past_game.id)
+    assert_operator game_ids.index(recurring_game.id), :<, game_ids.index(past_game.id)
+  ensure
+    past_game&.destroy
+    future_game&.destroy
+    recurring_game&.destroy
+    court&.destroy
+  end
+
+  test "index sorts local city games by proximity to user city coordinates" do
+    city = City.create!(
+      name: "Testville",
+      country_code: "TV",
+      latitude: 55.0,
+      longitude: 37.0,
+      population: 100_000
+    )
+    near_court = Court.create!(name: "Near Testville Court", moderation_status: "approved", city_name: "Testville", coordinates: "55.01,37.01")
+    far_court = Court.create!(name: "Far Testville Court", moderation_status: "approved", city_name: "Testville", coordinates: "56.00,38.00")
+    far_game = Game.create!(court: far_court, user: users(:one), date: Date.current + 1.day, time: "10:00")
+    near_game = Game.create!(court: near_court, user: users(:one), date: Date.current + 1.day, time: "11:00")
+
+    post session_url, params: { email: "testville_player@example.com" }
+    User.find_by!(email: "testville_player@example.com").update_column(:city_name, "Testville")
+    get root_url
+
+    assert_response :success
+    game_ids = assigns(:games).map(&:id)
+    assert_operator game_ids.index(near_game.id), :<, game_ids.index(far_game.id)
+  ensure
+    far_game&.destroy
+    near_game&.destroy
+    far_court&.destroy
+    near_court&.destroy
+    city&.destroy
+  end
+
+  test "index city sort keeps local upcoming games before local past games" do
+    city = City.create!(
+      name: "Timeville",
+      country_code: "TV",
+      latitude: 55.0,
+      longitude: 37.0,
+      population: 100_000
+    )
+    court = Court.create!(name: "Timeville Court", moderation_status: "approved", city_name: "Timeville", coordinates: "55.00,37.00")
+    past_game = Game.create!(court: court, user: users(:one), date: Date.current - 1.day, time: "10:00")
+    future_game = Game.create!(court: court, user: users(:one), date: Date.current + 1.day, time: "10:00")
+
+    post session_url, params: { email: "timeville_player@example.com" }
+    User.find_by!(email: "timeville_player@example.com").update_column(:city_name, "Timeville")
+    get root_url
+
+    assert_response :success
+    game_ids = assigns(:games).map(&:id)
+    assert_operator game_ids.index(future_game.id), :<, game_ids.index(past_game.id)
+  ensure
+    past_game&.destroy
+    future_game&.destroy
+    court&.destroy
+    city&.destroy
+  end
+
   test "index city filter still paginates" do
     Court.create!(name: "London Court", moderation_status: "approved", city_name: "London")
 

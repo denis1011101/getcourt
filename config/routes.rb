@@ -1,10 +1,12 @@
 Rails.application.routes.draw do
   post "/locale/dismiss-banner", to: "locale#dismiss_banner", as: :dismiss_locale_banner
   get "/locale/:locale", to: "locale#update", as: :set_locale, constraints: { locale: /en|ru|es/ }
+  post "/telegram/web_app_auth", to: "telegram_auth#create", as: :telegram_web_app_auth
   get "/contacts", to: "pages#contacts", as: :contacts
   get "/mission",  to: "pages#mission",  as: :mission
   get "/partnership", to: "pages#partnership", as: :partnership
   post "/partnership", to: "pages#partnership_inquiry", as: :partnership_inquiry
+  get "/privacy-policy", to: "pages#privacy_policy", as: :privacy_policy
   get "/tennis-formats-and-rules", to: "pages#tennis_formats_and_rules", as: :tennis_formats_and_rules
   get "/ntrp-level-guide", to: "pages#ntrp_level_guide", as: :ntrp_level_guide
   get "/coaches",  to: "coaches#index", as: :coaches
@@ -24,7 +26,7 @@ Rails.application.routes.draw do
   get "/tennis_life", to: "tennis_life#index", as: :tennis_life
   get "/tennis_life/statistics", to: "tennis_life#statistics", as: :tennis_life_statistics
 
-  resource :account, only: %i[edit update], controller: :users do
+  resource :account, only: %i[edit update destroy], controller: :users do
     post :regenerate_token
     post :clear_city, to: "users#clear_city", as: :clear_city
   end

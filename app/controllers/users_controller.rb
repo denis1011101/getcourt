@@ -69,6 +69,12 @@ class UsersController < ApplicationController
     redirect_to edit_account_path, notice: "City cleared"
   end
 
+  def destroy
+    current_user.destroy!
+    reset_session
+    redirect_to root_path, notice: t("users.account_deleted")
+  end
+
   private
 
   def translit_str(s)

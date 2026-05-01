@@ -76,6 +76,27 @@ module Telegram
             end
             nil
 
+          when /\A\/register(?:@\w+)?\z/
+            token = text.split(/\s+/, 2).last.to_s.strip
+            user = token.present? ? User.find_by(telegram_registration_token: token) : nil
+
+            if user
+              User.transaction do
+                User.where(telegram_chat_id: chat_id).where.not(id: user.id).update_all(telegram_chat_id: nil, updated_at: Time.current)
+                user.update_columns(
+                  telegram_chat_id: chat_id.to_s,
+                  telegram_username: message.dig("from", "username").to_s.presence || user.telegram_username,
+                  telegram_registration_token: nil,
+                  updated_at: Time.current
+                )
+              end
+              Telegram::Api.send_simple(chat_id, "Telegram connected to your GetCourt account.", parse_mode: nil)
+              Telegram::Handlers::MenuHandler.menu(chat_id) rescue nil
+            else
+              Telegram::Api.send_simple(chat_id, "Registration code is invalid or expired. Please regenerate it in your account settings.", parse_mode: nil)
+            end
+            nil
+
           when "/menu"
             Telegram::Handlers::MenuHandler.menu(chat_id) rescue nil
             nil
