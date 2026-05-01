@@ -84,5 +84,7 @@ module ActiveSupport
     parallelize(workers: :number_of_processors)
     fixtures :all
     include StubHelper if defined?(StubHelper)
+
+    setup { I18n.locale = I18n.default_locale }
   end
 end
