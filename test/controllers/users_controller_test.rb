@@ -39,6 +39,38 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     user&.destroy
   end
 
+  test "account page sorts local favorite court options first by name" do
+    user_email = "court_sort_#{SecureRandom.hex(4)}@example.com"
+    local_a = Court.create!(name: "Alpha Local", city_name: "Testville", moderation_status: "approved")
+    local_b = Court.create!(name: "Zulu Local", city_name: "Testville", moderation_status: "approved")
+    other = Court.create!(name: "Alpha Away", city_name: "Awaytown", moderation_status: "approved")
+
+    post session_url, params: { email: user_email }
+    user = User.find_by!(email: user_email)
+    user.update!(city_name: "Testville")
+
+    get edit_account_url
+
+    assert_response :success
+    assert_select "form[action='#{account_path}']"
+
+    body = response.body
+    alpha_local = body.index("Alpha Local")
+    zulu_local = body.index("Zulu Local")
+    alpha_away = body.index("Alpha Away")
+
+    assert alpha_local, "Alpha Local not found in account page"
+    assert zulu_local, "Zulu Local not found in account page"
+    assert alpha_away, "Alpha Away not found in account page"
+    assert_operator alpha_local, :<, zulu_local
+    assert_operator zulu_local, :<, alpha_away
+  ensure
+    user&.destroy
+    local_a&.destroy
+    local_b&.destroy
+    other&.destroy
+  end
+
   test "authenticated session is shared across locale subdomains" do
     host! "getcourt.co"
     user_email = "shared_session_#{SecureRandom.hex(4)}@example.com"

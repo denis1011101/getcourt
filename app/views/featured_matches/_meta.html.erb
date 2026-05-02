@@ -1,0 +1,16 @@
+<script type="application/ld+json">
+<% json = {
+  "@context": "https://schema.org",
+  "@type": "SportsEvent",
+  "name": featured_match.seo_title,
+  "startDate": featured_match.starts_at.iso8601,
+  "eventStatus": "https://schema.org/EventScheduled",
+  "sport": "Tennis",
+  "competitor": [
+    { "@type": "Person", "name": featured_match.player_left_name },
+    { "@type": "Person", "name": featured_match.player_right_name }
+  ],
+  "image": meta_image
+}.compact.to_json.gsub("</", "<\\/") %>
+<%= raw(json) %>
+</script>

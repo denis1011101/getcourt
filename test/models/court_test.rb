@@ -121,6 +121,14 @@ class CourtTest < ActiveSupport::TestCase
     end
   end
 
+  test "free_only scope returns only free courts" do
+    courts(:one).update!(free: true,  moderation_status: "approved")
+    courts(:two).update!(free: false, moderation_status: "approved")
+
+    assert_includes Court.free_only, courts(:one)
+    assert_not_includes Court.free_only, courts(:two)
+  end
+
   private
 
   def with_stubbed_singleton_method(target, method_name, replacement)

@@ -2,6 +2,7 @@ class CourtsController < ApplicationController
   include LocationFilters
 
   before_action :set_court, only: %i[show edit update destroy approve reject]
+  before_action :authorize_manage_court!, only: %i[edit update destroy]
   skip_before_action :authenticate_user!, only: %i[index show]
 
   def index
@@ -16,6 +17,7 @@ class CourtsController < ApplicationController
     end
 
     prepare_location_filters(court_city_names)
+    visible_courts = visible_courts.free_only if ActiveModel::Type::Boolean.new.cast(params[:free])
     courts = visible_courts.to_a
 
     if params[:country].present? && params[:city].blank?
@@ -89,22 +91,22 @@ class CourtsController < ApplicationController
   end
 
   def destroy
-    unless can_manage?(@court) || (@court.user_id == current_user&.id)
-      head :forbidden and return
-    end
-
     @court.destroy
     redirect_to courts_path, notice: "Court was successfully destroyed."
   end
 
   private
 
+  def authorize_manage_court!
+    head :forbidden unless can_manage?(@court)
+  end
+
   def set_court
     @court = Court.find(params[:id])
   end
 
   def court_params
-    permitted = params.require(:court).permit(:name, :sport, :coordinates, :user_id, :contact_type, :contact_value, contact_entries: [ :contact_type, :contact_value ])
+    permitted = params.require(:court).permit(:name, :sport, :coordinates, :contact_type, :contact_value, :free, contact_entries: [ :contact_type, :contact_value ])
     contact_entries = permitted.delete(:contact_entries)
 
     if contact_entries.present?

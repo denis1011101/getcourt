@@ -45,6 +45,13 @@ en:
     edit: "Edit"
     reset: "Reset"
     view: "View"
+  featured_match:
+    starts_in: "Starts in"
+    starts_now: "Starts now"
+    photos: "Match photos"
+    seo:
+      scheduled: "%{title}. Live on %{date}."
+      started: "%{title}. Match has started."
   layout:
     nav:
       home: "Home"
@@ -76,6 +83,11 @@ en:
     privacy_consent_html: "I agree to the <a href='%{url}' class='text-indigo-600 dark:text-indigo-400 hover:underline' target='_blank'>Privacy Policy</a> and consent to processing my email for authentication"
     age_consent: "I confirm I am at least 16 years old"
     login_code_sent_email: "Login code sent to your email"
+    verify:
+      title_email: "Enter email code"
+      subtitle_email: "We sent a 4‑digit code to your email. Enter it below."
+      title_telegram: "Enter Telegram code"
+      subtitle_telegram: "We sent a 4‑digit code via Telegram for you. Enter it below."
   games:
     index:
       hero_title: "Find your next game"
@@ -144,6 +156,10 @@ en:
         one: "1 game"
         other: "%{count} games"
       delete_confirm: "Are you sure you want to delete this court?"
+      free_only: "Free courts"
+      free_badge: "Free"
+    form:
+      free: "Free court (no booking fee)"
     show:
       meta_title: "%{court} — court and scheduled games"
       meta_description: "Find and join games at %{court}. Create or join tennis, padel and table tennis matches on GetCourt."

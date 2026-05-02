@@ -17,6 +17,7 @@ class Court < ApplicationRecord
 
   scope :approved, -> { where(moderation_status: "approved") }
   scope :visible_to, ->(user) { user&.admin? ? all : approved }
+  scope :free_only, -> { where(free: true) }
 
   def approved?
     moderation_status == "approved"

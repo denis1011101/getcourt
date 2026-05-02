@@ -247,4 +247,143 @@ class CourtsControllerTest < ActionDispatch::IntegrationTest
     other&.destroy
     user&.destroy
   end
+
+  # ---- free court filter --------------------------------------------------
+
+  test "free filter shows only free courts" do
+    free_court  = Court.create!(name: "Free Court",  moderation_status: "approved", approved_at: Time.current, free: true)
+    paid_court  = Court.create!(name: "Paid Court",  moderation_status: "approved", approved_at: Time.current, free: false)
+
+    get courts_url, params: { free: "1" }
+
+    courts = assigns(:courts)
+    assert_includes courts, free_court
+    assert_not_includes courts, paid_court
+  ensure
+    free_court&.destroy
+    paid_court&.destroy
+  end
+
+  test "without free filter all courts are shown" do
+    free_court  = Court.create!(name: "Free Court2", moderation_status: "approved", approved_at: Time.current, free: true)
+    paid_court  = Court.create!(name: "Paid Court2", moderation_status: "approved", approved_at: Time.current, free: false)
+
+    get courts_url
+
+    courts = assigns(:courts)
+    assert_includes courts, free_court
+    assert_includes courts, paid_court
+  ensure
+    free_court&.destroy
+    paid_court&.destroy
+  end
+
+  test "free attribute is saved on create" do
+    user_email = "free_create_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: user_email }
+
+    post courts_url, params: { court: { name: "My Free Court", free: "1" } }
+
+    court = Court.find_by(name: "My Free Court")
+    assert court&.free?, "Court should be free"
+  ensure
+    Court.where(name: "My Free Court").destroy_all
+    User.find_by(email: user_email)&.destroy
+  end
+
+  # ---- authorization on edit/update/destroy --------------------------------
+
+  test "non-owner cannot update a court" do
+    owner_email = "owner_#{SecureRandom.hex(4)}@example.com"
+    other_email = "other_#{SecureRandom.hex(4)}@example.com"
+
+    post session_url, params: { email: owner_email }
+    owner = User.find_by!(email: owner_email)
+    court = Court.create!(name: "Owner Court", moderation_status: "approved", approved_at: Time.current, user: owner)
+
+    post session_url, params: { email: other_email }
+    patch court_url(court), params: { court: { name: "Hacked Name" } }
+
+    assert_response :forbidden
+    assert_equal "Owner Court", court.reload.name
+  ensure
+    court&.destroy
+    User.find_by(email: owner_email)&.destroy
+    User.find_by(email: other_email)&.destroy
+  end
+
+  test "owner can update their court" do
+    owner_email = "owner2_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: owner_email }
+    owner = User.find_by!(email: owner_email)
+    court = Court.create!(name: "My Court", moderation_status: "approved", approved_at: Time.current, user: owner)
+
+    patch court_url(court), params: { court: { name: "Updated Court" } }
+
+    assert_response :redirect
+    assert_equal "Updated Court", court.reload.name
+  ensure
+    court&.destroy
+    User.find_by(email: owner_email)&.destroy
+  end
+
+  test "non-owner cannot edit a court" do
+    owner_email = "owner3_#{SecureRandom.hex(4)}@example.com"
+    other_email = "other3_#{SecureRandom.hex(4)}@example.com"
+
+    post session_url, params: { email: owner_email }
+    owner = User.find_by!(email: owner_email)
+    court = Court.create!(name: "Another Court", moderation_status: "approved", approved_at: Time.current, user: owner)
+
+    post session_url, params: { email: other_email }
+    get edit_court_url(court)
+
+    assert_response :forbidden
+  ensure
+    court&.destroy
+    User.find_by(email: owner_email)&.destroy
+    User.find_by(email: other_email)&.destroy
+  end
+
+  test "user_id cannot be changed via mass assignment on update" do
+    owner_email = "owner4_#{SecureRandom.hex(4)}@example.com"
+    other_email = "other4_#{SecureRandom.hex(4)}@example.com"
+
+    post session_url, params: { email: other_email }
+    other = User.find_by!(email: other_email)
+
+    post session_url, params: { email: owner_email }
+    owner = User.find_by!(email: owner_email)
+    court = Court.create!(name: "Owned Court", moderation_status: "approved", approved_at: Time.current, user: owner)
+
+    patch court_url(court), params: { court: { name: "Updated", user_id: other.id } }
+
+    assert_response :redirect
+    assert_equal owner.id, court.reload.user_id, "user_id must not change via params"
+  ensure
+    court&.destroy
+    User.find_by(email: owner_email)&.destroy
+    User.find_by(email: other_email)&.destroy
+  end
+
+  test "admin can update another user's court" do
+    owner_email = "owner5_#{SecureRandom.hex(4)}@example.com"
+    admin_email = "admin5_#{SecureRandom.hex(4)}@example.com"
+
+    post session_url, params: { email: owner_email }
+    owner = User.find_by!(email: owner_email)
+    court = Court.create!(name: "Other Court", moderation_status: "approved", approved_at: Time.current, user: owner)
+
+    post session_url, params: { email: admin_email }
+    User.find_by!(email: admin_email).update_column(:admin, true)
+
+    patch court_url(court), params: { court: { name: "Admin Edited" } }
+
+    assert_response :redirect
+    assert_equal "Admin Edited", court.reload.name
+  ensure
+    court&.destroy
+    User.find_by(email: owner_email)&.destroy
+    User.find_by(email: admin_email)&.destroy
+  end
 end

@@ -78,6 +78,11 @@
       </div>
 
       <div class="flex items-center gap-2">
+        <%= form.check_box :free, class: "h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" %>
+        <%= form.label :free, t("courts.form.free"), class: "text-sm text-gray-700 dark:text-slate-300" %>
+      </div>
+
+      <div class="flex items-center gap-2">
         <%= form.submit "Save Court", class: "rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition" %>
         <%= link_to "Cancel", courts_path, class: "block inline-flex items-center rounded-md border border-gray-300 dark:border-white/10 px-3 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/5 transition" %>
       </div>

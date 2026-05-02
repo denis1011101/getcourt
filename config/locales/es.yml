@@ -16,6 +16,13 @@ es:
     edit: "Editar"
     reset: "Restablecer"
     view: "Ver"
+  featured_match:
+    starts_in: "Empieza en"
+    starts_now: "Empieza ahora"
+    photos: "Fotos del partido"
+    seo:
+      scheduled: "%{title}. En directo el %{date}."
+      started: "%{title}. El partido ha empezado."
   layout:
     nav:
       home: "Inicio"
@@ -47,6 +54,11 @@ es:
     privacy_consent_html: "Acepto la <a href='%{url}' class='text-indigo-600 dark:text-indigo-400 hover:underline' target='_blank'>Política de privacidad</a> y consiento el tratamiento de mi email para la autenticación"
     age_consent: "Confirmo que tengo al menos 16 años"
     login_code_sent_email: "Código de inicio de sesión enviado a tu email"
+    verify:
+      title_email: "Introduce el código del email"
+      subtitle_email: "Hemos enviado un código de 4 dígitos a tu email. Introdúcelo abajo."
+      title_telegram: "Introduce el código de Telegram"
+      subtitle_telegram: "Te hemos enviado un código de 4 dígitos por Telegram. Introdúcelo abajo."
   games:
     index:
       hero_title: "Encuentra tu próximo partido"
@@ -115,6 +127,10 @@ es:
         one: "1 partido"
         other: "%{count} partidos"
       delete_confirm: "¿Seguro que quieres eliminar esta pista?"
+      free_only: "Pistas gratuitas"
+      free_badge: "Gratuito"
+    form:
+      free: "Pista gratuita (sin tarifa)"
     show:
       meta_title: "%{court} — pista y partidos programados"
       meta_description: "Encuentra y únete a partidos en %{court}. Crea o encuentra partidos de tenis, pádel y tenis de mesa en GetCourt."

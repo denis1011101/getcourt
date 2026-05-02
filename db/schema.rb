@@ -10,7 +10,35 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_05_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_02_090004) do
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.integer "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.integer "record_id", null: false
+    t.string "record_type", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.bigint "byte_size", null: false
+    t.string "checksum"
+    t.string "content_type"
+    t.datetime "created_at", null: false
+    t.string "filename", null: false
+    t.string "key", null: false
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.integer "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
   create_table "cities", force: :cascade do |t|
     t.string "asciiname"
     t.string "country_code"
@@ -35,6 +63,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_05_090000) do
     t.string "contact_value"
     t.string "coordinates"
     t.datetime "created_at", null: false
+    t.boolean "free", default: false, null: false
     t.string "moderation_status", default: "pending", null: false
     t.string "name"
     t.string "sport"
@@ -54,6 +83,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_05_090000) do
     t.index ["court_id"], name: "index_favorite_courts_on_court_id"
     t.index ["user_id", "court_id"], name: "index_favorite_courts_on_user_id_and_court_id", unique: true
     t.index ["user_id"], name: "index_favorite_courts_on_user_id"
+  end
+
+  create_table "featured_matches", force: :cascade do |t|
+    t.boolean "active", default: false, null: false
+    t.integer "court_id"
+    t.datetime "created_at", null: false
+    t.string "player_left_flag"
+    t.string "player_left_name", null: false
+    t.string "player_right_flag"
+    t.string "player_right_name", null: false
+    t.datetime "starts_at", null: false
+    t.string "surface_label"
+    t.string "tournament_label", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_featured_matches_on_active", unique: true, where: "active = 1"
+    t.index ["court_id"], name: "index_featured_matches_on_court_id"
+    t.index ["starts_at"], name: "index_featured_matches_on_starts_at"
   end
 
   create_table "games", force: :cascade do |t|
@@ -329,6 +375,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_05_090000) do
   add_foreign_key "courts", "users"
   add_foreign_key "favorite_courts", "courts"
   add_foreign_key "favorite_courts", "users"
+  add_foreign_key "featured_matches", "courts"
   add_foreign_key "games", "courts"
   add_foreign_key "games", "tournaments"
   add_foreign_key "games", "users"

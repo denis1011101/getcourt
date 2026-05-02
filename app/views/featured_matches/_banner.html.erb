@@ -1,0 +1,47 @@
+<section class="live-banner featured-match-banner"
+         data-controller="featured-match"
+         data-featured-match-starts-at-value="<%= featured_match.starts_at.iso8601 %>"
+         data-featured-match-started-text-value="<%= t("featured_match.starts_now") %>">
+  <div class="banner-top">
+    <div class="tournament-label"><%= featured_match.tournament_label %></div>
+  </div>
+
+  <div class="matchup">
+    <div class="player">
+      <div class="player-flag" style="<%= 'visibility:hidden' unless featured_match.player_left_flag.present? %>"><%= featured_match.player_left_flag %></div>
+      <div class="player-name"><%= featured_match.player_left_name %></div>
+    </div>
+
+    <div class="countdown" aria-label="<%= t("featured_match.starts_in") %>">
+      <span class="cd-days" data-featured-match-target="days"></span>
+      <span class="cd-time" data-featured-match-target="time">--:--:--</span>
+    </div>
+
+    <div class="player">
+      <div class="player-flag" style="<%= 'visibility:hidden' unless featured_match.player_right_flag.present? %>"><%= featured_match.player_right_flag %></div>
+      <div class="player-name"><%= featured_match.player_right_name %></div>
+    </div>
+  </div>
+
+  <% if featured_match.photos.attached? %>
+    <div class="photos <%= 'photos--swipeable' if featured_match.photos.size > 1 %>" data-featured-match-target="photos" aria-label="<%= t("featured_match.photos") %>">
+      <% featured_match.photos.each do |photo| %>
+        <% src = url_for(photo.variant(resize_to_limit: [800, 800])) %>
+        <div class="photo-wrap">
+          <%= image_tag src, class: "photo-bg", aria: { hidden: true }, alt: "" %>
+          <%= image_tag src, class: "photo-main", loading: "lazy", alt: featured_match.tournament_label %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if featured_match.surface_label.present? %>
+    <div class="banner-bottom">
+      <% if featured_match.court.present? %>
+        <%= link_to featured_match.surface_label, court_path(featured_match.court), class: "surface-tag surface-tag--link" %>
+      <% else %>
+        <div class="surface-tag"><%= featured_match.surface_label %></div>
+      <% end %>
+    </div>
+  <% end %>
+</section>

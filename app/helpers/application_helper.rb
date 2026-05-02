@@ -85,6 +85,11 @@ module ApplicationHelper
     end
   end
 
+  def meta_og_type
+    (content_for?(:meta_og_type) && content_for(:meta_og_type).to_s.presence) ||
+      "website"
+  end
+
   def meta_robots_content
     return content_for(:meta_robots) if content_for?(:meta_robots)
 

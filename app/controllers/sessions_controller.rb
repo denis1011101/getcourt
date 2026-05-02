@@ -61,6 +61,7 @@ class SessionsController < ApplicationController
 
   def verify
     @email = params[:email]
+    @via = User.find_by(email: @email.to_s.strip.downcase)&.preferred_login_via || "email"
   end
 
   # POST /sign_in/verify

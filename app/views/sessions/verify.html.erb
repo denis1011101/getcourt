@@ -1,9 +1,9 @@
 <% content_for :meta_robots, "noindex, nofollow" %>
 <div class="max-w-md mx-auto p-6 bg-white rounded shadow-sm dark:bg-slate-800/80 dark:shadow-none">
-  <h1 class="text-xl font-semibold mb-4">Enter Telegram code</h1>
+  <h1 class="text-xl font-semibold mb-4"><%= t("sessions.verify.title_#{@via}") %></h1>
 
   <p class="text-sm text-gray-600 dark:text-slate-400 mb-4">
-    We sent a 4‑digit code via Telegram for you. Enter it below.
+    <%= t("sessions.verify.subtitle_#{@via}") %>
   </p>
 
   <%= form_with url: verify_session_path, method: :post, local: true do %>

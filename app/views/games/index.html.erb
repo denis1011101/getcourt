@@ -1,7 +1,21 @@
-<% content_for :meta_title, @games_meta_title %>
-<% content_for :meta_description, @games_meta_description %>
+<% if @featured_match.present? %>
+  <% content_for :meta_title, "#{@featured_match.seo_title} | GetCourt" %>
+  <% content_for :meta_description, @featured_match.seo_description %>
+  <% content_for :meta_image, @featured_match.og_image_url(host: request.host_with_port, protocol: request.protocol) || meta_image %>
+  <% content_for :meta_og_type, "event" %>
+  <% content_for :head do %>
+    <%= render "featured_matches/meta", featured_match: @featured_match %>
+  <% end %>
+<% else %>
+  <% content_for :meta_title, @games_meta_title %>
+  <% content_for :meta_description, @games_meta_description %>
+<% end %>
 <% content_for :canonical_url, @canonical_games_url %>
 <div class="max-w-6xl mx-auto">
+  <% if @featured_match.present? %>
+    <%= render "featured_matches/banner", featured_match: @featured_match %>
+  <% end %>
+
   <!-- Hero section -->
   <div class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-indigo-600 via-indigo-500 to-purple-500 px-6 py-8 md:px-10 md:py-12 mb-6 text-white ring-1 ring-white/15 shadow-[0_20px_60px_rgba(79,70,229,0.18)] dark:from-indigo-900 dark:via-indigo-800 dark:to-fuchsia-800 dark:ring-white/10 dark:shadow-[0_24px_70px_rgba(15,23,42,0.45)]">
     <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/14 via-white/5 to-transparent dark:from-white/8 dark:via-indigo-400/5 dark:to-transparent"></div>

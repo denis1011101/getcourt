@@ -2,6 +2,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @import "../stylesheets/player_statistics.css";
+@import "../stylesheets/featured_match.css";
 
 @layer base {
   html {

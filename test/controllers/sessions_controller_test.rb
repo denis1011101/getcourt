@@ -30,6 +30,36 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert user.login_code.present?
   end
 
+  test "verify page shows email copy for email verification" do
+    user = User.create!(
+      email: "sessions_verify_email@example.com",
+      preferred_login_via: "email"
+    )
+
+    get verify_session_url, params: { email: user.email }
+
+    assert_response :success
+    assert_includes response.body, I18n.t("sessions.verify.title_email")
+    assert_includes response.body, I18n.t("sessions.verify.subtitle_email")
+  ensure
+    user&.destroy
+  end
+
+  test "verify page shows telegram copy for telegram verification" do
+    user = User.create!(
+      email: "sessions_verify_telegram@example.com",
+      preferred_login_via: "telegram"
+    )
+
+    get verify_session_url, params: { email: user.email }
+
+    assert_response :success
+    assert_includes response.body, I18n.t("sessions.verify.title_telegram")
+    assert_includes response.body, I18n.t("sessions.verify.subtitle_telegram")
+  ensure
+    user&.destroy
+  end
+
   test "should destroy session" do
     delete destroy_session_url
     assert_redirected_to new_session_path

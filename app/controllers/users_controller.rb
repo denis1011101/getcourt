@@ -1,4 +1,6 @@
 class UsersController < ApplicationController
+  include LocationFilters
+
   CITY_SEARCH_DEFAULT_LIMIT = 5
 
   before_action :authenticate_user!
@@ -117,11 +119,11 @@ class UsersController < ApplicationController
 
   def sorted_available_courts_for(user)
     courts = Court.visible_to(user).to_a
-    user_city = user&.city_name.to_s.strip.downcase.presence
-    return courts unless user_city
+    user_city = normalized_city(user&.city_name)
+    return courts.sort_by { |c| c.city_name.to_s } unless user_city
 
-    local, other = courts.partition { |court| court.city_name.to_s.strip.downcase == user_city }
-    local + other
+    local, other = courts.partition { |c| normalized_city(c.city_name) == user_city }
+    local.sort_by { |c| c.name.to_s } + other.sort_by { |c| [ c.city_name.to_s, c.name.to_s ] }
   end
 
   def prepare_player_statistics_state

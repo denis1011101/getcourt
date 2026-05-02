@@ -15,6 +15,13 @@ ru:
     edit: "Редактировать"
     reset: "Сбросить"
     view: "Открыть"
+  featured_match:
+    starts_in: "До начала"
+    starts_now: "Начинается"
+    photos: "Фото матча"
+    seo:
+      scheduled: "%{title}. В эфире %{date}."
+      started: "%{title}. Матч начался."
   layout:
     nav:
       home: "Главная"
@@ -46,6 +53,11 @@ ru:
     privacy_consent_html: "Я согласен с <a href='%{url}' class='text-indigo-600 dark:text-indigo-400 hover:underline' target='_blank'>Политикой конфиденциальности</a> и даю согласие на обработку email для входа"
     age_consent: "Я подтверждаю, что мне уже исполнилось 16 лет"
     login_code_sent_email: "Код входа отправлен на ваш email"
+    verify:
+      title_email: "Введите код из письма"
+      subtitle_email: "Мы отправили 4‑значный код на ваш email. Введите его ниже."
+      title_telegram: "Введите код из Telegram"
+      subtitle_telegram: "Мы отправили 4‑значный код в Telegram. Введите его ниже."
   games:
     index:
       hero_title: "Найдите следующую игру"
@@ -118,6 +130,10 @@ ru:
         many: "%{count} игр"
         other: "%{count} игры"
       delete_confirm: "Удалить этот корт?"
+      free_only: "Бесплатные корты"
+      free_badge: "Бесплатно"
+    form:
+      free: "Бесплатный корт (без оплаты)"
     show:
       meta_title: "%{court} — корт и запланированные игры"
       meta_description: "Найдите игры на %{court} и присоединяйтесь к ним. Создавайте матчи по теннису, паделу и настольному теннису на GetCourt."
