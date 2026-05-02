@@ -58,7 +58,7 @@ Rails.application.configure do
   config.action_mailer.smtp_settings = {
     address: "smtp.resend.com",
     port: 2587,
-    tls: true,
+    enable_starttls_auto: true,
     user_name: "resend",
     password: ENV["RESEND_API_KEY"],
     authentication: :plain
