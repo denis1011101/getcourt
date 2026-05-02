@@ -28,7 +28,8 @@ class FeaturedMatchBannerTest < ApplicationSystemTestCase
     assert_selector "title", text: "M. Andreeva vs M. Kostyuk", visible: false
     assert_selector "meta[property='og:type'][content='event']", visible: false, count: 1
     assert_selector "meta[property='og:title']", visible: false, count: 1
-    assert_selector "meta[property='og:image'][content^='http']", visible: false, count: 1
+    og_image = page.find("meta[property='og:image']", visible: false)["content"]
+    assert_match %r{/rails/active_storage/representations/}, og_image
     assert_selector "meta[name='twitter:title']", visible: false, count: 1
 
     json_ld = page.find("script[type='application/ld+json']", visible: false).native.inner_html
