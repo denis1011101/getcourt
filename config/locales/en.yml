@@ -79,6 +79,13 @@ en:
       primary: "This site uses functional cookies: for sign-in, language preference, and UI settings. No tracking or advertising cookies are used."
       learn_more: "Learn more"
       ok: "OK"
+  user_mailer:
+    login_code_email:
+      subject: "Your GetCourt login code"
+      greeting: "Hi,"
+      intro: "Your login code is below. Enter it on the verification page to sign in."
+      expiry: "The code expires in 10 minutes."
+      ignore: "If you didn't request it, you can ignore this email."
   sessions:
     privacy_consent_html: "I agree to the <a href='%{url}' class='text-indigo-600 dark:text-indigo-400 hover:underline' target='_blank'>Privacy Policy</a> and consent to processing my email for authentication"
     age_consent: "I confirm I am at least 16 years old"

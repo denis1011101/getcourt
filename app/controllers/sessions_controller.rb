@@ -22,6 +22,9 @@ class SessionsController < ApplicationController
 
     user = User.find_or_initialize_by(email: email)
     user.name = email.split("@").first.titleize if user.name.blank?
+    if user.new_record? && User::TELEGRAM_LOCALES.include?(I18n.locale.to_s)
+      user.telegram_locale = I18n.locale.to_s
+    end
 
     result = user.save
     Rails.logger.info "[SessionsController#create] save result=#{result.inspect} persisted=#{user.persisted?} new_record=#{user.new_record?} errors=#{user.errors.full_messages.inspect}"

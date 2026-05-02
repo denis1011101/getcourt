@@ -1,5 +1,29 @@
-<h1>User#login_code_email</h1>
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; color: #1e1b4b;">
+  <h1 style="font-size: 22px; font-weight: 700; margin: 0 0 8px;">
+    <span style="color: #1e1b4b;">Get</span><span style="color: #7c6fea;">Court</span>
+  </h1>
 
-<p>
-  <%= @greeting %>, find me in app/views/user_mailer/login_code_email.html.erb
-</p>
+  <p style="font-size: 15px; line-height: 1.5; margin: 16px 0 8px;">
+    <%= t("user_mailer.login_code_email.greeting") %>
+  </p>
+
+  <p style="font-size: 15px; line-height: 1.5; margin: 0 0 16px;">
+    <%= t("user_mailer.login_code_email.intro") %>
+  </p>
+
+  <div style="background: #f3f4fb; border: 1px solid rgba(99,102,241,0.2); border-radius: 12px; padding: 18px; text-align: center; margin: 16px 0;">
+    <div style="font-family: 'Space Mono', ui-monospace, Menlo, monospace; font-size: 32px; font-weight: 700; letter-spacing: 8px; color: #1e1b4b;">
+      <%= @code %>
+    </div>
+  </div>
+
+  <p style="font-size: 13px; color: #555; line-height: 1.5; margin: 16px 0 0;">
+    <%= t("user_mailer.login_code_email.expiry") %>
+  </p>
+
+  <p style="font-size: 13px; color: #555; line-height: 1.5; margin: 8px 0 0;">
+    <%= t("user_mailer.login_code_email.ignore") %>
+  </p>
+
+  <p style="font-size: 13px; color: #999; margin: 24px 0 0;">— GetCourt</p>
+</div>

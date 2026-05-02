@@ -13,6 +13,30 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
   end
 
+  test "new user created from en locale stores en telegram locale" do
+    host! "en.getcourt.co"
+    email = "sessions_en_locale@example.com"
+
+    post session_url, params: { email: email }
+
+    assert_redirected_to root_path
+    assert_equal "en", User.find_by!(email: email).telegram_locale
+  ensure
+    User.find_by(email: email)&.destroy if defined?(email)
+  end
+
+  test "new user created from unsupported telegram locale keeps default telegram locale" do
+    host! "es.getcourt.co"
+    email = "sessions_es_locale@example.com"
+
+    post session_url, params: { email: email }
+
+    assert_redirected_to root_path
+    assert_equal "ru", User.find_by!(email: email).telegram_locale
+  ensure
+    User.find_by(email: email)&.destroy if defined?(email)
+  end
+
   test "should send email login code when email verification is required" do
     user = User.create!(
       email: "sessions_email_code@example.com",
