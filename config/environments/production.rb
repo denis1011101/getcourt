@@ -57,7 +57,7 @@ Rails.application.configure do
   config.action_mailer.raise_delivery_errors = true
   config.action_mailer.smtp_settings = {
     address: "smtp.resend.com",
-    port: 465,
+    port: 2587,
     tls: true,
     user_name: "resend",
     password: ENV["RESEND_API_KEY"],
