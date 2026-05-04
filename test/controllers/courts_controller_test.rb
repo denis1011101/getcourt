@@ -292,6 +292,38 @@ class CourtsControllerTest < ActionDispatch::IntegrationTest
     outdoor_court&.destroy
   end
 
+  test "sport filter shows only courts of given sport" do
+    tennis_court = Court.create!(name: "Tennis Court", sport: "Tennis", moderation_status: "approved", approved_at: Time.current)
+    padel_court = Court.create!(name: "Padel Court", sport: "Padel", moderation_status: "approved", approved_at: Time.current)
+
+    get courts_url, params: { sport: "Tennis" }
+
+    courts = assigns(:courts)
+    assert_includes courts, tennis_court
+    assert_not_includes courts, padel_court
+  ensure
+    tennis_court&.destroy
+    padel_court&.destroy
+  end
+
+  test "sport filter combines with free filter" do
+    free_tennis = Court.create!(name: "Free Tennis", sport: "Tennis", free: true, moderation_status: "approved", approved_at: Time.current)
+    paid_tennis = Court.create!(name: "Paid Tennis", sport: "Tennis", free: false, moderation_status: "approved", approved_at: Time.current)
+    free_padel = Court.create!(name: "Free Padel", sport: "Padel", free: true, moderation_status: "approved", approved_at: Time.current)
+
+    get courts_url, params: { sport: "Tennis", free: "1" }
+    follow_redirect! if response.redirect?
+
+    courts = assigns(:courts)
+    assert_includes courts, free_tennis
+    assert_not_includes courts, paid_tennis
+    assert_not_includes courts, free_padel
+  ensure
+    free_tennis&.destroy
+    paid_tennis&.destroy
+    free_padel&.destroy
+  end
+
   test "without free filter all courts are shown" do
     free_court  = Court.create!(name: "Free Court2", moderation_status: "approved", approved_at: Time.current, free: true)
     paid_court  = Court.create!(name: "Paid Court2", moderation_status: "approved", approved_at: Time.current, free: false)

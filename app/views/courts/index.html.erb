@@ -56,6 +56,9 @@
         <% if params[:indoor].present? %>
           <%= f.hidden_field :indoor, value: params[:indoor] %>
         <% end %>
+        <% if params[:sport].present? %>
+          <%= f.hidden_field :sport, value: params[:sport] %>
+        <% end %>
         <% free_active = ActiveModel::Type::Boolean.new.cast(params[:free]) %>
         <button type="submit" name="free" value="<%= free_active ? '' : '1' %>"
                 class="flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium border transition
@@ -92,7 +95,18 @@
           </span>
         </button>
 
-        <% if free_active || outdoor_active || indoor_active %>
+        <!-- Sport chips -->
+        <% sports_list = @sports.present? ? @sports : [] %>
+        <% sports_list.each do |sport| %>
+          <% sport_active = params[:sport] == sport %>
+          <button type="submit" name="sport" value="<%= sport_active ? '' : sport %>"
+                  class="flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium border transition
+                         <%= sport_active ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-200 hover:border-gray-400 dark:bg-slate-800 dark:text-slate-200 dark:border-white/10 dark:hover:border-white/25' %>">
+            <%= sport.titleize %>
+          </button>
+        <% end %>
+
+        <% if free_active || outdoor_active || indoor_active || params[:sport].present? %>
           <%= link_to courts_path(params.permit(:country, :city).to_h), class: "flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition" do %>
             <span class="inline-flex items-center gap-1">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

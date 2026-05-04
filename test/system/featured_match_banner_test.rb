@@ -132,6 +132,55 @@ class FeaturedMatchBannerTest < ApplicationSystemTestCase
     assert_no_link "Clay · Unknown Court"
   end
 
+  test "event page renders fallback about text without description" do
+    featured_match = FeaturedMatch.create!(
+      tournament_label: "Roland Garros Final",
+      player_left_name: "M. Andreeva",
+      player_right_name: "M. Kostyuk",
+      starts_at: 1.day.from_now,
+      active: true
+    )
+
+    visit event_path(featured_match)
+
+    assert_text "About"
+    assert_text "#{featured_match.seo_title} is scheduled for"
+  end
+
+  test "event page renders finished result block" do
+    featured_match = FeaturedMatch.create!(
+      tournament_label: "Roland Garros Final",
+      player_left_name: "M. Andreeva",
+      player_right_name: "M. Kostyuk",
+      starts_at: 1.day.ago,
+      status: "finished",
+      result: "M. Andreeva won 6-4, 6-4",
+      active: true
+    )
+
+    visit event_path(featured_match)
+
+    assert_text "Result"
+    assert_text "M. Andreeva won 6-4, 6-4"
+  end
+
+  test "event page renders linked photo credit" do
+    featured_match = FeaturedMatch.create!(
+      tournament_label: "Roland Garros Final",
+      player_left_name: "M. Andreeva",
+      player_right_name: "M. Kostyuk",
+      starts_at: 1.day.from_now,
+      photo_credit: "WTA Photos",
+      photo_credit_url: "https://example.com/photos",
+      active: true
+    )
+
+    visit event_path(featured_match)
+
+    assert_text "Photo:"
+    assert_link "WTA Photos", href: "https://example.com/photos"
+  end
+
   test "homepage without active match does not render banner or JSON-LD" do
     visit root_path
 

@@ -17,9 +17,11 @@ class CourtsController < ApplicationController
     end
 
     prepare_location_filters(court_city_names)
+    @sports = SportCatalog::SPORTS
     visible_courts = visible_courts.free_only if ActiveModel::Type::Boolean.new.cast(params[:free])
     visible_courts = visible_courts.outdoor_only if ActiveModel::Type::Boolean.new.cast(params[:outdoor])
     visible_courts = visible_courts.indoor_only if ActiveModel::Type::Boolean.new.cast(params[:indoor])
+    visible_courts = visible_courts.where(sport: params[:sport]) if params[:sport].present?
     courts = visible_courts.to_a
 
     if params[:country].present? && params[:city].blank?
