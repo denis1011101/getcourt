@@ -264,6 +264,34 @@ class CourtsControllerTest < ActionDispatch::IntegrationTest
     paid_court&.destroy
   end
 
+  test "outdoor filter shows only outdoor courts" do
+    outdoor_court = Court.create!(name: "Outdoor Court", moderation_status: "approved", approved_at: Time.current, outdoor: true)
+    indoor_court = Court.create!(name: "Indoor Only Court", moderation_status: "approved", approved_at: Time.current, outdoor: false)
+
+    get courts_url, params: { outdoor: "1" }
+
+    courts = assigns(:courts)
+    assert_includes courts, outdoor_court
+    assert_not_includes courts, indoor_court
+  ensure
+    outdoor_court&.destroy
+    indoor_court&.destroy
+  end
+
+  test "indoor filter shows only indoor courts" do
+    indoor_court = Court.create!(name: "Indoor Court", moderation_status: "approved", approved_at: Time.current, indoor: true)
+    outdoor_court = Court.create!(name: "Outdoor Only Court", moderation_status: "approved", approved_at: Time.current, indoor: false)
+
+    get courts_url, params: { indoor: "1" }
+
+    courts = assigns(:courts)
+    assert_includes courts, indoor_court
+    assert_not_includes courts, outdoor_court
+  ensure
+    indoor_court&.destroy
+    outdoor_court&.destroy
+  end
+
   test "without free filter all courts are shown" do
     free_court  = Court.create!(name: "Free Court2", moderation_status: "approved", approved_at: Time.current, free: true)
     paid_court  = Court.create!(name: "Paid Court2", moderation_status: "approved", approved_at: Time.current, free: false)
@@ -288,6 +316,20 @@ class CourtsControllerTest < ActionDispatch::IntegrationTest
     assert court&.free?, "Court should be free"
   ensure
     Court.where(name: "My Free Court").destroy_all
+    User.find_by(email: user_email)&.destroy
+  end
+
+  test "outdoor and indoor attributes are saved on create" do
+    user_email = "court_flags_create_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: user_email }
+
+    post courts_url, params: { court: { name: "My Mixed Court", outdoor: "1", indoor: "1" } }
+
+    court = Court.find_by(name: "My Mixed Court")
+    assert court&.outdoor?, "Court should be outdoor"
+    assert court&.indoor?, "Court should be indoor"
+  ensure
+    Court.where(name: "My Mixed Court").destroy_all
     User.find_by(email: user_email)&.destroy
   end
 

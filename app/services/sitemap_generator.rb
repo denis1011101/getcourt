@@ -46,7 +46,7 @@ class SitemapGenerator
   end
 
   def dynamic_paths
-    court_paths + game_paths
+    court_paths + game_paths + event_paths
   end
 
   def court_paths
@@ -55,6 +55,10 @@ class SitemapGenerator
 
   def game_paths
     Game.find_each.map { |game| [ game_path(game), game.updated_at ] }
+  end
+
+  def event_paths
+    FeaturedMatch.where.not(slug: nil).find_each.map { |match| [ event_path(match), match.updated_at ] }
   end
 
   def localized_alternates(path)

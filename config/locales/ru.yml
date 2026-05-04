@@ -22,6 +22,13 @@ ru:
     seo:
       scheduled: "%{title}. В эфире %{date}."
       started: "%{title}. Матч начался."
+      finished: "%{title}. Итоговый результат: %{result}."
+      result_pending: "результат скоро появится"
+    event:
+      about: "О матче"
+      result: "Результат"
+      photo_credit: "Фото"
+      about_fallback: "%{title} запланирован на %{date}. Следите за деталями матча и используйте GetCourt, чтобы организовывать свои игры в теннис, падел, сквош или настольный теннис рядом."
   layout:
     nav:
       home: "Главная"
@@ -139,8 +146,14 @@ ru:
       delete_confirm: "Удалить этот корт?"
       free_only: "Бесплатные корты"
       free_badge: "Бесплатно"
+      outdoor_only: "Открытые корты"
+      outdoor_badge: "Открытый"
+      indoor_only: "Закрытые корты"
+      indoor_badge: "Закрытый"
     form:
       free: "Бесплатный корт (без оплаты)"
+      outdoor: "Открытый корт"
+      indoor: "Закрытый корт"
     show:
       meta_title: "%{court} — корт и запланированные игры"
       meta_description: "Найдите игры на %{court} и присоединяйтесь к ним. Создавайте матчи по теннису, паделу и настольному теннису на GetCourt."

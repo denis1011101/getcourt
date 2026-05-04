@@ -18,6 +18,8 @@ class CourtsController < ApplicationController
 
     prepare_location_filters(court_city_names)
     visible_courts = visible_courts.free_only if ActiveModel::Type::Boolean.new.cast(params[:free])
+    visible_courts = visible_courts.outdoor_only if ActiveModel::Type::Boolean.new.cast(params[:outdoor])
+    visible_courts = visible_courts.indoor_only if ActiveModel::Type::Boolean.new.cast(params[:indoor])
     courts = visible_courts.to_a
 
     if params[:country].present? && params[:city].blank?
@@ -106,7 +108,7 @@ class CourtsController < ApplicationController
   end
 
   def court_params
-    permitted = params.require(:court).permit(:name, :sport, :coordinates, :contact_type, :contact_value, :free, contact_entries: [ :contact_type, :contact_value ])
+    permitted = params.require(:court).permit(:name, :sport, :coordinates, :contact_type, :contact_value, :free, :outdoor, :indoor, contact_entries: [ :contact_type, :contact_value ])
     contact_entries = permitted.delete(:contact_entries)
 
     if contact_entries.present?

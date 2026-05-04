@@ -21,7 +21,7 @@
     </svg>
 
     <div class="relative">
-      <h1 class="text-2xl md:text-4xl font-bold tracking-tight"><%= t("courts.index.hero_title") %></h1>
+      <h1 class="text-2xl md:text-4xl font-bold tracking-tight"><%= t("courts.index.hero_title") %><span class="inline-flex items-center ml-1" style="vertical-align: -0.02em;"><svg viewBox="0 0 24 24" style="width: 0.26em; height: 0.26em;" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#d4f542"/><path d="M3 8 Q9 12 3 16" fill="none" stroke="white" stroke-width="1.8" opacity="0.7" stroke-linecap="round"/><path d="M21 8 Q15 12 21 16" fill="none" stroke="white" stroke-width="1.8" opacity="0.7" stroke-linecap="round"/></svg></span></h1>
       <p class="mt-2 text-white/90 dark:text-indigo-100 text-sm md:text-base max-w-xl"><%= t("courts.index.hero_subtitle") %></p>
 
       <%= render "shared/location_filters",
@@ -47,6 +47,15 @@
         <% if params[:city].present? %>
           <%= f.hidden_field :city, value: params[:city] %>
         <% end %>
+        <% if params[:free].present? %>
+          <%= f.hidden_field :free, value: params[:free] %>
+        <% end %>
+        <% if params[:outdoor].present? %>
+          <%= f.hidden_field :outdoor, value: params[:outdoor] %>
+        <% end %>
+        <% if params[:indoor].present? %>
+          <%= f.hidden_field :indoor, value: params[:indoor] %>
+        <% end %>
         <% free_active = ActiveModel::Type::Boolean.new.cast(params[:free]) %>
         <button type="submit" name="free" value="<%= free_active ? '' : '1' %>"
                 class="flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium border transition
@@ -59,7 +68,31 @@
           </span>
         </button>
 
-        <% if free_active %>
+        <% outdoor_active = ActiveModel::Type::Boolean.new.cast(params[:outdoor]) %>
+        <button type="submit" name="outdoor" value="<%= outdoor_active ? '' : '1' %>"
+                class="flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium border transition
+                       <%= outdoor_active ? 'bg-sky-600 text-white border-sky-600' : 'bg-white text-gray-700 border-gray-200 hover:border-gray-400 dark:bg-slate-800 dark:text-slate-200 dark:border-white/10 dark:hover:border-white/25' %>">
+          <span class="inline-flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+            <%= t("courts.index.outdoor_only") %>
+          </span>
+        </button>
+
+        <% indoor_active = ActiveModel::Type::Boolean.new.cast(params[:indoor]) %>
+        <button type="submit" name="indoor" value="<%= indoor_active ? '' : '1' %>"
+                class="flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium border transition
+                       <%= indoor_active ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-700 border-gray-200 hover:border-gray-400 dark:bg-slate-800 dark:text-slate-200 dark:border-white/10 dark:hover:border-white/25' %>">
+          <span class="inline-flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
+            <%= t("courts.index.indoor_only") %>
+          </span>
+        </button>
+
+        <% if free_active || outdoor_active || indoor_active %>
           <%= link_to courts_path(params.permit(:country, :city).to_h), class: "flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition" do %>
             <span class="inline-flex items-center gap-1">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -102,7 +135,7 @@
             <h3 class="text-base font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors mb-1">
               <%= court.name %>
             </h3>
-            <% if court.sport.present? || court.free? %>
+            <% if court.sport.present? || court.free? || court.outdoor? || court.indoor? %>
               <p class="mb-2 flex flex-wrap gap-1">
                 <% if court.sport.present? %>
                   <span class="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-200">
@@ -112,6 +145,16 @@
                 <% if court.free? %>
                   <span class="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-500/15 dark:text-green-300">
                     <%= t("courts.index.free_badge") %>
+                  </span>
+                <% end %>
+                <% if court.outdoor? %>
+                  <span class="inline-flex items-center rounded-full bg-sky-50 px-2.5 py-0.5 text-xs font-medium text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">
+                    <%= t("courts.index.outdoor_badge") %>
+                  </span>
+                <% end %>
+                <% if court.indoor? %>
+                  <span class="inline-flex items-center rounded-full bg-purple-50 px-2.5 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-500/15 dark:text-purple-300">
+                    <%= t("courts.index.indoor_badge") %>
                   </span>
                 <% end %>
               </p>

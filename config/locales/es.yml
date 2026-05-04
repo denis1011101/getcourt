@@ -23,6 +23,13 @@ es:
     seo:
       scheduled: "%{title}. En directo el %{date}."
       started: "%{title}. El partido ha empezado."
+      finished: "%{title}. Resultado final: %{result}."
+      result_pending: "resultado pendiente"
+    event:
+      about: "Sobre este partido"
+      result: "Resultado"
+      photo_credit: "Foto"
+      about_fallback: "%{title} está programado para %{date}. Sigue los detalles del partido y usa GetCourt para organizar tus propios partidos de tenis, pádel, squash o tenis de mesa cerca de ti."
   layout:
     nav:
       home: "Inicio"
@@ -136,8 +143,14 @@ es:
       delete_confirm: "¿Seguro que quieres eliminar esta pista?"
       free_only: "Pistas gratuitas"
       free_badge: "Gratuito"
+      outdoor_only: "Pistas al aire libre"
+      outdoor_badge: "Al aire libre"
+      indoor_only: "Pistas cubiertas"
+      indoor_badge: "Cubierta"
     form:
       free: "Pista gratuita (sin tarifa)"
+      outdoor: "Pista al aire libre"
+      indoor: "Pista cubierta"
     show:
       meta_title: "%{court} — pista y partidos programados"
       meta_description: "Encuentra y únete a partidos en %{court}. Crea o encuentra partidos de tenis, pádel y tenis de mesa en GetCourt."

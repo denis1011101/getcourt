@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_02_090004) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_04_092000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -64,8 +64,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_02_090004) do
     t.string "coordinates"
     t.datetime "created_at", null: false
     t.boolean "free", default: false, null: false
+    t.boolean "indoor", default: false, null: false
     t.string "moderation_status", default: "pending", null: false
     t.string "name"
+    t.boolean "outdoor", default: false, null: false
     t.string "sport"
     t.datetime "updated_at", null: false
     t.integer "user_id"
@@ -89,16 +91,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_02_090004) do
     t.boolean "active", default: false, null: false
     t.integer "court_id"
     t.datetime "created_at", null: false
+    t.text "description"
+    t.string "photo_credit"
+    t.string "photo_credit_url"
     t.string "player_left_flag"
     t.string "player_left_name", null: false
     t.string "player_right_flag"
     t.string "player_right_name", null: false
+    t.text "result"
+    t.string "slug", null: false
     t.datetime "starts_at", null: false
+    t.string "status", default: "scheduled", null: false
     t.string "surface_label"
     t.string "tournament_label", null: false
     t.datetime "updated_at", null: false
     t.index ["active"], name: "index_featured_matches_on_active", unique: true, where: "active = 1"
     t.index ["court_id"], name: "index_featured_matches_on_court_id"
+    t.index ["slug"], name: "index_featured_matches_on_slug", unique: true
     t.index ["starts_at"], name: "index_featured_matches_on_starts_at"
   end
 

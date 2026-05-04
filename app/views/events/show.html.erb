@@ -1,0 +1,44 @@
+<% content_for :meta_title, "#{@featured_match.seo_title} | GetCourt" %>
+<% content_for :meta_description, @featured_match.seo_description %>
+<% content_for :meta_image, @featured_match.og_image_url(host: request.host_with_port, protocol: request.protocol) || meta_image %>
+<% content_for :meta_og_type, "website" %>
+<% content_for :head do %>
+  <%= render "featured_matches/meta", featured_match: @featured_match %>
+<% end %>
+
+<div class="max-w-4xl mx-auto">
+  <h1 class="text-3xl md:text-4xl font-bold tracking-tight mb-5 text-gray-900 dark:text-white"><%= @featured_match.seo_title %></h1>
+
+  <%= render "featured_matches/banner", featured_match: @featured_match %>
+
+  <% if @featured_match.photo_credit.present? %>
+    <p class="mt-2 text-xs text-gray-500 dark:text-slate-400">
+      <%= t("featured_match.event.photo_credit") %>:
+      <% if @featured_match.photo_credit_url.present? %>
+        <%= link_to @featured_match.photo_credit, @featured_match.photo_credit_url, target: "_blank", rel: "noopener nofollow", class: "underline" %>
+      <% else %>
+        <%= @featured_match.photo_credit %>
+      <% end %>
+    </p>
+  <% end %>
+
+  <section class="mt-8">
+    <h2 class="text-xl font-semibold text-gray-900 dark:text-white"><%= t("featured_match.event.about") %></h2>
+    <div class="mt-3 text-gray-700 dark:text-slate-300 leading-7">
+      <% if @featured_match.description.present? %>
+        <%= simple_format(@featured_match.description) %>
+      <% else %>
+        <p><%= t("featured_match.event.about_fallback", title: @featured_match.seo_title, date: l(@featured_match.starts_at, format: :long)) %></p>
+      <% end %>
+    </div>
+  </section>
+
+  <% if @featured_match.status == "finished" && @featured_match.result.present? %>
+    <section class="mt-8">
+      <h2 class="text-xl font-semibold text-gray-900 dark:text-white"><%= t("featured_match.event.result") %></h2>
+      <div class="mt-3 text-gray-700 dark:text-slate-300 leading-7">
+        <%= simple_format(@featured_match.result) %>
+      </div>
+    </section>
+  <% end %>
+</div>

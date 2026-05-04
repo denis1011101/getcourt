@@ -1,16 +1,32 @@
 <script type="application/ld+json">
+<% event_url = event_url(featured_match, host: request.host_with_port, protocol: request.protocol) %>
+<% location = if featured_match.court.present?
+  {
+    "@type": "Place",
+    "name": featured_match.court.name,
+    "address": featured_match.court.city_name
+  }
+end %>
 <% json = {
   "@context": "https://schema.org",
   "@type": "SportsEvent",
   "name": featured_match.seo_title,
+  "description": featured_match.seo_description,
+  "url": event_url,
   "startDate": featured_match.starts_at.iso8601,
-  "eventStatus": "https://schema.org/EventScheduled",
+  "endDate": (featured_match.starts_at + 4.hours).iso8601,
+  "eventStatus": featured_match.event_status_schema,
   "sport": "Tennis",
+  "location": location,
   "competitor": [
     { "@type": "Person", "name": featured_match.player_left_name },
     { "@type": "Person", "name": featured_match.player_right_name }
   ],
-  "image": meta_image
+  "image": meta_image,
+  "subjectOf": (featured_match.status == "finished" && featured_match.result.present?) ? {
+    "@type": "Article",
+    "name": featured_match.result
+  } : nil
 }.compact.to_json.gsub("</", "<\\/") %>
 <%= raw(json) %>
 </script>

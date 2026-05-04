@@ -38,6 +38,49 @@ class FeaturedMatchTest < ActiveSupport::TestCase
     assert_nil match.og_image_url
   end
 
+  test "generates slug and uses it as param" do
+    match = FeaturedMatch.create!(valid_attributes)
+
+    assert_equal "roland-garros-final-#{match.starts_at.year}-m-andreeva-m-kostyuk", match.slug
+    assert_equal match.slug, match.to_param
+  end
+
+  test "validates slug format" do
+    match = FeaturedMatch.new(valid_attributes(slug: "Bad Slug"))
+
+    assert_not match.valid?
+    assert_includes match.errors[:slug], "is invalid"
+  end
+
+  test "finished seo description includes result" do
+    match = FeaturedMatch.new(valid_attributes(status: "finished", result: "M. Andreeva won 6-4, 6-4"))
+
+    assert_includes match.seo_description, "Final result"
+    assert_includes match.seo_description, "6-4"
+  end
+
+  test "event status schema maps status" do
+    match = FeaturedMatch.new(valid_attributes(status: "live"))
+
+    assert_equal "https://schema.org/EventScheduled", match.event_status_schema
+  end
+
+  test "event status schema only returns valid schema.org event statuses" do
+    valid_schema_statuses = %w[
+      https://schema.org/EventScheduled
+      https://schema.org/EventCancelled
+      https://schema.org/EventMovedOnline
+      https://schema.org/EventPostponed
+      https://schema.org/EventRescheduled
+    ]
+
+    FeaturedMatch::STATUSES.each do |status|
+      match = FeaturedMatch.new(valid_attributes(status: status))
+
+      assert_includes valid_schema_statuses, match.event_status_schema
+    end
+  end
+
   test "court association is optional" do
     match = FeaturedMatch.create!(valid_attributes(court: nil))
 
@@ -54,6 +97,7 @@ class FeaturedMatchTest < ActiveSupport::TestCase
       player_right_name: "M. Kostyuk",
       player_right_flag: "UA",
       starts_at: 1.day.from_now,
+      status: "scheduled",
       active: false
     }.merge(overrides)
   end

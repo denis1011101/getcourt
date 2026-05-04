@@ -129,6 +129,22 @@ class CourtTest < ActiveSupport::TestCase
     assert_not_includes Court.free_only, courts(:two)
   end
 
+  test "outdoor_only scope returns only outdoor courts" do
+    courts(:one).update!(outdoor: true, moderation_status: "approved")
+    courts(:two).update!(outdoor: false, moderation_status: "approved")
+
+    assert_includes Court.outdoor_only, courts(:one)
+    assert_not_includes Court.outdoor_only, courts(:two)
+  end
+
+  test "indoor_only scope returns only indoor courts" do
+    courts(:one).update!(indoor: true, moderation_status: "approved")
+    courts(:two).update!(indoor: false, moderation_status: "approved")
+
+    assert_includes Court.indoor_only, courts(:one)
+    assert_not_includes Court.indoor_only, courts(:two)
+  end
+
   private
 
   def with_stubbed_singleton_method(target, method_name, replacement)

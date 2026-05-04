@@ -37,11 +37,19 @@ class SitemapGeneratorTest < ActiveSupport::TestCase
   end
 
   test "dynamic records include localized urls alternates and lastmod" do
+    match = FeaturedMatch.create!(
+      tournament_label: "Madrid Open Final",
+      player_left_name: "J. Sinner",
+      player_right_name: "A. Zverev",
+      starts_at: 1.day.from_now
+    )
+
     SitemapGenerator.generate!
     document = Nokogiri::XML(File.read(@sitemap_file))
 
     assert_dynamic_record(document, courts(:one), court_path(courts(:one)))
     assert_dynamic_record(document, games(:one), game_path(games(:one)))
+    assert_dynamic_record(document, match, event_path(match))
   end
 
   private

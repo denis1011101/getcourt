@@ -1,7 +1,9 @@
+<% linked = local_assigns.fetch(:linked, false) %>
+<% banner = capture do %>
 <section class="live-banner featured-match-banner"
-         data-controller="featured-match"
-         data-featured-match-starts-at-value="<%= featured_match.starts_at.iso8601 %>"
-         data-featured-match-started-text-value="<%= t("featured_match.starts_now") %>">
+          data-controller="featured-match"
+          data-featured-match-starts-at-value="<%= featured_match.starts_at.iso8601 %>"
+          data-featured-match-started-text-value="<%= t("featured_match.starts_now") %>">
   <div class="banner-top">
     <div class="tournament-label"><%= featured_match.tournament_label %></div>
   </div>
@@ -37,7 +39,7 @@
 
   <% if featured_match.surface_label.present? %>
     <div class="banner-bottom">
-      <% if featured_match.court.present? %>
+      <% if featured_match.court.present? && !linked %>
         <%= link_to featured_match.surface_label, court_path(featured_match.court), class: "surface-tag surface-tag--link" %>
       <% else %>
         <div class="surface-tag"><%= featured_match.surface_label %></div>
@@ -45,3 +47,12 @@
     </div>
   <% end %>
 </section>
+<% end %>
+
+<% if linked %>
+  <%= link_to event_path(featured_match), class: "block no-underline text-inherit", aria: { label: featured_match.seo_title } do %>
+    <%= banner %>
+  <% end %>
+<% else %>
+  <%= banner %>
+<% end %>
