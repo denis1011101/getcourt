@@ -31,7 +31,7 @@ class FeaturedMatchTest < ActiveSupport::TestCase
   end
 
   test "seo title and description describe the match" do
-    match = FeaturedMatch.new(valid_attributes(starts_at: Time.zone.local(2026, 6, 8, 15, 0, 0)))
+    match = FeaturedMatch.new(valid_attributes(starts_at: 2.days.from_now))
 
     assert_equal "M. Andreeva vs M. Kostyuk · Roland Garros Final", match.seo_title
     assert_includes match.seo_description, "Live on"
