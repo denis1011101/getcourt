@@ -63,6 +63,13 @@
         <p class="text-lg font-medium text-gray-900 dark:text-slate-100"><%= display_time(@game) %></p>
       </div>
 
+      <% if @game.respond_to?(:duration_minutes) && @game.duration_minutes.to_i > 0 %>
+        <div>
+          <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("games.show.duration") %></p>
+          <p class="text-lg font-medium text-gray-900 dark:text-slate-100"><%= format_duration_minutes(@game.duration_minutes) %></p>
+        </div>
+      <% end %>
+
       <div class="sm:col-span-2">
         <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("games.show.court") %></p>
         <p class="text-lg font-medium text-indigo-700 dark:text-indigo-400">
@@ -89,10 +96,15 @@
           <% end %>
         </div>
 
-        <%= button_to (@game.urgent_player_search? ? "Cancel urgent search" : "Announce urgent search"),
-              toggle_urgent_player_search_game_path(@game),
-              method: :post,
-              class: "inline-flex items-center rounded-md border border-indigo-300 px-3 py-2 text-sm font-medium text-indigo-700 transition hover:bg-indigo-50 dark:border-white/15 dark:text-slate-100 dark:hover:bg-slate-700/60" %>
+        <div class="rounded-md border border-gray-200 p-3 dark:border-white/10">
+          <p class="mb-2 text-sm text-gray-500 dark:text-slate-400">
+            Tap this to add a "looking for players" label to the game and send a notification to GetCourt members in your city's Telegram chat.
+          </p>
+          <%= button_to (@game.urgent_player_search? ? "Cancel players search" : "Announce players search"),
+                toggle_urgent_player_search_game_path(@game),
+                method: :post,
+                class: "inline-flex items-center rounded-md border border-indigo-300 px-3 py-2 text-sm font-medium text-indigo-700 transition hover:bg-indigo-50 dark:border-white/15 dark:text-slate-100 dark:hover:bg-slate-700/60" %>
+        </div>
       </div>
     <% end %>
 
@@ -140,102 +152,7 @@
       </div>
 
       <% if can_fill_stats && game_started %>
-        <%= form_with url: game_player_statistics_path(@game), method: :post, data: { turbo: false }, class: "space-y-4" do %>
-          <% participants = [] %>
-          <% participants << @game.user if @game.respond_to?(:user) %>
-          <% if @game.respond_to?(:participations) %>
-            <% scope = @game.participations.respond_to?(:approved) ? @game.participations.approved : @game.participations %>
-            <% participants.concat(scope.includes(:user).map(&:user)) %>
-          <% end %>
-          <% participants = participants.compact.uniq { |u| u.id } %>
-
-          <!-- Teams Selection -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4 border-b dark:border-white/10">
-            <div>
-              <h3 class="text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2"><%= t("games.show.team_a") %></h3>
-              <div class="space-y-1">
-                <% participants.each do |u| %>
-                  <% label = if u.respond_to?(:name) && u.name.present?
-                               u.name
-                             else
-                               u.email
-                             end %>
-                  <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-                    <%= check_box_tag "team_a_user_ids[]", u.id, false, class: "rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
-                    <span><%= label %></span>
-                  </label>
-                <% end %>
-              </div>
-            </div>
-
-            <div>
-              <h3 class="text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2"><%= t("games.show.team_b") %></h3>
-              <div class="space-y-1">
-                <% participants.each do |u| %>
-                  <% label = if u.respond_to?(:name) && u.name.present?
-                               u.name
-                             else
-                               u.email
-                             end %>
-                  <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-                    <%= check_box_tag "team_b_user_ids[]", u.id, false, class: "rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
-                    <span><%= label %></span>
-                  </label>
-                <% end %>
-              </div>
-            </div>
-          </div>
-
-          <!-- Winner & Main Stats -->
-          <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div>
-              <span class="block text-sm text-gray-600 dark:text-slate-400 mb-2"><%= t("games.show.winner") %></span>
-              <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300 mb-1">
-                <%= radio_button_tag "winner_team", "a" %>
-                <span><%= t("games.show.team_a") %></span>
-              </label>
-              <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-                <%= radio_button_tag "winner_team", "b" %>
-                <span><%= t("games.show.team_b") %></span>
-              </label>
-              <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-                <%= radio_button_tag "winner_team", "draw" %>
-                <span><%= t("games.show.draw") %></span>
-              </label>
-            </div>
-
-            <div>
-              <label class="block text-sm text-gray-600 dark:text-slate-400 mb-1"><%= t("games.show.score") %></label>
-              <%= text_field_tag "statistics[score]", nil, placeholder: "6-4 6-7(5) 10-8", class: "w-full rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 text-sm" %>
-            </div>
-
-            <div>
-              <label class="block text-sm text-gray-600 dark:text-slate-400 mb-1"><%= t("games.show.hours") %></label>
-              <%= number_field_tag "statistics[hours]", nil, step: 0.1, min: 0, class: "w-full rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 text-sm" %>
-            </div>
-          </div>
-
-          <% if false %>
-          <details class="border rounded p-3 bg-gray-50 dark:bg-slate-700/50">
-            <summary class="cursor-pointer text-sm font-medium text-gray-700 dark:text-slate-300 hover:text-indigo-600">
-              Additional match statistics
-            </summary>
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
-              <% StatisticsPresenter.fields.reject { |f| %i[singles_hours doubles_hours].include?(f[:key]) }.each do |f| %>
-                <div>
-                  <label class="block text-xs text-gray-600 dark:text-slate-400 mb-1"><%= f[:label] %></label>
-                  <% step = (StatisticsPresenter.field_type(f[:key]) == :float ? 0.1 : 1) %>
-                  <%= number_field_tag "statistics[#{f[:key]}]", nil, step: step, min: 0, placeholder: f[:example], class: "w-full rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 text-sm" %>
-                </div>
-              <% end %>
-            </div>
-          </details>
-          <% end %>
-
-          <div class="pt-2">
-            <%= submit_tag "Save statistics", class: "inline-flex items-center rounded bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700" %>
-          </div>
-        <% end %>
+        <%= render "games/stats_form", game: @game %>
       <% else %>
         <p class="text-gray-600 dark:text-slate-400 text-sm"><%= t("games.show.stats_locked") %></p>
       <% end %>

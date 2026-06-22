@@ -60,7 +60,7 @@ class NotifyUrgentPlayerSearchJobTest < ActiveJob::TestCase
     assert_includes calls[0][:args][1], "Center Court"
   end
 
-  test "does not notify when game urgent search is disabled" do
+  test "does not notify when game players search is disabled" do
     game = games(:one)
     game.update!(urgent_player_search: false)
 

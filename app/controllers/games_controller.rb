@@ -59,6 +59,10 @@ class GamesController < ApplicationController
       )
     end
 
+    if params[:looking_for_players].present?
+      scoped_games = scoped_games.where(urgent_player_search: true)
+    end
+
     if params[:with_spots].present? || current_user&.city_name.present?
       games = scoped_games.to_a
 
@@ -123,9 +127,13 @@ class GamesController < ApplicationController
   end
 
   def toggle_urgent_player_search
-    @game.update!(urgent_player_search: !@game.urgent_player_search?)
+    was_enabled = @game.urgent_player_search?
+    @game.update!(urgent_player_search: !was_enabled)
+    if !was_enabled && @game.urgent_player_search?
+      PostToThreadsJob.perform_later(@game.id, I18n.locale.to_s)
+    end
     state = @game.urgent_player_search? ? "enabled" : "disabled"
-    redirect_to @game, notice: "Urgent player search #{state}."
+    redirect_to @game, notice: "Players search #{state}."
   end
 
   # GET /games/prebooking_fragment
@@ -232,7 +240,7 @@ class GamesController < ApplicationController
   end
 
   def game_params
-    params.require(:game).permit(:court_id, :recurring, :occurrences_per_week, :with_coach, :date, :time, :players_count, :skill_level, :sport, :prebooking_enabled, :urgent_player_search)
+    params.require(:game).permit(:court_id, :recurring, :occurrences_per_week, :with_coach, :date, :time, :players_count, :skill_level, :sport, :prebooking_enabled, :urgent_player_search, :duration_minutes)
   end
 
   def display_date(game)

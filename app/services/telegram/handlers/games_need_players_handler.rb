@@ -14,7 +14,7 @@ module Telegram
           user = Telegram::Helpers::UserLookup.find_user(chat_id)
           favorite_ids = user&.favorite_court_ids || []
 
-          # Future games where urgent player search is enabled
+          # Future games where players search is enabled
           open_games = Game.includes(:user, :participations, :court)
                            .where(urgent_player_search: true)
                            .where("recurring = ? OR date >= ?", true, Date.current)

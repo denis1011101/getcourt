@@ -1,0 +1,92 @@
+<% content_for :meta_title, "My games" %>
+
+<div class="mx-auto max-w-3xl space-y-4 py-6">
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold">My games</h1>
+    <%= link_to "Back to account", edit_account_path, class: "text-sm text-indigo-600 hover:underline dark:text-indigo-400" %>
+  </div>
+
+  <div class="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+    <%= t("account.games.fairness_warning") %>
+  </div>
+
+  <% if @games.empty? %>
+    <p class="text-gray-500">No games yet.</p>
+  <% else %>
+    <% @games.each do |game| %>
+      <div class="rounded-lg border bg-white p-4 dark:border-white/10 dark:bg-slate-800/80">
+        <div class="mb-3 flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-500">
+              <%= l((game.respond_to?(:next_date) ? (game.next_date || game.date) : game.date).to_date, format: :long) rescue "-" %>
+              · <%= game.time&.strftime("%H:%M") %>
+            </p>
+            <p class="text-lg font-medium">
+              <%= link_to game.court&.name, game_path(game), class: "hover:underline" %>
+            </p>
+          </div>
+          <%= link_to "Open game", game_path(game), class: "text-sm text-indigo-600 hover:underline dark:text-indigo-400" %>
+        </div>
+
+        <details class="border-t pt-3 dark:border-white/10">
+          <summary class="cursor-pointer text-sm font-medium">Enter score & stats</summary>
+          <div class="mt-3">
+            <%= render "games/stats_form", game: game %>
+          </div>
+        </details>
+      </div>
+    <% end %>
+
+    <%= render "shared/pagy", pagy: @pagy if @pagy.respond_to?(:pages) %>
+  <% end %>
+
+  <% if @past_match_groups.any? %>
+    <div class="mt-8 space-y-4">
+      <h2 class="text-xl font-bold text-gray-900 dark:text-slate-100">Past matches</h2>
+      <p class="text-sm text-gray-500 dark:text-slate-400">
+        Match history from before deleted or external entries. Not linked to active games.
+      </p>
+
+      <% @past_match_groups.each do |date, matches_for_date| %>
+        <div class="rounded-lg border bg-white p-4 dark:border-white/10 dark:bg-slate-800/80">
+          <div class="mb-2 flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-500 dark:text-slate-400">
+                <%= l(date, format: :long) rescue date.to_s %>
+              </p>
+              <p class="text-lg font-medium text-gray-900 dark:text-slate-100">
+                <%= matches_for_date.size %>
+                <%= matches_for_date.size == 1 ? "match" : "matches" %>
+              </p>
+            </div>
+            <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-slate-700 dark:text-slate-300">
+              History
+            </span>
+          </div>
+
+          <ul class="divide-y dark:divide-white/10">
+            <% matches_for_date.each do |m| %>
+              <li class="py-2 text-sm">
+                <div class="flex items-center justify-between">
+                  <span class="text-gray-700 dark:text-slate-300">
+                    <%= m.mode&.titleize %>
+                    <% opp = @opponents_by_id[m.opponent_id] if m.opponent_id %>
+                    <% if opp %>· vs <%= opp.respond_to?(:name) && opp.name.present? ? opp.name : opp.email %><% end %>
+                  </span>
+                  <span class="font-mono text-gray-900 dark:text-slate-100">
+                    <%= m.score.presence || "—" %>
+                  </span>
+                </div>
+                <% if m.outcome.present? %>
+                  <span class="text-xs text-gray-500 dark:text-slate-400">
+                    <%= m.outcome.titleize %>
+                  </span>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

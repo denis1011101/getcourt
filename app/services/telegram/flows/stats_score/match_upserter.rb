@@ -4,7 +4,7 @@ module Telegram
       module MatchUpserter
         module_function
 
-        def call(game:, actor:, mode:, team_a_ids:, team_b_ids:, result:, played_at:, score:)
+        def call(game:, actor:, mode:, team_a_ids:, team_b_ids:, result:, played_at:, score:, force_new: false)
           team_a_ids = team_a_ids.map(&:to_i)
           team_b_ids = team_b_ids.map(&:to_i)
 
@@ -33,7 +33,7 @@ module Telegram
 
             PlayerStatistics::UpsertMatchForGameService.new(
               user:, game:, actor:, mode:,
-              outcome: outcome_for_a, played_at:, opponent:, score:, stats:
+              outcome: outcome_for_a, played_at:, opponent:, score:, stats:, force_new:
             ).call
           end
 
@@ -46,7 +46,7 @@ module Telegram
 
             PlayerStatistics::UpsertMatchForGameService.new(
               user:, game:, actor:, mode:,
-              outcome: outcome_for_b, played_at:, opponent:, score:, stats:
+              outcome: outcome_for_b, played_at:, opponent:, score:, stats:, force_new:
             ).call
           end
         end

@@ -33,13 +33,13 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to game_path(Game.order(:id).last)
   end
 
-  test "new form shows urgent player search option" do
+  test "new form shows players search option" do
     post session_url, params: { email: "games_form_user@example.com" }
 
     get new_game_url
 
     assert_response :success
-    assert_includes response.body, "Urgent player search"
+    assert_includes response.body, "Players search"
   end
 
   test "new form includes hidden prebooking field" do
@@ -375,7 +375,7 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 6, game.reload.players_count
   end
 
-  test "owner can toggle urgent player search on and off" do
+  test "owner can toggle players search on and off" do
     post session_url, params: { email: "owner_urgent_toggle@example.com" }
     owner = User.find_by!(email: "owner_urgent_toggle@example.com")
     game = Game.create!(court: courts(:one), user: owner, date: Date.current + 2.days, time: "10:00")
@@ -391,7 +391,7 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_not game.reload.urgent_player_search?
   end
 
-  test "non-owner cannot toggle urgent player search" do
+  test "non-owner cannot toggle players search" do
     owner = User.create!(email: "owner_forbidden_urgent@example.com")
     game = Game.create!(court: courts(:one), user: owner, date: Date.current + 2.days, time: "10:00")
 

@@ -126,6 +126,103 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     court&.destroy
   end
 
+  test "account games shows past matches when user has no live games" do
+    user_email = "past_matches_only_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: user_email }
+    user = User.find_by!(email: user_email)
+    match = Match.create!(
+      user: user,
+      mode: "singles",
+      outcome: "win",
+      score: "6-4 6-3",
+      played_at: 3.days.ago
+    )
+
+    get games_account_url
+
+    assert_response :success
+    assert_includes response.body, "Past matches"
+    assert_includes response.body, "6-4 6-3"
+  ensure
+    match&.destroy
+    user&.destroy
+  end
+
+  test "account games shows past matches alongside live games" do
+    user_email = "past_and_live_#{SecureRandom.hex(4)}@example.com"
+    court = Court.create!(name: "Match History Court")
+    post session_url, params: { email: user_email }
+    user = User.find_by!(email: user_email)
+    game = Game.create!(user: user, court: court, date: 5.days.from_now.to_date, time: "10:00")
+    old_match = Match.create!(
+      user: user,
+      mode: "singles",
+      outcome: "loss",
+      score: "2-6 3-6",
+      played_at: 30.days.ago
+    )
+
+    get games_account_url
+
+    assert_response :success
+    assert_includes response.body, "Match History Court"
+    assert_includes response.body, "Past matches"
+    assert_includes response.body, "2-6 3-6"
+  ensure
+    old_match&.destroy
+    game&.destroy
+    court&.destroy
+    user&.destroy
+  end
+
+  test "account games deduplicates matches linked to live games" do
+    user_email = "dedup_match_#{SecureRandom.hex(4)}@example.com"
+    court = Court.create!(name: "Dedup Court")
+    post session_url, params: { email: user_email }
+    user = User.find_by!(email: user_email)
+    game = Game.create!(user: user, court: court, date: 2.days.from_now.to_date, time: "12:00")
+    linked_match = Match.create!(
+      user: user,
+      game: game,
+      mode: "singles",
+      outcome: "win",
+      score: "UNIQUE-SCORE-A",
+      played_at: 1.day.ago
+    )
+    orphan_match = Match.create!(
+      user: user,
+      mode: "singles",
+      outcome: "loss",
+      score: "UNIQUE-SCORE-B",
+      played_at: 7.days.ago
+    )
+
+    get games_account_url
+
+    assert_response :success
+    refute_includes response.body, "UNIQUE-SCORE-A"
+    assert_includes response.body, "UNIQUE-SCORE-B"
+  ensure
+    linked_match&.destroy
+    orphan_match&.destroy
+    game&.destroy
+    court&.destroy
+    user&.destroy
+  end
+
+  test "account games hides past matches section when none exist" do
+    user_email = "no_history_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: user_email }
+    user = User.find_by!(email: user_email)
+
+    get games_account_url
+
+    assert_response :success
+    refute_includes response.body, "Past matches"
+  ensure
+    user&.destroy
+  end
+
   test "note mode saves court note and clears favorite courts" do
     user_email = "court_note_#{SecureRandom.hex(4)}@example.com"
     court = Court.create!(name: "Favorite Court")

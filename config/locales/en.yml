@@ -28,6 +28,9 @@
 #       enabled: "ON"
 
 en:
+  account:
+    games:
+      fairness_warning: "Please enter scores and stats honestly. If we detect manipulation (inflated scores, fake matches, rating farming), the administration may require you to verify the games and results before they count towards your rating."
   hello: "Hello world"
   language_name: "English"
   locale_suggestion:
@@ -105,9 +108,12 @@ en:
   games:
     index:
       hero_title: "Find your next game"
-      hero_subtitle: "Tennis, padel, table tennis — join a match near you or create your own."
+      hero_subtitle: "Tennis, padel, squash, table tennis — join a match near you or create your own."
+      title: "Tennis, Padel & Squash Games"
+      subtitle: "Find a tennis, padel, squash or table tennis game near you."
       my_games: "My Games"
       free_spots: "Free spots"
+      looking_for_players: "Looking for players"
       new_game: "New Game"
       empty_title: "No games scheduled yet"
       empty_subtitle: "Be the first to create a game!"
@@ -120,12 +126,15 @@ en:
       subtitle: "Full information about the game and participants."
       back_to_games: "Back to Games"
       share_title: "Share this game"
-      share_description: "Use the image for chat posts, the game link for the full page, and Telegram to contact the creator."
+      share_description: "Post these in social networks and chats to find partners for the game. Tap to copy the game link or the creator's Telegram, or download the image."
       share_image: "Share image"
       game_link: "Game link"
       creator_telegram: "Creator Telegram"
+      copied: "Copied!"
+      downloaded: "Downloaded!"
       date: "Date"
       time: "Time"
+      duration: "Duration"
       court: "Court"
       participants: "Participants"
       enter_statistics: "Enter statistics"
@@ -135,8 +144,17 @@ en:
       winner: "Winner"
       draw: "Draw"
       score: "Score"
-      hours: "Hours"
+      score_hint_html: "Format: <code>6-4 6-7(5) 10-8</code> — sets separated by spaces. Tiebreak score in parentheses, e.g. <code>(5)</code> means the loser got 5 points in the tiebreak."
+      hours: "Hours of play"
+      add_game: "Add another game"
       stats_locked: "Statistics entry is available after the game starts and only for the creator or admin."
+    threads:
+      headline: "🎾 Looking for %{sport} players in %{city}!"
+      date_line: "📅 %{date} at %{time}"
+      court_line: "🏟 %{court}"
+      spots_line:
+        one: "👥 %{count} spot left"
+        other: "👥 %{count} spots left"
     badges:
       with_coach: "With coach"
       need_coach: "Need coach"

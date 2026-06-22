@@ -28,7 +28,6 @@ class PlayerStatisticsController < ApplicationController
     if allowed && started
       raw = player_statistics_params.to_h
       data = {}
-      score = raw.delete("score")
 
       hours = raw.delete("hours")
       if hours.present?
@@ -67,16 +66,19 @@ class PlayerStatisticsController < ApplicationController
         saved_any = true
       end
 
-      if score.present?
-        team_params = team_ids_params
-        team_a_ids = sanitize_team_ids(team_params[:team_a_user_ids], game)
-        team_b_ids = sanitize_team_ids(team_params[:team_b_user_ids], game)
-        winner = params[:winner_team].to_s
+      matches_input = matches_params
+      matches_input.each do |m|
+        team_a_ids = sanitize_team_ids(m[:team_a_user_ids], game)
+        team_b_ids = sanitize_team_ids(m[:team_b_user_ids], game)
+        winner = m[:winner_team].to_s
+        score = m[:score].to_s
 
-        if team_a_ids.any? && team_b_ids.any? && %w[a b draw].include?(winner)
-          upsert_matches_for_teams(game, team_a_ids, team_b_ids, score, winner)
-          saved_any = true
-        end
+        next if score.blank?
+        next unless team_a_ids.any? && team_b_ids.any?
+        next unless %w[a b draw].include?(winner)
+
+        upsert_matches_for_teams(game, team_a_ids, team_b_ids, score, winner, force_new: true)
+        saved_any = true
       end
 
       if saved_any
@@ -96,8 +98,7 @@ class PlayerStatisticsController < ApplicationController
 private
 
 def player_statistics_params
-  params.require(:statistics).permit(
-    :score,
+  params.fetch(:statistics, ActionController::Parameters.new).permit(
     :hours,
     :singles_games,
     :doubles_games,
@@ -115,8 +116,16 @@ def player_statistics_params
   )
 end
 
-def team_ids_params
-  params.permit(team_a_user_ids: [], team_b_user_ids: [])
+def matches_params
+  raw = params[:matches]
+  return [] if raw.blank?
+
+  list = raw.respond_to?(:values) ? raw.values : raw
+  list.map do |m|
+    next nil unless m.respond_to?(:permit)
+
+    m.permit(:score, :winner_team, team_a_user_ids: [], team_b_user_ids: [])
+  end.compact
 end
 
   def set_user
@@ -161,7 +170,7 @@ end
     Array(ids).map(&:to_i).uniq.select { |id| allowed_ids.include?(id) }
   end
 
-  def upsert_matches_for_teams(game, team_a_ids, team_b_ids, score, winner)
+  def upsert_matches_for_teams(game, team_a_ids, team_b_ids, score, winner, force_new: false)
     played_at =
       if game.respond_to?(:starts_at) && game.starts_at.present?
         game.starts_at
@@ -182,7 +191,8 @@ end
       team_b_ids: team_b_ids,
       result: result,
       played_at: played_at,
-      score: score
+      score: score,
+      force_new: force_new
     )
   end
 

@@ -1,0 +1,74 @@
+<% participants = [] %>
+<% participants << game.user if game.respond_to?(:user) %>
+<% if game.respond_to?(:participations) %>
+  <% scope = game.participations.respond_to?(:approved) ? game.participations.approved : game.participations %>
+  <% participants.concat(scope.includes(:user).map(&:user)) %>
+<% end %>
+<% participants = participants.compact.uniq { |u| u.id } %>
+
+<div data-stats-match-block class="rounded border border-gray-200 p-3 dark:border-white/10">
+  <div class="mb-3 flex items-center justify-between">
+    <h3 class="text-sm font-semibold text-gray-700 dark:text-slate-300">Game <%= index.is_a?(Integer) ? index + 1 : "__NUMBER__" %></h3>
+    <% if removable %>
+      <button type="button"
+              data-action="click->stats-matches#remove"
+              class="rounded px-2 py-1 text-sm text-gray-500 hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-700">
+        x
+      </button>
+    <% end %>
+  </div>
+
+  <div class="grid grid-cols-1 gap-4 border-b pb-4 dark:border-white/10 sm:grid-cols-2">
+    <div>
+      <h4 class="mb-2 text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("games.show.team_a") %></h4>
+      <div class="space-y-1">
+        <% participants.each do |u| %>
+          <% label = u.respond_to?(:name) && u.name.present? ? u.name : u.email %>
+          <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
+            <%= check_box_tag "matches[#{index}][team_a_user_ids][]", u.id, false, class: "rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+            <span><%= label %></span>
+          </label>
+        <% end %>
+      </div>
+    </div>
+
+    <div>
+      <h4 class="mb-2 text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("games.show.team_b") %></h4>
+      <div class="space-y-1">
+        <% participants.each do |u| %>
+          <% label = u.respond_to?(:name) && u.name.present? ? u.name : u.email %>
+          <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
+            <%= check_box_tag "matches[#{index}][team_b_user_ids][]", u.id, false, class: "rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+            <span><%= label %></span>
+          </label>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <div>
+      <span class="mb-2 block text-sm text-gray-600 dark:text-slate-400"><%= t("games.show.winner") %></span>
+      <label class="mb-1 flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
+        <%= radio_button_tag "matches[#{index}][winner_team]", "a" %>
+        <span><%= t("games.show.team_a") %></span>
+      </label>
+      <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
+        <%= radio_button_tag "matches[#{index}][winner_team]", "b" %>
+        <span><%= t("games.show.team_b") %></span>
+      </label>
+      <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
+        <%= radio_button_tag "matches[#{index}][winner_team]", "draw" %>
+        <span><%= t("games.show.draw") %></span>
+      </label>
+    </div>
+
+    <div>
+      <label class="mb-1 block text-sm text-gray-600 dark:text-slate-400"><%= t("games.show.score") %></label>
+      <%= text_field_tag "matches[#{index}][score]", nil, placeholder: "6-4 6-7(5) 10-8", class: "w-full rounded border-gray-300 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+      <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">
+        <%= t("games.show.score_hint_html").html_safe %>
+      </p>
+    </div>
+  </div>
+</div>

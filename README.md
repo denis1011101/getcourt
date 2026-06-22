@@ -16,7 +16,7 @@ Main features
 - Create and manage recurring or one-off games
 - Discover and open new local courts
 - Collect match statistics and calculate overall player ratings
-- Search for coaches and launch urgent player searches
+- Search for coaches and launch player searches
 - Find suitable opponents with AI-based matching
 - Telegram bot integration for notifications and registration tokens
 - Mobile-friendly UI with map integration and simple search

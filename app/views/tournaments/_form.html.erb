@@ -42,7 +42,7 @@
       <div>
         <%= f.label :court_ids, "Select courts", class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
         <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <% Court.all.each do |court| %>
+          <% Court.sorted_for_user(current_user).each do |court| %>
             <label class="inline-flex items-center text-sm text-gray-700 dark:text-slate-300">
               <%= check_box_tag "tournament[court_ids][]", court.id, tournament.court_ids&.include?(court.id), id: "tournament_court_#{court.id}", class: "form-checkbox" %>
               <span class="ml-2"><%= court.name %></span>

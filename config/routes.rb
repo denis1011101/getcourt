@@ -27,6 +27,7 @@ Rails.application.routes.draw do
   get "/tennis_life/statistics", to: "tennis_life#statistics", as: :tennis_life_statistics
 
   resource :account, only: %i[edit update destroy], controller: :users do
+    get :games
     post :regenerate_token
     post :clear_city, to: "users#clear_city", as: :clear_city
   end

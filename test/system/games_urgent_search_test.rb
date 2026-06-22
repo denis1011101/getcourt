@@ -1,7 +1,7 @@
 require "application_system_test_case"
 
 class GamesUrgentSearchTest < ApplicationSystemTestCase
-  test "owner toggles urgent search from game page" do
+  test "owner toggles players search from game page" do
     owner = User.create!(email: "system_owner_urgent@example.com")
     game = Game.create!(
       court: courts(:one),
@@ -15,16 +15,16 @@ class GamesUrgentSearchTest < ApplicationSystemTestCase
     click_on "Enter"
 
     visit game_path(game)
-    assert_button "Announce urgent search"
-    click_on "Announce urgent search"
+    assert_button "Announce players search"
+    click_on "Announce players search"
 
     assert_current_path game_path(game)
     assert game.reload.urgent_player_search?
-    assert_button "Cancel urgent search"
+    assert_button "Cancel players search"
 
-    click_on "Cancel urgent search"
+    click_on "Cancel players search"
     assert_current_path game_path(game)
     assert_not game.reload.urgent_player_search?
-    assert_button "Announce urgent search"
+    assert_button "Announce players search"
   end
 end

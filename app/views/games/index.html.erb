@@ -38,9 +38,14 @@
     </div>
   </div>
 
-  <!-- Horizontal filter chips -->
-  <div class="mb-5 -mx-4 px-4">
-    <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+  <div class="mb-6">
+    <div>
+      <h2 class="text-2xl font-bold text-gray-900"><%= t("games.index.title") %></h2>
+      <p class="text-sm text-gray-500 mt-1"><%= t("games.index.subtitle") %></p>
+    </div>
+
+    <!-- Filter chips -->
+    <div class="mt-4 flex flex-wrap gap-2">
       <%= form_with url: root_path, method: :get, local: true, id: "filter-form", class: "contents" do |f| %>
         <!-- Hidden fields to preserve other filters -->
         <% if params[:country].present? %>
@@ -60,6 +65,9 @@
         <% end %>
         <% if params[:my_games].present? %>
           <%= f.hidden_field :my_games, value: params[:my_games] %>
+        <% end %>
+        <% if params[:looking_for_players].present? %>
+          <%= f.hidden_field :looking_for_players, value: params[:looking_for_players] %>
         <% end %>
 
         <!-- My Games chip (only for authenticated users) -->
@@ -111,9 +119,23 @@
             <%= t("games.index.free_spots") %>
           </span>
         </button>
+
+        <!-- Looking for players chip -->
+        <% looking_active = params[:looking_for_players].present? %>
+        <button type="submit" name="looking_for_players" value="<%= looking_active ? '' : '1' %>"
+                class="flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium border transition
+                       <%= looking_active ? 'bg-amber-500 text-white border-amber-500' : 'bg-white text-gray-700 border-gray-200 hover:border-gray-400 dark:bg-slate-800 dark:text-slate-200 dark:border-white/10 dark:hover:border-white/25' %>">
+          <span class="inline-flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 19l2 2m-2-2a3 3 0 10-4.243-4.243A3 3 0 0019 19z"/>
+            </svg>
+            <%= t("games.index.looking_for_players") %>
+          </span>
+        </button>
       <% end %>
 
-      <% if params[:country].present? || params[:sport].present? || params[:skill_level].present? || params[:city].present? || params[:with_spots].present? || params[:my_games].present? %>
+      <% if params[:country].present? || params[:sport].present? || params[:skill_level].present? || params[:city].present? || params[:with_spots].present? || params[:my_games].present? || params[:looking_for_players].present? %>
         <%= link_to root_path, class: "flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition" do %>
           <span class="inline-flex items-center gap-1">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -132,6 +154,7 @@
   <% active_filters << params[:skill_level]&.titleize if params[:skill_level].present? %>
   <% active_filters << t("games.index.free_spots") if params[:with_spots].present? %>
   <% active_filters << t("games.index.my_games") if params[:my_games].present? %>
+  <% active_filters << t("games.index.looking_for_players") if params[:looking_for_players].present? %>
 
   <%= render "shared/results_summary", count: @games.size, noun: "game", filters: active_filters do %>
     <% if user_signed_in? %>

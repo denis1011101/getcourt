@@ -629,9 +629,9 @@ module Telegram
       # Games looking for player
       games_need_players_title: "Games looking for players:",
       no_games_need_players: "No games currently looking for players.",
-      urgent_search_enable: "Announce urgent player search",
-      urgent_search_disable: "Cancel urgent player search",
-      urgent_search_notification: "Urgent player needed\nGame #%{id}\nOwner: %{owner}\nDate: %{date}\nSport: %{sport}\nLevel: %{skill}\nCourt: %{court}",
+      urgent_search_enable: "Announce players search",
+      urgent_search_disable: "Cancel players search",
+      urgent_search_notification: "Players needed\nGame #%{id}\nOwner: %{owner}\nDate: %{date}\nSport: %{sport}\nLevel: %{skill}\nCourt: %{court}",
 
       # Tennis life (placeholder)
       tennis_life_title: "Tennis life",

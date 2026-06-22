@@ -71,6 +71,48 @@ class UsersController < ApplicationController
     redirect_to edit_account_path, notice: "City cleared"
   end
 
+  def games
+    order_sql =
+      if Game.column_names.include?("next_date")
+        "COALESCE(games.next_date, games.date) DESC NULLS LAST, games.time DESC"
+      else
+        "games.date DESC NULLS LAST, games.time DESC"
+      end
+
+    @games = Game.where(
+      "games.user_id = :uid OR games.id IN " \
+      "(SELECT game_id FROM participations WHERE user_id = :uid AND status = 'approved')",
+      uid: current_user.id
+    )
+    .includes(:court, participations: :user)
+    .order(Arel.sql(order_sql))
+    @pagy, @games = pagy(@games, items: 20)
+
+    shown_game_ids = @games.map(&:id)
+
+    past_matches_scope = Match
+      .where(user_id: current_user.id)
+      .where.not(played_at: nil)
+      .order(played_at: :desc)
+      .limit(200)
+
+    if shown_game_ids.any?
+      past_matches_scope = past_matches_scope.where(
+        "matches.game_id IS NULL OR matches.game_id NOT IN (?)",
+        shown_game_ids
+      )
+    end
+
+    past_matches = past_matches_scope.to_a
+
+    opponent_ids = past_matches.map(&:opponent_id).compact.uniq
+    @opponents_by_id = User.where(id: opponent_ids).index_by(&:id)
+
+    @past_match_groups = past_matches.group_by { |m| m.played_at.to_date }
+                                     .sort_by { |k, _| k }
+                                     .reverse
+  end
+
   def destroy
     current_user.destroy!
     reset_session

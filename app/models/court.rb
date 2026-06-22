@@ -21,6 +21,17 @@ class Court < ApplicationRecord
   scope :outdoor_only, -> { where(outdoor: true) }
   scope :indoor_only, -> { where(indoor: true) }
 
+  def self.sorted_for_user(user)
+    courts = all.to_a
+    user_city = user&.city_name.to_s.strip.downcase.presence
+    return courts unless user_city
+
+    local, other = courts.partition do |court|
+      court.city_name.to_s.strip.downcase == user_city
+    end
+    local + other
+  end
+
   def approved?
     moderation_status == "approved"
   end

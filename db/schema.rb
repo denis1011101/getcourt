@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_04_092000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_06_121000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -115,6 +115,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_092000) do
     t.integer "court_id", null: false
     t.datetime "created_at", null: false
     t.date "date"
+    t.integer "duration_minutes"
     t.date "last_participations_reset_at"
     t.integer "occurrences_per_week", default: 1, null: false
     t.integer "players_count", default: 4, null: false
@@ -123,6 +124,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_04_092000) do
     t.boolean "recurring", default: false, null: false
     t.string "skill_level"
     t.string "sport"
+    t.string "threads_post_id"
+    t.datetime "threads_posted_at"
     t.time "time"
     t.time "time2"
     t.text "times", default: "[]", null: false

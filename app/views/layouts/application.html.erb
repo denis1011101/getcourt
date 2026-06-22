@@ -227,7 +227,14 @@
         <% end %>
 
         <% if user_signed_in? %>
-          <%= link_to new_game_path, class: "flex flex-col items-center justify-center text-xs text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl py-1.5 px-3 transition-colors -mt-3 shadow-lg" do %>
+          <%
+            new_path = case controller_name
+                       when 'courts' then new_court_path
+                       when 'tournaments' then new_tournament_path
+                       else new_game_path
+                       end
+          %>
+          <%= link_to new_path, class: "flex flex-col items-center justify-center text-xs text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl py-1.5 px-3 transition-colors -mt-3 shadow-lg" do %>
             <svg class="w-6 h-6 mb-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
             </svg>
