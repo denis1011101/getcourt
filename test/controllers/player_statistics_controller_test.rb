@@ -23,10 +23,14 @@ class PlayerStatisticsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1, PlayerStatisticEntry.where(game: game, user: participant).count
 
     post game_player_statistics_url(game), params: {
-      statistics: { score: "6-4 6-4" },
-      team_a_user_ids: [ owner.id ],
-      team_b_user_ids: [ participant.id ],
-      winner_team: "b"
+      matches: {
+        "0" => {
+          score: "6-4 6-4",
+          team_a_user_ids: [ owner.id ],
+          team_b_user_ids: [ participant.id ],
+          winner_team: "b"
+        }
+      }
     }
 
     assert_redirected_to game_path(game)
@@ -59,10 +63,14 @@ class PlayerStatisticsControllerTest < ActionDispatch::IntegrationTest
     Participation.create!(game: game, user: opponent_two, status: "approved")
 
     post game_player_statistics_url(game), params: {
-      statistics: { score: "6-4 3-6 10-8" },
-      team_a_user_ids: [ owner.id, partner.id ],
-      team_b_user_ids: [ opponent_one.id, opponent_two.id ],
-      winner_team: "a"
+      matches: {
+        "0" => {
+          score: "6-4 3-6 10-8",
+          team_a_user_ids: [ owner.id, partner.id ],
+          team_b_user_ids: [ opponent_one.id, opponent_two.id ],
+          winner_team: "a"
+        }
+      }
     }
 
     assert_redirected_to game_path(game)
