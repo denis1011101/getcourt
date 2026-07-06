@@ -1,6 +1,7 @@
 module ApplicationHelper
   SEO_PRIMARY_HOST = "getcourt.co".freeze
   SEO_INDEXABLE_LOCALES = %w[en ru es].freeze
+  WALLCHART_BANNER_UNTIL = Date.new(2026, 7, 20)
 
   def self.host_for_locale(locale)
     locale.to_s == I18n.default_locale.to_s ? SEO_PRIMARY_HOST : "#{locale}.#{SEO_PRIMARY_HOST}"
@@ -29,6 +30,10 @@ module ApplicationHelper
 
   def nearby_courts_link
     link_to "Find nearby courts", searches_path, class: "btn btn-primary"
+  end
+
+  def wallchart_banner_active?
+    Date.current < WALLCHART_BANNER_UNTIL
   end
 
   def telegram_profile_url(username)

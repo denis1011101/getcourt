@@ -5,73 +5,116 @@ require "stringio"
 
 class FeaturedMatchBannerTest < ApplicationSystemTestCase
   test "renders active featured match banner on games index" do
-    featured_match = FeaturedMatch.create!(
-      tournament_label: "Roland Garros Final",
-      player_left_name: "M. Andreeva",
-      player_left_flag: "RU",
-      player_right_name: "M. Kostyuk",
-      player_right_flag: "UA",
-      starts_at: 1.day.from_now,
-      active: true
-    )
-    attach_photo(featured_match, "photo1.jpg")
-    attach_photo(featured_match, "photo2.jpg")
+    travel_to wallchart_banner_expired_at do
+      featured_match = FeaturedMatch.create!(
+        tournament_label: "Roland Garros Final",
+        player_left_name: "M. Andreeva",
+        player_left_flag: "RU",
+        player_right_name: "M. Kostyuk",
+        player_right_flag: "UA",
+        starts_at: 1.day.from_now,
+        active: true
+      )
+      attach_photo(featured_match, "photo1.jpg")
+      attach_photo(featured_match, "photo2.jpg")
 
-    visit root_path
+      visit root_path
 
-    assert_text "Roland Garros Final"
-    assert_text "M. Andreeva"
-    assert_text "M. Kostyuk"
-    assert_selector ".featured-match-banner .countdown"
-    assert_selector ".featured-match-banner .photos[data-featured-match-target='photos'] .photo-wrap", count: 2
-    assert_selector ".featured-match-banner .photos .photo-main", count: 2
+      assert_text "Roland Garros Final"
+      assert_text "M. Andreeva"
+      assert_text "M. Kostyuk"
+      assert_selector ".featured-match-banner .countdown"
+      assert_selector ".featured-match-banner .photos[data-featured-match-target='photos'] .photo-wrap", count: 2
+      assert_selector ".featured-match-banner .photos .photo-main", count: 2
+    end
   end
 
   test "homepage meta is not overridden by featured match" do
-    FeaturedMatch.create!(
-      tournament_label: "Roland Garros Final",
-      player_left_name: "M. Andreeva",
-      player_right_name: "M. Kostyuk",
-      starts_at: 1.day.from_now,
-      active: true
-    )
+    travel_to wallchart_banner_expired_at do
+      FeaturedMatch.create!(
+        tournament_label: "Roland Garros Final",
+        player_left_name: "M. Andreeva",
+        player_right_name: "M. Kostyuk",
+        starts_at: 1.day.from_now,
+        active: true
+      )
 
-    visit root_path
+      visit root_path
 
-    assert_no_selector "title", text: "M. Andreeva vs M. Kostyuk", visible: false
-    assert_no_selector "meta[property='og:type'][content='event']", visible: false
-    assert_no_selector "script[type='application/ld+json']", visible: false
+      assert_text "Roland Garros Final"
+      assert_no_selector "title", text: "M. Andreeva vs M. Kostyuk", visible: false
+      assert_no_selector "meta[property='og:type'][content='event']", visible: false
+      assert_no_selector "script[type='application/ld+json']", visible: false
+    end
   end
 
   test "homepage banner links to event page" do
-    featured_match = FeaturedMatch.create!(
-      tournament_label: "Roland Garros Final",
-      player_left_name: "M. Andreeva",
-      player_right_name: "M. Kostyuk",
-      starts_at: 1.day.from_now,
-      active: true
-    )
+    travel_to wallchart_banner_expired_at do
+      featured_match = FeaturedMatch.create!(
+        tournament_label: "Roland Garros Final",
+        player_left_name: "M. Andreeva",
+        player_right_name: "M. Kostyuk",
+        starts_at: 1.day.from_now,
+        active: true
+      )
 
-    visit root_path
+      visit root_path
 
-    assert_selector "a[href='#{event_path(featured_match)}'] .featured-match-banner"
+      assert_selector "a[href='#{event_path(featured_match)}'] .featured-match-banner"
+    end
   end
 
   test "homepage banner does not link surface label to court directly" do
-    FeaturedMatch.create!(
-      tournament_label: "Roland Garros Final",
-      player_left_name: "M. Andreeva",
-      player_right_name: "M. Kostyuk",
-      starts_at: 1.day.from_now,
-      surface_label: "Clay · MyString",
-      court: courts(:one),
-      active: true
-    )
+    travel_to wallchart_banner_expired_at do
+      FeaturedMatch.create!(
+        tournament_label: "Roland Garros Final",
+        player_left_name: "M. Andreeva",
+        player_right_name: "M. Kostyuk",
+        starts_at: 1.day.from_now,
+        surface_label: "Clay · MyString",
+        court: courts(:one),
+        active: true
+      )
 
-    visit root_path
+      visit root_path
 
-    assert_selector ".featured-match-banner .surface-tag", text: "Clay · MyString"
-    assert_no_selector ".featured-match-banner a.surface-tag--link"
+      assert_selector ".featured-match-banner .surface-tag", text: "Clay · MyString"
+      assert_no_selector ".featured-match-banner a.surface-tag--link"
+    end
+  end
+
+  test "homepage renders wallchart banner instead of featured match while wallchart is active" do
+    travel_to ApplicationHelper::WALLCHART_BANNER_UNTIL - 1.day do
+      FeaturedMatch.create!(
+        tournament_label: "Roland Garros Final",
+        player_left_name: "M. Andreeva",
+        player_right_name: "M. Kostyuk",
+        starts_at: 1.day.from_now,
+        active: true
+      )
+
+      visit root_path
+
+      assert_selector "a[href='https://wallchart26.com/?utm_source=getcourt&utm_medium=banner']"
+      assert_no_selector ".featured-match-banner"
+    end
+  end
+
+  test "homepage renders featured match banner after wallchart expires" do
+    travel_to wallchart_banner_expired_at do
+      FeaturedMatch.create!(
+        tournament_label: "Roland Garros Final",
+        player_left_name: "M. Andreeva",
+        player_right_name: "M. Kostyuk",
+        starts_at: 1.day.from_now,
+        active: true
+      )
+
+      visit root_path
+
+      assert_selector ".featured-match-banner", text: "Roland Garros Final"
+      assert_no_selector "a[href^='https://wallchart26.com']"
+    end
   end
 
   test "event page renders meta, og:type=website and SportsEvent JSON-LD" do
@@ -190,6 +233,10 @@ class FeaturedMatchBannerTest < ApplicationSystemTestCase
   end
 
   private
+
+  def wallchart_banner_expired_at
+    ApplicationHelper::WALLCHART_BANNER_UNTIL + 1.day
+  end
 
   def attach_photo(featured_match, filename)
     featured_match.photos.attach(

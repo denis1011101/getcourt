@@ -75,6 +75,10 @@ ru:
       subtitle_email: "Мы отправили 4‑значный код на ваш email. Введите его ниже."
       title_telegram: "Введите код из Telegram"
       subtitle_telegram: "Мы отправили 4‑значный код в Telegram. Введите его ниже."
+  wallchart_banner:
+    label: "Чемпионат мира 2026 · 104 матча · один победитель"
+    subtitle: "Офисный бланк прогнозов, только онлайн."
+    cta: "Открыть мой бланк"
   games:
     index:
       hero_title: "Найдите следующую игру"

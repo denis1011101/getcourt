@@ -1,0 +1,34 @@
+<%= link_to "https://wallchart26.com/?utm_source=getcourt&utm_medium=banner", target: "_blank", rel: "noopener",
+      class: "group block no-underline text-inherit mb-6" do %>
+  <section class="relative overflow-hidden rounded-2xl border border-gray-200 bg-white px-6 py-8 md:px-10 md:py-10 shadow-sm transition hover:shadow-md dark:bg-slate-900 dark:border-white/10">
+    <!-- Decorative bracket lines -->
+    <svg aria-hidden="true" class="pointer-events-none absolute right-6 md:right-12 top-1/2 -translate-y-1/2 w-40 h-32 md:w-56 md:h-44 text-emerald-700 opacity-[0.08] dark:text-emerald-400 dark:opacity-[0.1]" viewBox="0 0 140 100" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M4 12 h28 M4 36 h28 M32 12 v24 M32 24 h28"/>
+      <path d="M4 64 h28 M4 88 h28 M32 64 v24 M32 76 h28"/>
+      <path d="M60 24 v52 M60 50 h28"/>
+      <path d="M88 50 h28"/>
+      <circle cx="126" cy="50" r="8"/>
+    </svg>
+
+    <div class="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      <div>
+        <div class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
+          <%= t("wallchart_banner.label") %>
+        </div>
+        <div class="mt-2 text-3xl md:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+          Wallchart&nbsp;'26
+        </div>
+        <p class="mt-2 text-sm md:text-base text-gray-500 dark:text-slate-400">
+          <%= t("wallchart_banner.subtitle") %>
+        </p>
+      </div>
+
+      <span class="inline-flex items-center justify-center gap-2 flex-shrink-0 rounded-lg bg-emerald-700 px-6 py-3 text-sm font-semibold text-white transition group-hover:bg-emerald-800">
+        <%= t("wallchart_banner.cta") %>
+        <svg class="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+        </svg>
+      </span>
+    </div>
+  </section>
+<% end %>

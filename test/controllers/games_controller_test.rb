@@ -7,6 +7,53 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "index does not query featured match while wallchart banner is active" do
+    travel_to ApplicationHelper::WALLCHART_BANNER_UNTIL - 1.day do
+      FeaturedMatch.create!(
+        tournament_label: "Roland Garros Final",
+        player_left_name: "M. Andreeva",
+        player_right_name: "M. Kostyuk",
+        starts_at: 1.day.from_now,
+        active: true
+      )
+
+      featured_match_queries = []
+      subscriber = ActiveSupport::Notifications.subscribe("sql.active_record") do |*args|
+        sql = args.last[:sql]
+        featured_match_queries << sql if sql.include?("featured_matches")
+      end
+
+      begin
+        get root_url
+      ensure
+        ActiveSupport::Notifications.unsubscribe(subscriber)
+      end
+
+      assert_response :success
+      assert_empty featured_match_queries
+      assert_nil @controller.instance_variable_get(:@featured_match)
+    end
+  end
+
+  test "index loads featured match on the exact wallchart cutoff date" do
+    travel_to ApplicationHelper::WALLCHART_BANNER_UNTIL do
+      featured_match = FeaturedMatch.create!(
+        tournament_label: "Roland Garros Final",
+        player_left_name: "M. Andreeva",
+        player_right_name: "M. Kostyuk",
+        starts_at: 1.day.from_now,
+        active: true
+      )
+
+      get root_url
+
+      assert_response :success
+      assert_equal featured_match, @controller.instance_variable_get(:@featured_match)
+      assert_includes @response.body, "featured-match-banner"
+      assert_not_includes @response.body, "wallchart26.com"
+    end
+  end
+
   test "create requires authentication" do
     assert_no_difference("Game.count") do
       post games_url, params: { game: { court_id: courts(:one).id, date: Date.current + 1.day, time: "18:00" } }

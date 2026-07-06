@@ -2,9 +2,7 @@
 <% content_for :meta_description, @games_meta_description %>
 <% content_for :canonical_url, @canonical_games_url %>
 <div class="max-w-6xl mx-auto">
-  <% if @featured_match.present? %>
-    <%= render "featured_matches/banner", featured_match: @featured_match, linked: true %>
-  <% end %>
+  <%= render "shared/homepage_banner", featured_match: @featured_match %>
 
   <!-- Hero section -->
   <div class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-indigo-600 via-indigo-500 to-purple-500 px-6 py-8 md:px-10 md:py-12 mb-6 text-white ring-1 ring-white/15 shadow-[0_20px_60px_rgba(79,70,229,0.18)] dark:from-indigo-900 dark:via-indigo-800 dark:to-fuchsia-800 dark:ring-white/10 dark:shadow-[0_24px_70px_rgba(15,23,42,0.45)]">

@@ -105,6 +105,10 @@ en:
       subtitle_email: "We sent a 4‑digit code to your email. Enter it below."
       title_telegram: "Enter Telegram code"
       subtitle_telegram: "We sent a 4‑digit code via Telegram for you. Enter it below."
+  wallchart_banner:
+    label: "World Cup 2026 · 104 matches · one winner"
+    subtitle: "The office prediction pool, online only."
+    cta: "Open my sheet"
   games:
     index:
       hero_title: "Find your next game"

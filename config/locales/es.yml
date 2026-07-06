@@ -76,6 +76,10 @@ es:
       subtitle_email: "Hemos enviado un código de 4 dígitos a tu email. Introdúcelo abajo."
       title_telegram: "Introduce el código de Telegram"
       subtitle_telegram: "Te hemos enviado un código de 4 dígitos por Telegram. Introdúcelo abajo."
+  wallchart_banner:
+    label: "Mundial 2026 · 104 partidos · un ganador"
+    subtitle: "La porra de la oficina, solo online."
+    cta: "Abrir mi porra"
   games:
     index:
       hero_title: "Encuentra tu próximo partido"
