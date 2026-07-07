@@ -153,6 +153,8 @@ en:
       add_game: "Add another game"
       guest_label: "Guest (not registered)"
       guest_placeholder: "Name, name"
+      add_player_label: "Add registered player"
+      add_player_prompt: "Select player..."
       stats_locked: "Statistics entry is available after the game starts and only for the creator or admin."
     threads:
       headline: "🎾 Looking for %{sport} players in %{city}!"

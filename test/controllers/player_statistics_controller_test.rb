@@ -5,6 +5,8 @@ class PlayerStatisticsControllerTest < ActionDispatch::IntegrationTest
     post session_url, params: { email: "stats_guest_form_owner@example.com" }
     owner = User.find_by!(email: "stats_guest_form_owner@example.com")
 
+    User.create!(name: "Addable Player", email: "stats_guest_form_addable@example.com")
+
     game = Game.create!(
       court: courts(:one),
       user: owner,
@@ -17,6 +19,7 @@ class PlayerStatisticsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_includes response.body, "Guest (not registered)"
+    assert_includes response.body, "Add registered player"
   end
 
   test "score upsert increments games even when stats entry already exists for normal game" do
@@ -130,6 +133,67 @@ class PlayerStatisticsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1, owner_stats.singles_games
     assert_equal 1, owner_stats.singles_wins
     assert_nil owner_stats.singles_rating
+  end
+
+  test "score upsert records match for registered non-participant" do
+    post session_url, params: { email: "stats_non_participant_owner@example.com" }
+    owner = User.find_by!(email: "stats_non_participant_owner@example.com")
+    outsider = User.create!(name: "Outsider", email: "stats_non_participant_outsider@example.com")
+
+    game = Game.create!(
+      court: courts(:one),
+      user: owner,
+      date: Date.yesterday,
+      time: "10:00",
+      with_coach: false
+    )
+
+    post game_player_statistics_url(game), params: {
+      matches: {
+        "0" => {
+          score: "6-4 6-4",
+          team_a_user_ids: [ owner.id ],
+          team_b_user_ids: [ outsider.id ],
+          winner_team: "a"
+        }
+      }
+    }
+
+    assert_redirected_to game_path(game)
+    assert Match.find_by!(game: game, user: outsider)
+
+    outsider_stats = outsider.player_statistic.reload
+    owner_stats = owner.player_statistic.reload
+    assert_equal 1, outsider_stats.singles_games
+    assert_equal 1, owner_stats.singles_wins
+  end
+
+  test "score upsert drops non-existent user ids" do
+    post session_url, params: { email: "stats_nonexistent_owner@example.com" }
+    owner = User.find_by!(email: "stats_nonexistent_owner@example.com")
+
+    game = Game.create!(
+      court: courts(:one),
+      user: owner,
+      date: Date.yesterday,
+      time: "10:00",
+      with_coach: false
+    )
+
+    assert_no_difference("Match.count") do
+      post game_player_statistics_url(game), params: {
+        matches: {
+          "0" => {
+            score: "6-4 6-4",
+            team_a_user_ids: [ owner.id ],
+            team_b_user_ids: [ 999_999 ],
+            winner_team: "a"
+          }
+        }
+      }
+    end
+
+    assert_redirected_to game_path(game)
   end
 
   test "score upsert skips match when both teams are guests" do

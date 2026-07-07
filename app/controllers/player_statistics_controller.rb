@@ -169,8 +169,10 @@ end
   end
 
   def sanitize_team_ids(ids, game)
-    allowed_ids = game_participants(game).map(&:id)
-    Array(ids).map(&:to_i).uniq.select { |id| allowed_ids.include?(id) }
+    candidate_ids = Array(ids).map(&:to_i).uniq.reject(&:zero?)
+    return [] if candidate_ids.empty?
+
+    User.where(id: candidate_ids).pluck(:id)
   end
 
   def sanitize_guest_names(value)
