@@ -1,4 +1,5 @@
 <% content_for :meta_robots, "noindex, follow" %>
+
 <div class="max-w-3xl mx-auto px-4 py-6">
   <h1 class="text-xl font-semibold mb-4">Account</h1>
 
@@ -7,7 +8,7 @@
                locals: { user: @user, stats: @player_statistic, matches: @recent_matches, names_by_id: @names_by_id } %>
   </div>
 
-  <div class="mb-6">
+  <div class="mb-6 flex flex-wrap gap-3">
     <%= link_to games_account_path,
           class: "inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition" do %>
       <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -15,184 +16,37 @@
       </svg>
       My games
     <% end %>
-  </div>
 
-  <!-- 1. Открываем ОДНУ общую форму для всей страницы -->
-  <%= form_with model: @user, url: account_path, method: :patch, local: true do |f| %>
-    
-    <!-- Блок настроек верификации -->
-    <div class="mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-300 rounded text-sm text-gray-700 dark:text-slate-300 dark:bg-yellow-500/10 dark:border-yellow-500/30 dark:text-slate-300">
-      <p class="font-medium">Account verification recommended</p>
-      <p class="mt-1">If you plan to create courts or host games, we recommend enabling sign-in verification (email or Telegram). This helps build trust and prevents abuse.</p>
-
-      <div class="mt-3 flex items-center gap-4">
-        <label class="inline-flex items-center gap-2">
-          <%= f.check_box :require_verification, class: "h-4 w-4 text-indigo-600" %>
-          <span class="text-sm text-gray-700 dark:text-slate-300">Require verification for sensitive actions</span>
-        </label>
-
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-gray-600 dark:text-slate-400 mr-2">Verification method:</span>
-          <%= f.select :preferred_login_via,
-                options_for_select([["Telegram", "telegram"], [t("users.edit.verification_method_email"), "email"]], @user.preferred_login_via),
-                {}, class: "mt-1 block rounded border px-3 py-2 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
-        </div>
-      </div>
-
-      <p class="text-xs text-gray-500 dark:text-slate-400 mt-2">
-        By default you sign in without a code. Enable verification to require a one-time code sent via your selected method.
-      </p>
-    </div>
-
-    <!-- Информационный блок Telegram (просто HTML внутри формы) -->
-    <% if @user.telegram_chat_id.present? %>
-      <p class="mb-2 flex items-center gap-1.5 text-sm text-gray-700 dark:text-slate-300">
-        <svg class="h-4 w-4 flex-shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        Telegram connected<% if @user.telegram_username.present? %>:
-          <%= telegram_profile_link(@user.telegram_username, class: "text-indigo-600 dark:text-indigo-400 hover:underline") %>
-        <% end %>
-      </p>
+    <%= link_to profile_account_path,
+          class: "inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition" do %>
+      <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6.75a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 0115 0"/>
+      </svg>
+      Profile
     <% end %>
-    <p class="mb-4 text-sm text-gray-700 dark:text-slate-300">
-      To receive Telegram notifications, please open a chat with our bot...
-      <a href="https://t.me/GetCourtBot" class="text-indigo-600 dark:text-indigo-400 hover:underline" target="_blank" rel="noopener">https://t.me/GetCourtBot</a> and send:
-    </p>
 
-    <div class="mb-4 p-3 bg-gray-50 border rounded dark:bg-slate-700/50 dark:border-white/10">
-      <code>/register <%= @registration_token %></code>
-    </div>
+    <%= link_to notifications_account_path,
+          class: "inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition" do %>
+      <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022 23.848 23.848 0 005.455 1.31m5.714 0a3 3 0 11-5.714 0"/>
+      </svg>
+      Telegram & notifications
+    <% end %>
 
-    <!-- Кнопка регенерации токена -->
-    <!-- ВАЖНО: Используем link_to вместо button_to, чтобы не создавать вложенную форму -->
-    <div class="flex items-center gap-3 mb-6">
-      <%= link_to "Regenerate token",
-            regenerate_token_account_path,
-            data: { turbo_method: :post }, 
-            class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition text-sm font-medium decoration-0" %>
-    </div>
+    <%= link_to security_account_path,
+          class: "inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition" do %>
+      <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7.5 3v5.25c0 4.2-2.8 8.1-7.5 9.75-4.7-1.65-7.5-5.55-7.5-9.75V6L12 3z"/>
+      </svg>
+      Security
+    <% end %>
 
-    <!-- Блок личных данных (Name, Email, Skills) -->
-    <div class="grid grid-cols-1 gap-4">
-      <div>
-        <%= f.label :name, "Name", class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-        <%= f.text_field :name, class: "mt-1 block w-full rounded border px-3 py-2 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
-      </div>
-
-      <div>
-        <%= f.label :email, "Email", class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-        <%= f.email_field :email, class: "mt-1 block w-full rounded border px-3 py-2 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
-      </div>
-
-      <div>
-        <p class="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Skill levels</p>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <% User::SPORTS.each do |sport| %>
-            <div>
-              <label class="block text-sm text-gray-600 dark:text-slate-400"><%= sport %></label>
-              <%= select_tag "user[skill_levels][#{sport}]",
-                    options_for_select([["—", ""]] + User::SKILL_LEVELS.map { |s| [s.titleize, s] }, @user.skill_level_for(sport)),
-                    class: "mt-1 block w-full rounded border px-3 py-2 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
-            </div>
-          <% end %>
-        </div>
-        <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Set your skill level for each sport.</p>
-      </div>
-
-      <div>
-        <label class="inline-flex items-center gap-2">
-          <%= f.check_box :coach, class: "h-4 w-4 text-indigo-600" %>
-          <span class="text-sm text-gray-700 dark:text-slate-300">I am a coach</span>
-        </label>
-        <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Tick if you coach — this helps others find and hire coaches in the future.</p>
-      </div>
-
-      <div>
-        <%= f.label :city_name, "City", class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-        <%= f.text_field :city_name, value: (params[:city_query].presence || @user.city_name || @selected_city_name), placeholder: "e.g. Moskva", class: "mt-1 block w-full rounded border px-3 py-2 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
-        <p class="text-sm text-gray-600 dark:text-slate-400 mt-2">Enter a place. The system will transliterate names and try to detect timezone automatically on save. Press "Save Changes".</p>
-      </div>
-
-      <div>
-        <label class="inline-flex items-center gap-2">
-          <%= f.check_box :notify_nearby, class: "h-4 w-4 text-indigo-600" %>
-          <span class="text-sm text-gray-700 dark:text-slate-300">Notify me about nearby searches</span>
-        </label>
-        <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Receive notifications when someone searches for players near you.</p>
-      </div>
-
-      <div>
-        <%= f.label :about_me, "About me", class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-        <%= f.text_area :about_me, rows: 4, placeholder: "Tell others a bit about yourself…", class: "mt-1 block w-full rounded border px-3 py-2 text-sm" %>
-      </div>
-
-      <div class="rounded-lg border border-gray-200 p-4 dark:border-white/10">
-        <p class="block text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("users.edit.court_preferences_title") %></p>
-
-        <div class="mt-3 space-y-2">
-          <label class="flex items-start gap-2">
-            <%= radio_button_tag "user[court_preferences_mode]", "favorites", @court_preferences_mode == "favorites", class: "mt-1 h-4 w-4 text-indigo-600" %>
-            <span class="text-sm text-gray-700 dark:text-slate-300"><%= t("users.edit.court_preferences_mode_favorites") %></span>
-          </label>
-
-          <div class="ml-6">
-            <p class="text-xs text-gray-500 dark:text-slate-400"><%= t("users.edit.favorite_courts_help") %></p>
-            <div class="mt-2 max-h-56 overflow-y-auto rounded border border-gray-200 p-3 dark:border-white/10">
-              <% @available_courts.each do |court| %>
-                <label class="flex items-start gap-2 py-1">
-                  <%= check_box_tag "user[favorite_court_ids][]", court.id, @user.favorite_court_ids.include?(court.id), class: "mt-1 h-4 w-4 text-indigo-600" %>
-                  <span class="text-sm text-gray-700 dark:text-slate-300">
-                    <%= court.name %>
-                    <% if court.city_name.present? %>
-                      <span class="text-gray-500 dark:text-slate-400">(<%= court.city_name %>)</span>
-                    <% end %>
-                  </span>
-                </label>
-              <% end %>
-            </div>
-          </div>
-        </div>
-
-        <div class="mt-4 space-y-2">
-          <label class="flex items-start gap-2">
-            <%= radio_button_tag "user[court_preferences_mode]", "note", @court_preferences_mode == "note", class: "mt-1 h-4 w-4 text-indigo-600" %>
-            <span class="text-sm text-gray-700 dark:text-slate-300"><%= t("users.edit.court_preferences_mode_note") %></span>
-          </label>
-
-          <div class="ml-6">
-            <%= f.label :court_preferences_note, t("users.edit.court_note_label"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-            <%= f.text_area :court_preferences_note,
-                  rows: 3,
-                  placeholder: t("users.edit.court_note_placeholder"),
-                  class: "mt-1 block w-full rounded border px-3 py-2 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
-            <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("users.edit.court_note_help") %></p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Кнопки действий -->
-      <div class="mt-4 flex items-center gap-3">
-        <%= f.submit "Save Changes", class: "rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 cursor-pointer" %>
-        
-        <%= link_to "Back", root_path,
-          class: "inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 transition dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5" %>
-      </div>
-    </div>
-
-  <% end %> <!-- Здесь закрывается единственная форма -->
-
-  <div class="mt-8 rounded-lg border border-red-200 dark:border-red-500/20 p-4">
-    <h2 class="text-sm font-semibold text-red-700 dark:text-red-400 mb-1">
-      <%= t("users.delete_account_title") %>
-    </h2>
-    <p class="text-xs text-gray-500 dark:text-slate-400 mb-3">
-      <%= t("users.delete_account_body") %>
-    </p>
-    <%= button_to t("users.delete_account_button"),
-        account_path,
-        method: :delete,
-        data: { turbo_confirm: t("users.delete_account_confirm") },
-        class: "rounded-md bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700 cursor-pointer" %>
+    <%= link_to courts_account_path,
+          class: "inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition" do %>
+      <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15M7.5 4.5h12v12M4.5 7.5v12h12"/>
+      </svg>
+      Court preferences
+    <% end %>
   </div>
 </div>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_06_121000) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_08_090000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -215,6 +215,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_06_121000) do
     t.float "singles_rating"
     t.integer "singles_sessions"
     t.integer "singles_wins"
+    t.datetime "stats_reset_at"
     t.integer "unforced_errors"
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false

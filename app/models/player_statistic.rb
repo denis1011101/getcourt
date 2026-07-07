@@ -1,5 +1,16 @@
 class PlayerStatistic < ApplicationRecord
   BASE_ELO = 1500.0
+  RESET_TO_ZERO_COLUMNS = %i[
+    singles_sessions doubles_sessions singles_games doubles_games
+    singles_wins singles_losses doubles_wins doubles_losses
+    individual_training group_training singles_hours doubles_hours
+    aces double_faults break_points_saved break_points_converted
+    winners unforced_errors net_points_won service_points_won
+    return_points_won return_games_won games_won_total
+  ].freeze
+  RESET_TO_NIL_COLUMNS = %i[
+    singles_rating doubles_rating first_serve_percent
+  ].freeze
   ELO_RESULTS = {
     "win" => 1.0,
     "draw" => 0.5,
@@ -32,6 +43,15 @@ class PlayerStatistic < ApplicationRecord
     total_wins  = ps ? ps.singles_wins.to_i  + ps.doubles_wins.to_i  : 0
     pct = total_games > 0 ? (total_wins.to_f / total_games * 100).round(1) : nil
     { games: total_games, wins: total_wins, win_pct: pct }
+  end
+
+  def self.reset_attributes
+    RESET_TO_ZERO_COLUMNS.index_with(0).merge(RESET_TO_NIL_COLUMNS.index_with(nil))
+  end
+
+  def resettable_statistics?
+    RESET_TO_ZERO_COLUMNS.any? { |column| public_send(column).to_f.nonzero? } ||
+      RESET_TO_NIL_COLUMNS.any? { |column| public_send(column).present? }
   end
 
   # convenience readers
@@ -125,16 +145,76 @@ class PlayerStatistic < ApplicationRecord
     rating_column = mode == "doubles" ? :doubles_rating : :singles_rating
     matches = Match.where(mode: mode).order(:played_at, :id).to_a
     ratings = Hash.new(BASE_ELO)
+    reset_times = stats_reset_times_for_matches(matches)
+    reset_applied = {}
+    elo_rated_user_ids = {}
 
     grouped_matches(matches).each_value do |event_matches|
-      apply_elo_for_event(event_matches, ratings)
+      apply_pending_rating_resets(event_matches, ratings, reset_times, reset_applied)
+      apply_elo_for_event(event_matches, ratings, elo_rated_user_ids)
     end
 
+    last_elo_played_at_by_user = last_elo_played_at_by_user(grouped_matches(matches).values)
+
     Match.where(mode: mode).distinct.pluck(:user_id).each do |user_id|
+      next unless elo_rated_user_ids[user_id]
+
       ps = find_or_create_by!(user_id: user_id)
-      ps.update!(rating_column => ratings[user_id])
+      rating = reset_without_later_match?(user_id, reset_times, last_elo_played_at_by_user) ? nil : ratings[user_id]
+      ps.update!(rating_column => rating)
     end
   end
+
+  def self.last_elo_played_at_by_user(grouped_event_matches)
+    grouped_event_matches.each_with_object({}) do |event_matches, memo|
+      event = build_elo_event(event_matches)
+      next unless event
+
+      played_at = event_matches.first.played_at
+      (event[:team_a_ids] + event[:team_b_ids]).each do |user_id|
+        memo[user_id] = [ memo[user_id], played_at ].compact.max
+      end
+    end
+  end
+  private_class_method :last_elo_played_at_by_user
+
+  def self.stats_reset_times_for_matches(matches)
+    user_ids = matches.flat_map { |match| elo_user_ids(match) }.compact.uniq
+    where(user_id: user_ids).where.not(stats_reset_at: nil).pluck(:user_id, :stats_reset_at).to_h
+  end
+  private_class_method :stats_reset_times_for_matches
+
+  def self.elo_user_ids(match)
+    stats = match.stats.to_h
+
+    if match.mode == "doubles"
+      [ match.user_id, *Array(stats["team_a_ids"]), *Array(stats["team_b_ids"]) ].map(&:to_i)
+    else
+      [ match.user_id, match.opponent_id, *Array(stats["opponent_ids"]) ].compact.map(&:to_i)
+    end
+  end
+  private_class_method :elo_user_ids
+
+  def self.apply_pending_rating_resets(event_matches, ratings, reset_times, reset_applied)
+    event = build_elo_event(event_matches)
+    return unless event
+
+    played_at = event_matches.first.played_at
+    (event[:team_a_ids] + event[:team_b_ids]).uniq.each do |user_id|
+      reset_at = reset_times[user_id]
+      next unless reset_at && reset_at <= played_at && !reset_applied[user_id]
+
+      ratings[user_id] = BASE_ELO
+      reset_applied[user_id] = true
+    end
+  end
+  private_class_method :apply_pending_rating_resets
+
+  def self.reset_without_later_match?(user_id, reset_times, last_played_at_by_user)
+    reset_at = reset_times[user_id]
+    reset_at && last_played_at_by_user[user_id] && last_played_at_by_user[user_id] < reset_at
+  end
+  private_class_method :reset_without_later_match?
 
   def self.grouped_matches(matches)
     matches.group_by { |match| elo_event_key(match) }
@@ -159,12 +239,13 @@ class PlayerStatistic < ApplicationRecord
   end
   private_class_method :elo_event_key
 
-  def self.apply_elo_for_event(event_matches, ratings)
+  def self.apply_elo_for_event(event_matches, ratings, elo_rated_user_ids)
     event = build_elo_event(event_matches)
     return unless event
 
     team_a_ids = event[:team_a_ids]
     team_b_ids = event[:team_b_ids]
+    (team_a_ids + team_b_ids).each { |user_id| elo_rated_user_ids[user_id] = true }
     result_a = ELO_RESULTS.fetch(event[:team_a_outcome], 0.5)
     result_b = ELO_RESULTS.fetch(inverse_outcome(event[:team_a_outcome]), 0.5)
 
@@ -196,6 +277,7 @@ class PlayerStatistic < ApplicationRecord
   def self.build_elo_event(event_matches)
     sample = event_matches.first
     stats = sample.stats.to_h
+    return if guest_names_present?(stats)
 
     if sample.mode == "doubles"
       team_a_ids = Array(stats["team_a_ids"]).map(&:to_i).uniq
@@ -217,6 +299,11 @@ class PlayerStatistic < ApplicationRecord
     end
   end
   private_class_method :build_elo_event
+
+  def self.guest_names_present?(stats)
+    Array(stats["team_a_guest_names"]).any? || Array(stats["team_b_guest_names"]).any?
+  end
+  private_class_method :guest_names_present?
 
   def self.average_team_rating(user_ids, ratings)
     return BASE_ELO if user_ids.empty?

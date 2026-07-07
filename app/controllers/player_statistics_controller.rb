@@ -6,7 +6,7 @@ class PlayerStatisticsController < ApplicationController
     matches = Match.where(user: @user).includes(:opponent, :game).order(played_at: :desc).limit(5).to_a
     related_ids = matches.flat_map do |m|
       s = (m.stats || {}).to_h
-      [ m.opponent_id, s["partner_id"], *Array(s["opponent_ids"]) ]
+      [ m.opponent_id, s["partner_id"], *Array(s["opponent_ids"]), *Array(s["team_a_ids"]), *Array(s["team_b_ids"]) ]
     end.compact.uniq
 
     names_by_id =
@@ -70,14 +70,17 @@ class PlayerStatisticsController < ApplicationController
       matches_input.each do |m|
         team_a_ids = sanitize_team_ids(m[:team_a_user_ids], game)
         team_b_ids = sanitize_team_ids(m[:team_b_user_ids], game)
+        team_a_guests = sanitize_guest_names(m[:team_a_guests])
+        team_b_guests = sanitize_guest_names(m[:team_b_guests])
         winner = m[:winner_team].to_s
         score = m[:score].to_s
 
         next if score.blank?
-        next unless team_a_ids.any? && team_b_ids.any?
+        next unless (team_a_ids + team_a_guests).any? && (team_b_ids + team_b_guests).any?
+        next unless (team_a_ids + team_b_ids).any?
         next unless %w[a b draw].include?(winner)
 
-        upsert_matches_for_teams(game, team_a_ids, team_b_ids, score, winner, force_new: true)
+        upsert_matches_for_teams(game, team_a_ids, team_b_ids, team_a_guests, team_b_guests, score, winner, force_new: true)
         saved_any = true
       end
 
@@ -124,7 +127,7 @@ def matches_params
   list.map do |m|
     next nil unless m.respond_to?(:permit)
 
-    m.permit(:score, :winner_team, team_a_user_ids: [], team_b_user_ids: [])
+    m.permit(:score, :winner_team, :team_a_guests, :team_b_guests, team_a_user_ids: [], team_b_user_ids: [])
   end.compact
 end
 
@@ -170,7 +173,11 @@ end
     Array(ids).map(&:to_i).uniq.select { |id| allowed_ids.include?(id) }
   end
 
-  def upsert_matches_for_teams(game, team_a_ids, team_b_ids, score, winner, force_new: false)
+  def sanitize_guest_names(value)
+    Array(value).join(",").split(",").map { |name| name.strip[0, 50] }.reject(&:blank?).first(2)
+  end
+
+  def upsert_matches_for_teams(game, team_a_ids, team_b_ids, team_a_guests, team_b_guests, score, winner, force_new: false)
     played_at =
       if game.respond_to?(:starts_at) && game.starts_at.present?
         game.starts_at
@@ -180,7 +187,7 @@ end
         Time.current
       end
 
-    mode = (team_a_ids.size >= 2 || team_b_ids.size >= 2) ? "doubles" : "singles"
+    mode = ((team_a_ids.size + team_a_guests.size) >= 2 || (team_b_ids.size + team_b_guests.size) >= 2) ? "doubles" : "singles"
     result = winner == "draw" ? :draw : winner.to_sym
 
     Telegram::Flows::StatsScore::MatchUpserter.call(
@@ -189,6 +196,8 @@ end
       mode: mode,
       team_a_ids: team_a_ids,
       team_b_ids: team_b_ids,
+      team_a_guest_names: team_a_guests,
+      team_b_guest_names: team_b_guests,
       result: result,
       played_at: played_at,
       score: score,

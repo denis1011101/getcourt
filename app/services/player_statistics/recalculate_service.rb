@@ -15,6 +15,7 @@ module PlayerStatistics
 
       scope = PlayerStatisticEntry.where(user_id: @user.id)
       scope = scope.where(source: @source) if @source.present?
+      scope = scope.where.not(source: Statistics::ResetInactiveStatsService::SOURCE)
 
       scope.find_each do |e|
         (e.data || {}).each do |k, v|

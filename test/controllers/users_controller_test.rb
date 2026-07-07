@@ -6,6 +6,18 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_path
   end
 
+  test "should redirect account subpages when not authenticated" do
+    [
+      profile_account_url,
+      notifications_account_url,
+      security_account_url,
+      courts_account_url
+    ].each do |path|
+      get path
+      assert_redirected_to new_session_path
+    end
+  end
+
   test "should redirect update when not authenticated" do
     patch account_url, params: { user: { name: "New Name" } }
     assert_redirected_to new_session_path
@@ -16,10 +28,30 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     post session_url, params: { email: user_email }
     user = User.find_by!(email: user_email)
 
-    patch account_url, params: { user: { about_me: "I love tennis" } }
+    patch account_url, params: { section: "profile", user: { about_me: "I love tennis" } }
 
     user.reload
     assert_equal "I love tennis", user.about_me
+    assert_redirected_to profile_account_path
+  ensure
+    user&.destroy
+  end
+
+  test "authenticated user can view account subpages" do
+    user_email = "account_subpages_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: user_email }
+    user = User.find_by!(email: user_email)
+
+    [
+      [ profile_account_url, "Profile" ],
+      [ notifications_account_url, "Telegram & notifications" ],
+      [ security_account_url, "Security" ],
+      [ courts_account_url, "Court preferences" ]
+    ].each do |path, heading|
+      get path
+      assert_response :success
+      assert_includes response.body, heading
+    end
   ensure
     user&.destroy
   end
@@ -39,7 +71,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     user&.destroy
   end
 
-  test "account page sorts local favorite court options first by name" do
+  test "account courts page sorts local favorite court options first by name" do
     user_email = "court_sort_#{SecureRandom.hex(4)}@example.com"
     local_a = Court.create!(name: "Alpha Local", city_name: "Testville", moderation_status: "approved")
     local_b = Court.create!(name: "Zulu Local", city_name: "Testville", moderation_status: "approved")
@@ -49,7 +81,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     user = User.find_by!(email: user_email)
     user.update!(city_name: "Testville")
 
-    get edit_account_url
+    get courts_account_url
 
     assert_response :success
     assert_select "form[action='#{account_path}']"
@@ -78,7 +110,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     user = User.find_by!(email: user_email)
 
     host! "ru.getcourt.co"
-    get edit_account_url
+    get profile_account_url
 
     assert_response :success
     assert_includes response.body, user.email
@@ -111,6 +143,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     user.update!(court_preferences_note: "All city courts")
 
     patch account_url, params: {
+      section: "courts",
       user: {
         court_preferences_mode: "favorites",
         favorite_court_ids: [ court.id.to_s ],
@@ -121,9 +154,109 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     user.reload
     assert_equal [ court.id ], user.favorite_court_ids
     assert_nil user.court_preferences_note
+    assert_redirected_to courts_account_path
   ensure
     user&.destroy
     court&.destroy
+  end
+
+  test "profile update does not clear favorite courts" do
+    user_email = "profile_keeps_courts_#{SecureRandom.hex(4)}@example.com"
+    court = Court.create!(name: "Kept Favorite Court")
+    post session_url, params: { email: user_email }
+    user = User.find_by!(email: user_email)
+    user.favorite_courts << court
+
+    patch account_url, params: {
+      section: "profile",
+      user: {
+        name: "Profile Update",
+        email: user.email
+      }
+    }
+
+    user.reload
+    assert_equal "Profile Update", user.name
+    assert_equal [ court.id ], user.favorite_court_ids
+    assert_redirected_to profile_account_path
+  ensure
+    user&.destroy
+    court&.destroy
+  end
+
+  test "notifications update redirects back to notifications" do
+    user_email = "notifications_redirect_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: user_email }
+    user = User.find_by!(email: user_email)
+
+    patch account_url, params: {
+      section: "notifications",
+      user: { notify_nearby: "1" }
+    }
+
+    assert_redirected_to notifications_account_path
+    assert_equal true, user.reload.notify_nearby
+  ensure
+    user&.destroy
+  end
+
+  test "security update redirects back to security" do
+    user_email = "security_redirect_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: user_email }
+    user = User.find_by!(email: user_email)
+
+    patch account_url, params: {
+      section: "security",
+      user: { require_verification: "1", preferred_login_via: "email" }
+    }
+
+    assert_redirected_to security_account_path
+    assert_equal true, user.reload.require_verification
+    assert_equal "email", user.preferred_login_via
+  ensure
+    user&.destroy
+  end
+
+  test "invalid profile update renders profile with unprocessable entity" do
+    user_email = "invalid_profile_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: user_email }
+    user = User.find_by!(email: user_email)
+
+    patch account_url, params: {
+      section: "profile",
+      user: { email: "" }
+    }
+
+    assert_response :unprocessable_entity
+    assert_includes response.body, "Profile"
+  ensure
+    user&.destroy
+  end
+
+  test "regenerate token redirects to notifications" do
+    user_email = "regenerate_redirect_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: user_email }
+    user = User.find_by!(email: user_email)
+
+    post regenerate_token_account_url
+
+    assert_redirected_to notifications_account_path
+  ensure
+    user&.destroy
+  end
+
+  test "clear city redirects to profile" do
+    user_email = "clear_city_redirect_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: user_email }
+    user = User.find_by!(email: user_email)
+    user.update!(city_name: "Kurgan")
+
+    post clear_city_account_url
+
+    assert_redirected_to profile_account_path
+    assert_nil user.reload.city_name
+  ensure
+    user&.destroy
   end
 
   test "account games shows past matches when user has no live games" do
@@ -231,6 +364,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     user.favorite_courts << court
 
     patch account_url, params: {
+      section: "courts",
       user: {
         court_preferences_mode: "note",
         favorite_court_ids: [ court.id.to_s ],
@@ -241,6 +375,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     user.reload
     assert_equal "Work on all courts", user.court_preferences_note
     assert_empty user.favorite_courts
+    assert_redirected_to courts_account_path
   ensure
     user&.destroy
     court&.destroy

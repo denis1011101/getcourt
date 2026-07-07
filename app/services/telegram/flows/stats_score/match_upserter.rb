@@ -4,9 +4,11 @@ module Telegram
       module MatchUpserter
         module_function
 
-        def call(game:, actor:, mode:, team_a_ids:, team_b_ids:, result:, played_at:, score:, force_new: false)
+        def call(game:, actor:, mode:, team_a_ids:, team_b_ids:, result:, played_at:, score:, force_new: false, team_a_guest_names: [], team_b_guest_names: [])
           team_a_ids = team_a_ids.map(&:to_i)
           team_b_ids = team_b_ids.map(&:to_i)
+          team_a_guest_names = Array(team_a_guest_names).map(&:to_s).map(&:strip).reject(&:blank?)
+          team_b_guest_names = Array(team_b_guest_names).map(&:to_s).map(&:strip).reject(&:blank?)
 
           all_ids = (team_a_ids + team_b_ids).uniq
           users = User.where(id: all_ids).to_a
@@ -29,7 +31,7 @@ module Telegram
             next unless user
 
             opponent = (mode == "singles") ? by_id[team_b_ids.first] : nil
-            stats = build_stats(actor:, team_a_ids:, team_b_ids:, uid:, mode:, is_team_a: true)
+            stats = build_stats(actor:, team_a_ids:, team_b_ids:, team_a_guest_names:, team_b_guest_names:, uid:, mode:, is_team_a: true)
 
             PlayerStatistics::UpsertMatchForGameService.new(
               user:, game:, actor:, mode:,
@@ -42,7 +44,7 @@ module Telegram
             next unless user
 
             opponent = (mode == "singles") ? by_id[team_a_ids.first] : nil
-            stats = build_stats(actor:, team_a_ids:, team_b_ids:, uid:, mode:, is_team_a: false)
+            stats = build_stats(actor:, team_a_ids:, team_b_ids:, team_a_guest_names:, team_b_guest_names:, uid:, mode:, is_team_a: false)
 
             PlayerStatistics::UpsertMatchForGameService.new(
               user:, game:, actor:, mode:,
@@ -51,17 +53,21 @@ module Telegram
           end
         end
 
-        def build_stats(actor:, team_a_ids:, team_b_ids:, uid:, mode:, is_team_a:)
+        def build_stats(actor:, team_a_ids:, team_b_ids:, team_a_guest_names:, team_b_guest_names:, uid:, mode:, is_team_a:)
           my_team = is_team_a ? team_a_ids : team_b_ids
           opp_team = is_team_a ? team_b_ids : team_a_ids
 
-          {
+          stats = {
             "entered_by" => actor.id,
             "team_a_ids" => team_a_ids,
             "team_b_ids" => team_b_ids,
             "partner_id" => (mode == "doubles" ? (my_team - [ uid ]).first : nil),
             "opponent_ids" => (mode == "doubles" ? opp_team : [ opp_team.first ].compact)
           }.compact
+
+          stats["team_a_guest_names"] = team_a_guest_names if team_a_guest_names.any?
+          stats["team_b_guest_names"] = team_b_guest_names if team_b_guest_names.any?
+          stats
         end
       end
     end

@@ -6,6 +6,7 @@ class TennisLifeController < ApplicationController
   MATCHES_PER_PAGE = 20
 
   def index
+    @season_label = Season.current_label
     @tennis_score_raw = TennisScoreboard::Fetcher.raw_text
     @random_telegram_post = TennisLife::TelegramPostsFetcher.random_post
     if @random_telegram_post && (text = @random_telegram_post["text"].to_s.strip).present?
@@ -39,6 +40,7 @@ class TennisLifeController < ApplicationController
   end
 
   def statistics
+    @season_label = Season.current_label
     @rating_rows = build_rating_rows
     @pagy, @recent_matches = pagy_array(build_recent_match_events)
   end
@@ -55,23 +57,35 @@ class TennisLifeController < ApplicationController
   end
 
   def build_rating_rows
-    stats = PlayerStatistic
-      .joins(:user)
-      .includes(:user)
-      .where("COALESCE(player_statistics.singles_games, 0) + COALESCE(player_statistics.doubles_games, 0) > 0")
+    seasonal_rows = Match
+      .where(played_at: Season.current_start..)
+      .group(:user_id)
+      .pluck(
+        :user_id,
+        Arel.sql("COUNT(*)"),
+        Arel.sql("SUM(CASE WHEN outcome = 'win' THEN 1 ELSE 0 END)")
+      )
 
-    stats.map do |ps|
-      games = ps.singles_games.to_i + ps.doubles_games.to_i
-      wins = ps.singles_wins.to_i + ps.doubles_wins.to_i
+    user_ids = seasonal_rows.map(&:first)
+    users_by_id = User.where(id: user_ids).index_by(&:id)
+    stats_by_user_id = PlayerStatistic.where(user_id: user_ids).index_by(&:user_id)
+
+    seasonal_rows.filter_map do |user_id, games_count, wins_count|
+      user = users_by_id[user_id]
+      next unless user
+
+      games = games_count.to_i
+      wins = wins_count.to_i
       pct = games.positive? ? (wins.to_f / games * 100).round(1) : 0.0
+      ps = stats_by_user_id[user_id]
 
       {
-        user: ps.user,
+        user: user,
         games: games,
         wins: wins,
         pct: pct,
-        singles_rating: (ps.singles_rating || 1500.0),
-        doubles_rating: (ps.doubles_rating || 1500.0)
+        singles_rating: (ps&.singles_rating || 1500.0),
+        doubles_rating: (ps&.doubles_rating || 1500.0)
       }
     end.sort_by { |row| [ -row[:pct], -row[:wins], -row[:games] ] }
   end

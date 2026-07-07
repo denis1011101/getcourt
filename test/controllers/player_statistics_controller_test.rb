@@ -1,6 +1,24 @@
 require "test_helper"
 
 class PlayerStatisticsControllerTest < ActionDispatch::IntegrationTest
+  test "game show renders localized guest label in stats form" do
+    post session_url, params: { email: "stats_guest_form_owner@example.com" }
+    owner = User.find_by!(email: "stats_guest_form_owner@example.com")
+
+    game = Game.create!(
+      court: courts(:one),
+      user: owner,
+      date: Date.yesterday,
+      time: "10:00",
+      with_coach: false
+    )
+
+    get game_url(game)
+
+    assert_response :success
+    assert_includes response.body, "Guest (not registered)"
+  end
+
   test "score upsert increments games even when stats entry already exists for normal game" do
     post session_url, params: { email: "stats_owner@example.com" }
     owner = User.find_by!(email: "stats_owner@example.com")
@@ -79,6 +97,105 @@ class PlayerStatisticsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1516.0, partner.player_statistic.reload.doubles_rating
     assert_equal 1484.0, opponent_one.player_statistic.reload.doubles_rating
     assert_equal 1484.0, opponent_two.player_statistic.reload.doubles_rating
+  end
+
+  test "score upsert records singles match against guest without elo" do
+    post session_url, params: { email: "stats_guest_owner@example.com" }
+    owner = User.find_by!(email: "stats_guest_owner@example.com")
+
+    game = Game.create!(
+      court: courts(:one),
+      user: owner,
+      date: Date.yesterday,
+      time: "10:00",
+      with_coach: false
+    )
+
+    post game_player_statistics_url(game), params: {
+      matches: {
+        "0" => {
+          score: "6-4 6-4",
+          team_a_user_ids: [ owner.id ],
+          team_b_guests: "Vasya",
+          winner_team: "a"
+        }
+      }
+    }
+
+    assert_redirected_to game_path(game)
+    match = Match.find_by!(game: game, user: owner)
+    assert_equal [ "Vasya" ], match.stats["team_b_guest_names"]
+
+    owner_stats = owner.player_statistic.reload
+    assert_equal 1, owner_stats.singles_games
+    assert_equal 1, owner_stats.singles_wins
+    assert_nil owner_stats.singles_rating
+  end
+
+  test "score upsert skips match when both teams are guests" do
+    post session_url, params: { email: "stats_all_guest_owner@example.com" }
+    owner = User.find_by!(email: "stats_all_guest_owner@example.com")
+
+    game = Game.create!(
+      court: courts(:one),
+      user: owner,
+      date: Date.yesterday,
+      time: "10:00",
+      with_coach: false
+    )
+
+    assert_no_difference("Match.count") do
+      post game_player_statistics_url(game), params: {
+        matches: {
+          "0" => {
+            score: "6-4",
+            team_a_guests: "Guest A",
+            team_b_guests: "Guest B",
+            winner_team: "a"
+          }
+        }
+      }
+    end
+
+    assert_redirected_to game_path(game)
+  end
+
+  test "score upsert records doubles match with guest without elo" do
+    post session_url, params: { email: "stats_guest_doubles_owner@example.com" }
+    owner = User.find_by!(email: "stats_guest_doubles_owner@example.com")
+    partner = User.create!(email: "stats_guest_doubles_partner@example.com")
+    opponent = User.create!(email: "stats_guest_doubles_opponent@example.com")
+
+    game = Game.create!(
+      court: courts(:one),
+      user: owner,
+      date: Date.yesterday,
+      time: "11:00",
+      with_coach: false
+    )
+    Participation.create!(game: game, user: partner, status: "approved")
+    Participation.create!(game: game, user: opponent, status: "approved")
+
+    post game_player_statistics_url(game), params: {
+      matches: {
+        "0" => {
+          score: "6-4 3-6 10-8",
+          team_a_user_ids: [ owner.id, partner.id ],
+          team_b_user_ids: [ opponent.id ],
+          team_b_guests: "Guest Partner",
+          winner_team: "a"
+        }
+      }
+    }
+
+    assert_redirected_to game_path(game)
+
+    assert_equal 1, owner.player_statistic.reload.doubles_games
+    assert_equal 1, partner.player_statistic.reload.doubles_games
+    assert_equal 1, opponent.player_statistic.reload.doubles_games
+    assert_nil owner.player_statistic.reload.doubles_rating
+    assert_nil partner.player_statistic.reload.doubles_rating
+    assert_nil opponent.player_statistic.reload.doubles_rating
   end
 
   test "manual singles upsert without a game keeps separate matches on the same day" do

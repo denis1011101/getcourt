@@ -57,19 +57,8 @@
                     when 'draw', 'tie' then 'D'
                     else 'L'
                     end %>
-            <% opponent_name = m.opponent_id.present? ? (names_by_id[m.opponent_id] || "##{m.opponent_id}") : nil %>
-            <% s = (m.stats || {}).to_h %>
-            <% partner_name = s["partner_id"].present? ? (names_by_id[s["partner_id"].to_i] || "##{s["partner_id"]}") : nil %>
-            <% opp_ids = Array(s["opponent_ids"]).map(&:to_i) %>
-            <% opp_names = opp_ids.map { |id| names_by_id[id] || "##{id}" } %>
-
             <% details = [] %>
-            <% if mode == 'singles' %>
-              <% details << (opponent_name ? "vs #{opponent_name}" : 'singles') %>
-            <% else %>
-              <% details << (partner_name ? "with #{partner_name}" : 'doubles') %>
-              <% details << "vs #{opp_names.join(' + ')}" if opp_names.any? %>
-            <% end %>
+            <% details << match_title_with_guests(m, names_by_id: names_by_id) %>
 
             <li>
               <%= m.played_at&.strftime('%Y-%m-%d') %> — <%= mode %> <%= wl %>

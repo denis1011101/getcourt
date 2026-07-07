@@ -1,0 +1,15 @@
+<% content_for :meta_robots, "noindex, follow" %>
+
+<div class="mx-auto max-w-3xl space-y-4 px-4 py-6">
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold">Telegram & notifications</h1>
+    <%= link_to "Back to account", edit_account_path, class: "text-sm text-indigo-600 hover:underline dark:text-indigo-400" %>
+  </div>
+
+  <div class="rounded-lg border bg-white p-4 dark:border-white/10 dark:bg-slate-800/80">
+    <%= form_with model: @user, url: account_path, method: :patch, local: true do |f| %>
+      <%= hidden_field_tag :section, "notifications" %>
+      <%= render "users/telegram_section", f: f %>
+    <% end %>
+  </div>
+</div>

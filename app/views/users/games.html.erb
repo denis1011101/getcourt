@@ -1,6 +1,6 @@
 <% content_for :meta_title, "My games" %>
 
-<div class="mx-auto max-w-3xl space-y-4 py-6">
+<div class="mx-auto max-w-3xl space-y-4 px-4 py-6">
   <div class="flex items-center justify-between">
     <h1 class="text-2xl font-bold">My games</h1>
     <%= link_to "Back to account", edit_account_path, class: "text-sm text-indigo-600 hover:underline dark:text-indigo-400" %>
@@ -70,8 +70,7 @@
                 <div class="flex items-center justify-between">
                   <span class="text-gray-700 dark:text-slate-300">
                     <%= m.mode&.titleize %>
-                    <% opp = @opponents_by_id[m.opponent_id] if m.opponent_id %>
-                    <% if opp %>· vs <%= opp.respond_to?(:name) && opp.name.present? ? opp.name : opp.email %><% end %>
+                    · <%= match_title_with_guests(m, names_by_id: @opponents_by_id) %>
                   </span>
                   <span class="font-mono text-gray-900 dark:text-slate-100">
                     <%= m.score.presence || "—" %>

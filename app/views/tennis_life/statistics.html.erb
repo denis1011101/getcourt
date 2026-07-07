@@ -13,7 +13,10 @@
   <section class="rounded-lg border bg-white p-4 dark:bg-slate-800/80 dark:border-white/10">
     <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_18rem] gap-5">
       <div>
-        <h2 class="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-4"><%= t("tennis_life.statistics.rankings_title") %></h2>
+        <h2 class="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-4">
+          <%= t("tennis_life.statistics.rankings_title") %>
+          <span class="font-normal text-gray-500 dark:text-slate-400">· <%= t("tennis_life.statistics.season_label", year: @season_label) %></span>
+        </h2>
 
         <% if @rating_rows.any? %>
           <div class="overflow-x-auto">
@@ -25,7 +28,7 @@
                   <th class="py-2 pr-4 font-medium">Telegram</th>
                   <th class="py-2 pr-4 font-medium"><%= t("tennis_life.statistics.wins") %></th>
                   <th class="py-2 pr-4 font-medium"><%= t("tennis_life.statistics.games") %></th>
-                  <th class="py-2 pr-4 font-medium">Win %</th>
+                  <th class="py-2 pr-4 font-medium"><%= t("tennis_life.statistics.win_pct") %></th>
                   <th class="py-2 pr-4 font-medium">Singles ELO</th>
                   <th class="py-2 font-medium">Doubles ELO</th>
                 </tr>
@@ -73,7 +76,10 @@
     <h2 class="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-4"><%= t("tennis_life.statistics.recent_results") %></h2>
 
     <% if @recent_matches.any? %>
-      <% related_ids = @recent_matches.flat_map { |match| match.stats.to_h.values_at("partner_id", "opponent_ids") }.flatten.compact.uniq %>
+      <% related_ids = @recent_matches.flat_map do |match|
+        stats = match.stats.to_h
+        [ match.opponent_id, stats["partner_id"], *Array(stats["opponent_ids"]), *Array(stats["team_a_ids"]), *Array(stats["team_b_ids"]) ]
+      end.compact.uniq %>
       <% names_by_id =
         if related_ids.any?
           User.where(id: related_ids).each_with_object({}) do |user, result|
@@ -84,21 +90,7 @@
         end %>
       <div class="space-y-3">
         <% @recent_matches.each do |match| %>
-          <% stats = match.stats.to_h %>
-          <% user_name = match.user&.name.presence || Telegram::Helpers::UserLookup.display_name(match.user, fallback: "User ##{match.user_id}") %>
-          <% match_title =
-            if match.mode == "doubles"
-              partner_name = names_by_id[stats["partner_id"]]
-              opponent_names = Array(stats["opponent_ids"]).filter_map { |id| names_by_id[id] }
-              team_name = [ user_name, partner_name ].compact.uniq.join(" / ")
-              opponents_label = opponent_names.any? ? opponent_names.join(" / ") : "Unknown opponents"
-              "#{team_name} vs #{opponents_label}"
-            else
-              fallback_opponent_name = Array(stats["opponent_ids"]).filter_map { |id| names_by_id[id] }.first
-              opponent_name = match.opponent&.name.presence ||
-                Telegram::Helpers::UserLookup.display_name(match.opponent, fallback: fallback_opponent_name || "Unknown opponent")
-              "#{user_name} vs #{opponent_name}"
-            end %>
+          <% match_title = match_title_with_guests(match, names_by_id: names_by_id) %>
           <article class="rounded-lg border border-gray-100 p-4 dark:border-white/10">
             <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400">
               <p><%= match.played_at&.strftime("%Y-%m-%d %H:%M") || "-" %></p>

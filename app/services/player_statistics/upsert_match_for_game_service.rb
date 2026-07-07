@@ -27,8 +27,9 @@ module PlayerStatistics
       Match.transaction do
         match = find_or_init_match(played_at)
         new_record = match.new_record?
-        old_outcome = match.persisted? ? match.outcome.to_s : nil
-        old_hours = match.stats.to_h["hours"]
+        stale = stale_match?(match)
+        old_outcome = match.persisted? && !stale ? match.outcome.to_s : nil
+        old_hours = match.persisted? && !stale ? match.stats.to_h["hours"] : nil
 
         match.opponent = @opponent
         match.outcome = @outcome
@@ -40,7 +41,7 @@ module PlayerStatistics
         match.save!
 
         apply_counters_delta!(
-          new_record: new_record,
+          new_record: new_record || stale,
           old_outcome: old_outcome,
           new_outcome: @outcome,
           old_hours: old_hours,
@@ -80,14 +81,18 @@ module PlayerStatistics
           scope.to_a.find do |match|
             stats = match.stats.to_h
             normalize_ids(stats["team_a_ids"]) == team_a_ids &&
-              normalize_ids(stats["team_b_ids"]) == team_b_ids
+              normalize_ids(stats["team_b_ids"]) == team_b_ids &&
+              normalize_guest_names(stats["team_a_guest_names"]) == normalize_guest_names(@stats["team_a_guest_names"]) &&
+              normalize_guest_names(stats["team_b_guest_names"]) == normalize_guest_names(@stats["team_b_guest_names"])
           end
         else
           opponent_id = @opponent&.id || normalize_ids(@stats["opponent_ids"]).first
+          opponent_guest_names = normalize_guest_names(opponent_guest_names_for_stats(@stats))
 
           scope.to_a.find do |match|
-            match.opponent_id == opponent_id ||
-              normalize_ids(match.stats.to_h["opponent_ids"]).first == opponent_id
+            stats = match.stats.to_h
+            (opponent_id.present? && (match.opponent_id == opponent_id || normalize_ids(stats["opponent_ids"]).first == opponent_id)) ||
+              (opponent_guest_names.any? && normalize_guest_names(opponent_guest_names_for_stats(stats)) == opponent_guest_names)
           end
         end
 
@@ -103,6 +108,27 @@ module PlayerStatistics
 
     def normalize_ids(value)
       Array(value).map(&:to_i).uniq.sort
+    end
+
+    def normalize_guest_names(value)
+      Array(value).map(&:to_s).map(&:strip).reject(&:blank?).sort
+    end
+
+    def opponent_guest_names_for_stats(stats)
+      stats = stats.to_h
+      user_id = @user.id
+      team_a_ids = normalize_ids(stats["team_a_ids"])
+
+      if team_a_ids.include?(user_id)
+        stats["team_b_guest_names"]
+      else
+        stats["team_a_guest_names"]
+      end
+    end
+
+    def stale_match?(match)
+      reset_at = @user.player_statistic&.stats_reset_at
+      match.persisted? && reset_at.present? && match.updated_at.present? && match.updated_at < reset_at
     end
 
     def apply_counters_delta!(new_record:, old_outcome:, new_outcome:, old_hours:, new_hours:)

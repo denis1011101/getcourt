@@ -82,6 +82,13 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
       telegram_username: "rating_player",
       email: "rating_player@example.com"
     )
+    match = Match.create!(
+      user: users(:one),
+      opponent: users(:two),
+      mode: "singles",
+      outcome: "win",
+      played_at: Time.current
+    )
 
     stub_singleton(TennisLife::TelegramPostsFetcher, :random_post, nil) do
       get tennis_life_index_url
@@ -89,15 +96,28 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
       assert_response :success
       assert_select "a[href='https://t.me/rating_player']", text: "@rating_player"
     end
+  ensure
+    match&.destroy
   end
 
   test "index links to full statistics page" do
+    match = Match.create!(
+      user: users(:one),
+      opponent: users(:two),
+      mode: "singles",
+      outcome: "win",
+      played_at: Time.current
+    )
+
     stub_singleton(TennisLife::TelegramPostsFetcher, :random_post, nil) do
       get tennis_life_index_url
 
       assert_response :success
+      assert_includes response.body, "Season #{Season.current_label}"
       assert_select "a[href='#{tennis_life_statistics_path}']", text: /View all statistics/
     end
+  ensure
+    match&.destroy
   end
 
   test "index enqueues translation jobs for feed posts without english text" do
@@ -179,7 +199,7 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "h1", text: "Tennis Player Rankings & Match Results"
-    assert_select "h2", text: "Player Rankings & Win Rates"
+    assert_select "h2", text: /Player Rankings & Win Rates/
     assert_select "h2", text: "Recent Match Results"
     assert_select "a[href='https://t.me/stats_player']", text: "@stats_player"
     assert_includes response.body, "What ELO means"
@@ -189,6 +209,109 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Stats Player vs Stats Opponent"
   ensure
     match&.destroy
+  end
+
+  test "statistics shows guest names escaped in recent matches" do
+    Match.delete_all
+    player = User.create!(email: "guest_recent_player@example.com", name: "Guest Recent Player")
+    Match.create!(
+      user: player,
+      mode: "singles",
+      outcome: "win",
+      played_at: Time.current,
+      score: "6-4",
+      stats: {
+        "team_a_ids" => [ player.id ],
+        "team_b_ids" => [],
+        "team_b_guest_names" => [ "<script>alert(1)</script>" ]
+      }
+    )
+
+    get tennis_life_statistics_url
+
+    assert_response :success
+    assert_includes response.body, "Guest Recent Player vs &lt;script&gt;alert(1)&lt;/script&gt; (guest)"
+    assert_not_includes response.body, "Guest Recent Player vs <script>alert(1)</script> (guest)"
+  ensure
+    Match.delete_all
+    player&.destroy
+  end
+
+  test "statistics rating rows use current season match results" do
+    travel_to Time.zone.local(2026, 7, 8, 12, 0, 0) do
+      Match.delete_all
+      users(:one).update_columns(name: "Season Player", email: "season-player@example.com")
+      users(:one).player_statistic.update!(singles_games: 99, singles_wins: 99, singles_rating: 1666.6)
+
+      Match.create!(user: users(:one), opponent: users(:two), mode: "singles", outcome: "win", played_at: 1.month.ago)
+      Match.create!(user: users(:one), opponent: users(:two), mode: "singles", outcome: "loss", played_at: 2.months.ago)
+
+      get tennis_life_statistics_url
+
+      row = assigns(:rating_rows).find { |rating_row| rating_row[:user].id == users(:one).id }
+      assert_equal 2, row[:games]
+      assert_equal 1, row[:wins]
+      assert_equal 50.0, row[:pct]
+      assert_equal 1666.6, row[:singles_rating]
+      assert_includes response.body, "Season 2026"
+    end
+  ensure
+    Match.delete_all
+  end
+
+  test "statistics excludes players with only previous season matches" do
+    travel_to Time.zone.local(2026, 7, 8, 12, 0, 0) do
+      Match.delete_all
+      old_player = User.create!(name: "Old Season Player", email: "old-season-player@example.com")
+      current_player = User.create!(name: "Current Season Player", email: "current-season-player@example.com")
+
+      Match.create!(user: old_player, mode: "singles", outcome: "win", played_at: Season.current_start - 1.day)
+      Match.create!(user: current_player, mode: "singles", outcome: "win", played_at: Season.current_start + 1.day)
+
+      get tennis_life_statistics_url
+
+      user_ids = assigns(:rating_rows).map { |rating_row| rating_row[:user].id }
+      assert_not_includes user_ids, old_player.id
+      assert_includes user_ids, current_player.id
+    end
+  ensure
+    Match.delete_all
+  end
+
+  test "statistics uses default elo when player statistic is missing" do
+    travel_to Time.zone.local(2026, 7, 8, 12, 0, 0) do
+      Match.delete_all
+      player = User.create!(name: "No Stat Player", email: "no-stat-player@example.com")
+      player.player_statistic.destroy!
+      Match.create!(user: player, mode: "singles", outcome: "win", played_at: Time.current)
+
+      get tennis_life_statistics_url
+
+      row = assigns(:rating_rows).find { |rating_row| rating_row[:user].id == player.id }
+      assert_equal 1500.0, row[:singles_rating]
+      assert_equal 1500.0, row[:doubles_rating]
+    end
+  ensure
+    Match.delete_all
+  end
+
+  test "statistics includes reset player with current season match" do
+    travel_to Time.zone.local(2026, 7, 8, 12, 0, 0) do
+      Match.delete_all
+      player = User.create!(name: "Reset Season Player", email: "reset-season-player@example.com")
+      player.player_statistic.update!(singles_games: 0, singles_wins: 0, singles_rating: nil, stats_reset_at: Time.current)
+      Match.create!(user: player, mode: "singles", outcome: "win", played_at: 1.month.ago)
+
+      get tennis_life_statistics_url
+
+      row = assigns(:rating_rows).find { |rating_row| rating_row[:user].id == player.id }
+      assert_equal 1, row[:games]
+      assert_equal 1, row[:wins]
+      assert_equal 100.0, row[:pct]
+      assert_equal 1500.0, row[:singles_rating]
+    end
+  ensure
+    Match.delete_all
   end
 
   test "statistics shows doubles players from stored stats" do

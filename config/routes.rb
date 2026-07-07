@@ -28,6 +28,10 @@ Rails.application.routes.draw do
 
   resource :account, only: %i[edit update destroy], controller: :users do
     get :games
+    get :profile
+    get :notifications
+    get :security
+    get :courts
     post :regenerate_token
     post :clear_city, to: "users#clear_city", as: :clear_city
   end

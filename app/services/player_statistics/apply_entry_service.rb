@@ -66,9 +66,10 @@ module PlayerStatistics
     end
 
     def last_reset_time
-      @last_reset_time ||= if @game.respond_to?(:current_cycle_start)
-        @game.current_cycle_start
-      end
+      @last_reset_time ||= [
+        (@game.current_cycle_start if @game.respond_to?(:current_cycle_start)),
+        @user.player_statistic&.stats_reset_at
+      ].compact.max
     end
   end
 end
