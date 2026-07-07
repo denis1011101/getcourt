@@ -2,13 +2,13 @@
 <% content_for :meta_description, t("courts.index.meta_description") %>
 <div class="max-w-6xl mx-auto">
   <!-- Hero section -->
-  <div class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-indigo-600 via-indigo-500 to-purple-500 px-6 py-8 md:px-10 md:py-12 mb-6 text-white ring-1 ring-white/15 shadow-[0_20px_60px_rgba(79,70,229,0.18)] dark:from-indigo-900 dark:via-indigo-800 dark:to-fuchsia-800 dark:ring-white/10 dark:shadow-[0_24px_70px_rgba(15,23,42,0.45)]">
+  <div class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-indigo-600 via-indigo-500 to-purple-500 px-6 py-5 md:px-10 md:py-8 mb-6 text-white ring-1 ring-white/15 shadow-[0_20px_60px_rgba(79,70,229,0.18)] dark:from-indigo-900 dark:via-indigo-800 dark:to-fuchsia-800 dark:ring-white/10 dark:shadow-[0_24px_70px_rgba(15,23,42,0.45)]">
     <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/14 via-white/5 to-transparent dark:from-white/8 dark:via-indigo-400/5 dark:to-transparent"></div>
     <div class="pointer-events-none absolute -top-24 -right-24 w-72 h-72 rounded-full bg-purple-400/20 blur-3xl dark:bg-fuchsia-500/15 animate-pulse [animation-duration:4s]"></div>
     <div class="pointer-events-none absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-indigo-300/15 blur-3xl dark:bg-indigo-400/10"></div>
     <div class="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/30 dark:bg-white/15"></div>
     <!-- Decorative tennis court lines -->
-    <svg class="pointer-events-none absolute right-4 md:right-10 top-1/2 -translate-y-1/2 w-36 h-48 md:w-48 md:h-64 opacity-[0.08] dark:opacity-[0.06]" viewBox="0 0 120 160" fill="none" stroke="currentColor" stroke-width="1.5">
+    <svg class="pointer-events-none absolute right-4 md:right-10 top-1/2 -translate-y-1/2 w-24 h-32 md:w-32 md:h-44 opacity-[0.08] dark:opacity-[0.06]" viewBox="0 0 120 160" fill="none" stroke="currentColor" stroke-width="1.5">
       <rect x="4" y="4" width="112" height="152" rx="2"/>
       <line x1="18" y1="4" x2="18" y2="156"/>
       <line x1="102" y1="4" x2="102" y2="156"/>
@@ -21,8 +21,8 @@
     </svg>
 
     <div class="relative">
-      <h1 class="text-2xl md:text-4xl font-bold tracking-tight"><%= t("courts.index.hero_title") %><span class="inline-flex items-center ml-1" style="vertical-align: -0.02em;"><svg viewBox="0 0 24 24" style="width: 0.26em; height: 0.26em;" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#d4f542"/><path d="M3 8 Q9 12 3 16" fill="none" stroke="white" stroke-width="1.8" opacity="0.7" stroke-linecap="round"/><path d="M21 8 Q15 12 21 16" fill="none" stroke="white" stroke-width="1.8" opacity="0.7" stroke-linecap="round"/></svg></span></h1>
-      <p class="mt-2 text-white/90 dark:text-indigo-100 text-sm md:text-base max-w-xl"><%= t("courts.index.hero_subtitle") %></p>
+      <h1 class="text-xl md:text-3xl font-bold tracking-tight"><%= t("courts.index.hero_title") %><span class="inline-flex items-center ml-1" style="vertical-align: -0.02em;"><svg viewBox="0 0 24 24" style="width: 0.26em; height: 0.26em;" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#d4f542"/><path d="M3 8 Q9 12 3 16" fill="none" stroke="white" stroke-width="1.8" opacity="0.7" stroke-linecap="round"/><path d="M21 8 Q15 12 21 16" fill="none" stroke="white" stroke-width="1.8" opacity="0.7" stroke-linecap="round"/></svg></span></h1>
+      <p class="mt-1 text-white/90 dark:text-indigo-100 text-sm max-w-xl"><%= t("courts.index.hero_subtitle") %></p>
 
       <%= render "shared/location_filters",
             url: courts_path,
