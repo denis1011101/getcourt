@@ -70,8 +70,8 @@ class PlayerStatisticsController < ApplicationController
       matches_input.each do |m|
         team_a_ids = sanitize_team_ids(m[:team_a_user_ids], game)
         team_b_ids = sanitize_team_ids(m[:team_b_user_ids], game)
-        team_a_guests = sanitize_guest_names(m[:team_a_guests])
-        team_b_guests = sanitize_guest_names(m[:team_b_guests])
+        team_a_guests = sanitize_guest_names([ m[:team_a_guests], *Array(m[:team_a_guest_names]) ])
+        team_b_guests = sanitize_guest_names([ m[:team_b_guests], *Array(m[:team_b_guest_names]) ])
         winner = m[:winner_team].to_s
         score = m[:score].to_s
 
@@ -127,7 +127,7 @@ def matches_params
   list.map do |m|
     next nil unless m.respond_to?(:permit)
 
-    m.permit(:score, :winner_team, :team_a_guests, :team_b_guests, team_a_user_ids: [], team_b_user_ids: [])
+    m.permit(:score, :winner_team, :team_a_guests, :team_b_guests, team_a_user_ids: [], team_b_user_ids: [], team_a_guest_names: [], team_b_guest_names: [])
   end.compact
 end
 

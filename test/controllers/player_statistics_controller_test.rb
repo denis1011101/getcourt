@@ -22,6 +22,26 @@ class PlayerStatisticsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Add registered player"
   end
 
+  test "game show renders saved guest as stats checkbox" do
+    post session_url, params: { email: "stats_saved_guest_owner@example.com" }
+    owner = User.find_by!(email: "stats_saved_guest_owner@example.com")
+    game = Game.create!(
+      court: courts(:one),
+      user: owner,
+      date: Date.yesterday,
+      time: "10:00",
+      with_coach: false
+    )
+    Participation.create!(game: game, guest_name: "Saved Guest", status: "approved")
+
+    get game_url(game)
+
+    assert_response :success
+    assert_includes response.body, "Saved Guest"
+    assert_includes response.body, "team_a_guest_names"
+    assert_includes response.body, "(guest)"
+  end
+
   test "score upsert increments games even when stats entry already exists for normal game" do
     post session_url, params: { email: "stats_owner@example.com" }
     owner = User.find_by!(email: "stats_owner@example.com")
@@ -133,6 +153,36 @@ class PlayerStatisticsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1, owner_stats.singles_games
     assert_equal 1, owner_stats.singles_wins
     assert_nil owner_stats.singles_rating
+  end
+
+  test "score upsert merges guest name checkboxes with text field" do
+    post session_url, params: { email: "stats_guest_checkbox_owner@example.com" }
+    owner = User.find_by!(email: "stats_guest_checkbox_owner@example.com")
+
+    game = Game.create!(
+      court: courts(:one),
+      user: owner,
+      date: Date.yesterday,
+      time: "10:00",
+      with_coach: false
+    )
+
+    post game_player_statistics_url(game), params: {
+      matches: {
+        "0" => {
+          score: "6-4 6-4",
+          team_a_user_ids: [ owner.id ],
+          team_b_guest_names: [ "Saved Guest" ],
+          team_b_guests: "Typed Guest",
+          winner_team: "a"
+        }
+      }
+    }
+
+    assert_redirected_to game_path(game)
+    match = Match.find_by!(game: game, user: owner)
+    assert_equal [ "Typed Guest", "Saved Guest" ], match.stats["team_b_guest_names"]
+    assert_nil owner.player_statistic.reload.singles_rating
   end
 
   test "score upsert records match for registered non-participant" do

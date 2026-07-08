@@ -124,6 +124,8 @@ es:
       add_game: "Añadir otro partido"
       guest_label: "Invitado (sin registro)"
       guest_placeholder: "Nombre, nombre"
+      guest_badge: "invitado"
+      add_guest: "Añadir invitado"
       add_player_label: "Añadir jugador registrado"
       add_player_prompt: "Elige jugador..."
       stats_locked: "Las estadísticas se pueden introducir después de que empiece el partido y solo por el creador o un administrador."

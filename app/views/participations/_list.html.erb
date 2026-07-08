@@ -8,7 +8,9 @@
     <% approved_participations.each do |participation| %>
       <%= render partial: "participations/item", locals: { participation: participation, game: g } %>
       <% user = participation.user %>
-      <%= render partial: "player_statistics/modal", locals: { user: user, stats: user.player_statistic || user.create_player_statistic } %>
+      <% if user %>
+        <%= render partial: "player_statistics/modal", locals: { user: user, stats: user.player_statistic || user.create_player_statistic } %>
+      <% end %>
     <% end %>
 
     <% if approved_participations.empty? %>
@@ -33,6 +35,18 @@
         <% end %>
       </ul>
     </div>
+  <% end %>
+
+  <% if can_manage %>
+    <%= form_with url: create_guest_game_participations_path(g), method: :post,
+          data: { turbo: true }, class: "mb-4 flex items-center gap-2" do %>
+      <%= text_field_tag :guest_name, nil, maxlength: 50,
+            required: true,
+            placeholder: t("games.show.guest_placeholder"),
+            class: "w-full rounded border-gray-300 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+      <%= submit_tag t("games.show.add_guest"),
+            class: "inline-flex items-center rounded-md border border-indigo-300 px-3 py-2 text-sm text-indigo-700 hover:bg-indigo-50 dark:border-white/15 dark:text-slate-100 dark:hover:bg-slate-700/60" %>
+    <% end %>
   <% end %>
 
   <% if approved_participations.count > 4 %>

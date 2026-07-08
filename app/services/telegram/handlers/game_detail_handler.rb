@@ -107,10 +107,10 @@ module Telegram
           game = Game.find_by(id: game_id)
           return Telegram::Api.send_simple(chat_id, t.(:game_not_found)) unless game
 
-          users =
+          participations =
             if game.respond_to?(:participations)
               scope = game.participations.respond_to?(:approved) ? game.participations.approved : game.participations
-              scope.includes(:user).map(&:user).compact.uniq { |user_item| user_item.id }
+              scope.includes(:user).to_a
             else
               []
             end
@@ -119,16 +119,21 @@ module Telegram
           lines << "*#{t.(:players_list_title, game_id: game.id)}*"
           lines << ""
 
-          if users.empty?
+          if participations.empty?
             lines << t.(:players_list_empty)
           else
-            rows = users.map do |u|
-              ps = u.player_statistic
-              total_games = ps&.singles_games.to_i + ps&.doubles_games.to_i
-              total_wins = ps&.singles_wins.to_i + ps&.doubles_wins.to_i
-              pct = total_games > 0 ? (total_wins.to_f / total_games * 100).round(1) : 0.0
-              name = u.telegram_username.present? ? "@#{u.telegram_username.delete_prefix('@')}" : (u.name.presence || u.email.presence || "User ##{u.id}")
-              { name: name, games: total_games, wins: total_wins, pct: pct }
+            rows = participations.map do |participation|
+              if participation.guest?
+                { name: "#{participation.guest_name} (#{t.(:guest_badge)})", games: 0, wins: 0, pct: 0.0 }
+              else
+                u = participation.user
+                ps = u.player_statistic
+                total_games = ps&.singles_games.to_i + ps&.doubles_games.to_i
+                total_wins = ps&.singles_wins.to_i + ps&.doubles_wins.to_i
+                pct = total_games > 0 ? (total_wins.to_f / total_games * 100).round(1) : 0.0
+                name = u.telegram_username.present? ? "@#{u.telegram_username.delete_prefix('@')}" : (u.name.presence || u.email.presence || "User ##{u.id}")
+                { name: name, games: total_games, wins: total_wins, pct: pct }
+              end
             end
             rows.sort_by! { |r| [ -r[:pct], -r[:wins], -r[:games] ] }
             rows.each do |r|

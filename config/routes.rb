@@ -78,6 +78,10 @@ Rails.application.routes.draw do
     end
 
     resources :participations, only: [ :create, :destroy ] do
+      collection do
+        post :create_guest
+      end
+
       member do
         post :approve
         post :reject

@@ -1,6 +1,6 @@
 class ParticipationsController < ApplicationController
-  before_action :set_game, only: [ :create, :destroy, :approve, :reject ]
-  before_action :authenticate_user!, only: [ :destroy, :approve, :reject ]
+  before_action :set_game, only: [ :create, :create_guest, :destroy, :approve, :reject ]
+  before_action :authenticate_user!, only: [ :create_guest, :destroy, :approve, :reject ]
 
   def create
     unless current_user
@@ -74,6 +74,41 @@ class ParticipationsController < ApplicationController
     end
   end
 
+  def create_guest
+    return head :forbidden unless can_manage_game?
+
+    name = params[:guest_name].to_s.strip[0, 50]
+    if name.blank?
+      respond_to do |format|
+        format.turbo_stream { render plain: "Guest name can't be blank.", status: :unprocessable_entity }
+        format.html { redirect_to @game, alert: "Guest name can't be blank." }
+      end
+      return
+    end
+
+    @participation = @game.participations.build(guest_name: name, status: "approved", approved_at: Time.current)
+
+    if @participation.save
+      Telegram::ParticipationNotifier.notify_owner(@game, @participation, action: :guest_added) if current_user != @game.user
+
+      respond_to do |format|
+        format.turbo_stream do
+          render turbo_stream: [
+            turbo_stream.replace("participations", partial: "participations/list", locals: { game: @game }),
+            turbo_stream.replace("participation_controls", partial: "participations/controls", locals: { game: @game })
+          ]
+        end
+        format.html { redirect_to @game, notice: "Guest added." }
+      end
+    else
+      msg = @participation.errors.full_messages.to_sentence.presence || "Failed to add guest."
+      respond_to do |format|
+        format.turbo_stream { render plain: msg, status: :unprocessable_entity }
+        format.html { redirect_to @game, alert: msg }
+      end
+    end
+  end
+
   def reject
     return head :forbidden unless can_manage_game?
 
@@ -100,17 +135,29 @@ class ParticipationsController < ApplicationController
       head :not_found and return
     end
 
-    unless AccessControl.can_remove_participant?(current_user, @game, @participation.user)
+    allowed =
+      if @participation.guest?
+        can_manage_game?
+      else
+        AccessControl.can_remove_participant?(current_user, @game, @participation.user)
+      end
+
+    unless allowed
       head :forbidden and return
     end
 
     @participation_id = @participation.id
     removed_user = @participation.user
+    removed_participation = @participation
     @participation.destroy
 
     if @participation_id && @game.user&.telegram_chat_id.present?
-      action = (removed_user == current_user) ? :left : :removed
-      Telegram::ParticipationNotifier.notify_owner(@game, removed_user, action: action)
+      if removed_participation.guest?
+        Telegram::ParticipationNotifier.notify_owner(@game, removed_participation, action: :removed) if current_user != @game.user
+      else
+        action = (removed_user == current_user) ? :left : :removed
+        Telegram::ParticipationNotifier.notify_owner(@game, removed_user, action: action)
+      end
     end
 
     respond_to do |format|
