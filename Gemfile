@@ -51,7 +51,7 @@ gem "ruby-vips", "~> 2.0"
 gem "dotenv-rails"
 
 # Pagination
-gem "pagy", "~> 43.5"
+gem "pagy", "~> 43.6"
 
 # Russian transliteration support
 gem "russian"
