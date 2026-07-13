@@ -544,7 +544,7 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select '[data-testid="game-organizer-admin"]', 1
     assert_includes response.body, owner.email
-    assert_select 'a[href=?]', "mailto:#{owner.email}"
-    assert_select 'a[href=?]', "https://t.me/private_organizer"
+    assert_select "a[href=?]", "mailto:#{owner.email}"
+    assert_select "a[href=?]", "https://t.me/private_organizer"
   end
 end
