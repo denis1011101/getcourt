@@ -20,7 +20,10 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     post session_url, params: { email: email }
 
     assert_redirected_to root_path
-    assert_equal "en", User.find_by!(email: email).telegram_locale
+    user = User.find_by!(email: email)
+    assert_equal "en", user.telegram_locale
+    assert_equal "en", user.locale
+    assert_equal "email", user.nearby_notification_channel
   ensure
     User.find_by(email: email)&.destroy if defined?(email)
   end
@@ -32,9 +35,22 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     post session_url, params: { email: email }
 
     assert_redirected_to root_path
-    assert_equal "ru", User.find_by!(email: email).telegram_locale
+    user = User.find_by!(email: email)
+    assert_equal "ru", user.telegram_locale
+    assert_equal "es", user.locale
   ensure
     User.find_by(email: email)&.destroy if defined?(email)
+  end
+
+  test "sign in does not overwrite an existing web locale" do
+    user = User.create!(email: "sessions_saved_locale@example.com", locale: "ru")
+
+    post session_url, params: { email: user.email }
+
+    assert_redirected_to root_path
+    assert_equal "ru", user.reload.locale
+  ensure
+    user&.destroy
   end
 
   test "should send email login code when email verification is required" do

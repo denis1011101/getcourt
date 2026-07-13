@@ -66,6 +66,20 @@ ru:
       intro: "Ваш код входа ниже. Введите его на странице подтверждения, чтобы войти."
       expiry: "Код действует 10 минут."
       ignore: "Если вы не запрашивали код — просто проигнорируйте это письмо."
+    urgent_player_search:
+      subject: "Ищем игроков на игру в городе %{city}"
+      greeting: "Здравствуйте, %{name}!"
+      intro: "%{owner} срочно ищет игроков на игру в городе %{city}."
+      organizer_fallback: "Пользователь GetCourt №%{id}"
+      date: "Дата"
+      court: "Корт"
+      sport: "Спорт"
+      level: "Уровень"
+      any_sport: "Любой"
+      any_level: "Любой"
+      view_game: "Открыть игру"
+      manage_html: "Вы получили это письмо, потому что включили уведомления об играх рядом. <a href='%{url}'>Настроить уведомления</a>."
+      manage_text: "Настроить уведомления"
   sessions:
     privacy_consent_html: "Я согласен с <a href='%{url}' class='text-indigo-600 dark:text-indigo-400 hover:underline' target='_blank'>Политикой конфиденциальности</a> и даю согласие на обработку email для входа"
     age_consent: "Я подтверждаю, что мне уже исполнилось 16 лет"
@@ -128,6 +142,38 @@ ru:
       add_player_label: "Добавить зарегистрированного игрока"
       add_player_prompt: "Выберите игрока..."
       stats_locked: "Статистику можно внести после начала игры, только создателю или администратору."
+      onboarding:
+        title: "Подготовьте игру"
+        description: "Выполните эти шаги, чтобы игроки могли найти вашу игру и присоединиться."
+        items:
+          join:
+            title: "Присоединитесь к своей игре"
+            description: "Подтвердите, что вы играете, а не только организуете."
+            action: "Присоединиться"
+          city:
+            title: "Укажите свой город"
+            description: "Город поможет нам связать вас с игроками поблизости."
+            action: "Указать город"
+          telegram:
+            title: "Привяжите Telegram"
+            description: "Получайте уведомления об игре и напоминания от бота GetCourt."
+            action: "Привязать Telegram"
+          player_search:
+            title: "Объявите поиск игроков"
+            description: "Сообщите игрокам поблизости, что в игре есть свободные места."
+            action: "Объявить поиск"
+      organizer:
+        title: "Организатор"
+        user_id: "ID пользователя"
+        name: "Имя"
+        email: "Email"
+        registered_at: "Дата регистрации"
+        city: "Город"
+        telegram: "Telegram"
+        telegram_connected: "Привязан"
+        telegram_not_connected: "Не привязан"
+        registration_source: "Источник регистрации"
+        not_set: "Не указано"
     threads:
       headline: "🎾 Ищем партнёров на %{sport} в %{city}!"
       date_line: "📅 %{date} в %{time}"
@@ -360,6 +406,17 @@ ru:
     delete_account_body: "Это окончательно удалит ваш аккаунт и все связанные данные. Действие нельзя отменить."
     delete_account_confirm: "Удалить аккаунт и все данные? Это действие нельзя отменить."
     delete_account_button: "Удалить мой аккаунт"
+    notifications:
+      nearby_title: "Срочный поиск игроков"
+      nearby_help: "Получайте уведомления, когда организатору срочно нужны игроки в вашем городе."
+      nearby_enabled: "Уведомлять меня о срочном поиске игроков рядом"
+      channel: "Канал уведомлений"
+      channel_email: "Email"
+      channel_telegram: "Telegram"
+      telegram_required: "Для уведомлений в Telegram нужно привязать аккаунт Telegram."
+      city_required_html: "Укажите свой <a href='%{url}' class='underline'>город</a>, чтобы получать уведомления об играх рядом."
+      save: "Сохранить изменения"
+      back: "Назад"
     edit:
       court_preferences_title: "Предпочтения по кортам"
       court_preferences_mode_favorites: "Выбрать любимые корты"

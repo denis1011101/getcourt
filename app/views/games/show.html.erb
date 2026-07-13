@@ -82,6 +82,66 @@
     <%= render "participations/list", game: @game %>
     <%= render "participations/controls", game: @game %>
 
+    <% onboarding = GameOnboardingPresenter.new(game: @game, user: current_user) %>
+    <% if onboarding.visible? %>
+      <section class="mt-6 rounded-md border border-indigo-200 bg-indigo-50/70 p-3 dark:border-indigo-400/20 dark:bg-indigo-500/10" data-testid="game-onboarding">
+        <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("games.show.onboarding.title") %></h2>
+        <p class="mt-1 text-sm text-gray-600 dark:text-slate-400"><%= t("games.show.onboarding.description") %></p>
+
+        <ul class="mt-4 space-y-3">
+          <% onboarding.items.each do |item| %>
+            <li class="flex flex-col gap-3 rounded-md bg-white p-3 sm:flex-row sm:items-center sm:justify-between dark:bg-slate-800/80" data-testid="onboarding-<%= item.key %>">
+              <div class="flex gap-3">
+                <span class="mt-0.5 <%= item.completed ? "text-emerald-600 dark:text-emerald-400" : "text-gray-400 dark:text-slate-500" %>" aria-hidden="true"><%= item.completed ? "✓" : "○" %></span>
+                <div>
+                  <p class="text-sm font-medium text-gray-900 dark:text-slate-100"><%= t("games.show.onboarding.items.#{item.key}.title") %></p>
+                  <p class="text-xs text-gray-600 dark:text-slate-400"><%= t("games.show.onboarding.items.#{item.key}.description") %></p>
+                </div>
+              </div>
+
+              <% unless item.completed %>
+                <% action_classes = "inline-flex shrink-0 items-center justify-center rounded-md border border-indigo-300 px-3 py-2 text-sm font-medium text-indigo-700 transition hover:bg-indigo-50 dark:border-white/15 dark:text-slate-100 dark:hover:bg-slate-700/60" %>
+                <% case item.key %>
+                <% when :join %>
+                  <%= button_to t("games.show.onboarding.items.join.action"), game_participations_path(@game), method: :post, form: { data: { turbo: false } }, class: action_classes %>
+                <% when :city %>
+                  <%= link_to t("games.show.onboarding.items.city.action"), profile_account_path, class: action_classes %>
+                <% when :telegram %>
+                  <%= link_to t("games.show.onboarding.items.telegram.action"), notifications_account_path, class: action_classes %>
+                <% when :player_search %>
+                  <%= button_to t("games.show.onboarding.items.player_search.action"), toggle_urgent_player_search_game_path(@game), method: :post, class: action_classes %>
+                <% end %>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      </section>
+    <% end %>
+
+    <% if current_user&.admin? %>
+      <% organizer = @game.user %>
+      <section class="mt-6 rounded-md border border-amber-200 bg-amber-50/70 p-3 dark:border-amber-400/20 dark:bg-amber-500/10" data-testid="game-organizer-admin">
+        <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("games.show.organizer.title") %></h2>
+        <dl class="mt-3 grid grid-cols-1 gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
+          <div><dt class="text-gray-500 dark:text-slate-400"><%= t("games.show.organizer.user_id") %></dt><dd class="font-medium text-gray-900 dark:text-slate-100"><%= organizer.id %></dd></div>
+          <div><dt class="text-gray-500 dark:text-slate-400"><%= t("games.show.organizer.name") %></dt><dd class="font-medium text-gray-900 dark:text-slate-100"><%= organizer.name.presence || t("games.show.organizer.not_set") %></dd></div>
+          <div><dt class="text-gray-500 dark:text-slate-400"><%= t("games.show.organizer.email") %></dt><dd><%= mail_to organizer.email, organizer.email, class: "font-medium text-indigo-700 hover:underline dark:text-indigo-300" %></dd></div>
+          <div><dt class="text-gray-500 dark:text-slate-400"><%= t("games.show.organizer.registered_at") %></dt><dd class="font-medium text-gray-900 dark:text-slate-100"><%= l(organizer.created_at, format: :short) %></dd></div>
+          <div><dt class="text-gray-500 dark:text-slate-400"><%= t("games.show.organizer.city") %></dt><dd class="font-medium text-gray-900 dark:text-slate-100"><%= organizer.city_name.presence || t("games.show.organizer.not_set") %></dd></div>
+          <div>
+            <dt class="text-gray-500 dark:text-slate-400"><%= t("games.show.organizer.telegram") %></dt>
+            <dd class="font-medium text-gray-900 dark:text-slate-100">
+              <%= organizer.telegram_chat_id.present? ? t("games.show.organizer.telegram_connected") : t("games.show.organizer.telegram_not_connected") %>
+              <% if organizer.telegram_username.present? %>
+                · <%= telegram_profile_link(organizer.telegram_username, class: "text-indigo-700 hover:underline dark:text-indigo-300") %>
+              <% end %>
+            </dd>
+          </div>
+          <div><dt class="text-gray-500 dark:text-slate-400"><%= t("games.show.organizer.registration_source") %></dt><dd class="font-medium text-gray-900 dark:text-slate-100"><%= organizer.registration_source.presence || t("games.show.organizer.not_set") %></dd></div>
+        </dl>
+      </section>
+    <% end %>
+
     <% if current_user.present? && (current_user == @game.user || (current_user.respond_to?(:admin?) && current_user.admin?)) %>
       <div class="mt-4 space-y-4">
         <div class="rounded-md border border-gray-200 p-3 dark:border-white/10">

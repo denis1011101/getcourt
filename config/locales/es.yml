@@ -67,6 +67,20 @@ es:
       intro: "Tu código de acceso está abajo. Introdúcelo en la página de verificación para iniciar sesión."
       expiry: "El código expira en 10 minutos."
       ignore: "Si no lo solicitaste, puedes ignorar este correo."
+    urgent_player_search:
+      subject: "Se necesitan jugadores para un partido en %{city}"
+      greeting: "Hola %{name},"
+      intro: "%{owner} busca urgentemente jugadores para un partido en %{city}."
+      organizer_fallback: "Usuario de GetCourt #%{id}"
+      date: "Fecha"
+      court: "Pista"
+      sport: "Deporte"
+      level: "Nivel"
+      any_sport: "Cualquiera"
+      any_level: "Cualquiera"
+      view_game: "Ver partido"
+      manage_html: "Recibes este mensaje porque tienes activadas las alertas de partidos cercanos. <a href='%{url}'>Gestionar notificaciones</a>."
+      manage_text: "Gestionar notificaciones"
   sessions:
     privacy_consent_html: "Acepto la <a href='%{url}' class='text-indigo-600 dark:text-indigo-400 hover:underline' target='_blank'>Política de privacidad</a> y consiento el tratamiento de mi email para la autenticación"
     age_consent: "Confirmo que tengo al menos 16 años"
@@ -129,6 +143,38 @@ es:
       add_player_label: "Añadir jugador registrado"
       add_player_prompt: "Elige jugador..."
       stats_locked: "Las estadísticas se pueden introducir después de que empiece el partido y solo por el creador o un administrador."
+      onboarding:
+        title: "Prepara tu partido"
+        description: "Completa estos pasos para ayudar a otros jugadores a encontrar y unirse a tu partido."
+        items:
+          join:
+            title: "Únete a tu partido"
+            description: "Confirma que vas a jugar y no solo a organizar."
+            action: "Unirme al partido"
+          city:
+            title: "Añade tu ciudad"
+            description: "Tu ciudad nos ayuda a conectarte con jugadores cercanos."
+            action: "Añadir ciudad"
+          telegram:
+            title: "Conecta Telegram"
+            description: "Recibe novedades y recordatorios del bot de GetCourt."
+            action: "Conectar Telegram"
+          player_search:
+            title: "Anuncia que buscas jugadores"
+            description: "Avisa a los jugadores cercanos de que quedan plazas libres."
+            action: "Anunciar búsqueda"
+      organizer:
+        title: "Organizador"
+        user_id: "ID de usuario"
+        name: "Nombre"
+        email: "Email"
+        registered_at: "Registro"
+        city: "Ciudad"
+        telegram: "Telegram"
+        telegram_connected: "Conectado"
+        telegram_not_connected: "No conectado"
+        registration_source: "Fuente de registro"
+        not_set: "Sin indicar"
     threads:
       headline: "🎾 ¡Buscamos jugadores de %{sport} en %{city}!"
       date_line: "📅 %{date} a las %{time}"
@@ -355,6 +401,17 @@ es:
     delete_account_body: "Esto eliminará permanentemente tu cuenta y todos los datos asociados. Esta acción no se puede deshacer."
     delete_account_confirm: "¿Eliminar tu cuenta y todos los datos? Esta acción no se puede deshacer."
     delete_account_button: "Eliminar mi cuenta"
+    notifications:
+      nearby_title: "Alertas de búsqueda urgente de jugadores"
+      nearby_help: "Recibe un aviso cuando un organizador necesite jugadores urgentemente en tu ciudad."
+      nearby_enabled: "Avisarme de búsquedas urgentes de jugadores cercanas"
+      channel: "Canal de notificación"
+      channel_email: "Email"
+      channel_telegram: "Telegram"
+      telegram_required: "Para recibir avisos por Telegram debes conectar tu cuenta de Telegram."
+      city_required_html: "Añade tu <a href='%{url}' class='underline'>ciudad</a> para recibir alertas cercanas."
+      save: "Guardar cambios"
+      back: "Volver"
     edit:
       court_preferences_title: "Preferencias de pistas"
       court_preferences_mode_favorites: "Elegir pistas favoritas"

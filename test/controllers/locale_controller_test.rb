@@ -8,6 +8,19 @@ class LocaleControllerTest < ActionDispatch::IntegrationTest
     assert_equal "ru", cookies[:preferred_locale]
   end
 
+  test "stores an authenticated user's explicit locale" do
+    email = "locale_preference_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: email }
+    user = User.find_by!(email: email)
+
+    get set_locale_url(locale: "es")
+
+    assert_redirected_to "https://es.getcourt.co/"
+    assert_equal "es", user.reload.locale
+  ensure
+    user&.destroy
+  end
+
   test "sets preferred locale cookie for getcourt subdomains" do
     get set_locale_url(locale: "en", host: "ru.getcourt.co")
 

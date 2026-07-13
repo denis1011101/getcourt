@@ -1,0 +1,13 @@
+GetCourt
+
+<%= t("user_mailer.urgent_player_search.greeting", name: @user.name.presence || @user.email) %>
+
+<%= t("user_mailer.urgent_player_search.intro", owner: @owner, city: @game.court.city_name) %>
+
+<%= t("user_mailer.urgent_player_search.date") %>: <%= [@date, @time].compact.join(" · ") %>
+<%= t("user_mailer.urgent_player_search.court") %>: <%= @game.court.name %>
+<%= t("user_mailer.urgent_player_search.sport") %>: <%= @sport %>
+<%= t("user_mailer.urgent_player_search.level") %>: <%= @skill %>
+
+<%= t("user_mailer.urgent_player_search.view_game") %>: <%= @game_url %>
+<%= t("user_mailer.urgent_player_search.manage_text") %>: <%= @notifications_url %>

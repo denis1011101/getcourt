@@ -10,6 +10,43 @@
     <%= form_with model: @user, url: account_path, method: :patch, local: true do |f| %>
       <%= hidden_field_tag :section, "notifications" %>
       <%= render "users/telegram_section", f: f %>
+
+      <div class="mt-6 border-t border-gray-200 pt-4 dark:border-white/10">
+        <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("users.notifications.nearby_title") %></h2>
+        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("users.notifications.nearby_help") %></p>
+
+        <label class="mt-4 inline-flex items-center gap-2">
+          <%= f.check_box :notify_nearby, class: "h-4 w-4 text-indigo-600" %>
+          <span class="text-sm text-gray-700 dark:text-slate-300"><%= t("users.notifications.nearby_enabled") %></span>
+        </label>
+
+        <div class="mt-4">
+          <%= f.label :nearby_notification_channel, t("users.notifications.channel"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+          <%= f.select :nearby_notification_channel,
+                options_for_select([
+                  [t("users.notifications.channel_email"), "email"],
+                  [t("users.notifications.channel_telegram"), "telegram"]
+                ], @user.nearby_notification_channel),
+                {},
+                class: "mt-1 block rounded border px-3 py-2 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+        </div>
+
+        <% if @user.telegram_chat_id.blank? && @user.nearby_notification_channel == "telegram" %>
+          <p class="mt-2 text-xs text-amber-700 dark:text-amber-300"><%= t("users.notifications.telegram_required") %></p>
+        <% end %>
+
+        <% if @user.city_name.blank? %>
+          <p class="mt-2 text-xs text-amber-700 dark:text-amber-300">
+            <%= t("users.notifications.city_required_html", url: profile_account_path) %>
+          </p>
+        <% end %>
+      </div>
+
+      <div class="mt-6 flex items-center gap-3">
+        <%= f.submit t("users.notifications.save"), class: "rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 cursor-pointer" %>
+        <%= link_to t("users.notifications.back"), edit_account_path,
+          class: "inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5" %>
+      </div>
     <% end %>
   </div>
 </div>

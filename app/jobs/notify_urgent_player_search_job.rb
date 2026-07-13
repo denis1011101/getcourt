@@ -6,6 +6,8 @@ class NotifyUrgentPlayerSearchJob < ApplicationJob
     return unless game&.urgent_player_search?
 
     game_city = game.court&.city_name.to_s.strip.downcase
+    return if game_city.blank?
+
     date = Telegram::Helpers::GameFormatting.game_datetime(game) || "—"
     sport = game.respond_to?(:sport) ? game.sport.to_s.presence : nil
     skill = game.respond_to?(:skill_level) ? game.skill_level.to_s.presence : nil
@@ -14,24 +16,30 @@ class NotifyUrgentPlayerSearchJob < ApplicationJob
 
     recipients = User.where(notify_nearby: true)
                      .where.not(id: game.user_id)
-                     .where.not(telegram_chat_id: nil)
 
     recipients.find_each do |user|
-      next if game_city.present? && user.city_name.present? && user.city_name.to_s.strip.downcase != game_city
+      next unless user.city_name.to_s.strip.downcase == game_city
 
-      locale = (user.telegram_locale.presence || Telegram::I18n::DEFAULT_LOCALE).to_s
-      text = Telegram::I18n.t(
-        :urgent_search_notification,
-        locale: locale,
-        id: game.id,
-        owner: owner,
-        date: date,
-        sport: sport || fallback(locale, "sport"),
-        skill: (skill&.titleize || fallback(locale, "level")),
-        court: court
-      )
+      case user.nearby_notification_channel
+      when "email"
+        UserMailer.urgent_player_search(user, game).deliver_later
+      when "telegram"
+        next unless user.telegram_chat_id.present?
 
-      SendTelegramNotificationJob.perform_later(user.telegram_chat_id, text, parse_mode: nil)
+        locale = (user.telegram_locale.presence || Telegram::I18n::DEFAULT_LOCALE).to_s
+        text = Telegram::I18n.t(
+          :urgent_search_notification,
+          locale: locale,
+          id: game.id,
+          owner: owner,
+          date: date,
+          sport: sport || fallback(locale, "sport"),
+          skill: (skill&.titleize || fallback(locale, "level")),
+          court: court
+        )
+
+        SendTelegramNotificationJob.perform_later(user.telegram_chat_id, text, parse_mode: nil)
+      end
     end
   rescue => e
     Rails.logger.error "[NotifyUrgentPlayerSearchJob] #{e.class}: #{e.message}"

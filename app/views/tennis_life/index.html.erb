@@ -50,7 +50,9 @@
                 <a href="<%= channel_url %>" class="text-indigo-600 dark:text-indigo-400 hover:underline" target="_blank" rel="nofollow noopener"><%= rpost["channel_name"] %></a>
               </p>
             <% end %>
-            <p class="text-sm text-gray-800 dark:text-slate-200 whitespace-pre-line"><%= @random_post_text_en.presence || rpost["text"] %></p>
+            <%= turbo_frame_tag "featured_post_translation", src: tennis_life_featured_translation_path do %>
+              <p class="text-sm text-gray-800 dark:text-slate-200 whitespace-pre-line"><%= rpost["text"] %></p>
+            <% end %>
             <% if post_url.present? %>
               <a href="<%= post_url %>" class="mt-2 inline-block text-xs text-indigo-600 dark:text-indigo-400 hover:underline" target="_blank" rel="nofollow noopener"><%= t("tennis_life.index.read_on_telegram") %> →</a>
             <% end %>

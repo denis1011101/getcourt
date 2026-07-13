@@ -22,6 +22,9 @@ class SessionsController < ApplicationController
 
     user = User.find_or_initialize_by(email: email)
     user.name = email.split("@").first.titleize if user.name.blank?
+    if User::WEB_LOCALES.include?(I18n.locale.to_s) && (user.new_record? || user.locale.blank?)
+      user.locale = I18n.locale.to_s
+    end
     if user.new_record? && User::TELEGRAM_LOCALES.include?(I18n.locale.to_s)
       user.telegram_locale = I18n.locale.to_s
     end

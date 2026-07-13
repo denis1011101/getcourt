@@ -25,6 +25,7 @@ Rails.application.routes.draw do
 
   get "/tennis_life", to: "tennis_life#index", as: :tennis_life
   get "/tennis_life/statistics", to: "tennis_life#statistics", as: :tennis_life_statistics
+  get "/tennis_life/featured_translation", to: "tennis_life#featured_translation", as: :tennis_life_featured_translation
 
   resource :account, only: %i[edit update destroy], controller: :users do
     get :games

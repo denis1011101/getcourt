@@ -448,4 +448,103 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
     assert_not game.reload.urgent_player_search?
   end
+
+  test "owner sees onboarding checklist with the correct actions" do
+    owner = User.create!(email: "onboarding_owner@example.com")
+    game = Game.create!(court: courts(:one), user: owner, date: Date.current + 2.days, time: "10:00", players_count: 4)
+    post session_url, params: { email: owner.email }
+
+    get game_url(game)
+
+    assert_response :success
+    assert_select '[data-testid="game-onboarding"]', 1
+    assert_select '[data-testid="onboarding-join"] form[action=?][method="post"][data-turbo="false"]', game_participations_path(game)
+    assert_select '[data-testid="onboarding-city"] a[href=?]', profile_account_path
+    assert_select '[data-testid="onboarding-telegram"] a[href=?]', notifications_account_path
+    assert_select '[data-testid="onboarding-player_search"] form[action=?][method="post"]', toggle_urgent_player_search_game_path(game)
+  end
+
+  test "completed onboarding checklist is hidden" do
+    owner = User.create!(
+      email: "onboarding_complete@example.com",
+      city_name: "Madrid",
+      telegram_chat_id: 123_456
+    )
+    game = Game.create!(
+      court: courts(:one),
+      user: owner,
+      date: Date.current + 2.days,
+      time: "10:00",
+      players_count: 4,
+      urgent_player_search: true
+    )
+    game.participations.create!(user: owner, status: "approved")
+    post session_url, params: { email: owner.email }
+
+    get game_url(game)
+
+    assert_response :success
+    assert_select '[data-testid="game-onboarding"]', 0
+  end
+
+  test "player search onboarding item is omitted for full and past games" do
+    owner = User.create!(email: "onboarding_search_irrelevant@example.com")
+    participant = User.create!(email: "onboarding_full_participant@example.com")
+    full_game = Game.create!(court: courts(:one), user: owner, date: Date.current + 2.days, time: "10:00", players_count: 1)
+    full_game.participations.create!(user: participant, status: "approved")
+    past_game = Game.create!(court: courts(:one), user: owner, date: Date.current - 1.day, time: "10:00", players_count: 4)
+    post session_url, params: { email: owner.email }
+
+    get game_url(full_game)
+    assert_response :success
+    assert_select '[data-testid="game-onboarding"]', 1
+    assert_select '[data-testid="onboarding-player_search"]', 0
+
+    get game_url(past_game)
+    assert_response :success
+    assert_select '[data-testid="game-onboarding"]', 1
+    assert_select '[data-testid="onboarding-player_search"]', 0
+  end
+
+  test "organizer contact is visible only to admins and never leaks to public HTML" do
+    owner = User.create!(
+      email: "private_organizer@example.com",
+      name: "Private Organizer",
+      city_name: "Yekaterinburg",
+      telegram_username: "private_organizer",
+      telegram_chat_id: 987_654,
+      registration_source: "email"
+    )
+    game = Game.create!(court: courts(:one), user: owner, date: Date.current + 2.days, time: "10:00")
+
+    get game_url(game)
+    assert_response :success
+    assert_select '[data-testid="game-organizer-admin"]', 0
+    assert_select '[data-testid="game-onboarding"]', 0
+    assert_not_includes response.body, owner.email
+
+    other_user = User.create!(email: "organizer_contact_other@example.com")
+    post session_url, params: { email: other_user.email }
+    get game_url(game)
+    assert_response :success
+    assert_select '[data-testid="game-organizer-admin"]', 0
+    assert_select '[data-testid="game-onboarding"]', 0
+    assert_not_includes response.body, owner.email
+
+    delete sign_out_url
+    post session_url, params: { email: owner.email }
+    get game_url(game)
+    assert_response :success
+    assert_select '[data-testid="game-organizer-admin"]', 0
+
+    delete sign_out_url
+    admin = User.create!(email: "organizer_contact_admin@example.com", admin: true)
+    post session_url, params: { email: admin.email }
+    get game_url(game)
+    assert_response :success
+    assert_select '[data-testid="game-organizer-admin"]', 1
+    assert_includes response.body, owner.email
+    assert_select 'a[href=?]', "mailto:#{owner.email}"
+    assert_select 'a[href=?]', "https://t.me/private_organizer"
+  end
 end

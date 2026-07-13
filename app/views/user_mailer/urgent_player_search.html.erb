@@ -1,0 +1,23 @@
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; color: #1e1b4b;">
+  <h1 style="font-size: 22px; font-weight: 700; margin: 0 0 16px;">
+    <span style="color: #1e1b4b;">Get</span><span style="color: #7c6fea;">Court</span>
+  </h1>
+
+  <p style="font-size: 15px; line-height: 1.5;"><%= t("user_mailer.urgent_player_search.greeting", name: @user.name.presence || @user.email) %></p>
+  <p style="font-size: 15px; line-height: 1.5;"><%= t("user_mailer.urgent_player_search.intro", owner: @owner, city: @game.court.city_name) %></p>
+
+  <div style="background: #f3f4fb; border: 1px solid rgba(99,102,241,0.2); border-radius: 12px; padding: 16px; margin: 18px 0;">
+    <p style="margin: 0 0 8px;"><strong><%= t("user_mailer.urgent_player_search.date") %>:</strong> <%= [@date, @time].compact.join(" · ") %></p>
+    <p style="margin: 0 0 8px;"><strong><%= t("user_mailer.urgent_player_search.court") %>:</strong> <%= @game.court.name %></p>
+    <p style="margin: 0 0 8px;"><strong><%= t("user_mailer.urgent_player_search.sport") %>:</strong> <%= @sport %></p>
+    <p style="margin: 0;"><strong><%= t("user_mailer.urgent_player_search.level") %>:</strong> <%= @skill %></p>
+  </div>
+
+  <p style="margin: 20px 0;">
+    <a href="<%= @game_url %>" style="display: inline-block; border-radius: 6px; background: #4f46e5; padding: 10px 16px; color: #fff; text-decoration: none;"><%= t("user_mailer.urgent_player_search.view_game") %></a>
+  </p>
+
+  <p style="font-size: 12px; color: #777; line-height: 1.5;">
+    <%= t("user_mailer.urgent_player_search.manage_html", url: @notifications_url) %>
+  </p>
+</div>

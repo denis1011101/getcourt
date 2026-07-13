@@ -1,0 +1,5 @@
+<%= turbo_frame_tag "featured_post_translation" do %>
+  <% if @text_en.present? %>
+    <p class="text-sm text-gray-800 dark:text-slate-200 whitespace-pre-line"><%= @text_en %></p>
+  <% end %>
+<% end %>

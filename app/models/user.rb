@@ -1,5 +1,5 @@
 class User < ApplicationRecord
-  before_validation :normalize_email, :titleize_city_name
+  before_validation :normalize_email, :titleize_city_name, :set_default_nearby_notification_channel
   before_validation :set_default_registration_source, on: :create
 
   has_one :player_statistic, dependent: :destroy
@@ -38,7 +38,12 @@ class User < ApplicationRecord
   attribute :telegram_locale, :string, default: "ru"
 
   TELEGRAM_LOCALES = %w[ru en].freeze
+  WEB_LOCALES = %w[en es ru].freeze
+  NEARBY_NOTIFICATION_CHANNELS = %w[email telegram].freeze
+
   validates :telegram_locale, inclusion: { in: TELEGRAM_LOCALES }, allow_blank: true
+  validates :locale, inclusion: { in: WEB_LOCALES }, allow_blank: true
+  validates :nearby_notification_channel, inclusion: { in: NEARBY_NOTIFICATION_CHANNELS }
 
   # возвращает уровень для спорта (строка или nil)
   def skill_level_for(sport)
@@ -142,6 +147,10 @@ class User < ApplicationRecord
   def set_default_registration_source
     self.registration_source = "email" if registration_source.blank?
     true  # явно возвращаем true
+  end
+
+  def set_default_nearby_notification_channel
+    self.nearby_notification_channel ||= telegram_chat_id.present? ? "telegram" : "email"
   end
 
   def skill_levels_values_valid

@@ -26,17 +26,4 @@
           class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition text-sm font-medium decoration-0" %>
   </div>
 
-  <div>
-    <label class="inline-flex items-center gap-2">
-      <%= f.check_box :notify_nearby, class: "h-4 w-4 text-indigo-600" %>
-      <span class="text-sm text-gray-700 dark:text-slate-300">Notify me about nearby searches</span>
-    </label>
-    <p class="text-xs text-gray-500 dark:text-slate-400 mt-1">Receive notifications when someone searches for players near you.</p>
-  </div>
-
-  <div class="mt-4 flex items-center gap-3">
-    <%= f.submit "Save Changes", class: "rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 cursor-pointer" %>
-    <%= link_to "Back", edit_account_path,
-      class: "inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5" %>
-  </div>
 </div>

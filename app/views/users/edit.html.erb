@@ -3,11 +3,6 @@
 <div class="max-w-3xl mx-auto px-4 py-6">
   <h1 class="text-xl font-semibold mb-4">Account</h1>
 
-  <div class="mb-6 rounded-lg border bg-white p-4 shadow-sm dark:border-white/10 dark:bg-slate-800/80">
-    <%= render partial: "player_statistics/summary",
-               locals: { user: @user, stats: @player_statistic, matches: @recent_matches, names_by_id: @names_by_id } %>
-  </div>
-
   <div class="mb-6 flex flex-wrap gap-3">
     <%= link_to games_account_path,
           class: "inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition" do %>
@@ -47,6 +42,43 @@
         <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15M7.5 4.5h12v12M4.5 7.5v12h12"/>
       </svg>
       Court preferences
+    <% end %>
+  </div>
+
+  <% stats = @player_statistic %>
+  <% total_games = stats ? stats.singles_games.to_i + stats.doubles_games.to_i : 0 %>
+  <% has_stats = stats.present? && (stats.singles_rating.present? || stats.doubles_rating.present? || stats.total_hours.to_f > 0 || total_games > 0) %>
+
+  <div class="rounded-lg border bg-white p-4 shadow-sm dark:border-white/10 dark:bg-slate-800/80">
+    <div class="flex items-center justify-between gap-3">
+      <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300">Statistics</h2>
+      <% if has_stats %>
+        <%= link_to "View full statistics →", user_player_statistic_path(@user),
+              class: "shrink-0 text-sm text-indigo-600 hover:underline dark:text-indigo-400" %>
+      <% end %>
+    </div>
+
+    <% if has_stats %>
+      <div class="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div>
+          <p class="text-xs text-gray-500 dark:text-slate-400">Singles rating</p>
+          <p class="text-lg font-semibold text-gray-900 dark:text-slate-100"><%= stats.singles_rating.present? ? stats.singles_rating.to_f.round(1) : "—" %></p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500 dark:text-slate-400">Doubles rating</p>
+          <p class="text-lg font-semibold text-gray-900 dark:text-slate-100"><%= stats.doubles_rating.present? ? stats.doubles_rating.to_f.round(1) : "—" %></p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500 dark:text-slate-400">Hours played</p>
+          <p class="text-lg font-semibold text-gray-900 dark:text-slate-100"><%= stats.total_hours %>h</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-500 dark:text-slate-400">Games</p>
+          <p class="text-lg font-semibold text-gray-900 dark:text-slate-100"><%= total_games %></p>
+        </div>
+      </div>
+    <% else %>
+      <p class="mt-2 text-sm text-gray-600 dark:text-slate-400">No statistics yet.</p>
     <% end %>
   </div>
 </div>

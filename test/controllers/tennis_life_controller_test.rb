@@ -20,59 +20,103 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should get index" do
-    stub_singleton(TennisLife::TelegramPostsFetcher, :random_post, nil) do
+    TelegramPost.delete_all
+    stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, nil) do
       get tennis_life_index_url
+
       assert_response :success
+      assert_includes response.body, I18n.t("tennis_life.index.no_posts")
     end
   end
 
-  test "index shows random telegram post link when present" do
+  test "featured post remains stable inside the cache window" do
+    previous_cache = Rails.cache
+    Rails.cache = ActiveSupport::Cache::MemoryStore.new
+    samples = 0
+    posts = Object.new
+    posts.define_singleton_method(:empty?) { false }
+    posts.define_singleton_method(:sample) do
+      samples += 1
+      SAMPLE_POST.merge("text" => "Post #{samples}")
+    end
+
+    stub_singleton(TennisLife::TelegramPostsFetcher, :fetch_posts, posts) do
+      first = TennisLife::TelegramPostsFetcher.featured_post
+      second = TennisLife::TelegramPostsFetcher.featured_post
+
+      assert_equal first, second
+      assert_equal 1, samples
+    end
+  ensure
+    Rails.cache = previous_cache if previous_cache
+    TennisLife::TelegramPostsFetcher.singleton_class.send(:private, :fetch_posts)
+  end
+
+  test "index shows featured telegram post link when present" do
     TelegramPost.delete_all
-    stub_singleton(TennisLife::TelegramPostsFetcher, :random_post, SAMPLE_POST) do
+    stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, SAMPLE_POST) do
       get tennis_life_index_url
       assert_response :success
       assert_select "a[href='#{SAMPLE_POST["url"]}']"
     end
   end
 
-  test "index renders telegram widget for random post with valid url" do
+  test "index renders telegram widget for featured post with valid url" do
     TelegramPost.delete_all
-    stub_singleton(TennisLife::TelegramPostsFetcher, :random_post, SAMPLE_POST) do
+    stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, SAMPLE_POST) do
       get tennis_life_index_url
       assert_response :success
       assert_select "script[data-telegram-post='test/42']"
     end
   end
 
-  test "index renders original text and enqueues async translation on cache miss" do
+  test "index renders a featured translation frame without translating synchronously" do
     TelegramPost.delete_all
 
-    stub_singleton(Ai::TranslationService, :translate_to_english, ->(_) { raise "should not be called in controller" }) do
-      stub_singleton(TennisLife::TelegramPostsFetcher, :random_post, SAMPLE_POST) do
+    stub_singleton(TranslationCache, :fetch, ->(_) { raise "should not be called by index" }) do
+      stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, SAMPLE_POST) do
         get tennis_life_index_url
 
         assert_response :success
         assert_includes response.body, SAMPLE_POST["text"]
-        assert_equal 1, ActiveJob::Base.queue_adapter.enqueued_jobs.count
-        assert_equal TranslateCachedTextJob, ActiveJob::Base.queue_adapter.enqueued_jobs.last[:job]
-        assert_equal [ SAMPLE_POST["text"] ], ActiveJob::Base.queue_adapter.enqueued_jobs.last[:args]
+        assert_select "turbo-frame#featured_post_translation[src=?]", tennis_life_featured_translation_path
+        assert_empty ActiveJob::Base.queue_adapter.enqueued_jobs
       end
     end
   end
 
-  test "index uses cached translation without enqueuing job" do
-    TelegramPost.delete_all
-    TranslationCache.create!(
-      text_hash: Digest::MD5.hexdigest(SAMPLE_POST["text"]),
-      text_en: "Great match!"
-    )
+  test "featured translation renders translated text in its turbo frame" do
+    stub_singleton(TranslationCache, :fetch, "Great match!") do
+      stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, SAMPLE_POST) do
+        get tennis_life_featured_translation_url
 
-    stub_singleton(TennisLife::TelegramPostsFetcher, :random_post, SAMPLE_POST) do
-      get tennis_life_index_url
+        assert_response :success
+        assert_not_includes response.body, "<!DOCTYPE html>"
+        assert_select "turbo-frame#featured_post_translation", count: 1 do
+          assert_select "p", text: "Great match!"
+        end
+      end
+    end
+  end
+
+  test "featured translation falls back to original text" do
+    stub_singleton(TranslationCache, :fetch, nil) do
+      stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, SAMPLE_POST) do
+        get tennis_life_featured_translation_url
+
+        assert_response :success
+        assert_select "turbo-frame#featured_post_translation", text: SAMPLE_POST["text"]
+      end
+    end
+  end
+
+  test "featured translation renders an empty frame without a featured post" do
+    stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, nil) do
+      get tennis_life_featured_translation_url
 
       assert_response :success
-      assert_includes response.body, "Great match!"
-      assert_equal 0, ActiveJob::Base.queue_adapter.enqueued_jobs.count
+      assert_select "turbo-frame#featured_post_translation", count: 1
+      assert_select "turbo-frame#featured_post_translation p", count: 0
     end
   end
 
@@ -90,7 +134,7 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
       played_at: Time.current
     )
 
-    stub_singleton(TennisLife::TelegramPostsFetcher, :random_post, nil) do
+    stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, nil) do
       get tennis_life_index_url
 
       assert_response :success
@@ -109,7 +153,7 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
       played_at: Time.current
     )
 
-    stub_singleton(TennisLife::TelegramPostsFetcher, :random_post, nil) do
+    stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, nil) do
       get tennis_life_index_url
 
       assert_response :success
@@ -134,7 +178,7 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
       published_at: Time.current
     )
 
-    stub_singleton(TennisLife::TelegramPostsFetcher, :random_post, nil) do
+    stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, nil) do
       get tennis_life_index_url
 
       assert_response :success
@@ -161,7 +205,7 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
       published_at: Time.current
     )
 
-    stub_singleton(TennisLife::TelegramPostsFetcher, :random_post, nil) do
+    stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, nil) do
       get tennis_life_index_url
 
       assert_response :success

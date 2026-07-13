@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_09_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_13_192647) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -358,10 +358,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_09_090000) do
     t.text "court_preferences_note"
     t.datetime "created_at", null: false
     t.string "email"
+    t.string "locale"
     t.string "login_code"
     t.datetime "login_code_sent_at"
     t.string "login_via"
     t.string "name"
+    t.string "nearby_notification_channel"
     t.boolean "notify_nearby", default: false, null: false
     t.datetime "onboarded_at"
     t.string "preferred_login_via"

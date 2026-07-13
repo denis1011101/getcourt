@@ -22,4 +22,34 @@ class UserMailerTest < ActionMailer::TestCase
     assert_match "9999", body
     assert_match "10 минут", body
   end
+
+  test "urgent player search email includes game links and respects web locale" do
+    owner = User.create!(email: "mailer_owner@example.com")
+    recipient = User.create!(email: "mailer_recipient@example.com", name: "Player", locale: "es")
+    court = Court.create!(name: "Central Court", city_name: "Madrid")
+    game = Game.create!(
+      court: court,
+      user: owner,
+      date: Date.current + 1.day,
+      time: "20:00",
+      sport: "Tennis",
+      skill_level: "advanced"
+    )
+
+    mail = UserMailer.urgent_player_search(recipient, game)
+    body = mail.parts.map(&:decoded).join
+
+    assert_equal "Se necesitan jugadores para un partido en Madrid", mail.subject
+    assert_equal [ recipient.email ], mail.to
+    assert_includes body, Rails.application.routes.url_helpers.game_url(game, host: "example.com")
+    assert_includes body, Rails.application.routes.url_helpers.notifications_account_url(host: "example.com")
+    assert_includes body, "Central Court"
+    assert_includes body, "Usuario de GetCourt ##{owner.id}"
+    assert_not_includes body, owner.email
+  ensure
+    game&.destroy
+    court&.destroy
+    recipient&.destroy
+    owner&.destroy
+  end
 end

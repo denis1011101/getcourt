@@ -5,6 +5,8 @@ class LocaleController < ApplicationController
     locale = params[:locale].to_s
     return head :bad_request unless ApplicationHelper::SEO_INDEXABLE_LOCALES.include?(locale)
 
+    current_user&.update_column(:locale, locale)
+
     cookies[:preferred_locale] = shared_cookie_options(
       value: locale,
       expires: 1.year.from_now,

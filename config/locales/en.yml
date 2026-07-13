@@ -96,6 +96,20 @@ en:
       intro: "Your login code is below. Enter it on the verification page to sign in."
       expiry: "The code expires in 10 minutes."
       ignore: "If you didn't request it, you can ignore this email."
+    urgent_player_search:
+      subject: "Players needed for a game in %{city}"
+      greeting: "Hi %{name},"
+      intro: "%{owner} is urgently looking for players for a game in %{city}."
+      organizer_fallback: "GetCourt user #%{id}"
+      date: "Date"
+      court: "Court"
+      sport: "Sport"
+      level: "Level"
+      any_sport: "Any"
+      any_level: "Any"
+      view_game: "View game"
+      manage_html: "You received this because nearby game alerts are enabled. <a href='%{url}'>Manage notifications</a>."
+      manage_text: "Manage notifications"
   sessions:
     privacy_consent_html: "I agree to the <a href='%{url}' class='text-indigo-600 dark:text-indigo-400 hover:underline' target='_blank'>Privacy Policy</a> and consent to processing my email for authentication"
     age_consent: "I confirm I am at least 16 years old"
@@ -158,6 +172,38 @@ en:
       add_player_label: "Add registered player"
       add_player_prompt: "Select player..."
       stats_locked: "Statistics entry is available after the game starts and only for the creator or admin."
+      onboarding:
+        title: "Get your game ready"
+        description: "Complete these steps to help players find and join your game."
+        items:
+          join:
+            title: "Join your game"
+            description: "Confirm that you are playing, not only organizing."
+            action: "Join game"
+          city:
+            title: "Add your city"
+            description: "Your city helps us connect you with nearby players."
+            action: "Add city"
+          telegram:
+            title: "Connect Telegram"
+            description: "Receive game updates and reminders from the GetCourt bot."
+            action: "Connect Telegram"
+          player_search:
+            title: "Announce your player search"
+            description: "Let nearby players know that your game has open spots."
+            action: "Announce search"
+      organizer:
+        title: "Organizer"
+        user_id: "User ID"
+        name: "Name"
+        email: "Email"
+        registered_at: "Registered"
+        city: "City"
+        telegram: "Telegram"
+        telegram_connected: "Connected"
+        telegram_not_connected: "Not connected"
+        registration_source: "Registration source"
+        not_set: "Not set"
     threads:
       headline: "🎾 Looking for %{sport} players in %{city}!"
       date_line: "📅 %{date} at %{time}"
@@ -384,6 +430,17 @@ en:
     delete_account_body: "This will permanently delete your account and all associated data. This action cannot be undone."
     delete_account_confirm: "Delete your account and all data? This cannot be undone."
     delete_account_button: "Delete my account"
+    notifications:
+      nearby_title: "Urgent player search alerts"
+      nearby_help: "Get notified when an organizer urgently needs players in your city."
+      nearby_enabled: "Notify me about urgent player searches nearby"
+      channel: "Notification channel"
+      channel_email: "Email"
+      channel_telegram: "Telegram"
+      telegram_required: "Telegram delivery requires a connected Telegram account."
+      city_required_html: "Add your <a href='%{url}' class='underline'>city</a> to receive nearby alerts."
+      save: "Save changes"
+      back: "Back"
     edit:
       court_preferences_title: "Court preferences"
       court_preferences_mode_favorites: "Choose favorite courts"

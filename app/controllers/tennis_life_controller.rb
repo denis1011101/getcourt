@@ -1,5 +1,5 @@
 class TennisLifeController < ApplicationController
-  skip_before_action :authenticate_user!, only: %i[index statistics]
+  skip_before_action :authenticate_user!, only: %i[index statistics featured_translation]
 
   FEED_LIMIT = 20
   RATING_LIMIT = 10
@@ -8,11 +8,7 @@ class TennisLifeController < ApplicationController
   def index
     @season_label = Season.current_label
     @tennis_score_raw = TennisScoreboard::Fetcher.raw_text
-    @random_telegram_post = TennisLife::TelegramPostsFetcher.random_post
-    if @random_telegram_post && (text = @random_telegram_post["text"].to_s.strip).present?
-      @random_post_text_en = TranslationCache.read(text)
-      TranslationCache.enqueue(text) if @random_post_text_en.blank?
-    end
+    @random_telegram_post = TennisLife::TelegramPostsFetcher.featured_post
 
     @feed_posts = TelegramPost
       .includes(:telegram_channel)
@@ -43,6 +39,13 @@ class TennisLifeController < ApplicationController
     @season_label = Season.current_label
     @rating_rows = build_rating_rows
     @pagy, @recent_matches = pagy_array(build_recent_match_events)
+  end
+
+  def featured_translation
+    post = TennisLife::TelegramPostsFetcher.featured_post
+    text = post && post["text"].to_s.strip.presence
+    @text_en = text && (TranslationCache.fetch(text).presence || text)
+    render layout: false
   end
 
   private

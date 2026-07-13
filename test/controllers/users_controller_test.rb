@@ -56,7 +56,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     user&.destroy
   end
 
-  test "account page shows current user statistics" do
+  test "account page shows a statistics teaser linking to the full stats page" do
     user_email = "account_stats_#{SecureRandom.hex(4)}@example.com"
     post session_url, params: { email: user_email }
     user = User.find_by!(email: user_email)
@@ -66,7 +66,9 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_includes response.body, "Statistics"
-    assert_includes response.body, "Singles: 2.5h"
+    assert_includes response.body, "2.5h"
+    assert_includes response.body, "View full statistics"
+    assert_select "a[href=?]", user_player_statistic_path(user)
   ensure
     user&.destroy
   end
@@ -191,13 +193,37 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
     patch account_url, params: {
       section: "notifications",
-      user: { notify_nearby: "1" }
+      user: { notify_nearby: "1", nearby_notification_channel: "email" }
     }
 
     assert_redirected_to notifications_account_path
-    assert_equal true, user.reload.notify_nearby
+    user.reload
+    assert_equal true, user.notify_nearby
+    assert_equal "email", user.nearby_notification_channel
   ensure
     user&.destroy
+  end
+
+  test "notifications page shows nearby notification channel selector" do
+    user_email = "notifications_channel_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: user_email }
+
+    get notifications_account_url
+
+    assert_response :success
+    assert_select "select[name='user[nearby_notification_channel]']" do
+      assert_select "option[value='email']"
+      assert_select "option[value='telegram']"
+    end
+    assert_not_includes response.body, I18n.t("users.notifications.telegram_required")
+
+    user = User.find_by!(email: user_email)
+    user.update!(nearby_notification_channel: "telegram")
+    get notifications_account_url
+
+    assert_includes response.body, I18n.t("users.notifications.telegram_required")
+  ensure
+    User.find_by(email: user_email)&.destroy if defined?(user_email)
   end
 
   test "security update redirects back to security" do
