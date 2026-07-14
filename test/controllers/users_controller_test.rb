@@ -68,7 +68,9 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Statistics"
     assert_includes response.body, "2.5h"
     assert_includes response.body, "View full statistics"
-    assert_select "a[href=?]", user_player_statistic_path(user)
+    # Teaser link opens the on-page stats modal (CSS :target), not a bare page.
+    assert_select "a[href=?]", "#player-stats-#{user.id}"
+    assert_select "##{"player-stats-#{user.id}"}.ps-modal"
   ensure
     user&.destroy
   end

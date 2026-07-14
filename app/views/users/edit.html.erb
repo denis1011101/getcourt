@@ -53,8 +53,8 @@
     <div class="flex items-center justify-between gap-3">
       <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300">Statistics</h2>
       <% if has_stats %>
-        <%= link_to "View full statistics →", user_player_statistic_path(@user),
-              class: "shrink-0 text-sm text-indigo-600 hover:underline dark:text-indigo-400" %>
+        <a href="#player-stats-<%= @user.id %>" data-turbo="false"
+           class="shrink-0 text-sm text-indigo-600 hover:underline dark:text-indigo-400">View full statistics →</a>
       <% end %>
     </div>
 
@@ -81,4 +81,9 @@
       <p class="mt-2 text-sm text-gray-600 dark:text-slate-400">No statistics yet.</p>
     <% end %>
   </div>
+
+  <% if has_stats %>
+    <%= render partial: "player_statistics/modal",
+               locals: { user: @user, stats: @player_statistic, matches: @recent_matches, names_by_id: @names_by_id } %>
+  <% end %>
 </div>
