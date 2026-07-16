@@ -1,6 +1,6 @@
 module PlayerStatistics
   class UpsertMatchForGameService
-    def initialize(user:, game:, actor:, mode:, won: nil, outcome: nil, played_at: nil, opponent: nil, score: nil, hours: nil, stats: {}, force_new: false)
+    def initialize(user:, game:, actor:, mode:, won: nil, outcome: nil, played_at: nil, opponent: nil, score: nil, hours: nil, stats: {}, force_new: false, match: nil)
       @user = user
       @game = game
       @actor = actor
@@ -19,6 +19,7 @@ module PlayerStatistics
       @hours = hours
       @stats = stats || {}
       @force_new = force_new
+      @match = match
     end
 
     def call
@@ -56,6 +57,8 @@ module PlayerStatistics
     private
 
     def find_or_init_match(played_at)
+      return @match if @match
+
       played_date = played_at.to_date
       return find_or_init_manual_match(played_date) if @game.nil?
       return Match.new(user: @user, game: @game, mode: @mode) if @force_new

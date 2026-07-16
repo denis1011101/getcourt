@@ -1,12 +1,19 @@
+<% match_groups = PlayerStatistics::MatchGroups.for_game(game) %>
 <%= form_with url: game_player_statistics_path(game), method: :post, data: { turbo: false }, class: "space-y-4" do %>
-  <div data-controller="stats-matches" data-stats-matches-next-index-value="1" class="space-y-4">
+  <div data-controller="stats-matches" data-stats-matches-next-index-value="<%= [ match_groups.size, 1 ].max %>" class="space-y-4">
     <div>
       <label class="mb-1 block text-sm text-gray-600 dark:text-slate-400"><%= t("games.show.hours") %></label>
       <%= number_field_tag "statistics[hours]", nil, step: 0.1, min: 0, class: "w-32 rounded border-gray-300 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
     </div>
 
     <div data-stats-matches-target="container" class="space-y-4">
-      <%= render "games/stats_match_block", game: game, index: 0, removable: false %>
+      <% if match_groups.any? %>
+        <% match_groups.each_with_index do |group, i| %>
+          <%= render "games/stats_match_block", game: game, index: i, removable: false, group: group %>
+        <% end %>
+      <% else %>
+        <%= render "games/stats_match_block", game: game, index: 0, removable: false %>
+      <% end %>
     </div>
 
     <button type="button"

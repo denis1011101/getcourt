@@ -4,7 +4,8 @@ module Telegram
       module MatchUpserter
         module_function
 
-        def call(game:, actor:, mode:, team_a_ids:, team_b_ids:, result:, played_at:, score:, force_new: false, team_a_guest_names: [], team_b_guest_names: [])
+        def call(game:, actor:, mode:, team_a_ids:, team_b_ids:, result:, played_at:, score:, force_new: false, team_a_guest_names: [], team_b_guest_names: [], group_id: nil)
+          group_id ||= SecureRandom.uuid
           team_a_ids = team_a_ids.map(&:to_i)
           team_b_ids = team_b_ids.map(&:to_i)
           team_a_guest_names = Array(team_a_guest_names).map(&:to_s).map(&:strip).reject(&:blank?)
@@ -32,6 +33,7 @@ module Telegram
 
             opponent = (mode == "singles") ? by_id[team_b_ids.first] : nil
             stats = build_stats(actor:, team_a_ids:, team_b_ids:, team_a_guest_names:, team_b_guest_names:, uid:, mode:, is_team_a: true)
+            stats["match_group_id"] = group_id
 
             PlayerStatistics::UpsertMatchForGameService.new(
               user:, game:, actor:, mode:,
@@ -45,6 +47,7 @@ module Telegram
 
             opponent = (mode == "singles") ? by_id[team_a_ids.first] : nil
             stats = build_stats(actor:, team_a_ids:, team_b_ids:, team_a_guest_names:, team_b_guest_names:, uid:, mode:, is_team_a: false)
+            stats["match_group_id"] = group_id
 
             PlayerStatistics::UpsertMatchForGameService.new(
               user:, game:, actor:, mode:,

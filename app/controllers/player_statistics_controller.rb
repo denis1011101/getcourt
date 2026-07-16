@@ -80,8 +80,13 @@ class PlayerStatisticsController < ApplicationController
         next unless (team_a_ids + team_b_ids).any?
         next unless %w[a b draw].include?(winner)
 
-        upsert_matches_for_teams(game, team_a_ids, team_b_ids, team_a_guests, team_b_guests, score, winner, force_new: true)
-        saved_any = true
+        group_id = m[:group_id].to_s.presence
+        if group_id && sync_match_group(game, group_id, team_a_ids, team_b_ids, team_a_guests, team_b_guests, score, winner)
+          saved_any = true
+        else
+          upsert_matches_for_teams(game, team_a_ids, team_b_ids, team_a_guests, team_b_guests, score, winner, force_new: true)
+          saved_any = true
+        end
       end
 
       if saved_any
@@ -127,7 +132,7 @@ def matches_params
   list.map do |m|
     next nil unless m.respond_to?(:permit)
 
-    m.permit(:score, :winner_team, :team_a_guests, :team_b_guests, team_a_user_ids: [], team_b_user_ids: [], team_a_guest_names: [], team_b_guest_names: [])
+    m.permit(:score, :winner_team, :group_id, :team_a_guests, :team_b_guests, team_a_user_ids: [], team_b_user_ids: [], team_a_guest_names: [], team_b_guest_names: [])
   end.compact
 end
 
@@ -179,32 +184,57 @@ end
     Array(value).join(",").split(",").map { |name| name.strip[0, 50] }.reject(&:blank?).first(2)
   end
 
-  def upsert_matches_for_teams(game, team_a_ids, team_b_ids, team_a_guests, team_b_guests, score, winner, force_new: false)
-    played_at =
-      if game.respond_to?(:starts_at) && game.starts_at.present?
-        game.starts_at
-      elsif game.respond_to?(:date) && game.date.present?
-        game.date.to_time
-      else
-        Time.current
-      end
+  def sync_match_group(game, group_id, team_a_ids, team_b_ids, team_a_guests, team_b_guests, score, winner)
+    PlayerStatistics::SyncMatchGroupService.new(
+      game: game,
+      actor: current_user,
+      group_id: group_id,
+      mode: mode_for_teams(team_a_ids, team_b_ids, team_a_guests, team_b_guests),
+      team_a_ids: team_a_ids,
+      team_b_ids: team_b_ids,
+      team_a_guest_names: team_a_guests,
+      team_b_guest_names: team_b_guests,
+      result: winner == "draw" ? :draw : winner.to_sym,
+      played_at: played_at_for_game(game),
+      score: score
+    ).call
+  end
 
-    mode = ((team_a_ids.size + team_a_guests.size) >= 2 || (team_b_ids.size + team_b_guests.size) >= 2) ? "doubles" : "singles"
+  def upsert_matches_for_teams(game, team_a_ids, team_b_ids, team_a_guests, team_b_guests, score, winner, force_new: false)
     result = winner == "draw" ? :draw : winner.to_sym
 
     Telegram::Flows::StatsScore::MatchUpserter.call(
       game: game,
       actor: current_user,
-      mode: mode,
+      mode: mode_for_teams(team_a_ids, team_b_ids, team_a_guests, team_b_guests),
       team_a_ids: team_a_ids,
       team_b_ids: team_b_ids,
       team_a_guest_names: team_a_guests,
       team_b_guest_names: team_b_guests,
       result: result,
-      played_at: played_at,
+      played_at: played_at_for_game(game),
       score: score,
       force_new: force_new
     )
+  end
+
+  def played_at_for_game(game)
+    # Use the current occurrence for recurring games so the match lands inside
+    # current_cycle_start and stays visible/editable in the stats form.
+    occurrence = game.respond_to?(:start_at_for_ui) ? game.start_at_for_ui : nil
+    return occurrence if occurrence.present?
+
+    if game.respond_to?(:starts_at) && game.starts_at.present?
+      game.starts_at
+    elsif game.respond_to?(:date) && game.date.present?
+      game.date.to_time
+    else
+      Time.current
+    end
+  end
+
+  def mode_for_teams(team_a_ids, team_b_ids, team_a_guests, team_b_guests)
+    ((team_a_ids.size + team_a_guests.size) >= 2 || (team_b_ids.size + team_b_guests.size) >= 2) ? "doubles" : "singles"
   end
 
   def increment_activity_for_game!(game)

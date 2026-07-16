@@ -7,7 +7,7 @@
      data-score-board-recognition-failed-label-value="<%= t("score_recognitions.errors.recognition_failed") %>"
      data-score-board-invalid-set-label-value="<%= t("games.show.score_board.invalid_set") %>"
      data-score-board-names-hint-template-value="<%= t("games.show.score_board.names_hint", top: "__TOP__", bottom: "__BOTTOM__") %>">
-  <%= hidden_field_tag "matches[#{index}][score]", nil, data: { score_board_target: "score" } %>
+  <%= hidden_field_tag "matches[#{index}][score]", local_assigns[:score].presence, id: nil, data: { score_board_target: "score" } %>
 
   <div class="overflow-x-auto rounded-md border border-gray-200 p-2 dark:border-white/10">
     <div class="flex min-w-max gap-2">

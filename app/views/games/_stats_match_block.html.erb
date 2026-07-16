@@ -7,10 +7,20 @@
 <% else %>
   <% guest_participations = [] %>
 <% end %>
+<% group = local_assigns[:group] %>
+<% prefill_a_ids = group ? group[:team_a_ids] : [] %>
+<% prefill_b_ids = group ? group[:team_b_ids] : [] %>
+<% prefill_a_guests = group ? group[:team_a_guest_names] : [] %>
+<% prefill_b_guests = group ? group[:team_b_guest_names] : [] %>
 <% participants = participants.compact.uniq { |u| u.id } %>
+<% extra_ids = (prefill_a_ids + prefill_b_ids) - participants.map(&:id) %>
+<% participants += User.where(id: extra_ids).to_a if extra_ids.any? %>
 <% addable_users = User.where.not(id: participants.map(&:id)).where.not(name: [nil, ""]).order(:name).limit(200) %>
 
 <div data-stats-match-block class="rounded border border-gray-200 p-3 dark:border-white/10">
+  <% if group && group[:group_id] %>
+    <%= hidden_field_tag "matches[#{index}][group_id]", group[:group_id], id: nil %>
+  <% end %>
   <div class="mb-3 flex items-center justify-between">
     <h3 class="text-sm font-semibold text-gray-700 dark:text-slate-300">Game <%= index.is_a?(Integer) ? index + 1 : "__NUMBER__" %></h3>
     <% if removable %>
@@ -29,20 +39,20 @@
         <% participants.each do |u| %>
           <% label = u.respond_to?(:name) && u.name.present? ? u.name : u.email %>
           <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-            <%= check_box_tag "matches[#{index}][team_a_user_ids][]", u.id, false, class: "rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+            <%= check_box_tag "matches[#{index}][team_a_user_ids][]", u.id, prefill_a_ids.include?(u.id), class: "rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
             <span><%= label %></span>
           </label>
         <% end %>
         <% guest_participations.each do |gp| %>
           <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-            <%= check_box_tag "matches[#{index}][team_a_guest_names][]", gp.guest_name, false, class: "rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+            <%= check_box_tag "matches[#{index}][team_a_guest_names][]", gp.guest_name, prefill_a_guests.include?(gp.guest_name), class: "rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
             <span><%= gp.guest_name %> (<%= t("games.show.guest_badge") %>)</span>
           </label>
         <% end %>
       </div>
       <div class="mt-3">
         <label class="mb-1 block text-sm text-gray-600 dark:text-slate-400"><%= t("games.show.guest_label") %></label>
-        <%= text_field_tag "matches[#{index}][team_a_guests]", nil, placeholder: t("games.show.guest_placeholder"), class: "w-full rounded border-gray-300 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+        <%= text_field_tag "matches[#{index}][team_a_guests]", (prefill_a_guests - guest_participations.map(&:guest_name)).join(", ").presence, placeholder: t("games.show.guest_placeholder"), class: "w-full rounded border-gray-300 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
       </div>
       <div class="mt-3"
            data-controller="team-players"
@@ -72,20 +82,20 @@
         <% participants.each do |u| %>
           <% label = u.respond_to?(:name) && u.name.present? ? u.name : u.email %>
           <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-            <%= check_box_tag "matches[#{index}][team_b_user_ids][]", u.id, false, class: "rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+            <%= check_box_tag "matches[#{index}][team_b_user_ids][]", u.id, prefill_b_ids.include?(u.id), class: "rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
             <span><%= label %></span>
           </label>
         <% end %>
         <% guest_participations.each do |gp| %>
           <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-            <%= check_box_tag "matches[#{index}][team_b_guest_names][]", gp.guest_name, false, class: "rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+            <%= check_box_tag "matches[#{index}][team_b_guest_names][]", gp.guest_name, prefill_b_guests.include?(gp.guest_name), class: "rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
             <span><%= gp.guest_name %> (<%= t("games.show.guest_badge") %>)</span>
           </label>
         <% end %>
       </div>
       <div class="mt-3">
         <label class="mb-1 block text-sm text-gray-600 dark:text-slate-400"><%= t("games.show.guest_label") %></label>
-        <%= text_field_tag "matches[#{index}][team_b_guests]", nil, placeholder: t("games.show.guest_placeholder"), class: "w-full rounded border-gray-300 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+        <%= text_field_tag "matches[#{index}][team_b_guests]", (prefill_b_guests - guest_participations.map(&:guest_name)).join(", ").presence, placeholder: t("games.show.guest_placeholder"), class: "w-full rounded border-gray-300 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
       </div>
       <div class="mt-3"
            data-controller="team-players"
@@ -114,22 +124,22 @@
     <div>
       <span class="mb-2 block text-sm text-gray-600 dark:text-slate-400"><%= t("games.show.winner") %></span>
       <label class="mb-1 flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-        <%= radio_button_tag "matches[#{index}][winner_team]", "a" %>
+        <%= radio_button_tag "matches[#{index}][winner_team]", "a", group && group[:winner] == "a" %>
         <span><%= t("games.show.team_a") %></span>
       </label>
       <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-        <%= radio_button_tag "matches[#{index}][winner_team]", "b" %>
+        <%= radio_button_tag "matches[#{index}][winner_team]", "b", group && group[:winner] == "b" %>
         <span><%= t("games.show.team_b") %></span>
       </label>
       <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-        <%= radio_button_tag "matches[#{index}][winner_team]", "draw" %>
+        <%= radio_button_tag "matches[#{index}][winner_team]", "draw", group && group[:winner] == "draw" %>
         <span><%= t("games.show.draw") %></span>
       </label>
     </div>
 
     <div class="min-w-0">
       <label class="mb-1 block text-sm text-gray-600 dark:text-slate-400"><%= t("games.show.score") %></label>
-      <%= render "games/score_board", index: index %>
+      <%= render "games/score_board", index: index, score: group ? group[:score] : nil %>
     </div>
   </div>
 </div>

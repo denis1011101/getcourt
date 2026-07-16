@@ -349,4 +349,99 @@ class PlayerStatisticsControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ opponent_one.id, opponent_two.id ].sort, matches.map(&:opponent_id).sort
     assert_equal 2.5, denis.player_statistic.reload.singles_hours
   end
+
+  test "game show prefills saved match into the stats form" do
+    post session_url, params: { email: "stats_prefill_owner@example.com" }
+    owner = User.find_by!(email: "stats_prefill_owner@example.com")
+    participant = User.create!(email: "stats_prefill_participant@example.com", name: "Prefill Participant")
+    game = Game.create!(court: courts(:one), user: owner, date: Date.yesterday, time: "10:00", with_coach: false)
+    Participation.create!(game: game, user: participant, status: "approved")
+
+    post game_player_statistics_url(game), params: {
+      matches: {
+        "0" => {
+          score: "6-4 6-7(5) 10-8",
+          team_a_user_ids: [ owner.id ],
+          team_b_user_ids: [ participant.id ],
+          winner_team: "a"
+        }
+      }
+    }
+
+    get game_url(game)
+
+    assert_response :success
+    group_id = Match.where(game_id: game.id).first.stats.to_h.fetch("match_group_id")
+    assert_includes response.body, group_id
+    assert_includes response.body, 'value="6-4 6-7(5) 10-8"'
+  end
+
+  test "game show prefills saved match for a recurring game in the current cycle" do
+    post session_url, params: { email: "stats_recurring_owner@example.com" }
+    owner = User.find_by!(email: "stats_recurring_owner@example.com")
+    participant = User.create!(email: "stats_recurring_participant@example.com", name: "Recurring Participant")
+    game = Game.create!(court: courts(:one), user: owner, date: Date.current - 14.days, time: "10:00", recurring: true, with_coach: false)
+    Participation.create!(game: game, user: participant, status: "approved")
+
+    post game_player_statistics_url(game), params: {
+      matches: {
+        "0" => {
+          score: "6-2 6-2",
+          team_a_user_ids: [ owner.id ],
+          team_b_user_ids: [ participant.id ],
+          winner_team: "a"
+        }
+      }
+    }
+
+    match = Match.where(game_id: game.id).first
+    assert_operator match.played_at, :>=, game.current_cycle_start
+
+    get game_url(game)
+
+    assert_response :success
+    assert_includes response.body, match.stats.to_h.fetch("match_group_id")
+    assert_includes response.body, 'value="6-2 6-2"'
+  end
+
+  test "score upsert with group_id updates the match instead of duplicating it" do
+    post session_url, params: { email: "stats_edit_owner@example.com" }
+    owner = User.find_by!(email: "stats_edit_owner@example.com")
+    participant = User.create!(email: "stats_edit_participant@example.com", name: "Edit Participant")
+    game = Game.create!(court: courts(:one), user: owner, date: Date.yesterday, time: "10:00", with_coach: false)
+    Participation.create!(game: game, user: participant, status: "approved")
+
+    post game_player_statistics_url(game), params: {
+      matches: {
+        "0" => {
+          score: "6-4 6-4",
+          team_a_user_ids: [ owner.id ],
+          team_b_user_ids: [ participant.id ],
+          winner_team: "a"
+        }
+      }
+    }
+    group_id = Match.where(game_id: game.id).first.stats.to_h.fetch("match_group_id")
+
+    post game_player_statistics_url(game), params: {
+      matches: {
+        "0" => {
+          group_id: group_id,
+          score: "4-6 4-6",
+          team_a_user_ids: [ owner.id ],
+          team_b_user_ids: [ participant.id ],
+          winner_team: "b"
+        }
+      }
+    }
+
+    assert_redirected_to game_path(game)
+    assert_equal 2, Match.where(game_id: game.id).count
+    assert_equal [ "4-6 4-6" ], Match.where(game_id: game.id).pluck(:score).uniq
+
+    owner_stats = owner.player_statistic.reload
+    assert_equal 1, owner_stats.singles_games
+    assert_equal 0, owner_stats.singles_wins
+    assert_equal 1, owner_stats.singles_losses
+  end
 end
