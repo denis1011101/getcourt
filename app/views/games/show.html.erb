@@ -212,6 +212,9 @@
       </div>
 
       <% if can_fill_stats && game_started %>
+        <div class="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+          <%= t("account.games.fairness_warning") %>
+        </div>
         <%= render "games/stats_form", game: @game %>
       <% else %>
         <p class="text-gray-600 dark:text-slate-400 text-sm"><%= t("games.show.stats_locked") %></p>

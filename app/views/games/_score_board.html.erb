@@ -9,61 +9,67 @@
      data-score-board-names-hint-template-value="<%= t("games.show.score_board.names_hint", top: "__TOP__", bottom: "__BOTTOM__") %>">
   <%= hidden_field_tag "matches[#{index}][score]", local_assigns[:score].presence, id: nil, data: { score_board_target: "score" } %>
 
-  <div class="overflow-x-auto rounded-md border border-gray-200 p-2 dark:border-white/10">
-    <div class="flex min-w-max gap-2">
-      <div class="w-32 shrink-0">
-        <div class="h-8"></div>
-        <div class="flex h-12 items-center gap-1 text-sm font-medium text-gray-700 dark:text-slate-300">
-          <span data-score-board-target="topLabel"><%= t("games.show.team_a") %></span>
-          <button type="button"
-                  data-action="score-board#swap"
-                  title="<%= t("games.show.score_board.swap") %>"
-                  aria-label="<%= t("games.show.score_board.swap") %>"
-                  class="rounded px-1 text-lg text-indigo-600 hover:bg-indigo-50 dark:text-indigo-300 dark:hover:bg-slate-700">⇅</button>
-        </div>
-        <div class="flex h-12 items-center text-sm font-medium text-gray-700 dark:text-slate-300">
-          <span data-score-board-target="bottomLabel"><%= t("games.show.team_b") %></span>
-        </div>
-      </div>
-
-      <div data-score-board-target="sets" class="flex gap-2"></div>
-
+  <div class="rounded-md border border-gray-200 p-2 dark:border-white/10">
+    <div class="flex items-center gap-2 pb-1">
+      <span class="w-12 shrink-0"></span>
+      <span data-score-board-target="topLabel" class="min-w-0 flex-1 truncate text-center text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("games.show.team_a") %></span>
       <button type="button"
-              data-score-board-target="addButton"
-              data-action="score-board#addSet"
-              class="self-start whitespace-nowrap rounded border border-indigo-300 px-2 py-1 text-xs text-indigo-700 hover:bg-indigo-50 dark:border-white/15 dark:text-slate-100 dark:hover:bg-slate-700/60">
-        + <%= t("games.show.score_board.add_set") %>
-      </button>
+              data-action="score-board#swap"
+              title="<%= t("games.show.score_board.swap") %>"
+              aria-label="<%= t("games.show.score_board.swap") %>"
+              class="w-8 shrink-0 rounded text-center text-lg leading-none text-indigo-600 hover:bg-indigo-50 dark:text-indigo-300 dark:hover:bg-slate-700">⇄</button>
+      <span data-score-board-target="bottomLabel" class="min-w-0 flex-1 truncate text-center text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("games.show.team_b") %></span>
+      <span class="w-6 shrink-0"></span>
     </div>
+
+    <div data-score-board-target="sets" class="space-y-1"></div>
+
+    <button type="button"
+            data-score-board-target="addButton"
+            data-action="score-board#addSet"
+            class="mt-2 whitespace-nowrap rounded border border-indigo-300 px-2 py-1 text-xs text-indigo-700 hover:bg-indigo-50 dark:border-white/15 dark:text-slate-100 dark:hover:bg-slate-700/60">
+      + <%= t("games.show.score_board.add_set") %>
+    </button>
   </div>
 
   <template data-score-board-target="template">
-    <div data-score-board-target="set" class="w-24 shrink-0 rounded border border-transparent px-1 pb-1">
-      <div class="flex h-8 items-center justify-center gap-1 text-xs text-gray-500 dark:text-slate-400">
-        <span data-role="set-label"></span>
-        <button type="button"
-                data-role="remove-set"
-                data-action="score-board#removeSet"
-                title="<%= t("games.show.score_board.remove_set") %>"
-                aria-label="<%= t("games.show.score_board.remove_set") %>"
-                class="rounded px-1 hover:bg-gray-100 dark:hover:bg-slate-700">×</button>
+    <div data-score-board-target="set" class="flex items-center gap-2 rounded border border-transparent px-1 py-1">
+      <span data-role="set-label" class="w-12 shrink-0 text-xs text-gray-500 dark:text-slate-400"></span>
+      <div class="flex min-w-0 flex-1 items-center justify-center gap-1">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off"
+               data-role="top"
+               data-action="input->score-board#scoreChanged"
+               aria-label="<%= t("games.show.score_board.top_score") %>"
+               class="w-12 rounded border-gray-300 px-1 py-1 text-center text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off"
+               data-role="tiebreak-top"
+               data-action="input->score-board#scoreChanged"
+               aria-label="<%= t("games.show.score_board.tiebreak") %>"
+               class="hidden w-8 rounded border-gray-300 px-0 py-1 text-center text-xs dark:border-white/15 dark:bg-slate-700 dark:text-slate-100">
       </div>
-      <% %w[top bottom].each do |side| %>
-        <div class="flex h-12 items-center justify-center gap-1">
-          <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off"
-                 data-role="<%= side %>"
-                 data-action="input->score-board#scoreChanged"
-                 aria-label="<%= t("games.show.score_board.#{side}_score") %>"
-                 class="w-12 rounded border-gray-300 px-1 py-1 text-center text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100">
-          <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off"
-                 data-role="tiebreak-<%= side %>"
-                 data-action="input->score-board#scoreChanged"
-                 aria-label="<%= t("games.show.score_board.tiebreak") %>"
-                 class="hidden w-8 rounded border-gray-300 px-0 py-1 text-center text-xs dark:border-white/15 dark:bg-slate-700 dark:text-slate-100">
-        </div>
-      <% end %>
+      <span class="w-8 shrink-0 text-center text-gray-400 dark:text-slate-500">:</span>
+      <div class="flex min-w-0 flex-1 items-center justify-center gap-1">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off"
+               data-role="bottom"
+               data-action="input->score-board#scoreChanged"
+               aria-label="<%= t("games.show.score_board.bottom_score") %>"
+               class="w-12 rounded border-gray-300 px-1 py-1 text-center text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off"
+               data-role="tiebreak-bottom"
+               data-action="input->score-board#scoreChanged"
+               aria-label="<%= t("games.show.score_board.tiebreak") %>"
+               class="hidden w-8 rounded border-gray-300 px-0 py-1 text-center text-xs dark:border-white/15 dark:bg-slate-700 dark:text-slate-100">
+      </div>
+      <button type="button"
+              data-role="remove-set"
+              data-action="score-board#removeSet"
+              title="<%= t("games.show.score_board.remove_set") %>"
+              aria-label="<%= t("games.show.score_board.remove_set") %>"
+              class="w-6 shrink-0 rounded text-center hover:bg-gray-100 dark:hover:bg-slate-700">×</button>
     </div>
   </template>
+
+  <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.show.score_board.tiebreak_hint") %></p>
 
   <div class="mt-2 flex flex-wrap items-center justify-between gap-2">
     <div>
