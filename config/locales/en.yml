@@ -28,6 +28,12 @@
 #       enabled: "ON"
 
 en:
+  score_recognitions:
+    errors:
+      photo_required: "Choose a photo."
+      invalid_photo_type: "Use a JPEG, PNG, WebP, HEIC, or HEIF image."
+      photo_too_large: "The photo must be 10 MB or smaller."
+      recognition_failed: "Could not recognize the score. Try another photo."
   account:
     games:
       fairness_warning: "Please enter scores and stats honestly. If we detect manipulation (inflated scores, fake matches, rating farming), the administration may require you to verify the games and results before they count towards your rating."
@@ -162,7 +168,18 @@ en:
       winner: "Winner"
       draw: "Draw"
       score: "Score"
-      score_hint_html: "Format: <code>6-4 6-7(5) 10-8</code> — sets separated by spaces. Tiebreak score in parentheses, e.g. <code>(5)</code> means the loser got 5 points in the tiebreak."
+      score_board:
+        set: "Set"
+        add_set: "set"
+        remove_set: "Remove set"
+        swap: "Swap rows"
+        recognize: "Recognize from photo"
+        recognizing: "Recognizing..."
+        invalid_set: "This set looks unusual. Check the score before saving."
+        names_hint: "Looks like top: %{top}; bottom: %{bottom}."
+        top_score: "Top team score"
+        bottom_score: "Bottom team score"
+        tiebreak: "Tiebreak score"
       hours: "Hours of play"
       add_game: "Add another game"
       guest_label: "Guest (not registered)"

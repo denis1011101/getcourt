@@ -1,5 +1,3 @@
-require "timeout"
-
 module Ai
   class AssistantService
     REQUEST_TIMEOUT = 30
@@ -58,54 +56,20 @@ module Ai
     end
 
     def chat(message, locale:, history: [], timeout_seconds: REQUEST_TIMEOUT)
-      attempts = 0
-      Timeout.timeout(timeout_seconds) do
-        begin
-          attempts += 1
-          Rails.logger.info "[Ai::AssistantService] chat attempt=#{attempts} key_index=#{self.class.current_key_index} message=#{message.inspect}"
-          self.class.apply_current_key!
+      Ai::GeminiKeys.with_rotation(timeout_seconds: timeout_seconds, max_attempts: MAX_KEY_RETRIES) do |attempt|
+        Rails.logger.info "[Ai::AssistantService] chat attempt=#{attempt} key_index=#{Ai::GeminiKeys.current_key_index} message=#{message.inspect}"
 
-          chat = RubyLLM.chat(model: ENV.fetch("GEMINI_MODEL", "gemini-2.5-flash"))
-            .with_tool(Ai::Tools::FindOpponentTool.new(@user))
-            .with_tool(Ai::Tools::FindCourtTool.new(@user))
-            .with_tool(Ai::Tools::FindCoachTool.new(@user))
-            .with_tool(Ai::Tools::RecordMatchStatsTool.new(@user))
+        chat = RubyLLM.chat(model: ENV.fetch("GEMINI_MODEL", "gemini-2.5-flash"))
+          .with_tool(Ai::Tools::FindOpponentTool.new(@user))
+          .with_tool(Ai::Tools::FindCourtTool.new(@user))
+          .with_tool(Ai::Tools::FindCoachTool.new(@user))
+          .with_tool(Ai::Tools::RecordMatchStatsTool.new(@user))
 
-          chat.with_instructions(SYSTEM_PROMPT % { locale: locale.to_s, user_info: user_info })
-          hydrate_history(chat, history)
-          response = chat.ask(message.to_s)
-          Rails.logger.info "[Ai::AssistantService] response=#{response.content.to_s.truncate(200)}"
-          response.content.to_s
-        rescue RubyLLM::RateLimitError => e
-          if attempts < [ MAX_KEY_RETRIES, self.class.api_keys.size ].min
-            Rails.logger.warn "[Ai::AssistantService] rate limit on key ##{self.class.current_key_index}, rotating..."
-            self.class.rotate_key!
-            retry
-          end
-          raise
-        end
-      end
-    end
-
-    class << self
-      def api_keys
-        @api_keys ||= ENV.fetch("GEMINI_API_KEYS", ENV.fetch("GEMINI_API_KEY", ""))
-          .split(",").map(&:strip).reject(&:empty?)
-      end
-
-      def current_key_index
-        @current_key_index || 0
-      end
-
-      def rotate_key!
-        @current_key_index = (current_key_index + 1) % api_keys.size
-        apply_current_key!
-      end
-
-      def apply_current_key!
-        return if api_keys.empty?
-
-        RubyLLM.configure { |c| c.gemini_api_key = api_keys[current_key_index] }
+        chat.with_instructions(SYSTEM_PROMPT % { locale: locale.to_s, user_info: user_info })
+        hydrate_history(chat, history)
+        response = chat.ask(message.to_s)
+        Rails.logger.info "[Ai::AssistantService] response=#{response.content.to_s.truncate(200)}"
+        response.content.to_s
       end
     end
 

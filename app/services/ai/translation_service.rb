@@ -5,23 +5,19 @@ module Ai
     def self.translate_to_english(text)
       return nil if text.to_s.strip.blank?
 
-      Ai::AssistantService.apply_current_key!
-      chat = RubyLLM.chat(model: ENV.fetch("GEMINI_MODEL", "gemini-2.5-flash"))
-      chat.ask(<<~PROMPT)
-        Translate the following text to English. Return only the translation, no comments, no quotes.
+      Ai::GeminiKeys.with_rotation do
+        chat = RubyLLM.chat(model: ENV.fetch("GEMINI_MODEL", "gemini-2.5-flash"))
+        chat.ask(<<~PROMPT)
+          Translate the following text to English. Return only the translation, no comments, no quotes.
 
-        #{text}
-      PROMPT
-      .content
-      .to_s
-      .strip
-      .presence
-    rescue RubyLLM::RateLimitError => e
-      if Ai::AssistantService.api_keys.size > 1
-        Rails.logger.warn("[Ai::TranslationService] Rate limit, rotating key...")
-        Ai::AssistantService.rotate_key!
-        retry
+          #{text}
+        PROMPT
+        .content
+        .to_s
+        .strip
+        .presence
       end
+    rescue RubyLLM::RateLimitError => e
       Rails.logger.error("[Ai::TranslationService] Rate limit on all keys: #{e.message}")
       nil
     rescue => e

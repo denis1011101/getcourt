@@ -1,4 +1,10 @@
 es:
+  score_recognitions:
+    errors:
+      photo_required: "Selecciona una foto."
+      invalid_photo_type: "Sube una imagen JPEG, PNG, WebP, HEIC o HEIF."
+      photo_too_large: "La foto debe ocupar 10 MB o menos."
+      recognition_failed: "No se pudo reconocer el marcador. Prueba con otra foto."
   account:
     games:
       fairness_warning: "Introduce los resultados y estadísticas con honestidad. Si detectamos manipulación (resultados inflados, partidos falsos, granjeo de rating), la administración podrá solicitar verificación de los partidos antes de que cuenten para tu rating."
@@ -133,7 +139,18 @@ es:
       winner: "Ganador"
       draw: "Empate"
       score: "Marcador"
-      score_hint_html: "Formato: <code>6-4 6-7(5) 10-8</code> — sets separados por espacios. Tanteo del tie-break entre paréntesis, por ejemplo <code>(5)</code> indica que el perdedor sumó 5 puntos en el tie-break."
+      score_board:
+        set: "Set"
+        add_set: "set"
+        remove_set: "Eliminar set"
+        swap: "Intercambiar filas"
+        recognize: "Reconocer desde una foto"
+        recognizing: "Reconociendo..."
+        invalid_set: "Este set parece inusual. Comprueba el marcador antes de guardarlo."
+        names_hint: "Parece que arriba: %{top}; abajo: %{bottom}."
+        top_score: "Marcador del equipo de arriba"
+        bottom_score: "Marcador del equipo de abajo"
+        tiebreak: "Marcador del tie-break"
       hours: "Horas de juego"
       add_game: "Añadir otro partido"
       guest_label: "Invitado (sin registro)"

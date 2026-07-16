@@ -12,7 +12,7 @@ class Ai::TranslationServiceTest < ActiveSupport::TestCase
     fake_chat = Object.new
     fake_chat.define_singleton_method(:ask) { |_| fake_message }
 
-    stub_singleton(Ai::AssistantService, :apply_current_key!, -> { }) do
+    stub_singleton(Ai::GeminiKeys, :apply_current_key!, -> { }) do
       stub_singleton(RubyLLM, :chat, ->(_opts) { fake_chat }) do
         result = Ai::TranslationService.translate_to_english("Дрэйпер о поражении от Опелки")
         assert_equal "Draper on defeat by Opelka", result
@@ -21,7 +21,7 @@ class Ai::TranslationServiceTest < ActiveSupport::TestCase
   end
 
   test "returns nil and logs on unexpected error" do
-    stub_singleton(Ai::AssistantService, :apply_current_key!, -> { }) do
+    stub_singleton(Ai::GeminiKeys, :apply_current_key!, -> { }) do
       stub_singleton(RubyLLM, :chat, ->(_opts) { raise StandardError, "oops" }) do
         assert_nil Ai::TranslationService.translate_to_english("Привет")
       end
