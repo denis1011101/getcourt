@@ -68,6 +68,19 @@ en:
       result: "Result"
       photo_credit: "Photo"
       about_fallback: "%{title} is scheduled for %{date}. Follow the match details and use GetCourt to organize your own tennis, padel, squash or table tennis games nearby."
+      wallchart:
+        before_title: "Before kickoff"
+        before_p1: "Every big tournament, my dad's office had the same ritual: someone printed the full match schedule, with little empty cells next to every game, and everyone filled in their scores with a pen."
+        before_p2: "Wallchart '26 is that sheet of paper, online. No ads, no money, no passwords. Sign in by email, predict the final score, see what other people have predicted, and may the best guesser win."
+        locked_title: "The predictions are in"
+        locked_p2: "Wallchart '26 is that sheet of paper, online. The predictions are locked in now — the final decides who guessed best."
+        predict_cta: "Make your prediction"
+        watch_title: "Watch the final together"
+        watch_intro: "After making your prediction, come and watch the final with us at Moment, a hookah lounge in Yekaterinburg:"
+        venue_name: "Moment"
+        venue_kind: "Hookah lounge"
+        venue_address: "20 Lenina Avenue, Yekaterinburg"
+        maps_cta: "Open in Yandex Maps"
   layout:
     nav:
       home: "Home"
@@ -127,8 +140,13 @@ en:
       subtitle_telegram: "We sent a 4‑digit code via Telegram for you. Enter it below."
   wallchart_banner:
     label: "World Cup 2026 · 104 matches · one winner"
-    subtitle: "The office prediction pool, online only."
-    cta: "Open my sheet"
+    predict:
+      title: "Make your final prediction"
+      body: "Pick the score on Wallchart '26 and see everyone else's predictions."
+    watch:
+      eyebrow: "Live in Yekaterinburg"
+      title: "Watch the final together"
+      body: "Join us for the final at Moment hookah lounge, 20 Lenina Avenue, Yekaterinburg."
   games:
     index:
       hero_title: "Find your next game"

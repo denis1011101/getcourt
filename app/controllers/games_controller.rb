@@ -9,7 +9,7 @@ class GamesController < ApplicationController
   helper_method :display_date, :display_time, :game_badges
 
   def index
-    @featured_match = FeaturedMatch.current.first unless helpers.wallchart_banner_active?
+    @featured_match = FeaturedMatch.current.first
     @sports = SportCatalog::SPORTS
     @skill_levels = Game.where.not(skill_level: [ nil, "" ]).distinct.order(:skill_level).pluck(:skill_level)
 

@@ -2,6 +2,7 @@ module ApplicationHelper
   SEO_PRIMARY_HOST = "getcourt.co".freeze
   SEO_INDEXABLE_LOCALES = %w[en ru es].freeze
   WALLCHART_BANNER_UNTIL = Date.new(2026, 7, 20)
+  WALLCHART_CAMPAIGN = "world_cup_2026_final".freeze
 
   def self.host_for_locale(locale)
     locale.to_s == I18n.default_locale.to_s ? SEO_PRIMARY_HOST : "#{locale}.#{SEO_PRIMARY_HOST}"
@@ -34,6 +35,31 @@ module ApplicationHelper
 
   def wallchart_banner_active?
     Date.current < WALLCHART_BANNER_UNTIL
+  end
+
+  # The single Wallchart '26 final: the active, not-yet-finished featured match
+  # that kicks off within the promo season. The start-date bound keeps the promo
+  # copy off unrelated matches featured after the tournament.
+  def wallchart_final?(featured_match)
+    featured_match.active? &&
+      featured_match.status != "finished" &&
+      featured_match.starts_at.to_date <= WALLCHART_BANNER_UNTIL
+  end
+
+  # Stimulus data attributes for tracking a Wallchart '26 link/element with Ahoy.
+  # Pass a click_event to track clicks, and/or a view_event to track a 50%-visible
+  # impression via IntersectionObserver.
+  def wallchart_analytics_data(featured_match, click_event: nil, view_event: nil)
+    data = {
+      controller: "wallchart-analytics",
+      wallchart_analytics_campaign_value: WALLCHART_CAMPAIGN,
+      wallchart_analytics_event_slug_value: featured_match.slug,
+      wallchart_analytics_locale_value: I18n.locale
+    }
+    data[:action] = "click->wallchart-analytics#click" if click_event
+    data[:wallchart_analytics_click_event_value] = click_event if click_event
+    data[:wallchart_analytics_view_event_value] = view_event if view_event
+    data
   end
 
   def telegram_profile_url(username)

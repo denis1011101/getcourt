@@ -39,6 +39,19 @@ es:
       result: "Resultado"
       photo_credit: "Foto"
       about_fallback: "%{title} está programado para %{date}. Sigue los detalles del partido y usa GetCourt para organizar tus propios partidos de tenis, pádel, squash o tenis de mesa cerca de ti."
+      wallchart:
+        before_title: "Antes del pitido inicial"
+        before_p1: "En cada gran torneo, la oficina de mi padre tenía el mismo ritual: alguien imprimía el calendario completo de partidos, con celdas vacías junto a cada juego, y todos escribían sus marcadores con bolígrafo."
+        before_p2: "Wallchart '26 es esa hoja de papel, pero online. Sin anuncios, sin dinero, sin contraseñas. Entra con tu correo, predice el marcador de la final, mira lo que han predicho los demás y que gane el mejor adivinador."
+        locked_title: "Las predicciones están hechas"
+        locked_p2: "Wallchart '26 es esa hoja de papel, pero online. Las predicciones ya están hechas: la final decidirá quién acertó mejor."
+        predict_cta: "Hacer mi predicción"
+        watch_title: "Ver la final juntos"
+        watch_intro: "Después de hacer tu predicción, ven a ver la final con nosotros en Moment, un salón de cachimbas en Ekaterimburgo:"
+        venue_name: "Moment"
+        venue_kind: "Salón de cachimbas"
+        venue_address: "Avenida Lenin 20, Ekaterimburgo"
+        maps_cta: "Abrir en Yandex Maps"
   layout:
     nav:
       home: "Inicio"
@@ -98,8 +111,13 @@ es:
       subtitle_telegram: "Te hemos enviado un código de 4 dígitos por Telegram. Introdúcelo abajo."
   wallchart_banner:
     label: "Mundial 2026 · 104 partidos · un ganador"
-    subtitle: "La porra de la oficina, solo online."
-    cta: "Abrir mi porra"
+    predict:
+      title: "Haz tu predicción de la final"
+      body: "Elige el marcador en Wallchart '26 y mira las predicciones de los demás."
+    watch:
+      eyebrow: "En Ekaterimburgo"
+      title: "Ver la final juntos"
+      body: "Ven a ver la final en el salón de cachimbas Moment, Avenida Lenin 20, Ekaterimburgo."
   games:
     index:
       hero_title: "Encuentra tu próximo partido"

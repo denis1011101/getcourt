@@ -1,34 +1,58 @@
-<%= link_to "https://wallchart26.com/?utm_source=getcourt&utm_medium=banner", target: "_blank", rel: "noopener",
-      class: "group block no-underline text-inherit mb-6" do %>
-  <section class="relative overflow-hidden rounded-2xl border border-gray-200 bg-white px-6 py-4 md:px-10 md:py-5 shadow-sm transition hover:shadow-md dark:bg-slate-900 dark:border-white/10">
-    <!-- Decorative bracket lines -->
-    <svg aria-hidden="true" class="pointer-events-none absolute right-6 md:right-12 top-1/2 -translate-y-1/2 w-24 h-16 md:w-32 md:h-22 text-emerald-700 opacity-[0.08] dark:text-emerald-400 dark:opacity-[0.1]" viewBox="0 0 140 100" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M4 12 h28 M4 36 h28 M32 12 v24 M32 24 h28"/>
-      <path d="M4 64 h28 M4 88 h28 M32 64 v24 M32 76 h28"/>
-      <path d="M60 24 v52 M60 50 h28"/>
-      <path d="M88 50 h28"/>
-      <circle cx="126" cy="50" r="8"/>
-    </svg>
-
-    <div class="relative flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-      <div>
-        <div class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
+<%= link_to event_path(featured_match), rel: "noopener",
+      class: "group block no-underline text-inherit mb-6",
+      data: {
+        turbo_prefetch: false,
+        controller: "featured-match wallchart-analytics",
+        action: "click->wallchart-analytics#click",
+        featured_match_starts_at_value: featured_match.starts_at.iso8601,
+        featured_match_started_text_value: t("featured_match.starts_now"),
+        wallchart_analytics_campaign_value: ApplicationHelper::WALLCHART_CAMPAIGN,
+        wallchart_analytics_event_slug_value: featured_match.slug,
+        wallchart_analytics_locale_value: I18n.locale,
+        wallchart_analytics_view_event_value: "wallchart_banner_viewed",
+        wallchart_analytics_click_event_value: "wallchart_banner_clicked"
+      } do %>
+  <section class="relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md dark:bg-slate-900 dark:border-white/10">
+    <div class="flex flex-col md:flex-row md:items-stretch">
+      <!-- Make your final prediction — Wallchart '26 (green accent) -->
+      <div class="flex-1 px-5 py-3.5 md:px-6">
+        <div class="text-[11px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
           <%= t("wallchart_banner.label") %>
         </div>
-        <div class="mt-1 text-xl md:text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white">
-          Wallchart&nbsp;'26
+        <div class="mt-0.5 text-base md:text-lg font-extrabold tracking-tight text-gray-900 dark:text-white">
+          <%= t("wallchart_banner.predict.title") %>
         </div>
-        <p class="mt-1 text-sm text-gray-500 dark:text-slate-400">
-          <%= t("wallchart_banner.subtitle") %>
+        <p class="mt-0.5 text-sm text-gray-500 dark:text-slate-400">
+          <%= t("wallchart_banner.predict.body") %>
         </p>
       </div>
 
-      <span class="inline-flex items-center justify-center gap-2 flex-shrink-0 rounded-lg bg-emerald-700 px-5 py-2 text-sm font-semibold text-white transition group-hover:bg-emerald-800">
-        <%= t("wallchart_banner.cta") %>
-        <svg class="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
-        </svg>
-      </span>
+      <!-- Countdown to kickoff -->
+      <div class="flex flex-row items-center justify-center gap-x-2 px-5 py-3 border-y border-gray-200 md:flex-col md:gap-x-0 md:border-y-0 md:border-x dark:border-white/10"
+           aria-label="<%= t("featured_match.starts_in") %>">
+        <span class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500" data-featured-match-target="days"></span>
+        <span class="font-mono text-2xl md:text-3xl font-bold leading-none tabular-nums text-gray-900 dark:text-white" data-featured-match-target="time">--:--:--</span>
+      </div>
+
+      <!-- Watch the final together — Moment hookah space (blue accent + logo) -->
+      <div class="flex flex-1 items-center gap-3 px-5 py-3.5 md:px-6">
+        <%= render "shared/moment_logo", classes: "w-10 h-10" %>
+        <div>
+          <div class="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-[#1666c0] dark:text-[#5aa2e6]">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
+            </svg>
+            <%= t("wallchart_banner.watch.eyebrow") %>
+          </div>
+          <div class="mt-0.5 text-base md:text-lg font-extrabold tracking-tight text-gray-900 dark:text-white">
+            <%= t("wallchart_banner.watch.title") %>
+          </div>
+          <p class="mt-0.5 text-sm text-gray-500 dark:text-slate-400">
+            <%= t("wallchart_banner.watch.body") %>
+          </p>
+        </div>
+      </div>
     </div>
   </section>
 <% end %>

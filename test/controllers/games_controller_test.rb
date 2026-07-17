@@ -7,7 +7,27 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
-  test "index does not query featured match while wallchart banner is active" do
+  test "index loads featured match so the wallchart banner links to its event" do
+    travel_to ApplicationHelper::WALLCHART_BANNER_UNTIL - 1.day do
+      featured_match = FeaturedMatch.create!(
+        tournament_label: "Roland Garros Final",
+        player_left_name: "M. Andreeva",
+        player_right_name: "M. Kostyuk",
+        starts_at: 1.day.from_now,
+        active: true
+      )
+
+      get root_url
+
+      assert_response :success
+      assert_equal featured_match, @controller.instance_variable_get(:@featured_match)
+      assert_includes @response.body, event_path(featured_match)
+      assert_not_includes @response.body, "featured-match-banner"
+      assert_not_includes @response.body, "wallchart26.com"
+    end
+  end
+
+  test "wallchart banner opts out of turbo prefetch to avoid inflating event views" do
     travel_to ApplicationHelper::WALLCHART_BANNER_UNTIL - 1.day do
       FeaturedMatch.create!(
         tournament_label: "Roland Garros Final",
@@ -17,21 +37,10 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
         active: true
       )
 
-      featured_match_queries = []
-      subscriber = ActiveSupport::Notifications.subscribe("sql.active_record") do |*args|
-        sql = args.last[:sql]
-        featured_match_queries << sql if sql.include?("featured_matches")
-      end
-
-      begin
-        get root_url
-      ensure
-        ActiveSupport::Notifications.unsubscribe(subscriber)
-      end
+      get root_url
 
       assert_response :success
-      assert_empty featured_match_queries
-      assert_nil @controller.instance_variable_get(:@featured_match)
+      assert_select "a[data-turbo-prefetch='false']"
     end
   end
 
@@ -51,6 +60,7 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
       assert_equal featured_match, @controller.instance_variable_get(:@featured_match)
       assert_includes @response.body, "featured-match-banner"
       assert_not_includes @response.body, "wallchart26.com"
+      assert_select "a[data-turbo-prefetch='false']"
     end
   end
 

@@ -50,7 +50,8 @@
 <% end %>
 
 <% if linked %>
-  <%= link_to event_path(featured_match), class: "block no-underline text-inherit", aria: { label: featured_match.seo_title } do %>
+  <%= link_to event_path(featured_match), class: "block no-underline text-inherit",
+        data: { turbo_prefetch: false }, aria: { label: featured_match.seo_title } do %>
     <%= banner %>
   <% end %>
 <% else %>

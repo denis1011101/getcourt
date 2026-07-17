@@ -25,7 +25,7 @@ class LocaleControllerTest < ActionDispatch::IntegrationTest
     get set_locale_url(locale: "en", host: "ru.getcourt.co")
 
     assert_redirected_to "https://getcourt.co/"
-    assert_match(/domain=.*getcourt\.co/i, response.headers["Set-Cookie"])
+    assert_match(/domain=.*getcourt\.co/i, Array(response.headers["Set-Cookie"]).join("\n"))
   end
 
   test "redirects with safe return path" do
@@ -51,6 +51,6 @@ class LocaleControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to "/games"
     assert_equal "1", cookies[:locale_banner_dismissed]
-    assert_match(/domain=.*getcourt\.co/i, response.headers["Set-Cookie"])
+    assert_match(/domain=.*getcourt\.co/i, Array(response.headers["Set-Cookie"]).join("\n"))
   end
 end

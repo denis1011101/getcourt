@@ -85,7 +85,7 @@ class FeaturedMatchBannerTest < ApplicationSystemTestCase
 
   test "homepage renders wallchart banner instead of featured match while wallchart is active" do
     travel_to ApplicationHelper::WALLCHART_BANNER_UNTIL - 1.day do
-      FeaturedMatch.create!(
+      featured_match = FeaturedMatch.create!(
         tournament_label: "Roland Garros Final",
         player_left_name: "M. Andreeva",
         player_right_name: "M. Kostyuk",
@@ -95,8 +95,11 @@ class FeaturedMatchBannerTest < ApplicationSystemTestCase
 
       visit root_path
 
-      assert_selector "a[href='https://wallchart26.com/?utm_source=getcourt&utm_medium=banner']"
+      assert_selector "a[href='#{event_path(featured_match)}']", text: "Make your final prediction"
+      assert_text "Watch the final together"
       assert_no_selector ".featured-match-banner"
+      assert_no_selector "a[href^='https://wallchart26.com']"
+      assert_no_selector "a[href^='https://yandex.com/maps']"
     end
   end
 
@@ -175,19 +178,82 @@ class FeaturedMatchBannerTest < ApplicationSystemTestCase
     assert_no_link "Clay · Unknown Court"
   end
 
-  test "event page renders fallback about text without description" do
+  test "event page renders fallback about text for a non-featured match" do
     featured_match = FeaturedMatch.create!(
       tournament_label: "Roland Garros Final",
       player_left_name: "M. Andreeva",
       player_right_name: "M. Kostyuk",
       starts_at: 1.day.from_now,
-      active: true
+      active: false
     )
 
     visit event_path(featured_match)
 
     assert_text "About"
     assert_text "#{featured_match.seo_title} is scheduled for"
+    assert_no_text "Before kickoff"
+    assert_no_selector "a[href^='https://yandex.com/maps']"
+  end
+
+  test "event page renders wallchart promo blocks while wallchart is active" do
+    travel_to ApplicationHelper::WALLCHART_BANNER_UNTIL - 1.day do
+      featured_match = FeaturedMatch.create!(
+        tournament_label: "Roland Garros Final",
+        player_left_name: "M. Andreeva",
+        player_right_name: "M. Kostyuk",
+        starts_at: 1.day.from_now,
+        active: true
+      )
+
+      visit event_path(featured_match)
+
+      assert_text "Before kickoff"
+      assert_text "Watch the final together"
+      assert_selector "a[href='https://wallchart26.com/?utm_source=getcourt&utm_medium=event'][target='_blank'][rel='noopener']", text: "Make your prediction"
+      assert_selector "a[href='https://yandex.com/maps/-/CTFs46~-'][target='_blank'][rel='noopener']", text: "Open in Yandex Maps"
+    end
+  end
+
+  test "event page keeps the venue block after kickoff but hides the prediction cta" do
+    travel_to ApplicationHelper::WALLCHART_BANNER_UNTIL do
+      featured_match = FeaturedMatch.create!(
+        tournament_label: "Roland Garros Final",
+        player_left_name: "M. Andreeva",
+        player_right_name: "M. Kostyuk",
+        starts_at: ApplicationHelper::WALLCHART_BANNER_UNTIL,
+        active: true
+      )
+
+      visit event_path(featured_match)
+
+      assert_text "The predictions are in"
+      assert_text "Watch the final together"
+      assert_text "Hookah lounge"
+      assert_no_text "Before kickoff"
+      assert_selector "a[href='https://yandex.com/maps/-/CTFs46~-'][target='_blank'][rel='noopener']"
+      assert_no_selector "a[href^='https://wallchart26.com']"
+    end
+  end
+
+  test "event page does not show wallchart promo for a later active match after the cutoff" do
+    travel_to ApplicationHelper::WALLCHART_BANNER_UNTIL + 10.days do
+      featured_match = FeaturedMatch.create!(
+        tournament_label: "US Open Final",
+        player_left_name: "C. Alcaraz",
+        player_right_name: "J. Sinner",
+        starts_at: 5.days.from_now,
+        active: true
+      )
+
+      visit event_path(featured_match)
+
+      assert_text "About"
+      assert_text "#{featured_match.seo_title} is scheduled for"
+      assert_no_text "Before kickoff"
+      assert_no_text "Watch the final together"
+      assert_no_selector "a[href^='https://yandex.com/maps']"
+      assert_no_selector "a[href^='https://wallchart26.com']"
+    end
   end
 
   test "event page renders finished result block" do

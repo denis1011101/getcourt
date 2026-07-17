@@ -63,6 +63,12 @@ gem "tdlib-ruby"
 gem "google-cloud-monitoring", require: false
 gem "ruby_llm"
 
+# First-party analytics stored in our own DB [https://github.com/ankane/ahoy]
+gem "ahoy_matey", "~> 5.5"
+
+# Rate limiting for the public Ahoy tracking endpoints [https://github.com/rack/rack-attack]
+gem "rack-attack", "~> 6.7"
+
 # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
 gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
 

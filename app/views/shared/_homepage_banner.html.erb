@@ -1,5 +1,5 @@
-<% if wallchart_banner_active? %>
-  <%= render "shared/wallchart_banner" %>
+<% if wallchart_banner_active? && featured_match.present? %>
+  <%= render "shared/wallchart_banner", featured_match: featured_match %>
 <% elsif featured_match.present? %>
   <%= render "featured_matches/banner", featured_match: featured_match, linked: true %>
 <% end %>
