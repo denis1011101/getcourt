@@ -1,5 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
-import ahoy from "ahoy"
+// ahoy.js is a UMD bundle (from the ahoy_matey gem) — importing it for its side
+// effect defines window.ahoy; there is no ES default export to bind.
+import "ahoy"
 
 // Tracks Wallchart '26 campaign events with Ahoy.
 //
@@ -43,7 +45,9 @@ export default class extends Controller {
   }
 
   track(name) {
-    ahoy.track(name, {
+    if (!window.ahoy) return
+
+    window.ahoy.track(name, {
       campaign: this.campaignValue,
       event_slug: this.eventSlugValue,
       locale: this.localeValue
