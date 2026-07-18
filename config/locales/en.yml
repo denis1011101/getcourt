@@ -57,6 +57,7 @@ en:
   featured_match:
     starts_in: "Starts in"
     starts_now: "Starts now"
+    days_suffix: "d"
     photos: "Match photos"
     seo:
       scheduled: "%{title}. Live on %{date}."

@@ -6,6 +6,7 @@
         action: "click->wallchart-analytics#click",
         featured_match_starts_at_value: featured_match.starts_at.iso8601,
         featured_match_started_text_value: t("featured_match.starts_now"),
+        featured_match_days_suffix_value: t("featured_match.days_suffix"),
         wallchart_analytics_campaign_value: ApplicationHelper::WALLCHART_CAMPAIGN,
         wallchart_analytics_event_slug_value: featured_match.slug,
         wallchart_analytics_locale_value: I18n.locale,
@@ -30,7 +31,7 @@
       <!-- Countdown to kickoff -->
       <div class="flex flex-row items-center justify-center gap-x-2 px-5 py-3 border-y border-gray-200 md:flex-col md:gap-x-0 md:border-y-0 md:border-x dark:border-white/10"
            aria-label="<%= t("featured_match.starts_in") %>">
-        <span class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-slate-500" data-featured-match-target="days"></span>
+        <span class="text-[11px] font-semibold tracking-wide text-gray-400 dark:text-slate-500" data-featured-match-target="days"></span>
         <span class="font-mono text-2xl md:text-3xl font-bold leading-none tabular-nums text-gray-900 dark:text-white" data-featured-match-target="time">--:--:--</span>
       </div>
 

@@ -4,7 +4,8 @@ export default class extends Controller {
   static targets = ["days", "time", "photos"]
   static values = {
     startsAt: String,
-    startedText: String
+    startedText: String,
+    daysSuffix: { type: String, default: "д" }
   }
 
   connect() {
@@ -51,7 +52,7 @@ export default class extends Controller {
     const minutes = Math.floor((totalSeconds % 3600) / 60)
     const seconds = totalSeconds % 60
 
-    this.daysTarget.textContent = days > 0 ? `${days}д` : ""
+    this.daysTarget.textContent = days > 0 ? `${days}${this.daysSuffixValue}` : ""
     this.timeTarget.textContent = [hours, minutes, seconds]
       .map((part) => String(part).padStart(2, "0"))
       .join(":")

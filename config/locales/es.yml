@@ -28,6 +28,7 @@ es:
   featured_match:
     starts_in: "Empieza en"
     starts_now: "Empieza ahora"
+    days_suffix: "d"
     photos: "Fotos del partido"
     seo:
       scheduled: "%{title}. En directo el %{date}."
