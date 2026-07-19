@@ -104,6 +104,20 @@
   font-size: 11px;
 }
 
+.featured-match-banner .cd-status {
+  display: block;
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.featured-match-banner .cd-result {
+  display: block;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .featured-match-banner .banner-bottom {
   display: flex;
   align-items: center;
@@ -198,6 +212,10 @@ html:not(.dark) .featured-match-banner .countdown {
 
 html:not(.dark) .featured-match-banner .cd-days {
   color: rgba(30, 27, 75, 0.5);
+}
+
+html:not(.dark) .featured-match-banner .cd-result {
+  color: rgba(30, 27, 75, 0.6);
 }
 
 html:not(.dark) .featured-match-banner .banner-bottom {

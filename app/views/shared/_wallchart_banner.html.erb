@@ -5,7 +5,7 @@
         controller: "featured-match wallchart-analytics",
         action: "click->wallchart-analytics#click",
         featured_match_starts_at_value: featured_match.starts_at.iso8601,
-        featured_match_started_text_value: t("featured_match.starts_now"),
+        featured_match_started_text_value: t("featured_match.match_started"),
         featured_match_days_suffix_value: t("featured_match.days_suffix"),
         wallchart_analytics_campaign_value: ApplicationHelper::WALLCHART_CAMPAIGN,
         wallchart_analytics_event_slug_value: featured_match.slug,
@@ -30,9 +30,20 @@
 
       <!-- Countdown to kickoff -->
       <div class="flex flex-row items-center justify-center gap-x-2 px-5 py-3 border-y border-gray-200 md:flex-col md:gap-x-0 md:border-y-0 md:border-x dark:border-white/10"
-           aria-label="<%= t("featured_match.starts_in") %>">
-        <span class="text-[11px] font-semibold tracking-wide text-gray-400 dark:text-slate-500" data-featured-match-target="days"></span>
-        <span class="font-mono text-2xl md:text-3xl font-bold leading-none tabular-nums text-gray-900 dark:text-white" data-featured-match-target="time">--:--:--</span>
+           aria-label="<%= featured_match_countdown_label(featured_match) %>">
+        <% if featured_match.status == "finished" %>
+          <span class="flex flex-col items-center text-center">
+            <span class="text-sm md:text-base font-bold text-gray-900 dark:text-white"><%= t("featured_match.match_finished") %></span>
+            <% if featured_match.result.present? %>
+              <span class="mt-0.5 text-xs text-gray-500 dark:text-slate-400"><%= featured_match.result %></span>
+            <% end %>
+          </span>
+        <% elsif featured_match.starts_at.future? %>
+          <span class="text-[11px] font-semibold tracking-wide text-gray-400 dark:text-slate-500" data-featured-match-target="days"></span>
+          <span class="font-mono text-2xl md:text-3xl font-bold leading-none tabular-nums text-gray-900 dark:text-white" data-featured-match-target="time">--:--:--</span>
+        <% else %>
+          <span class="text-sm md:text-base font-bold text-center text-gray-900 dark:text-white"><%= t("featured_match.match_started") %></span>
+        <% end %>
       </div>
 
       <!-- Watch the final together — Moment hookah space (blue accent + logo) -->

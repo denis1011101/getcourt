@@ -29,6 +29,60 @@ class FeaturedMatchBannerTest < ApplicationSystemTestCase
     end
   end
 
+  test "homepage banner shows match started label after kickoff" do
+    travel_to wallchart_banner_expired_at do
+      FeaturedMatch.create!(
+        tournament_label: "Roland Garros Final",
+        player_left_name: "M. Andreeva",
+        player_right_name: "M. Kostyuk",
+        starts_at: 1.hour.ago,
+        active: true
+      )
+
+      visit root_path
+
+      assert_selector ".featured-match-banner"
+      assert_text "Match started"
+    end
+  end
+
+  test "homepage banner shows match finished label and result" do
+    travel_to wallchart_banner_expired_at do
+      FeaturedMatch.create!(
+        tournament_label: "Roland Garros Final",
+        player_left_name: "M. Andreeva",
+        player_right_name: "M. Kostyuk",
+        starts_at: 1.day.ago,
+        status: "finished",
+        result: "6-4 6-4",
+        active: true
+      )
+
+      visit root_path
+
+      assert_selector ".featured-match-banner"
+      assert_text "Match finished"
+      assert_text "6-4 6-4"
+    end
+  end
+
+  test "homepage banner is hidden when match is deactivated" do
+    travel_to wallchart_banner_expired_at do
+      FeaturedMatch.create!(
+        tournament_label: "Roland Garros Final",
+        player_left_name: "M. Andreeva",
+        player_right_name: "M. Kostyuk",
+        starts_at: 1.hour.ago,
+        active: false
+      )
+
+      visit root_path
+
+      assert_no_selector ".featured-match-banner"
+      assert_no_text "Roland Garros Final"
+    end
+  end
+
   test "homepage meta is not overridden by featured match" do
     travel_to wallchart_banner_expired_at do
       FeaturedMatch.create!(

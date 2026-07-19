@@ -1,7 +1,7 @@
 module ApplicationHelper
   SEO_PRIMARY_HOST = "getcourt.co".freeze
   SEO_INDEXABLE_LOCALES = %w[en ru es].freeze
-  WALLCHART_BANNER_UNTIL = Date.new(2026, 7, 20)
+  WALLCHART_BANNER_UNTIL = Date.new(2026, 7, 22)
   WALLCHART_CAMPAIGN = "world_cup_2026_final".freeze
 
   def self.host_for_locale(locale)
@@ -44,6 +44,18 @@ module ApplicationHelper
     featured_match.active? &&
       featured_match.status != "finished" &&
       featured_match.starts_at.to_date <= WALLCHART_BANNER_UNTIL
+  end
+
+  # Accessible label for the banner countdown region, matching what's shown:
+  # the pre-kickoff countdown, the live "match started" state, or the finished one.
+  def featured_match_countdown_label(featured_match)
+    if featured_match.status == "finished"
+      t("featured_match.match_finished")
+    elsif featured_match.starts_at.future?
+      t("featured_match.starts_in")
+    else
+      t("featured_match.match_started")
+    end
   end
 
   # Stimulus data attributes for tracking a Wallchart '26 link/element with Ahoy.

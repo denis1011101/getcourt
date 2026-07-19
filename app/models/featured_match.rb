@@ -11,6 +11,10 @@ class FeaturedMatch < ApplicationRecord
   has_many_attached :photos
 
   scope :current, -> { where(active: true).where("starts_at > ?", Time.current).order(:starts_at).limit(1) }
+  # The active match shown in the site banner. Unlike `current`, it keeps
+  # returning the match after kickoff (and once finished) so the banner can show
+  # "match started" / "match finished" until it is deactivated (active: false).
+  scope :banner, -> { where(active: true).order(:starts_at).limit(1) }
   scope :archive, -> { where(active: false).order(starts_at: :desc) }
 
   validates :tournament_label, :player_left_name, :player_right_name, :starts_at, presence: true

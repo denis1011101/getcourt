@@ -27,6 +27,8 @@ ru:
   featured_match:
     starts_in: "До начала"
     starts_now: "Начинается"
+    match_started: "Матч начался"
+    match_finished: "Матч закончился"
     days_suffix: "д"
     photos: "Фото матча"
     seo:

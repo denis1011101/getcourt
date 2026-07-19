@@ -28,6 +28,8 @@ es:
   featured_match:
     starts_in: "Empieza en"
     starts_now: "Empieza ahora"
+    match_started: "El partido comenzó"
+    match_finished: "El partido terminó"
     days_suffix: "d"
     photos: "Fotos del partido"
     seo:

@@ -37,11 +37,22 @@ export default class extends Controller {
   }
 
   tick() {
+    // The countdown targets are only rendered while the match is still ahead.
+    // Once it's live or finished the server renders a static status label, so
+    // there's nothing left to tick.
+    if (!this.hasTimeTarget) {
+      window.clearInterval(this.timer)
+      return
+    }
+
     const remaining = this.startsAt - new Date()
 
     if (remaining <= 0) {
       this.daysTarget.textContent = ""
       this.timeTarget.textContent = this.startedTextValue
+      // Keep the region's accessible name in sync with the visible "match
+      // started" text; otherwise it would still announce "starts in".
+      this.timeTarget.closest("[aria-label]")?.setAttribute("aria-label", this.startedTextValue)
       window.clearInterval(this.timer)
       return
     }

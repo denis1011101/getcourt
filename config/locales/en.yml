@@ -57,6 +57,8 @@ en:
   featured_match:
     starts_in: "Starts in"
     starts_now: "Starts now"
+    match_started: "Match started"
+    match_finished: "Match finished"
     days_suffix: "d"
     photos: "Match photos"
     seo:

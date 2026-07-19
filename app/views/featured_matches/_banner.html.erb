@@ -3,7 +3,7 @@
 <section class="live-banner featured-match-banner"
           data-controller="featured-match"
           data-featured-match-starts-at-value="<%= featured_match.starts_at.iso8601 %>"
-          data-featured-match-started-text-value="<%= t("featured_match.starts_now") %>"
+          data-featured-match-started-text-value="<%= t("featured_match.match_started") %>"
           data-featured-match-days-suffix-value="<%= t("featured_match.days_suffix") %>">
   <div class="banner-top">
     <div class="tournament-label"><%= featured_match.tournament_label %></div>
@@ -15,9 +15,18 @@
       <div class="player-name"><%= featured_match.player_left_name %></div>
     </div>
 
-    <div class="countdown" aria-label="<%= t("featured_match.starts_in") %>">
-      <span class="cd-days" data-featured-match-target="days"></span>
-      <span class="cd-time" data-featured-match-target="time">--:--:--</span>
+    <div class="countdown" aria-label="<%= featured_match_countdown_label(featured_match) %>">
+      <% if featured_match.status == "finished" %>
+        <span class="cd-status"><%= t("featured_match.match_finished") %></span>
+        <% if featured_match.result.present? %>
+          <span class="cd-result"><%= featured_match.result %></span>
+        <% end %>
+      <% elsif featured_match.starts_at.future? %>
+        <span class="cd-days" data-featured-match-target="days"></span>
+        <span class="cd-time" data-featured-match-target="time">--:--:--</span>
+      <% else %>
+        <span class="cd-status"><%= t("featured_match.match_started") %></span>
+      <% end %>
     </div>
 
     <div class="player">

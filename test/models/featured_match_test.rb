@@ -13,6 +13,24 @@ class FeaturedMatchTest < ActiveSupport::TestCase
     assert_nil FeaturedMatch.current.first
   end
 
+  test "banner returns the active match after kickoff" do
+    match = FeaturedMatch.create!(valid_attributes(starts_at: 1.hour.ago, active: true))
+
+    assert_equal match, FeaturedMatch.banner.first
+  end
+
+  test "banner returns the active match once finished" do
+    match = FeaturedMatch.create!(valid_attributes(starts_at: 1.day.ago, status: "finished", result: "6-4 6-4", active: true))
+
+    assert_equal match, FeaturedMatch.banner.first
+  end
+
+  test "banner ignores deactivated matches" do
+    FeaturedMatch.create!(valid_attributes(starts_at: 1.hour.ago, active: false))
+
+    assert_nil FeaturedMatch.banner.first
+  end
+
   test "activating a match deactivates other active matches" do
     first = FeaturedMatch.create!(valid_attributes(active: true))
     second = FeaturedMatch.create!(valid_attributes(player_left_name: "Second", active: true))
