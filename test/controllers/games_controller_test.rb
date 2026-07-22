@@ -90,6 +90,46 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to game_path(Game.order(:id).last)
   end
 
+  test "create rejects surface or environment not offered by the court" do
+    post session_url, params: { email: "games_surface_user@example.com" }
+    court = Court.create!(name: "Clay outdoor", surfaces: %w[clay], outdoor: true, indoor: false)
+
+    assert_no_difference("Game.count") do
+      post games_url, params: {
+        game: {
+          court_id: court.id,
+          date: Date.current + 1.day,
+          time: "18:00",
+          surface: "hard",
+          environment: "indoor"
+        }
+      }
+    end
+
+    assert_response :unprocessable_entity
+  end
+
+  test "create accepts surface and environment offered by the court" do
+    post session_url, params: { email: "games_surface_ok_user@example.com" }
+    court = Court.create!(name: "Clay outdoor ok", surfaces: %w[clay], outdoor: true, indoor: false)
+
+    assert_difference("Game.count", 1) do
+      post games_url, params: {
+        game: {
+          court_id: court.id,
+          date: Date.current + 1.day,
+          time: "18:00",
+          surface: "clay",
+          environment: "outdoor"
+        }
+      }
+    end
+
+    game = Game.order(:id).last
+    assert_equal "clay", game.surface
+    assert_equal "outdoor", game.environment
+  end
+
   test "new form shows players search option" do
     post session_url, params: { email: "games_form_user@example.com" }
 

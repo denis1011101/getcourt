@@ -15,6 +15,35 @@ class GameTest < ActiveSupport::TestCase
     assert_includes game.errors[:prebooking_enabled], "can be enabled only for repeating (weekly) games"
   end
 
+  test "surface must be available at the selected court" do
+    court = Court.create!(name: "Clay only", surfaces: %w[clay])
+    game = Game.new(court: court, user: users(:one), date: Date.current, surface: "hard")
+
+    assert_not game.valid?
+    assert_includes game.errors[:surface], "is not available at the selected court"
+
+    game.surface = "clay"
+    assert game.valid?, game.errors.full_messages.to_sentence
+  end
+
+  test "environment must be available at the selected court" do
+    court = Court.create!(name: "Outdoor only", outdoor: true, indoor: false)
+    game = Game.new(court: court, user: users(:one), date: Date.current, environment: "indoor")
+
+    assert_not game.valid?
+    assert_includes game.errors[:environment], "is not available at the selected court"
+
+    game.environment = "outdoor"
+    assert game.valid?, game.errors.full_messages.to_sentence
+  end
+
+  test "surface and environment may be blank regardless of court options" do
+    court = Court.create!(name: "Plain", surfaces: [], outdoor: false, indoor: false)
+    game = Game.new(court: court, user: users(:one), date: Date.current, surface: "", environment: "")
+
+    assert game.valid?, game.errors.full_messages.to_sentence
+  end
+
   test "next_date for recurring game moves to nearest upcoming occurrence" do
     game = Game.new(court: courts(:one), user: users(:one), date: Date.current - 14.days, recurring: true)
 

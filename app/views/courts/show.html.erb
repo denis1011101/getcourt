@@ -26,11 +26,28 @@
   <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
     <div>
       <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-slate-100"><%= @court.name %></h1>
-      <% if @court.sport.present? %>
-        <p class="mt-2">
-          <span class="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-sm font-medium text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-200">
-            <%= @court.sport %>
-          </span>
+      <% if @court.sport.present? || @court.outdoor? || @court.indoor? || @court.surfaces.any? %>
+        <p class="mt-2 flex flex-wrap gap-1.5">
+          <% if @court.sport.present? %>
+            <span class="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-sm font-medium text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-200">
+              <%= @court.sport %>
+            </span>
+          <% end %>
+          <% if @court.outdoor? %>
+            <span class="inline-flex items-center rounded-full bg-sky-50 px-3 py-1 text-sm font-medium text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">
+              <%= t("courts.index.outdoor_badge") %>
+            </span>
+          <% end %>
+          <% if @court.indoor? %>
+            <span class="inline-flex items-center rounded-full bg-purple-50 px-3 py-1 text-sm font-medium text-purple-700 dark:bg-purple-500/15 dark:text-purple-300">
+              <%= t("courts.index.indoor_badge") %>
+            </span>
+          <% end %>
+          <% @court.surface_labels.each do |surface_label| %>
+            <span class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-sm font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+              <%= surface_label %>
+            </span>
+          <% end %>
         </p>
       <% end %>
       <% if @court.address.present? && @court.address != "Unknown address" && @court.address != "Geocoding error" %>
@@ -92,6 +109,13 @@
             <div>
               <p class="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wide font-medium"><%= t("courts.show.sport") %></p>
               <p class="text-sm font-medium text-gray-900 dark:text-slate-100 mt-0.5"><%= @court.sport %></p>
+            </div>
+          <% end %>
+
+          <% if @court.surfaces.any? %>
+            <div>
+              <p class="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wide font-medium"><%= t("courts.show.surfaces") %></p>
+              <p class="text-sm font-medium text-gray-900 dark:text-slate-100 mt-0.5"><%= @court.surface_labels.join(" · ") %></p>
             </div>
           <% end %>
 

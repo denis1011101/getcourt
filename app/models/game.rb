@@ -11,10 +11,29 @@ class Game < ApplicationRecord
   has_many :matches, dependent: :nullify
   has_many :player_statistic_entries, dependent: :nullify
 
+  SURFACES = Court::SURFACES
+  ENVIRONMENTS = %w[indoor outdoor].freeze
+
   validates :date, presence: { message: "must be present" }
 
   validates :players_count, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
+  validates :surface, inclusion: { in: SURFACES }, allow_blank: true
+  validates :environment, inclusion: { in: ENVIRONMENTS }, allow_blank: true
   validate :prebooking_requires_recurring
+  validate :surface_available_at_court
+  validate :environment_available_at_court
+
+  def surface_label
+    return nil if surface.blank?
+
+    I18n.t("courts.surfaces.#{surface}", default: surface.to_s.tr("_", " ").capitalize)
+  end
+
+  def environment_label
+    return nil if environment.blank?
+
+    I18n.t("courts.index.#{environment}_badge", default: environment.to_s.capitalize)
+  end
 
   # Проверяет наличие отмены в памяти, если данные загружены, иначе делает запрос.
   def cancelled_on?(d)
@@ -100,6 +119,22 @@ class Game < ApplicationRecord
     if prebooking_enabled? && !recurring?
       errors.add(:prebooking_enabled, "can be enabled only for repeating (weekly) games")
     end
+  end
+
+  # Покрытие игры должно быть среди покрытий выбранного корта
+  def surface_available_at_court
+    return if surface.blank? || court.blank?
+    return if court.surfaces.include?(surface)
+
+    errors.add(:surface, "is not available at the selected court")
+  end
+
+  # Среда (indoor/outdoor) должна быть доступна на выбранном корте
+  def environment_available_at_court
+    return if environment.blank? || court.blank?
+    return if court.environments.include?(environment)
+
+    errors.add(:environment, "is not available at the selected court")
   end
 
   # return true if prebookings behaviour is enabled for this game

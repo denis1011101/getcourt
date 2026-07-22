@@ -221,6 +221,13 @@ es:
       spots_line:
         one: "👥 falta %{count} jugador"
         other: "👥 faltan %{count} jugadores"
+    form:
+      surface: "Superficie"
+      surface_any: "— cualquier superficie —"
+      surface_hint: "Elige entre las superficies disponibles en la pista seleccionada."
+      environment: "Cubierta / al aire libre"
+      environment_any: "— sin especificar —"
+      environment_hint: "Elige entre las opciones disponibles en la pista seleccionada."
     badges:
       with_coach: "Con entrenador"
       need_coach: "Se necesita entrenador"
@@ -260,15 +267,23 @@ es:
       outdoor_badge: "Al aire libre"
       indoor_only: "Pistas cubiertas"
       indoor_badge: "Cubierta"
+    surfaces:
+      hard: "Dura"
+      clay: "Tierra batida"
+      grass: "Hierba"
+      artificial_grass: "Hierba artificial"
     form:
       free: "Pista gratuita (sin tarifa)"
       outdoor: "Pista al aire libre"
       indoor: "Pista cubierta"
+      surfaces: "Tipos de superficie"
+      surfaces_hint: "Marca todos los tipos de superficie disponibles en la pista."
     show:
       meta_title: "%{court} — pista y partidos programados"
       meta_description: "Encuentra y únete a partidos en %{court}. Crea o encuentra partidos de tenis, pádel y tenis de mesa en GetCourt."
       address: "Dirección"
       sport: "Deporte"
+      surfaces: "Superficies"
       coordinates: "Coordenadas"
       contact: "Contacto"
       games_at_court: "Partidos en esta pista"

@@ -1,9 +1,13 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["map", "select"]
+  static targets = ["map", "select", "surfaceSelect", "environmentSelect"]
   static values = {
     courts: Array,
+    surfaceLabels: Object,
+    environmentLabels: Object,
+    surfaceSelected: String,
+    environmentSelected: String,
     defaultLat: { type: Number, default: 56.838011 }, // Yekaterinburg
     defaultLng: { type: Number, default: 60.597465 },
     defaultZoom: { type: Number, default: 12 }
@@ -11,6 +15,7 @@ export default class extends Controller {
 
   connect() {
     this.initMap()
+    this.updateSurfaceOptions({ initial: true })
   }
 
   async initMap() {
@@ -48,6 +53,49 @@ export default class extends Controller {
 
   selectChanged() {
     this._focusSelected()
+    this.updateSurfaceOptions()
+  }
+
+  // Заполняет селекты покрытия и среды вариантами выбранного корта.
+  // preselect (сохранённое значение игры) применяется только при initial connect;
+  // после смены корта пользователем ориентируемся только на текущее значение селекта.
+  updateSurfaceOptions({ initial = false } = {}) {
+    const court = (this.courtsValue || []).find(c => String(c.id) === String(this.selectTarget.value))
+
+    if (this.hasSurfaceSelectTarget) {
+      this._fillSelect(
+        this.surfaceSelectTarget,
+        (court && court.surfaces) || [],
+        this.surfaceLabelsValue || {},
+        initial ? this.surfaceSelectedValue : ""
+      )
+    }
+
+    if (this.hasEnvironmentSelectTarget) {
+      this._fillSelect(
+        this.environmentSelectTarget,
+        (court && court.environments) || [],
+        this.environmentLabelsValue || {},
+        initial ? this.environmentSelectedValue : ""
+      )
+    }
+  }
+
+  _fillSelect(select, values, labels, preselect) {
+    const previous = select.value || preselect || ""
+    const blank = select.querySelector('option[value=""]')
+    select.innerHTML = ""
+    if (blank) select.appendChild(blank)
+
+    values.forEach(value => {
+      const option = document.createElement("option")
+      option.value = value
+      option.textContent = labels[value] || value
+      select.appendChild(option)
+    })
+
+    // Сохраняем прежний выбор, если он всё ещё доступен
+    select.value = values.includes(previous) ? previous : ""
   }
 
   _focusSelected() {

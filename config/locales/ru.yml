@@ -222,6 +222,13 @@ ru:
         few: "👥 нужно %{count} игрока"
         many: "👥 нужно %{count} игроков"
         other: "👥 %{count} игроков"
+    form:
+      surface: "Покрытие"
+      surface_any: "— любое покрытие —"
+      surface_hint: "Выберите из покрытий выбранного корта."
+      environment: "Крытый / открытый"
+      environment_any: "— не указано —"
+      environment_hint: "Выберите из вариантов выбранного корта."
     badges:
       with_coach: "С тренером"
       need_coach: "Нужен тренер"
@@ -265,15 +272,23 @@ ru:
       outdoor_badge: "Открытый"
       indoor_only: "Закрытые корты"
       indoor_badge: "Закрытый"
+    surfaces:
+      hard: "Хард"
+      clay: "Грунт"
+      grass: "Трава"
+      artificial_grass: "Искусственная трава"
     form:
       free: "Бесплатный корт (без оплаты)"
       outdoor: "Открытый корт"
       indoor: "Закрытый корт"
+      surfaces: "Тип покрытия"
+      surfaces_hint: "Отметьте все типы покрытия, которые есть на корте."
     show:
       meta_title: "%{court} — корт и запланированные игры"
       meta_description: "Найдите игры на %{court} и присоединяйтесь к ним. Создавайте матчи по теннису, паделу и настольному теннису на GetCourt."
       address: "Адрес"
       sport: "Спорт"
+      surfaces: "Покрытие"
       coordinates: "Координаты"
       contact: "Контакт"
       games_at_court: "Игры на этом корте"

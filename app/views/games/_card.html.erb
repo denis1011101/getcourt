@@ -67,6 +67,18 @@
         </span>
       <% end %>
 
+      <% if game.respond_to?(:surface_label) && game.surface_label.present? %>
+        <span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+          <%= game.surface_label %>
+        </span>
+      <% end %>
+
+      <% if game.respond_to?(:environment_label) && game.environment_label.present? %>
+        <span class="inline-flex items-center rounded-full bg-sky-50 px-2.5 py-0.5 text-xs font-medium text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">
+          <%= game.environment_label %>
+        </span>
+      <% end %>
+
       <% if game.respond_to?(:with_coach) && game.with_coach? %>
         <span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-500/15 dark:text-blue-200">
           Coach

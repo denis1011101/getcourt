@@ -149,7 +149,7 @@
             <h3 class="text-base font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors mb-1">
               <%= court.name %>
             </h3>
-            <% if court.sport.present? || court.free? || court.outdoor? || court.indoor? %>
+            <% if court.sport.present? || court.free? || court.outdoor? || court.indoor? || court.surfaces.any? %>
               <p class="mb-2 flex flex-wrap gap-1">
                 <% if court.sport.present? %>
                   <span class="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-200">
@@ -169,6 +169,11 @@
                 <% if court.indoor? %>
                   <span class="inline-flex items-center rounded-full bg-purple-50 px-2.5 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-500/15 dark:text-purple-300">
                     <%= t("courts.index.indoor_badge") %>
+                  </span>
+                <% end %>
+                <% court.surface_labels.each do |surface_label| %>
+                  <span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+                    <%= surface_label %>
                   </span>
                 <% end %>
               </p>

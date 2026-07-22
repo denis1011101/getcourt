@@ -240,7 +240,7 @@ class GamesController < ApplicationController
   end
 
   def game_params
-    params.require(:game).permit(:court_id, :recurring, :occurrences_per_week, :with_coach, :date, :time, :players_count, :skill_level, :sport, :prebooking_enabled, :urgent_player_search, :duration_minutes)
+    params.require(:game).permit(:court_id, :recurring, :occurrences_per_week, :with_coach, :date, :time, :players_count, :skill_level, :sport, :surface, :environment, :prebooking_enabled, :urgent_player_search, :duration_minutes)
   end
 
   def display_date(game)
@@ -266,6 +266,18 @@ class GamesController < ApplicationController
     if game.respond_to?(:sport) && game.sport.present?
       badges << { text: game.sport.to_s.titleize,
                   classes: "inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800 mr-2" }
+    end
+
+    # surface (hard / clay / grass / artificial grass)
+    if game.respond_to?(:surface_label) && game.surface_label.present?
+      badges << { text: game.surface_label,
+                  classes: "inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 mr-2" }
+    end
+
+    # environment (indoor / outdoor)
+    if game.respond_to?(:environment_label) && game.environment_label.present?
+      badges << { text: game.environment_label,
+                  classes: "inline-flex items-center rounded-full bg-sky-50 px-2 py-0.5 text-xs font-medium text-sky-700 mr-2" }
     end
 
     # required skill level (support several possible attribute names)
@@ -318,6 +330,8 @@ class GamesController < ApplicationController
     gp["players_count"] = gp["players_count"].to_i if gp.key?("players_count")
     gp["sport"] = gp["sport"].presence if gp.key?("sport")
     gp["skill_level"] = gp["skill_level"].presence if gp.key?("skill_level")
+    gp["surface"] = gp["surface"].presence if gp.key?("surface")
+    gp["environment"] = gp["environment"].presence if gp.key?("environment")
     gp
   end
 

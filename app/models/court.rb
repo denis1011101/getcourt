@@ -1,9 +1,16 @@
 class Court < ApplicationRecord
+  serialize :surfaces, coder: JSON, type: Array
+
   has_many :games, dependent: :destroy
   has_many :favorite_court_links, class_name: "FavoriteCourt", dependent: :destroy
   has_many :fans, through: :favorite_court_links, source: :user
   validates :name, presence: true
   belongs_to :user, optional: true
+
+  SURFACES = %w[hard clay grass artificial_grass].freeze
+
+  before_validation :normalize_surfaces
+  validate :surfaces_are_valid
 
   # планируем асинхронное получение адреса при смене координат
   after_commit :enqueue_address_fetch, on: %i[create update], if: -> { saved_change_to_coordinates? }
@@ -30,6 +37,15 @@ class Court < ApplicationRecord
       court.city_name.to_s.strip.downcase == user_city
     end
     local + other
+  end
+
+  def surface_labels
+    surfaces.map { |key| I18n.t("courts.surfaces.#{key}", default: key.to_s.tr("_", " ").capitalize) }
+  end
+
+  # Список сред (indoor/outdoor), доступных на корте — для выбора при создании игры
+  def environments
+    %w[indoor outdoor].select { |env| public_send("#{env}?") }
   end
 
   def approved?
@@ -126,6 +142,15 @@ class Court < ApplicationRecord
   end
 
   private
+
+  def normalize_surfaces
+    self.surfaces = Array(surfaces).map { |s| s.to_s.strip }.reject(&:blank?).uniq
+  end
+
+  def surfaces_are_valid
+    invalid = surfaces - SURFACES
+    errors.add(:surfaces, "contains invalid values: #{invalid.join(', ')}") if invalid.any?
+  end
 
   def contact_entries
     contact_value.to_s.split(/[\n;|]+/).map(&:strip).reject(&:blank?)

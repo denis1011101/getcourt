@@ -250,6 +250,13 @@ en:
       spots_line:
         one: "👥 %{count} spot left"
         other: "👥 %{count} spots left"
+    form:
+      surface: "Surface"
+      surface_any: "— any surface —"
+      surface_hint: "Choose from surfaces available at the selected court."
+      environment: "Indoor / Outdoor"
+      environment_any: "— not specified —"
+      environment_hint: "Choose from options available at the selected court."
     badges:
       with_coach: "With coach"
       need_coach: "Need coach"
@@ -289,15 +296,23 @@ en:
       outdoor_badge: "Outdoor"
       indoor_only: "Indoor courts"
       indoor_badge: "Indoor"
+    surfaces:
+      hard: "Hard"
+      clay: "Clay"
+      grass: "Grass"
+      artificial_grass: "Artificial grass"
     form:
       free: "Free court (no booking fee)"
       outdoor: "Outdoor court"
       indoor: "Indoor court"
+      surfaces: "Surface types"
+      surfaces_hint: "Select all surface types available at this court."
     show:
       meta_title: "%{court} — court and scheduled games"
       meta_description: "Find and join games at %{court}. Create or join tennis, padel and table tennis matches on GetCourt."
       address: "Address"
       sport: "Sport"
+      surfaces: "Surfaces"
       coordinates: "Coordinates"
       contact: "Contact"
       games_at_court: "Games at this court"

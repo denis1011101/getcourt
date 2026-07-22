@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_18_040000) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_22_120000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -111,6 +111,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_18_040000) do
     t.string "name"
     t.boolean "outdoor", default: false, null: false
     t.string "sport"
+    t.text "surfaces"
     t.datetime "updated_at", null: false
     t.integer "user_id"
     t.index ["city_name"], name: "index_courts_on_city_name"
@@ -158,6 +159,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_18_040000) do
     t.datetime "created_at", null: false
     t.date "date"
     t.integer "duration_minutes"
+    t.string "environment"
     t.date "last_participations_reset_at"
     t.integer "occurrences_per_week", default: 1, null: false
     t.integer "players_count", default: 4, null: false
@@ -166,6 +168,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_18_040000) do
     t.boolean "recurring", default: false, null: false
     t.string "skill_level"
     t.string "sport"
+    t.string "surface"
     t.string "threads_post_id"
     t.datetime "threads_posted_at"
     t.time "time"
