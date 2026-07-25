@@ -1,116 +1,104 @@
-<div class="max-w-5xl mx-auto px-4 py-2">
-  <%= render "shared/page_header",
-      title: "Bracket options",
-      description: "Review generated bracket layouts and choose one.",
-      action_text: "Back to tournaments",
-      action_path: tournaments_path %>
-
-  <div class="bg-white shadow sm:rounded-lg p-6 mt-4">
-    <h2 class="text-lg font-medium mb-2"><%= @tournament.name.presence || "Tournament" %></h2>
-
-    <% if @tournament.persisted? %>
-      <p class="text-sm text-gray-600 mb-4">
-        <strong>Players:</strong> <%= @tournament.players_count || "—" %>
-        &nbsp;•&nbsp;
-        <strong>Format:</strong> <%= @tournament.format&.humanize || "—" %>
-        <% if @tournament.start_date.present? || @tournament.end_date.present? %>
-          &nbsp;•&nbsp;
-          <strong>Dates:</strong> <%= [@tournament.start_date, @tournament.end_date].compact.join(" — ") %>
-        <% end %>
-      </p>
-    <% end %>
-
-    <div class="text-sm mb-4">
-      <strong>Joined:</strong>
-      <% joined = @tournament.tournament_participants.includes(:user) %>
-      <% if joined.any? %>
-        <%= joined.map { |p| p.name.presence || p.user&.name || "User ##{p.id}" }.join(", ") %>
-      <% else %>
-        none
-      <% end %>
+<% content_for :meta_robots, "noindex, follow" %>
+<div class="max-w-5xl mx-auto px-4 py-6">
+  <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-2xl font-semibold"><%= t("tournaments.options.title") %></h1>
+      <p class="text-gray-600 dark:text-slate-400"><%= t("tournaments.options.subtitle") %></p>
     </div>
+    <%= link_to t("tournaments.options.back"), tournaments_path, class: "shrink-0 inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5" %>
+  </div>
 
-    <% if user_signed_in? %>
-      <% joined_by_current = @tournament.tournament_participants.exists?(user: current_user) %>
-      <% max_reached = (@tournament.players_count.present? && @tournament.tournament_participants.count >= @tournament.players_count) %>
-      <div class="mt-3">
-        <% if joined_by_current %>
-          <%= form_with url: leave_tournament_path(@tournament), method: :post, local: true do |f| %>
-            <%= f.submit "Leave tournament", class: "btn btn-secondary" %>
-          <% end %>
-        <% else %>
-          <%= form_with url: join_tournament_path(@tournament), method: :post, local: true do |f| %>
-            <%= f.submit "Join tournament", class: "btn btn-primary #{'opacity-50 cursor-not-allowed' if max_reached}", disabled: max_reached %>
-          <% end %>
-        <% end %>
-      </div>
-    <% else %>
-      <%# robust fallback for sign-in path (try Devise helpers, then session path, then literal) %>
-      <% sign_in_path = begin
-           if respond_to?(:new_user_session_path)
-             new_user_session_path
-           elsif defined?(main_app) && main_app.respond_to?(:new_user_session_path)
-             main_app.new_user_session_path
-           elsif Rails.application.routes.url_helpers.respond_to?(:new_user_session_path)
-             Rails.application.routes.url_helpers.new_user_session_path
-           elsif Rails.application.routes.url_helpers.respond_to?(:new_session_path)
-             Rails.application.routes.url_helpers.new_session_path(:user)
-           else
-             '/users/sign_in'
-           end
-         rescue StandardError
-           '/users/sign_in'
-         end %>
-      <%= link_to "Sign in to join", sign_in_path, class: "btn btn-primary" %>
-    <% end %>
+  <div class="bg-white dark:bg-slate-800/80 rounded-lg border dark:border-white/10 p-6 shadow-sm">
+    <h2 class="text-lg font-medium mb-2 text-gray-900 dark:text-slate-100">
+      <%= link_to (@tournament.name.presence || t("layout.nav.tournaments")), tournament_path(@tournament), class: "hover:underline" %>
+    </h2>
+
+    <p class="text-sm text-gray-600 dark:text-slate-400 mb-4">
+      <strong><%= t("tournaments.show.players") %>:</strong> <%= @tournament.players_count || "—" %>
+      &nbsp;•&nbsp;
+      <strong><%= t("tournaments.show.format") %>:</strong>
+      <%= @tournament.format.present? ? t("tournaments.formats.#{@tournament.format}", default: @tournament.format.to_s.titleize) : "—" %>
+      &nbsp;•&nbsp;
+      <strong><%= t("tournaments.show.type") %>:</strong> <%= t("tournaments.types.#{@tournament.tournament_type}") %>
+      <% if @tournament.start_date.present? || @tournament.end_date.present? %>
+        &nbsp;•&nbsp;
+        <strong><%= t("tournaments.show.date") %>:</strong>
+        <%= [ @tournament.start_date, @tournament.end_date ].compact.map { |date| date.strftime("%d.%m.%Y") }.join(" — ") %>
+      <% end %>
+    </p>
+
+    <div class="text-sm mb-4 text-gray-700 dark:text-slate-300">
+      <strong><%= t("tournaments.options.joined") %>:</strong>
+      <% joined = @tournament.approved_participants.includes(:user) %>
+      <%= joined.any? ? joined.map(&:display_name).join(", ") : t("tournaments.options.none") %>
+    </div>
 
     <% if @variants.present? %>
       <div class="grid grid-cols-1 gap-4">
-        <% @variants.each_with_index do |v, i| %>
-          <div class="border rounded-lg p-4">
-            <div class="flex items-center justify-between">
-              <h3 class="font-medium">Option <%= i + 1 %>: <%= v[:name] || "Variant" %></h3>
-              <span class="text-sm text-gray-500">Slots: <%= v[:size] %> — Byes: <%= v[:byes] %></span>
+        <% @variants.each_with_index do |variant, index| %>
+          <div class="border dark:border-white/10 rounded-lg p-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 class="font-medium text-gray-900 dark:text-slate-100"><%= t("tournaments.options.option", number: index + 1) %></h3>
+              <span class="text-sm text-gray-500 dark:text-slate-400">
+                <%= t("tournaments.options.slots", count: variant[:size]) %> — <%= t("tournaments.options.byes", count: variant[:byes]) %>
+              </span>
             </div>
 
-            <% if v[:rounds].present? %>
-              <% v[:rounds].each_with_index do |round, rindex| %>
+            <% if variant[:byes].to_i.positive? %>
+              <div class="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/15 dark:text-amber-200">
+                <%= t("tournaments.form.bracket_warning",
+                      players: @tournament.players_count,
+                      byes: variant[:byes],
+                      missing: variant[:byes],
+                      size: variant[:size]) %>
+              </div>
+            <% end %>
+
+            <% if variant[:rounds].present? %>
+              <% variant[:rounds].each_with_index do |round, round_index| %>
                 <div class="mt-3">
-                  <div class="text-sm font-semibold text-gray-700">Round <%= rindex + 1 %></div>
-                  <ul class="mt-1 text-sm text-gray-600 list-disc list-inside">
+                  <div class="text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("tournaments.options.round", number: round_index + 1) %></div>
+                  <ul class="mt-1 text-sm text-gray-600 dark:text-slate-400 list-disc list-inside">
                     <% round.each do |pair| %>
-                      <li><%= Array(pair).join(" vs ") %></li>
+                      <li><%= Array(pair).join(" #{t('tournaments.show.vs')} ") %></li>
                     <% end %>
                   </ul>
                 </div>
               <% end %>
-            <% else %>
-              <pre class="mt-3 text-sm text-gray-700"><%= v.inspect %></pre>
             <% end %>
 
-            <div class="mt-4 flex items-center gap-2">
-              <% ready = (@tournament.tournament_participants.count == (@tournament.players_count || 0)) && !@tournament.games.exists? %>
+            <% ready = @tournament.players_count.to_i.positive? &&
+                       @tournament.approved_participants_count == @tournament.players_count.to_i &&
+                       !@tournament.games.exists? %>
+            <div class="mt-4 flex flex-wrap items-center gap-2">
               <%= form_with url: select_bracket_tournament_path(@tournament), method: :post, local: true do |f| %>
-                <%= hidden_field_tag :variant, i %>
-                <%= f.submit "Select this bracket", class: "btn btn-primary #{'opacity-50 cursor-not-allowed' unless ready}", disabled: !ready %>
+                <%= hidden_field_tag :variant, index %>
+                <%= f.submit t("tournaments.options.select_bracket"),
+                      class: "inline-flex items-center rounded-full bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition cursor-pointer #{'opacity-50 cursor-not-allowed' unless ready}",
+                      disabled: !ready %>
               <% end %>
 
-              <%= link_to "Preview", tournament_path(@tournament), class: "btn btn-secondary text-sm" %>
+              <%= link_to t("tournaments.options.preview"), tournament_path(@tournament),
+                    class: "inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5" %>
             </div>
+
+            <% unless ready %>
+              <p class="mt-2 text-xs text-gray-500 dark:text-slate-400"><%= t("tournaments.options.not_ready") %></p>
+            <% end %>
           </div>
         <% end %>
       </div>
     <% else %>
-      <div class="rounded-lg border border-dashed p-6 text-center text-gray-500">
-        No generated variants yet — the bracket will be displayed here once generated.
+      <div class="rounded-lg border border-dashed dark:border-white/10 p-6 text-center text-gray-500 dark:text-slate-400">
+        <%= t("tournaments.options.empty") %>
       </div>
     <% end %>
 
     <% if @tournament.persisted? && @tournament.games.exists? %>
       <div class="mt-4">
-        <%= form_with url: reset_bracket_tournament_path(@tournament), method: :post, local: true do |f| %>
-          <%= f.submit "Reset bracket", class: "btn btn-warning" %>
-        <% end %>
+        <%= button_to t("tournaments.options.reset_bracket"), reset_bracket_tournament_path(@tournament), method: :post,
+              form: { data: { turbo_confirm: t("tournaments.options.reset_confirm") } },
+              class: "inline-flex items-center rounded-md border border-amber-300 px-3 py-2 text-sm font-medium text-amber-700 transition hover:bg-amber-50 dark:border-amber-400/30 dark:text-amber-200 dark:hover:bg-amber-500/10" %>
       </div>
     <% end %>
   </div>

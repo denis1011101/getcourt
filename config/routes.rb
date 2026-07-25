@@ -117,6 +117,8 @@ Rails.application.routes.draw do
     collection do
       get :options
     end
+
+    resources :participants, only: %i[update destroy], controller: "tournament_participants"
   end
 
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)

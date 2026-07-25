@@ -67,6 +67,9 @@
         <% if params[:looking_for_players].present? %>
           <%= f.hidden_field :looking_for_players, value: params[:looking_for_players] %>
         <% end %>
+        <% if params[:tournament_games].present? %>
+          <%= f.hidden_field :tournament_games, value: params[:tournament_games] %>
+        <% end %>
 
         <!-- My Games chip (only for authenticated users) -->
         <% if user_signed_in? %>
@@ -131,9 +134,22 @@
             <%= t("games.index.looking_for_players") %>
           </span>
         </button>
+
+        <!-- Tournament games chip -->
+        <% tournament_active = params[:tournament_games].present? %>
+        <button type="submit" name="tournament_games" value="<%= tournament_active ? '' : '1' %>"
+                class="flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium border transition
+                       <%= tournament_active ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-700 border-gray-200 hover:border-gray-400 dark:bg-slate-800 dark:text-slate-200 dark:border-white/10 dark:hover:border-white/25' %>">
+          <span class="inline-flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M18.75 4.236c.982.143 1.954.317 2.916.52A6.003 6.003 0 0016.27 9.728M18.75 4.236V4.5c0 2.108-.966 3.99-2.48 5.228m0 0a6.003 6.003 0 01-5.54 0"/>
+            </svg>
+            <%= t("games.index.tournament_games") %>
+          </span>
+        </button>
       <% end %>
 
-      <% if params[:country].present? || params[:sport].present? || params[:skill_level].present? || params[:city].present? || params[:with_spots].present? || params[:my_games].present? || params[:looking_for_players].present? %>
+      <% if params[:country].present? || params[:sport].present? || params[:skill_level].present? || params[:city].present? || params[:with_spots].present? || params[:my_games].present? || params[:looking_for_players].present? || params[:tournament_games].present? %>
         <%= link_to root_path, class: "flex-shrink-0 rounded-full px-4 py-2 text-sm font-medium border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition" do %>
           <span class="inline-flex items-center gap-1">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -153,6 +169,7 @@
   <% active_filters << t("games.index.free_spots") if params[:with_spots].present? %>
   <% active_filters << t("games.index.my_games") if params[:my_games].present? %>
   <% active_filters << t("games.index.looking_for_players") if params[:looking_for_players].present? %>
+  <% active_filters << t("games.index.tournament_games") if params[:tournament_games].present? %>
 
   <%= render "shared/results_summary", count: @games.size, noun: "game", filters: active_filters do %>
     <% if user_signed_in? %>

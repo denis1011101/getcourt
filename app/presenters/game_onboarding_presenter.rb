@@ -32,7 +32,7 @@ class GameOnboardingPresenter
   end
 
   def player_search_relevant?
-    game.next_date.present? && !game.started_for_ui? && spots_available?
+    !game.tournament_game? && game.next_date.present? && !game.started_for_ui? && spots_available?
   end
 
   def spots_available?

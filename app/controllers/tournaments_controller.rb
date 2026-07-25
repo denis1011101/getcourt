@@ -1,11 +1,11 @@
 class TournamentsController < ApplicationController
   # redirect to login when non-authenticated users call mutating actions
-  before_action :authenticate_user!, only: %i[new create join leave select_bracket reset_bracket add_match]
-  before_action :set_tournament, only: %i[options show join leave select_bracket reset_bracket add_match]
-  before_action :authorize_organizer!, only: %i[select_bracket reset_bracket add_match]
+  before_action :authenticate_user!, only: %i[new create edit update destroy join leave select_bracket reset_bracket add_match]
+  before_action :set_tournament, only: %i[options show edit update destroy join leave select_bracket reset_bracket add_match]
+  before_action :authorize_organizer!, only: %i[edit update destroy select_bracket reset_bracket add_match]
 
   def index
-    scope = Tournament.includes(:tournament_participants, :courts).order(created_at: :desc)
+    scope = Tournament.includes(:tournament_participants, :courts, :games).order(created_at: :desc)
 
     if params[:my_tournaments].present? && current_user
       scope = scope.where(
@@ -13,6 +13,9 @@ class TournamentsController < ApplicationController
         uid: current_user.id
       )
     end
+
+    scope = scope.where(format: params[:tournament_format]) if Tournament::FORMATS.include?(params[:tournament_format])
+    scope = scope.where(tournament_type: params[:tournament_type]) if Tournament.tournament_types.key?(params[:tournament_type])
 
     tournaments = scope.to_a
 
@@ -26,90 +29,113 @@ class TournamentsController < ApplicationController
   end
 
   def new
-    @tournament = Tournament.new
+    @tournament = Tournament.new(tournament_type: "bracket", format: "singles")
   end
 
   def create
     @tournament = Tournament.new(tournament_params.merge(user: current_user))
     if @tournament.save
-      redirect_to options_tournaments_path(tournament_id: @tournament.id)
+      redirect_to options_tournaments_path(tournament_id: @tournament.id), notice: t("tournaments.flash.created")
     else
       render :new, status: :unprocessable_entity
     end
   end
 
+  def edit
+  end
+
+  def update
+    if @tournament.update(tournament_params)
+      redirect_to @tournament, notice: t("tournaments.flash.updated")
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    @tournament.destroy
+    redirect_to tournaments_path, notice: t("tournaments.flash.destroyed")
+  end
+
   def options
-    @tournament ||= Tournament.new(tournament_params_from_params)
-    cached = @tournament.persisted? && Rails.cache.read("tournament:#{@tournament.id}:bracket")
-    @variants = cached ? [ cached ] : generate_bracket_variants(@tournament)
+    if @tournament
+      cached = Rails.cache.read("tournament:#{@tournament.id}:bracket")
+      @variants = cached ? [ cached ] : generate_bracket_variants(@tournament)
+    else
+      redirect_to tournaments_path
+    end
   end
 
   def show
+    @participants = @tournament.tournament_participants.includes(:user).order(:created_at)
+    @matches = @tournament.tournament_matches.includes(:player_a, :player_b, :player_a2, :player_b2).order(:played_at, :id)
+    @standings = TournamentStandings.compute(@tournament)
+    @games = @tournament.games.includes(:court, :tournament, :participations, :prebooking_cancellations).order(:date, :time)
   end
 
   def join
-    @tournament = Tournament.find(params[:id])
-    @tournament.tournament_participants.find_or_create_by!(user: current_user) do |p|
-      p.name = current_user.try(:name) || current_user.email
+    if @tournament.participant_for(current_user)
+      redirect_back fallback_location: tournament_path(@tournament)
+    elsif @tournament.full? && !@tournament.organizer?(current_user)
+      @tournament.tournament_participants.create!(user: current_user, name: participant_name_for(current_user), status: "pending")
+      redirect_back fallback_location: tournament_path(@tournament), notice: t("tournaments.flash.join_requested")
+    else
+      @tournament.tournament_participants.create!(user: current_user, name: participant_name_for(current_user), status: "approved", approved_at: Time.current)
+      redirect_back fallback_location: tournament_path(@tournament), notice: t("tournaments.flash.joined")
     end
-    redirect_back fallback_location: tournament_path(@tournament)
   end
 
   def leave
-    @tournament = Tournament.find(params[:id])
-    tp = @tournament.tournament_participants.find_by(user: current_user)
-    tp&.destroy
-    redirect_back fallback_location: tournament_path(@tournament)
+    @tournament.participant_for(current_user)&.destroy
+    redirect_back fallback_location: tournament_path(@tournament), notice: t("tournaments.flash.left")
   end
 
   def select_bracket
-    @tournament = Tournament.find(params[:id])
-
     # prevent creating games twice
     if @tournament.games.exists?
-      redirect_back fallback_location: tournament_path(@tournament), alert: "Bracket already created. Reset first to recreate."
+      redirect_back fallback_location: tournament_path(@tournament), alert: t("tournaments.flash.bracket_exists")
+      return
+    end
+
+    unless @tournament.default_court
+      redirect_back fallback_location: tournament_path(@tournament), alert: t("tournaments.flash.no_court")
       return
     end
 
     variants = generate_bracket_variants(@tournament)
     chosen = variants[params[:variant].to_i] || variants.first
-    # create first-round games from chosen variant (simple implementation)
-    chosen[:rounds].first.each do |pair|
-      players = pair.reject { |p| p == "BYE" }
-      next if players.empty?
+    # Create first-round games from the chosen variant, spread over the days the tournament runs.
+    # A player drawn against a BYE advances without playing, so that pair gets no game.
+    played_pairs = chosen[:rounds].first.map { |pair| pair.reject { |player| player == "BYE" } }.select { |players| players.size > 1 }
+    dates = @tournament.schedule_dates_for(played_pairs.size)
 
-      # choose a court for the game (use tournament's first court or fallback to any court)
-      court = @tournament.courts.first || Court.first
-      g = Game.create!(tournament: @tournament, court: court, user: current_user, date: Date.today)
-
-      players.each do |entry|
-        tp = @tournament.tournament_participants.find_by(name: entry)
-        Participation.create!(game: g, user: tp.user, status: "approved") if tp&.user
-      end
+    played_pairs.each_with_index do |players, index|
+      player_ids = players.filter_map { |entry| @tournament.tournament_participants.find_by(name: entry)&.user_id }
+      @tournament.create_game!(organizer: current_user, player_ids: player_ids, date: dates[index])
     end
 
-    redirect_to tournament_path(@tournament)
+    redirect_to tournament_path(@tournament), notice: t("tournaments.flash.bracket_created")
   end
 
   def add_match
     unless @tournament.started?
-      redirect_back fallback_location: tournament_path(@tournament), alert: "Statistics available after tournament starts."
+      redirect_back fallback_location: tournament_path(@tournament), alert: t("tournaments.flash.not_started")
       return
     end
 
     player_a = resolve_participant(:player_a_id)
     player_b = resolve_participant(:player_b_id)
-    doubles = @tournament.format == "doubles"
+    doubles = @tournament.doubles?
     player_a2 = doubles ? resolve_participant(:player_a2_id) : nil
     player_b2 = doubles ? resolve_participant(:player_b2_id) : nil
 
     unless player_a && player_b
-      redirect_back fallback_location: tournament_path(@tournament), alert: "Select both players."
+      redirect_back fallback_location: tournament_path(@tournament), alert: t("tournaments.flash.select_both_players")
       return
     end
 
     if doubles && (!player_a2 || !player_b2)
-      redirect_back fallback_location: tournament_path(@tournament), alert: "Select all 4 players for doubles."
+      redirect_back fallback_location: tournament_path(@tournament), alert: t("tournaments.flash.select_four_players")
       return
     end
 
@@ -117,46 +143,26 @@ class TournamentsController < ApplicationController
     team_b_ids = [ player_b.id, player_b2&.id ].compact
     all_player_ids = (team_a_ids + team_b_ids).compact
     if all_player_ids.uniq.size != all_player_ids.size
-      redirect_back fallback_location: tournament_path(@tournament), alert: "Players must be different."
+      redirect_back fallback_location: tournament_path(@tournament), alert: t("tournaments.flash.players_must_differ")
       return
     end
 
     score = params[:score].to_s.strip
     if score.blank?
-      redirect_back fallback_location: tournament_path(@tournament), alert: "Enter score (e.g. 6-4 6-3)."
+      redirect_back fallback_location: tournament_path(@tournament), alert: t("tournaments.flash.score_required")
       return
     end
 
     parsed = TournamentStandings.parse_score(score)
     unless parsed
-      redirect_back fallback_location: tournament_path(@tournament), alert: "Invalid score format. Use e.g. 6-4 6-3."
+      redirect_back fallback_location: tournament_path(@tournament), alert: t("tournaments.flash.score_invalid")
       return
     end
 
     # Prevent duplicate pair in round_robin (symmetric check)
-    if @tournament.round_robin?
-      exists = if doubles
-        team_a_sorted = team_a_ids.sort
-        team_b_sorted = team_b_ids.sort
-
-        TournamentMatch.where(tournament_id: @tournament.id).any? do |tm|
-          tm_team_a = [ tm.player_a_id, tm.player_a2_id ].compact.sort
-          tm_team_b = [ tm.player_b_id, tm.player_b2_id ].compact.sort
-
-          (tm_team_a == team_a_sorted && tm_team_b == team_b_sorted) ||
-            (tm_team_a == team_b_sorted && tm_team_b == team_a_sorted)
-        end
-      else
-        TournamentMatch.where(tournament_id: @tournament.id)
-                       .where(
-                         "(player_a_id = :a AND player_b_id = :b) OR (player_a_id = :b AND player_b_id = :a)",
-                         a: player_a.id, b: player_b.id
-                       ).exists?
-      end
-      if exists
-        redirect_back fallback_location: tournament_path(@tournament), alert: "This pair already played in this tournament."
-        return
-      end
+    if @tournament.round_robin? && pair_already_played?(team_a_ids, team_b_ids, doubles: doubles)
+      redirect_back fallback_location: tournament_path(@tournament), alert: t("tournaments.flash.pair_already_played")
+      return
     end
 
     result = if parsed[:sets_a] > parsed[:sets_b]
@@ -167,9 +173,8 @@ class TournamentsController < ApplicationController
       parsed[:games_a] > parsed[:games_b] ? "player_a" : (parsed[:games_b] > parsed[:games_a] ? "player_b" : "draw")
     end
 
-    court = @tournament.courts.first || Court.first
-    unless court
-      redirect_back fallback_location: tournament_path(@tournament), alert: "No court available for game creation."
+    unless @tournament.default_court
+      redirect_back fallback_location: tournament_path(@tournament), alert: t("tournaments.flash.no_court")
       return
     end
 
@@ -185,20 +190,7 @@ class TournamentsController < ApplicationController
       played_at: played_at
     )
 
-    game = Game.create!(
-      tournament: @tournament,
-      court: court,
-      user: current_user,
-      date: @tournament.start_date || Date.current,
-      sport: "tennis",
-      players_count: doubles ? 4 : 2
-    )
-
-    all_player_ids.each do |uid|
-      participation = Participation.find_or_initialize_by(game_id: game.id, user_id: uid)
-      participation.status = "approved"
-      participation.save!
-    end
+    game = @tournament.create_game!(organizer: current_user, player_ids: all_player_ids, date: @tournament.date_for_played_match)
 
     Telegram::Flows::StatsScore::MatchUpserter.call(
       game: game,
@@ -211,83 +203,98 @@ class TournamentsController < ApplicationController
       score: score
     )
 
-    redirect_to tournament_path(@tournament), notice: "Match added."
+    redirect_to tournament_path(@tournament), notice: t("tournaments.flash.match_added")
   rescue ActiveRecord::RecordNotUnique
-    redirect_back fallback_location: tournament_path(@tournament), alert: "This match already exists."
+    redirect_back fallback_location: tournament_path(@tournament), alert: t("tournaments.flash.match_exists")
   end
 
   # destroy games created for bracket (reset)
   def reset_bracket
-    @tournament = Tournament.find(params[:id])
     @tournament.games.destroy_all
     Rails.cache.delete("tournament:#{@tournament.id}:bracket")
     Rails.cache.delete("tournament:#{@tournament.id}:selected_variant")
-    redirect_back fallback_location: tournament_path(@tournament), notice: "Bracket reset."
+    redirect_back fallback_location: tournament_path(@tournament), notice: t("tournaments.flash.bracket_reset")
   end
 
   private
-
-  # ensure only tournament owner/organizer can perform destructive actions
-  def authorize_organizer!
-    set_tournament unless @tournament
-    unless current_user && @tournament && @tournament.user_id == current_user.id
-      redirect_back fallback_location: tournaments_path, alert: "You are not authorized to perform this action."
-    end
-  end
-
-  def set_tournament
-    @tournament = Tournament.find_by(id: params[:tournament_id] || params[:id])
-  end
-
-  def resolve_participant(param_key)
-    user_id = params[param_key].to_i
-    return nil if user_id <= 0
-
-    participant = @tournament.tournament_participants.find_by(user_id: user_id)
-    participant&.user
-  end
-
-  def tournament_params
-    params.require(:tournament).permit(:name, :players_count, :games_count, :format, :start_date, :end_date, :time, court_ids: [], dates: [])
-  end
-
-  def tournament_params_from_params
-    return {} unless params[:tournament].present?
-    params.require(:tournament).permit(:name, :players_count, :games_count, :format, :start_date, :end_date, :time, court_ids: [], dates: [])
-  end
-
-  # Simple fallback bracket generator — returns an array of variants.
-  # Replace with a dedicated service later.
-  def generate_bracket_variants(t)
-    n = (t&.players_count || 0).to_i
-    return [] if n < 2
-
-    # smallest power of two >= n
-    size = 1
-    size *= 2 while size < n
-    byes = size - n
-
-    # use real participants when tournament persisted
-    participants = if t.persisted?
-      t.tournament_participants.includes(:user).map { |p| p.name.presence || p.user&.name || "Player #{p.id}" }
-    else
-      (1..n).map { |i| "Player #{i}" }
+    # ensure only tournament owner/organizer can perform destructive actions
+    def authorize_organizer!
+      unless @tournament&.organizer?(current_user)
+        redirect_back fallback_location: tournaments_path, alert: t("tournaments.flash.not_authorized")
+      end
     end
 
-    players = participants.dup
-    players += Array.new(byes) { "BYE" }
-    players.shuffle! # перемешиваем участников и BYE
+    def set_tournament
+      @tournament = Tournament.find_by(id: params[:tournament_id] || params[:id])
+    end
 
-    # first-round pairings
-    pairings = players.each_slice(2).to_a
+    def participant_name_for(user)
+      user.name.presence || user.email
+    end
 
-    [
-      {
-        name: "Standard bracket (#{size} slots)",
-        size: size,
-        byes: byes,
-        rounds: [ pairings ]
-      }
-    ]
-  end
+    def resolve_participant(param_key)
+      user_id = params[param_key].to_i
+      return nil if user_id <= 0
+
+      participant = @tournament.tournament_participants.find_by(user_id: user_id)
+      participant&.user
+    end
+
+    def pair_already_played?(team_a_ids, team_b_ids, doubles:)
+      if doubles
+        team_a_sorted = team_a_ids.sort
+        team_b_sorted = team_b_ids.sort
+
+        @tournament.tournament_matches.any? do |tm|
+          played_a = [ tm.player_a_id, tm.player_a2_id ].compact.sort
+          played_b = [ tm.player_b_id, tm.player_b2_id ].compact.sort
+
+          (played_a == team_a_sorted && played_b == team_b_sorted) ||
+            (played_a == team_b_sorted && played_b == team_a_sorted)
+        end
+      else
+        @tournament.tournament_matches.where(
+          "(player_a_id = :a AND player_b_id = :b) OR (player_a_id = :b AND player_b_id = :a)",
+          a: team_a_ids.first, b: team_b_ids.first
+        ).exists?
+      end
+    end
+
+    def tournament_params
+      params.require(:tournament).permit(:name, :players_count, :games_count, :format, :tournament_type, :start_date, :end_date, :time, court_ids: [], dates: [])
+    end
+
+    # Simple fallback bracket generator — returns an array of variants.
+    # Replace with a dedicated service later.
+    def generate_bracket_variants(t)
+      n = (t&.players_count || 0).to_i
+      return [] if n < 2
+
+      # smallest power of two >= n
+      size = 1
+      size *= 2 while size < n
+      byes = size - n
+
+      # use real participants when tournament persisted
+      participants = if t.persisted?
+        t.approved_participants.includes(:user).map { |p| p.display_name.presence || "Player #{p.id}" }
+      else
+        (1..n).map { |i| "Player #{i}" }
+      end
+
+      # First-round pairings: every BYE goes to a different player (who then advances
+      # without playing), so two BYEs never end up in the same pair.
+      players = participants.shuffle
+      pairings = Array.new(byes) { [ players.shift, "BYE" ] }
+      pairings.concat(players.each_slice(2).to_a)
+
+      [
+        {
+          name: "Standard bracket (#{size} slots)",
+          size: size,
+          byes: byes,
+          rounds: [ pairings ]
+        }
+      ]
+    end
 end

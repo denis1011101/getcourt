@@ -100,6 +100,61 @@ class CoachesControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href='#{new_session_path}']"
   end
 
+  # ---- location filters ---------------------------------------------------
+
+  test "index filters coaches by city" do
+    local = User.create!(email: "kazan_coach@example.com", name: "Kazan Coach", coach: true, city_name: "Kazan")
+    remote = User.create!(email: "moscow_coach@example.com", name: "Moscow Coach", coach: true, city_name: "Moscow")
+
+    get coaches_url, params: { city: "Kazan" }
+
+    assert_response :success
+    assert_includes @controller.instance_variable_get(:@coaches), local
+    assert_not_includes @controller.instance_variable_get(:@coaches), remote
+  ensure
+    local&.destroy
+    remote&.destroy
+  end
+
+  test "index filters coaches by country" do
+    city_ids = []
+    city_ids << City.create!(name: "Kitzbuhel", country_code: "AT", population: 8_000).id
+    city_ids << City.create!(name: "Yekaterinburg", country_code: "RU", population: 1_500_000).id
+    austrian = User.create!(email: "at_coach@example.com", name: "Austrian Coach", coach: true, city_name: "Kitzbuhel")
+    russian = User.create!(email: "ru_coach@example.com", name: "Russian Coach", coach: true, city_name: "Yekaterinburg")
+
+    get coaches_url, params: { country: "AT" }
+
+    assert_response :success
+    coaches = @controller.instance_variable_get(:@coaches)
+    assert_includes coaches, austrian
+    assert_not_includes coaches, russian
+    assert_match "Austria", @response.body
+  ensure
+    austrian&.destroy
+    russian&.destroy
+    City.where(id: city_ids).delete_all
+  end
+
+  test "coaches from your city come first when no location filter is applied" do
+    user_email = "coach_seeker_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: user_email }
+    User.find_by!(email: user_email).update_column(:city_name, "Yekaterinburg")
+
+    remote = User.create!(email: "aaa_remote_coach@example.com", name: "Aaa Remote Coach", coach: true, city_name: "Moscow")
+    local = User.create!(email: "zzz_local_coach@example.com", name: "Zzz Local Coach", coach: true, city_name: "Ekaterinburg")
+
+    get coaches_url
+
+    coaches = @controller.instance_variable_get(:@coaches)
+    assert coaches.index(local) < coaches.index(remote),
+           "Coach from the user's city should be listed before coaches from other cities"
+  ensure
+    local&.destroy
+    remote&.destroy
+    User.find_by(email: user_email)&.destroy
+  end
+
   test "renders pages_nav with links to other pages but not to itself" do
     get coaches_url
 

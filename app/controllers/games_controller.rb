@@ -63,6 +63,10 @@ class GamesController < ApplicationController
       scoped_games = scoped_games.where(urgent_player_search: true)
     end
 
+    if params[:tournament_games].present?
+      scoped_games = scoped_games.where.not(tournament_id: nil)
+    end
+
     if params[:with_spots].present? || current_user&.city_name.present?
       games = scoped_games.to_a
 

@@ -10,52 +10,71 @@
     </div>
   <% end %>
 
+  <% tournament = game.tournament %>
   <div class="bg-white rounded-lg border p-6 shadow-sm dark:bg-slate-800/80 dark:border-white/10">
-    <div class="mb-4">
-      <%# recurring toggle — Apply button removed, Stimulus will submit hidden turbo form %>
-      <label class="inline-flex items-center gap-2">
-        <%= form.check_box :recurring,
-              { class: "h-4 w-4 text-indigo-600", id: "game_recurring",
-                data: { controller: "recurring", action: "change->recurring#toggle" } },
-              "1", "0" %>
-        <span class="text-sm text-gray-700 dark:text-slate-300">Repeat weekly</span>
-      </label>
-      <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">If checked, this date and time will recur every week.</p>
-    </div>
+    <%# A tournament game follows the tournament schedule, so the standalone options are hidden. %>
+    <% if tournament.present? %>
+      <div class="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/15 dark:text-amber-200">
+        <p><%= t("games.form.tournament_notice") %></p>
+        <p class="mt-1">
+          <%= link_to (tournament.name.presence || t("layout.nav.tournaments")), tournament_path(tournament), class: "font-medium underline" %>
+        </p>
+      </div>
+    <% else %>
+      <div class="mb-4">
+        <%# recurring toggle — Apply button removed, Stimulus will submit hidden turbo form %>
+        <label class="inline-flex items-center gap-2">
+          <%= form.check_box :recurring,
+                { class: "h-4 w-4 text-indigo-600", id: "game_recurring",
+                  data: { controller: "recurring", action: "change->recurring#toggle" } },
+                "1", "0" %>
+          <span class="text-sm text-gray-700 dark:text-slate-300">Repeat weekly</span>
+        </label>
+        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">If checked, this date and time will recur every week.</p>
+      </div>
 
-    <div class="mb-4">
-      <label class="inline-flex items-center gap-2">
-        <%= hidden_field_tag "game[prebooking_enabled]", "0", id: nil %>
-        <%= check_box_tag "game[prebooking_enabled]", "1", game.prebooking_enabled?,
-              class: "h-4 w-4 text-indigo-600", id: "game_prebooking_enabled", disabled: !game.recurring? %>
-        <span class="text-sm text-gray-700 dark:text-slate-300">Enable prebooking</span>
-      </label>
-      <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">Players can reserve slots for upcoming dates.</p>
-      <% unless game.recurring? %>
-        <p class="mt-1 text-xs text-gray-600 dark:text-slate-400">Prebooking can be enabled only for repeating (weekly) games. Check "Repeat weekly" to enable prebooking.</p>
-      <% end %>
-    </div>
+      <div class="mb-4">
+        <label class="inline-flex items-center gap-2">
+          <%= hidden_field_tag "game[prebooking_enabled]", "0", id: nil %>
+          <%= check_box_tag "game[prebooking_enabled]", "1", game.prebooking_enabled?,
+                class: "h-4 w-4 text-indigo-600", id: "game_prebooking_enabled", disabled: !game.recurring? %>
+          <span class="text-sm text-gray-700 dark:text-slate-300">Enable prebooking</span>
+        </label>
+        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">Players can reserve slots for upcoming dates.</p>
+        <% unless game.recurring? %>
+          <p class="mt-1 text-xs text-gray-600 dark:text-slate-400">Prebooking can be enabled only for repeating (weekly) games. Check "Repeat weekly" to enable prebooking.</p>
+        <% end %>
+      </div>
 
-    <div class="mb-4">
-      <label class="inline-flex items-center gap-2">
-        <%= form.check_box :with_coach, { class: "h-4 w-4 text-indigo-600" }, "1", "0" %>
-        <span class="text-sm text-gray-700 dark:text-slate-300">With coach</span>
-      </label>
-      <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">If checked, this game will be held with a coach.</p>
-    </div>
+      <div class="mb-4">
+        <label class="inline-flex items-center gap-2">
+          <%= form.check_box :with_coach, { class: "h-4 w-4 text-indigo-600" }, "1", "0" %>
+          <span class="text-sm text-gray-700 dark:text-slate-300">With coach</span>
+        </label>
+        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">If checked, this game will be held with a coach.</p>
+      </div>
 
-    <div class="mb-4">
-      <label class="inline-flex items-center gap-2">
-        <%= form.check_box :urgent_player_search, { class: "h-4 w-4 text-indigo-600" }, "1", "0" %>
-        <span class="text-sm text-gray-700 dark:text-slate-300">Players search</span>
-      </label>
-      <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">Show this game in "Games looking for player" and notify users with enabled nearby alerts.</p>
-    </div>
+      <div class="mb-4">
+        <label class="inline-flex items-center gap-2">
+          <%= form.check_box :urgent_player_search, { class: "h-4 w-4 text-indigo-600" }, "1", "0" %>
+          <span class="text-sm text-gray-700 dark:text-slate-300">Players search</span>
+        </label>
+        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">Show this game in "Games looking for player" and notify users with enabled nearby alerts.</p>
+      </div>
+    <% end %>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
       <div>
         <%= form.label :date, "Date", class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-        <%= form.date_field :date, value: game.date, class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+        <% tournament_range = [ tournament&.start_date, tournament&.end_date ].compact %>
+        <%= form.date_field :date, value: game.date,
+              min: tournament&.start_date, max: tournament&.end_date,
+              class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+        <% if tournament_range.any? %>
+          <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">
+            <%= t("games.form.tournament_dates_hint", range: tournament_range.uniq.map { |day| day.strftime("%d.%m.%Y") }.join(" — ")) %>
+          </p>
+        <% end %>
       </div>
       <div>
         <%= form.label :time, "Time", class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
@@ -112,7 +131,7 @@
       </div>
     </div>
 
-    <% sorted_courts = Court.sorted_for_user(current_user) %>
+    <% sorted_courts = tournament&.courts&.any? ? tournament.courts.to_a : Court.sorted_for_user(current_user) %>
     <div class="space-y-3"
          data-controller="court-picker"
          data-court-picker-default-lat-value="56.838011"
@@ -130,7 +149,9 @@
         <%= form.collection_select :court_id, sorted_courts, :id, :name,
               {}, { class: "mt-1 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500",
                    data: { "court-picker-target": "select", action: "change->court-picker#selectChanged" } } %>
-        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">Choose court from list or click marker on the map.</p>
+        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">
+          <%= tournament&.courts&.any? ? t("games.form.tournament_courts_hint") : "Choose court from list or click marker on the map." %>
+        </p>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
