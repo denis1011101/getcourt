@@ -1,15 +1,20 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
-  players_count: 1
-  format: MyString
+  name: Winter Cup
+  players_count: 4
+  games_count: 3
+  format: singles
+  tournament_type: bracket
   start_date: 2025-12-27
   end_date: 2025-12-27
   user: one
 
 two:
-  players_count: 1
-  format: MyString
+  name: Spring Cup
+  players_count: 4
+  format: doubles
+  tournament_type: round_robin
   start_date: 2025-12-27
   end_date: 2025-12-27
   user: two

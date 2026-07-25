@@ -58,7 +58,8 @@ class TournamentStandings
       sets_b = 0
 
       tokens.each do |set_token|
-        m = set_token.match(/\A(\d{1,2})[-:](\d{1,2})\z/)
+        # Sets look like "6-4"; a tiebreak set carries the loser's points: "7-6(5)".
+        m = set_token.match(/\A(\d{1,2})[-:](\d{1,2})(?:\(\d{1,2}\))?\z/)
         return nil unless m
 
         a = m[1].to_i

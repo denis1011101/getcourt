@@ -14,6 +14,9 @@ class Game < ApplicationRecord
   SURFACES = Court::SURFACES
   ENVIRONMENTS = %w[indoor outdoor].freeze
 
+  # A tournament game follows the tournament schedule, so the standalone game options don't apply.
+  before_validation :drop_options_managed_by_tournament, if: -> { tournament_id.present? }
+
   validates :date, presence: { message: "must be present" }
 
   validates :players_count, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
@@ -22,6 +25,11 @@ class Game < ApplicationRecord
   validate :prebooking_requires_recurring
   validate :surface_available_at_court
   validate :environment_available_at_court
+  validate :within_tournament_dates_and_courts, if: -> { tournament.present? }
+
+  def tournament_game?
+    tournament_id.present?
+  end
 
   def surface_label
     return nil if surface.blank?
@@ -135,6 +143,25 @@ class Game < ApplicationRecord
     return if court.environments.include?(environment)
 
     errors.add(:environment, "is not available at the selected court")
+  end
+
+  # Игра турнира проходит в даты и на кортах, заданных турниром
+  def within_tournament_dates_and_courts
+    unless tournament.covers?(date)
+      errors.add(:date, "must be within the tournament dates")
+    end
+
+    tournament_court_ids = tournament.court_ids
+    if court_id.present? && tournament_court_ids.any? && tournament_court_ids.exclude?(court_id)
+      errors.add(:court_id, "must be one of the tournament courts")
+    end
+  end
+
+  def drop_options_managed_by_tournament
+    self.recurring = false
+    self.prebooking_enabled = false
+    self.with_coach = false
+    self.urgent_player_search = false
   end
 
   # return true if prebookings behaviour is enabled for this game

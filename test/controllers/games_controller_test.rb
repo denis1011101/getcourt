@@ -514,6 +514,18 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_select '[data-testid="onboarding-player_search"] form[action=?][method="post"]', toggle_urgent_player_search_game_path(game)
   end
 
+  test "player search onboarding item also offers inviting players by telegram username" do
+    owner = User.create!(email: "onboarding_invite_owner@example.com")
+    game = Game.create!(court: courts(:one), user: owner, date: Date.current + 2.days, time: "10:00", players_count: 4)
+    post session_url, params: { email: owner.email }
+
+    get game_url(game)
+
+    assert_response :success
+    assert_select '[data-testid="onboarding-player_search"] form[action=?][method="post"]', game_invitations_path(game)
+    assert_select '[data-testid="onboarding-player_search"] input[name="usernames"]', 1
+  end
+
   test "completed onboarding checklist is hidden" do
     owner = User.create!(
       email: "onboarding_complete@example.com",

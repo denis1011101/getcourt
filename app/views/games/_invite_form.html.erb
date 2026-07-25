@@ -1,0 +1,10 @@
+<%# Invites GetCourt players by Telegram username — the bot delivers the invitation. %>
+<%= form_with url: game_invitations_path(game), method: :post, local: true, class: "flex flex-col gap-2 sm:flex-row" do %>
+  <%= text_field_tag :usernames,
+        nil,
+        placeholder: t("games.show.invite.placeholder"),
+        class: "flex-1 rounded border-gray-300 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+  <%= submit_tag t("games.show.invite.submit"),
+        class: "inline-flex shrink-0 items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 cursor-pointer" %>
+<% end %>
+<p class="mt-2 text-xs text-gray-500 dark:text-slate-400"><%= t("games.show.invite.hint") %></p>

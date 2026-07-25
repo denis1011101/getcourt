@@ -1,74 +1,111 @@
-<%= form_with model: tournament, url: tournaments_path, local: true do |f| %>
+<%= form_with model: tournament, local: true do |f| %>
   <div class="bg-white dark:bg-slate-800/80 shadow sm:rounded-lg p-6">
-    <div class="grid grid-cols-1 gap-6">
+    <% if tournament.errors.any? %>
+      <div class="mb-6 rounded-md border border-red-200 bg-red-50 p-4 dark:border-red-400/30 dark:bg-red-500/10">
+        <p class="text-sm font-medium text-red-700 dark:text-red-200"><%= t("tournaments.form.errors", count: tournament.errors.count) %></p>
+        <ul class="mt-2 list-disc list-inside text-sm text-red-600 dark:text-red-300">
+          <% tournament.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="grid grid-cols-1 gap-6"
+         data-controller="bracket-size"
+         data-action="input->bracket-size#refresh change->bracket-size#refresh"
+         data-bracket-size-template-value="<%= t("tournaments.form.bracket_warning", players: "__PLAYERS__", byes: "__BYES__", missing: "__MISSING__", size: "__SIZE__") %>">
       <div>
-        <%= f.label :name, "Tournament name", class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+        <%= f.label :name, t("tournaments.form.name"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
         <%= f.text_field :name, maxlength: 200, class: "mt-1 block w-full rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm" %>
       </div>
 
       <div>
-        <%= f.label :players_count, "Number of players", class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-        <%= f.number_field :players_count, min: 2, class: "mt-1 block w-32 rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm" %>
+        <%= f.label :players_count, t("tournaments.form.players_count"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+        <%= f.number_field :players_count, min: 2, class: "mt-1 block w-32 rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm", data: { bracket_size_target: "playersCount" } %>
+        <p data-bracket-size-target="message"
+           class="mt-2 hidden max-w-xl rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/15 dark:text-amber-200"></p>
       </div>
 
       <div>
-        <%= f.label :games_count, "Number of games", class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-        <div class="mt-1 flex items-center gap-4">
+        <%= f.label :games_count, t("tournaments.form.games_count"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+        <div class="mt-1 flex flex-wrap items-center gap-4">
           <%= f.number_field :games_count, min: 1, class: "block w-32 rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm", id: "tournament_games_count_field", disabled: tournament.games_count.nil? && tournament.persisted? %>
           <label class="inline-flex items-center text-sm text-gray-600 dark:text-slate-400">
             <%= check_box_tag "games_count_unknown", "1", tournament.games_count.nil?,
                   class: "form-checkbox h-4 w-4 text-indigo-600",
                   onchange: "var field = document.getElementById('tournament_games_count_field'); field.disabled = this.checked; if(this.checked) field.value = '';" %>
-            <span class="ml-2">Unknown (will be added during tournament)</span>
+            <span class="ml-2"><%= t("tournaments.form.games_count_unknown") %></span>
           </label>
         </div>
-        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">If unknown, games can be created and added as the tournament progresses.</p>
+        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("tournaments.form.games_count_hint") %></p>
       </div>
 
       <div>
-        <span class="block text-sm font-medium text-gray-700 dark:text-slate-300">Format</span>
-        <div class="mt-2 flex items-center gap-6">
+        <span class="block text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("tournaments.form.format") %></span>
+        <div class="mt-2 flex flex-wrap items-center gap-6">
           <label class="inline-flex items-center">
             <%= f.radio_button :format, "singles", class: "form-radio" %>
-            <span class="ml-2 text-sm text-gray-700 dark:text-slate-300">Singles (1 on 1)</span>
+            <span class="ml-2 text-sm text-gray-700 dark:text-slate-300"><%= t("tournaments.form.singles_hint") %></span>
           </label>
           <label class="inline-flex items-center">
             <%= f.radio_button :format, "doubles", class: "form-radio" %>
-            <span class="ml-2 text-sm text-gray-700 dark:text-slate-300">Doubles (2 on 2)</span>
+            <span class="ml-2 text-sm text-gray-700 dark:text-slate-300"><%= t("tournaments.form.doubles_hint") %></span>
           </label>
         </div>
       </div>
 
       <div>
-        <%= f.label :court_ids, "Select courts", class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-        <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <% Court.sorted_for_user(current_user).each do |court| %>
-            <label class="inline-flex items-center text-sm text-gray-700 dark:text-slate-300">
-              <%= check_box_tag "tournament[court_ids][]", court.id, tournament.court_ids&.include?(court.id), id: "tournament_court_#{court.id}", class: "form-checkbox" %>
-              <span class="ml-2"><%= court.name %></span>
-            </label>
-          <% end %>
+        <span class="block text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("tournaments.form.type") %></span>
+        <div class="mt-2 flex flex-wrap items-center gap-6">
+          <label class="inline-flex items-center">
+            <%= f.radio_button :tournament_type, "bracket", class: "form-radio", data: { bracket_size_target: "type" } %>
+            <span class="ml-2 text-sm text-gray-700 dark:text-slate-300"><%= t("tournaments.form.bracket_hint") %></span>
+          </label>
+          <label class="inline-flex items-center">
+            <%= f.radio_button :tournament_type, "round_robin", class: "form-radio", data: { bracket_size_target: "type" } %>
+            <span class="ml-2 text-sm text-gray-700 dark:text-slate-300"><%= t("tournaments.form.round_robin_hint") %></span>
+          </label>
         </div>
+      </div>
+
+      <div>
+        <%= f.label :court_ids, t("tournaments.form.courts"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+        <% courts = Court.sorted_for_user(current_user) %>
+        <% if courts.any? %>
+          <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <% courts.each do |court| %>
+              <label class="inline-flex items-center text-sm text-gray-700 dark:text-slate-300">
+                <%= check_box_tag "tournament[court_ids][]", court.id, tournament.court_ids&.include?(court.id), id: "tournament_court_#{court.id}", class: "form-checkbox" %>
+                <span class="ml-2"><%= court.name %></span>
+              </label>
+            <% end %>
+          </div>
+          <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("tournaments.form.courts_hint") %></p>
+        <% else %>
+          <p class="mt-2 text-sm text-gray-500 dark:text-slate-400"><%= t("tournaments.form.no_courts") %></p>
+        <% end %>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
-          <%= f.label :start_date, "Start date", class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+          <%= f.label :start_date, t("tournaments.form.start_date"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
           <%= f.date_field :start_date, class: "mt-1 block w-full rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm" %>
         </div>
         <div>
-          <%= f.label :time, "Start time", class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+          <%= f.label :time, t("tournaments.form.start_time"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
           <%= f.time_field :time, class: "mt-1 block w-full rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm" %>
         </div>
         <div>
-          <%= f.label :end_date, "End date (optional)", class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+          <%= f.label :end_date, t("tournaments.form.end_date"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
           <%= f.date_field :end_date, class: "mt-1 block w-full rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm" %>
         </div>
       </div>
 
       <div class="flex items-center justify-between mt-4">
-        <%= link_to "Cancel", tournaments_path, class: "text-sm text-gray-600 dark:text-slate-400 hover:underline" %>
-        <%= f.submit "Next — Bracket options", class: "btn" %>
+        <%= link_to t("tournaments.form.cancel"), (tournament.persisted? ? tournament_path(tournament) : tournaments_path), class: "text-sm text-gray-600 dark:text-slate-400 hover:underline" %>
+        <%= f.submit (tournament.persisted? ? t("tournaments.form.update") : t("tournaments.form.create")),
+              class: "inline-flex items-center rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition cursor-pointer" %>
       </div>
     </div>
   </div>

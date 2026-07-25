@@ -5,6 +5,37 @@
   <h1 class="text-2xl font-semibold text-gray-900 dark:text-slate-100">Find a Tennis Coach</h1>
   <p class="mt-1 text-sm text-gray-600 dark:text-slate-400">Browse tennis instructors and contact them directly in chat or by Telegram username.</p>
 
+  <%= render "shared/location_filters",
+        url: coaches_path,
+        countries: @countries,
+        cities: @cities,
+        selected_country: params[:country],
+        selected_city: params[:city],
+        compact: true %>
+
+  <% location_filtered = params[:country].present? || params[:city].present? %>
+  <% active_filters = location_filter_labels %>
+
+  <div class="mt-4 flex items-center justify-between gap-3">
+    <p class="text-sm text-gray-500 dark:text-slate-400" data-testid="results-summary">
+      <%= pluralize(@coaches.size, "coach") %>
+      <% if active_filters.any? %>
+        &middot; <%= safe_join(active_filters, " &middot; ".html_safe) %>
+      <% end %>
+    </p>
+
+    <% if location_filtered %>
+      <%= link_to coaches_path, class: "flex-shrink-0 rounded-full px-4 py-1.5 text-sm font-medium border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition" do %>
+        <span class="inline-flex items-center gap-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+          <%= t("common.reset") %>
+        </span>
+      <% end %>
+    <% end %>
+  </div>
+
   <% if @coaches.any? %>
     <div class="mt-5 space-y-3">
       <% @coaches.each do |coach| %>
@@ -49,6 +80,11 @@
           <% end %>
         </article>
       <% end %>
+    </div>
+  <% elsif location_filtered %>
+    <div class="mt-6 rounded-lg border border-dashed border-gray-200 dark:border-white/10 p-8 text-center text-sm text-gray-500 dark:text-slate-400">
+      <p>No coaches in this location yet.</p>
+      <%= link_to "Show all coaches", coaches_path, class: "inline-flex items-center gap-1.5 mt-4 rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition" %>
     </div>
   <% else %>
     <div class="mt-6 space-y-4 text-sm text-gray-600 dark:text-slate-400">

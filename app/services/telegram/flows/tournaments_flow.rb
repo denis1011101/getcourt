@@ -1124,20 +1124,7 @@ module Telegram
             result: result,
             played_at: Time.current
           )
-          game = Game.create!(
-            tournament: tournament,
-            court: court,
-            user: actor,
-            date: tournament.start_date || Date.current,
-            sport: "tennis",
-            players_count: doubles ? 4 : 2
-          )
-
-          (team_a_ids + team_b_ids).uniq.each do |uid|
-            participation = Participation.find_or_initialize_by(game_id: game.id, user_id: uid)
-            participation.status = "approved"
-            participation.save!
-          end
+          game = tournament.create_game!(organizer: actor, player_ids: team_a_ids + team_b_ids)
 
           mode = doubles ? "doubles" : "singles"
           Telegram::Flows::StatsScore::MatchUpserter.call(
