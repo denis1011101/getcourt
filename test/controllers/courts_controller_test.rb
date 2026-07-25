@@ -128,6 +128,26 @@ class CourtsControllerTest < ActionDispatch::IntegrationTest
     Court.where(id: created_ids).delete_all if created_ids
   end
 
+  test "country filter shows the country name and still accepts the country code as a slug" do
+    city_ids = []
+    city_ids << City.create!(name: "Almaty", country_code: "KZ", population: 2_000_000).id
+    court = Court.create!(name: "Almaty Court #{SecureRandom.hex(4)}", city_name: "Almaty", moderation_status: "approved")
+
+    get courts_url, params: { country: "KZ" }
+    assert_redirected_to courts_browse_path(country_slug: "kazakhstan")
+
+    follow_redirect!
+    assert_match "Kazakhstan", @response.body
+    assert_includes @controller.instance_variable_get(:@courts), court
+
+    # links minted before Kazakhstan had a name still resolve
+    get courts_browse_url(country_slug: "kz")
+    assert_redirected_to courts_browse_path(country_slug: "kazakhstan")
+  ensure
+    court&.destroy
+    City.where(id: city_ids).delete_all
+  end
+
   test "index country filter shows full country name in summary and filters courts" do
     city_ids = []
     city_ids << City.create!(name: "Kitzbuhel", country_code: "AT", population: 8_000).id

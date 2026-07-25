@@ -363,8 +363,11 @@ class GamesController < ApplicationController
   end
 
   def country_code_for_slug(country_slug, city_country_map)
+    slug = country_slug.to_s
+    # The country code itself keeps working as a slug: links minted before the
+    # country had a name in COUNTRY_NAMES still resolve.
     city_country_map.values.uniq.find do |country_code|
-      country_name_for(country_code).parameterize == country_slug.to_s
+      country_name_for(country_code).parameterize == slug || country_code.to_s.downcase == slug
     end
   end
 
