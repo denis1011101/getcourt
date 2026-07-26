@@ -211,6 +211,7 @@ es:
         placeholder: "@alice @bob"
         submit: "Enviar invitaciones"
         hint: "Funciona con jugadores que han iniciado sesión en GetCourt y han conectado el bot de Telegram."
+        recent: "Recientes:"
       organizer:
         title: "Organizador"
         user_id: "ID de usuario"

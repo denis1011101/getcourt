@@ -8,6 +8,7 @@ class GameInvitationsController < ApplicationController
 
     result = send_invitations(handles)
     if result[:sent].any?
+      current_user.remember_invite_handles(handles)
       redirect_to @game, notice: invitation_notice(result)
     else
       redirect_to @game, alert: invitation_notice(result)

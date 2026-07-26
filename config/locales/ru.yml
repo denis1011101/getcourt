@@ -210,6 +210,7 @@ ru:
         placeholder: "@alice @bob"
         submit: "Отправить приглашения"
         hint: "Работает для игроков, которые вошли в GetCourt и привязали бота в Telegram."
+        recent: "Недавние:"
       organizer:
         title: "Организатор"
         user_id: "ID пользователя"
