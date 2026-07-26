@@ -36,6 +36,9 @@ class User < ApplicationRecord
   attribute :skill_levels, :json, default: {}
   attribute :timezone, :string
   attribute :telegram_locale, :string, default: "ru"
+  attribute :recent_invite_handles, :json, default: []
+
+  RECENT_INVITE_LISTS_LIMIT = 5
 
   TELEGRAM_LOCALES = %w[ru en].freeze
   WEB_LOCALES = %w[en es ru].freeze
@@ -93,6 +96,15 @@ class User < ApplicationRecord
 
   def coach?
     self.coach == true
+  end
+
+  # keep the latest invite lists handy, so the same group can be invited again in one click
+  def remember_invite_handles(handles)
+    handles = handles.map(&:to_s).uniq
+    return if handles.empty?
+
+    others = recent_invite_handles.to_a.reject { |list| list.sort == handles.sort }
+    update_column(:recent_invite_handles, [ handles ] + others.first(RECENT_INVITE_LISTS_LIMIT - 1))
   end
 
   # ensure registration token for bot-based registration

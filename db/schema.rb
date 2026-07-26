@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_22_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_26_104038) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -413,6 +413,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_22_120000) do
     t.datetime "onboarded_at"
     t.string "preferred_login_via"
     t.text "preferred_sports"
+    t.json "recent_invite_handles", default: [], null: false
     t.string "registration_source", default: "email", null: false
     t.boolean "require_verification", default: false, null: false
     t.string "skill_level"

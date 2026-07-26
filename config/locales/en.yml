@@ -240,6 +240,7 @@ en:
         placeholder: "@alice @bob"
         submit: "Send invites"
         hint: "Works for players who are signed in to GetCourt and connected the Telegram bot."
+        recent: "Recent:"
       organizer:
         title: "Organizer"
         user_id: "User ID"
