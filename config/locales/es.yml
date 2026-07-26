@@ -484,6 +484,7 @@ es:
       subtitle: "Ranking completo de jugadores con ELO e historial reciente en GetCourt."
       back: "Volver a Tennis Life"
       rankings_title: "Ranking de jugadores y porcentaje de victorias"
+      active_window_note: "Solo entran en el ranking los jugadores con algún partido en los últimos %{months} meses."
       rank: "Posición"
       player: "Jugador"
       wins: "Victorias"

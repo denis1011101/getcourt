@@ -255,6 +255,23 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     match&.destroy
   end
 
+  test "statistics ranking drops players without a recent match" do
+    Match.delete_all
+    active = User.create!(email: "rating_active@example.com", name: "Active Player")
+    dormant = User.create!(email: "rating_dormant@example.com", name: "Dormant Player")
+
+    travel_to Time.zone.local(2026, 12, 15) do
+      Match.create!(user: active, mode: "singles", outcome: "loss", played_at: 1.week.ago)
+      Match.create!(user: dormant, mode: "singles", outcome: "win", played_at: Time.zone.local(2026, 2, 1))
+
+      get tennis_life_statistics_url
+    end
+
+    assert_response :success
+    assert_select "table td", text: "Active Player", count: 1
+    assert_select "table td", text: "Dormant Player", count: 0
+  end
+
   test "statistics shows guest names escaped in recent matches" do
     Match.delete_all
     player = User.create!(email: "guest_recent_player@example.com", name: "Guest Recent Player")
@@ -310,7 +327,7 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
       current_player = User.create!(name: "Current Season Player", email: "current-season-player@example.com")
 
       Match.create!(user: old_player, mode: "singles", outcome: "win", played_at: Season.current_start - 1.day)
-      Match.create!(user: current_player, mode: "singles", outcome: "win", played_at: Season.current_start + 1.day)
+      Match.create!(user: current_player, mode: "singles", outcome: "win", played_at: 1.day.ago)
 
       get tennis_life_statistics_url
 

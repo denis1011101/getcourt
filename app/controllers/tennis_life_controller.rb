@@ -4,6 +4,7 @@ class TennisLifeController < ApplicationController
   FEED_LIMIT = 20
   RATING_LIMIT = 10
   MATCHES_PER_PAGE = 20
+  ACTIVE_RATING_MONTHS = 6
 
   def index
     @season_label = Season.current_label
@@ -60,6 +61,7 @@ class TennisLifeController < ApplicationController
   end
 
   def build_rating_rows
+    active_user_ids = recently_active_user_ids
     seasonal_rows = Match
       .where(played_at: Season.current_start..)
       .group(:user_id)
@@ -75,7 +77,7 @@ class TennisLifeController < ApplicationController
 
     seasonal_rows.filter_map do |user_id, games_count, wins_count|
       user = users_by_id[user_id]
-      next unless user
+      next unless user && active_user_ids.include?(user_id)
 
       games = games_count.to_i
       wins = wins_count.to_i
@@ -91,6 +93,11 @@ class TennisLifeController < ApplicationController
         doubles_rating: (ps&.doubles_rating || 1500.0)
       }
     end.sort_by { |row| [ -row[:pct], -row[:wins], -row[:games] ] }
+  end
+
+  # A single win back in January shouldn't hold the top spot for the rest of the season.
+  def recently_active_user_ids
+    Match.where(played_at: ACTIVE_RATING_MONTHS.months.ago..).distinct.pluck(:user_id).to_set
   end
 
   def build_recent_match_events
