@@ -513,6 +513,7 @@ en:
       subtitle: "Full player rankings with ELO ratings and recent match history on GetCourt."
       back: "Back to Tennis Life"
       rankings_title: "Player Rankings & Win Rates"
+      active_window_note: "Only players with a match in the last %{months} months are ranked."
       rank: "Rank"
       player: "Player"
       wins: "Wins"
