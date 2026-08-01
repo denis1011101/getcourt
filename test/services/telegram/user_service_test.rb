@@ -11,6 +11,21 @@ class Telegram::UserServiceTest < ActiveSupport::TestCase
     assert_equal "es", user.telegram_locale
   end
 
+  test "keeps an unknown language unset until a supported language arrives" do
+    user, created = Telegram::UserService.find_or_create_for_chat(
+      { "id" => 76_504, "username" => "unknown_language", "first_name" => "New" },
+      language_code: "de-DE"
+    )
+
+    assert created
+    assert_nil user.telegram_locale
+    assert_equal "ru", Telegram::I18n.locale_for(user)
+
+    Telegram::UserService.find_or_create_for_chat({ "id" => 76_504 }, language_code: "en-US")
+
+    assert_equal "en", user.reload.telegram_locale
+  end
+
   test "does not overwrite an existing Telegram locale" do
     user = users(:one)
     user.update!(email: "existing-user-service@example.com", telegram_chat_id: 76_502, telegram_locale: "en")

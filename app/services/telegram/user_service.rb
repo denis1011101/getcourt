@@ -31,7 +31,7 @@ module Telegram
           name: first_name,
           telegram_username: username,
           telegram_chat_id: chat_id,
-          telegram_locale: Telegram::I18n.locale_from_language_code(language_code) || Telegram::I18n::DEFAULT_LOCALE,
+          telegram_locale: Telegram::I18n.locale_from_language_code(language_code),
           registration_source: "telegram",
           telegram_generated_email: true
         )
