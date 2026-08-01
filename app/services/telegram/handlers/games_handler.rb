@@ -25,8 +25,8 @@ module Telegram
         # Return label used in games lists (shared formatter used everywhere)
         # locale: pass the active locale so spots-left text is correctly localised
         def game_label(g, owner: nil, locale: Telegram::I18n::DEFAULT_LOCALE)
-          date = Telegram::Helpers::GameFormatting.game_datetime(g)
-          title = Telegram::Helpers::GameFormatting.game_title(g)
+          date = Telegram::Helpers::GameFormatting.game_datetime(g, locale: locale)
+          title = Telegram::Helpers::GameFormatting.game_title(g, locale: locale)
 
           required = (g.respond_to?(:players_count) && g.players_count.to_i > 0) ? g.players_count.to_i : 4
           approved_count =

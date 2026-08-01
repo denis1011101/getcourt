@@ -3,7 +3,7 @@ require "test_helper"
 class Telegram::Handlers::GameDetailHandlerTest < ActiveSupport::TestCase
   setup do
     @game = games(:one)
-    @game.update_columns(with_coach: false)
+    @game.update_columns(date: Date.new(2026, 8, 2), recurring: false, sport: "Tennis", with_coach: false)
   end
 
   test "omits coach line when game has no coach" do
@@ -47,11 +47,32 @@ class Telegram::Handlers::GameDetailHandlerTest < ActiveSupport::TestCase
     end
   end
 
+  test "renders game card in Russian" do
+    text, = render_game(locale: "ru")
+
+    assert_includes text, "*Теннис ##{@game.id}*"
+    assert_includes text, "Когда: 02.08.2026"
+  end
+
+  test "renders game card in English" do
+    text, = render_game(locale: "en")
+
+    assert_includes text, "*Tennis ##{@game.id}*"
+    assert_includes text, "When: 08/02/2026"
+  end
+
+  test "renders game card in Spanish" do
+    text, = render_game(locale: "es")
+
+    assert_includes text, "*Tenis ##{@game.id}*"
+    assert_includes text, "Cuándo: 02/08/2026"
+  end
+
   private
-    def render_game(reading: nil)
+    def render_game(reading: nil, locale: "ru")
       sent = nil
 
-      stub_singleton(Telegram::Helpers::UserLookup, :locale_for, ->(_) { "ru" }) do
+      stub_singleton(Telegram::Helpers::UserLookup, :locale_for, ->(_) { locale }) do
         stub_singleton(Weather::GoogleForecast, :for_game, ->(_, timeout:) {
           assert_equal({ open: 2, read: 3 }, timeout)
           reading

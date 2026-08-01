@@ -20,17 +20,19 @@ class NotifyPrebookingOwnerJob < ApplicationJob
     pending_prebookings = game.prebookings.where(user_id: user.id, status: "pending")
     return if pending_prebookings.empty?
 
-    requester = Telegram::Helpers::UserLookup.display_name(user)
+    locale = Telegram::Helpers::UserLookup.locale_for(owner.telegram_chat_id)
+    t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+    requester = Telegram::Helpers::UserLookup.display_name(user, fallback: t.(:user_fallback))
 
-    dates_text = pending_prebookings.map { |pb| pb.date.strftime("%Y-%m-%d") }.sort.join(", ")
+    dates_text = pending_prebookings.map(&:date).sort.map { |date| I18n.l(date, format: :short, locale: locale) }.join(", ")
     host = ENV.fetch("APP_HOST", ENV.fetch("HOSTNAME", "https://getcourt.co"))
     game_url = "#{host}/games/#{game.id}"
-    text = "Prebooking request for Game ##{game.id} from #{requester}\nDates: #{dates_text}\n\n#{game_url}"
+    text = "#{t.(:prebooking_request, game_id: game.id, name: requester)}\n#{t.(:dates_label, dates: dates_text)}\n\n#{game_url}"
 
     buttons = [
       [
-        { text: "Approve All", callback_data: "game:approve_all_prebookings:#{game.id}:#{user.id}" },
-        { text: "Reject All",  callback_data: "game:reject_all_prebookings:#{game.id}:#{user.id}" }
+        { text: t.(:approve_all), callback_data: "game:approve_all_prebookings:#{game.id}:#{user.id}" },
+        { text: t.(:reject_all), callback_data: "game:reject_all_prebookings:#{game.id}:#{user.id}" }
       ]
     ]
 

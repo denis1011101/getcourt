@@ -18,6 +18,10 @@ es:
   date:
     formats:
       long: "%d/%m/%Y"
+      short: "%d/%m/%Y"
+  time:
+    formats:
+      short: "%H:%M"
   meta:
     default_title: "GetCourt — crea partidos e invita amigos fácilmente"
     default_description: "GetCourt — crea partidos de tenis, tenis de mesa, squash y pádel. Configuración rápida, gestión de participantes y recordatorios por Telegram."
@@ -123,6 +127,11 @@ es:
       title: "Ver la final juntos"
       body: "Ven a ver la final en el salón de cachimbas Moment, Avenida Lenin 20, Ekaterimburgo."
   games:
+    sports:
+      tennis: "Tenis"
+      padel: "Pádel"
+      table_tennis: "Tenis de mesa"
+      squash: "Squash"
     index:
       hero_title: "Encuentra tu próximo partido"
       hero_subtitle: "Tenis, pádel, squash, tenis de mesa — únete a un partido cerca de ti o crea el tuyo."

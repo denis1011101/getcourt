@@ -21,25 +21,26 @@ class DailyTelegramNotificationsJob < ApplicationJob
       next if recipients.empty?
 
       time = game.next_time || game.time
-      time_str = time&.strftime("%H:%M") || "—:--"
-      when_text = day_offset == 1 ? "tomorrow" : "today"
-      court_name = game.court&.name || "unknown court"
-      participants = recipients.map do |u|
-        Telegram::Helpers::UserLookup.display_name(u)
-      end.compact
-
-      participants_text = participants.join("\n")
-
       game_url = "https://getcourt.co/games/#{game.id}"
-      reminder_head = "Reminder: you have a game #{when_text} (#{target_date.strftime('%Y-%m-%d')}) at #{time_str} on #{court_name}"
-
       recipients.each do |recipient|
         next unless recipient&.telegram_chat_id.present?
 
         locale = Telegram::Helpers::UserLookup.locale_for(recipient.telegram_chat_id)
+        t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+        time_str = Telegram::Helpers::GameFormatting.format_time_hhmm(time, locale: locale) || "—:--"
+        when_text = day_offset == 1 ? t.(:tomorrow) : t.(:today)
+        court_name = game.court&.name || t.(:unknown_court)
+        participants_text = recipients.map do |user|
+          Telegram::Helpers::UserLookup.display_name(user, fallback: t.(:user_fallback))
+        end.compact.join("\n")
+        reminder_head = t.(:reminder_head,
+          when: when_text,
+          date: I18n.l(target_date, format: :short, locale: locale),
+          time: time_str,
+          court: court_name)
         coach = Telegram::Helpers::GameFormatting.coach_mark(game, locale: locale)
         title = [ reminder_head, coach ].compact.join(" — ")
-        text = [ title, "Participants:\n#{participants_text}" ].join("\n") + "\n\n#{game_url}"
+        text = [ title, "#{t.(:participants_label)}\n#{participants_text}" ].join("\n") + "\n\n#{game_url}"
         SendTelegramNotificationJob.perform_later(recipient.telegram_chat_id, text)
       end
     end

@@ -1,6 +1,6 @@
 module Telegram
   module I18n
-    LOCALES = %w[ru en].freeze
+    LOCALES = %w[ru en es].freeze
     DEFAULT_LOCALE = "ru".freeze
 
     # Return the locale for a user (from DB field or default)
@@ -14,7 +14,7 @@ module Telegram
     # Usage: Telegram::I18n.t(:main_menu, locale: "ru")
     def self.t(key, locale: DEFAULT_LOCALE, **args)
       locale = DEFAULT_LOCALE unless LOCALES.include?(locale.to_s)
-      dict = (locale.to_s == "en") ? EN : RU
+      dict = DICTS.fetch(locale.to_s)
       template = dict[key.to_sym] || EN[key.to_sym] || key.to_s
       if args.any? && template.is_a?(String)
         args.each { |k, v| template = template.gsub("%{#{k}}", v.to_s) }
@@ -25,6 +25,11 @@ module Telegram
     # Shortcut: translate with user object
     def self.for_user(user)
       locale_for(user)
+    end
+
+    def self.locale_from_language_code(language_code)
+      locale = language_code.to_s.split("-").first.downcase
+      locale if LOCALES.include?(locale)
     end
 
     RU = {
@@ -78,6 +83,61 @@ module Telegram
       spots_left: "%{count} мест свободно",
       spot_left: "%{count} место свободно",
       spots_left_few: "%{count} места свободно",
+      sport_tennis: "Теннис",
+      sport_padel: "Падел",
+      sport_table_tennis: "Настольный теннис",
+      sport_squash: "Сквош",
+      invitation_title: "Вас приглашают присоединиться:",
+      invitation_join: "Присоединиться #%{game_id}",
+      invitation_decline: "Отклонить #%{game_id}",
+      invite_declined: "Приглашение отклонено",
+      invite_declined_user: "Вы отклонили приглашение в игру #%{game_id}.",
+      invite_declined_owner: "%{name} отклонил приглашение в игру #%{game_id}.",
+      invite_cancelled: "Приглашение отменено.",
+      only_game_owner_can_invite: "Только владелец игры может отправлять приглашения.",
+      invite_handles_invalid: "Имена пользователей не найдены. Пример: @alice @bob",
+      invitations_sent: "Приглашения отправлены.",
+      invitations_processed: "Приглашения обработаны. %{details}",
+      invite_not_found: "Не найдены: %{users}",
+      invite_skipped_self: "Пропущены (это вы): %{users}",
+      game_or_user_not_found: "Игра или пользователь не найдены",
+      joined_game: "Вы присоединились к игре",
+      join_request_already_sent: "Запрос уже отправлен",
+      already_joined_game: "Вы уже участвуете в игре",
+      join_request_sent: "Запрос на участие отправлен",
+      join_failed: "Не удалось присоединиться к игре",
+      approve_btn: "Одобрить",
+      reject_btn: "Отклонить",
+      join_request_owner_text: "Запрос на участие в игре #%{game_id} от %{name}\n\n%{url}",
+      not_a_participant: "Вы не участвуете в игре",
+      left_game: "Вы покинули игру",
+      join_request_pending: "Запрос ожидает подтверждения",
+      participation_request_not_found: "Запрос не найден",
+      participation_no_permission: "Недостаточно прав",
+      participation_approved: "Одобрено",
+      participation_rejected: "Отклонено",
+      user_accepted: "Пользователь принят",
+      user_rejected: "Пользователь отклонён",
+      participation_request_approved_user: "Ваш запрос на участие в игре #%{game_id} одобрен.",
+      participation_request_rejected_user: "Ваш запрос на участие в игре #%{game_id} отклонён.",
+      participation_joined: "присоединился к вашей игре",
+      participation_left: "покинул вашу игру",
+      participation_removed: "был удалён из вашей игры",
+      participation_guest_added: "был добавлен в вашу игру",
+      participation_notification: "%{name} %{action} — %{date}, %{time}",
+      today: "сегодня",
+      tomorrow: "завтра",
+      reminder_head: "Напоминание: у вас игра %{when} (%{date}) в %{time} на корте %{court}",
+      participants_label: "Участники:",
+      prebooking_request: "Запрос на предбронирование игры #%{game_id} от %{name}",
+      dates_label: "Даты: %{dates}",
+      approve_all: "Одобрить все",
+      reject_all: "Отклонить все",
+      telegram_connected: "Telegram подключён к вашему аккаунту GetCourt.",
+      registration_invalid: "Код регистрации недействителен или истёк. Создайте новый код в настройках аккаунта.",
+      delete_game_no_permission: "Недостаточно прав для удаления этой игры.",
+      user_fallback: "Пользователь",
+      unknown_court: "неизвестном корте",
 
       # Courts
       courts_menu: "Меню кортов:",
@@ -504,6 +564,61 @@ module Telegram
       spots_left: "%{count} spots left",
       spot_left: "%{count} spot left",
       spots_left_few: "%{count} spots left",
+      sport_tennis: "Tennis",
+      sport_padel: "Padel",
+      sport_table_tennis: "Table tennis",
+      sport_squash: "Squash",
+      invitation_title: "You are invited to join:",
+      invitation_join: "Join #%{game_id}",
+      invitation_decline: "Decline #%{game_id}",
+      invite_declined: "Invite declined",
+      invite_declined_user: "You declined the invitation to game #%{game_id}.",
+      invite_declined_owner: "%{name} declined the invitation to game #%{game_id}.",
+      invite_cancelled: "Invite cancelled.",
+      only_game_owner_can_invite: "Only the game owner can send invites.",
+      invite_handles_invalid: "No usernames found. Example: @alice @bob",
+      invitations_sent: "Invitations sent.",
+      invitations_processed: "Invitations processed. %{details}",
+      invite_not_found: "Not found: %{users}",
+      invite_skipped_self: "Skipped self: %{users}",
+      game_or_user_not_found: "Game or user not found",
+      joined_game: "You joined the game",
+      join_request_already_sent: "Request already sent",
+      already_joined_game: "You already joined",
+      join_request_sent: "Join request sent",
+      join_failed: "Failed to join the game",
+      approve_btn: "Approve",
+      reject_btn: "Reject",
+      join_request_owner_text: "Join request for Game #%{game_id} from %{name}\n\n%{url}",
+      not_a_participant: "You are not a participant",
+      left_game: "You left the game",
+      join_request_pending: "Request is pending approval",
+      participation_request_not_found: "Request not found",
+      participation_no_permission: "No permission",
+      participation_approved: "Approved",
+      participation_rejected: "Rejected",
+      user_accepted: "User accepted",
+      user_rejected: "User rejected",
+      participation_request_approved_user: "Your request to join Game #%{game_id} was approved.",
+      participation_request_rejected_user: "Your request to join Game #%{game_id} was rejected.",
+      participation_joined: "joined your game",
+      participation_left: "left your game",
+      participation_removed: "was removed from your game",
+      participation_guest_added: "was added to your game",
+      participation_notification: "%{name} %{action} on %{date} at %{time}",
+      today: "today",
+      tomorrow: "tomorrow",
+      reminder_head: "Reminder: you have a game %{when} (%{date}) at %{time} on %{court}",
+      participants_label: "Participants:",
+      prebooking_request: "Prebooking request for Game #%{game_id} from %{name}",
+      dates_label: "Dates: %{dates}",
+      approve_all: "Approve All",
+      reject_all: "Reject All",
+      telegram_connected: "Telegram connected to your GetCourt account.",
+      registration_invalid: "Registration code is invalid or expired. Please regenerate it in your account settings.",
+      delete_game_no_permission: "No permission to delete this game.",
+      user_fallback: "User",
+      unknown_court: "unknown court",
 
       # Courts
       courts_menu: "Courts menu:",
@@ -880,9 +995,95 @@ module Telegram
       user_not_found: "User not found"
     }.freeze
 
-    # Helper for spots left with Russian pluralization
+    ES = {
+      bot_moved_to_site: "Todas las acciones están disponibles en getcourt.co.",
+      game_not_found: "Partido no encontrado.",
+      players: "Jugadores: %{count}/%{capacity}",
+      owner: "Organizador: %{name}",
+      when_label: "Cuándo: %{datetime}",
+      weather_label: "Tiempo: %{value}",
+      court_label: "Pista: %{name}",
+      coach_with: "Con entrenador",
+      coach_need: "Se necesita entrenador",
+      coach_no: "Sin entrenador",
+      coach_label: "Entrenador: %{value}",
+      join: "Unirse",
+      request_to_join: "Solicitar unirse",
+      request_sent: "Solicitud enviada",
+      leave: "Salir",
+      open_in_browser: "Abrir en el navegador",
+      spots_left: "%{count} plazas libres",
+      spot_left: "%{count} plaza libre",
+      spots_left_few: "%{count} plazas libres",
+      sport_tennis: "Tenis",
+      sport_padel: "Pádel",
+      sport_table_tennis: "Tenis de mesa",
+      sport_squash: "Squash",
+      invitation_title: "Te han invitado a unirte:",
+      invitation_join: "Unirse #%{game_id}",
+      invitation_decline: "Rechazar #%{game_id}",
+      invite_declined: "Invitación rechazada",
+      invite_declined_user: "Has rechazado la invitación al partido #%{game_id}.",
+      invite_declined_owner: "%{name} ha rechazado la invitación al partido #%{game_id}.",
+      invite_cancelled: "Invitación cancelada.",
+      only_game_owner_can_invite: "Solo el organizador puede enviar invitaciones.",
+      invite_handles_invalid: "No se encontraron usuarios. Ejemplo: @alice @bob",
+      invitations_sent: "Invitaciones enviadas.",
+      invitations_processed: "Invitaciones procesadas. %{details}",
+      invite_not_found: "No encontrados: %{users}",
+      invite_skipped_self: "Omitidos (eres tú): %{users}",
+      game_or_user_not_found: "Partido o usuario no encontrado",
+      joined_game: "Te has unido al partido",
+      join_request_already_sent: "La solicitud ya se ha enviado",
+      already_joined_game: "Ya estás en el partido",
+      join_request_sent: "Solicitud para unirse enviada",
+      join_failed: "No se pudo unir al partido",
+      approve_btn: "Aprobar",
+      reject_btn: "Rechazar",
+      join_request_owner_text: "Solicitud para unirse al partido #%{game_id} de %{name}\n\n%{url}",
+      not_a_participant: "No participas en el partido",
+      left_game: "Has salido del partido",
+      join_request_pending: "La solicitud está pendiente de aprobación",
+      participation_request_not_found: "Solicitud no encontrada",
+      participation_no_permission: "Sin permiso",
+      participation_approved: "Aprobada",
+      participation_rejected: "Rechazada",
+      user_accepted: "Usuario aceptado",
+      user_rejected: "Usuario rechazado",
+      participation_request_approved_user: "Tu solicitud para unirte al partido #%{game_id} ha sido aprobada.",
+      participation_request_rejected_user: "Tu solicitud para unirte al partido #%{game_id} ha sido rechazada.",
+      participation_joined: "se ha unido a tu partido",
+      participation_left: "ha salido de tu partido",
+      participation_removed: "ha sido eliminado de tu partido",
+      participation_guest_added: "ha sido añadido a tu partido",
+      participation_notification: "%{name} %{action} el %{date} a las %{time}",
+      today: "hoy",
+      tomorrow: "mañana",
+      reminder_head: "Recordatorio: tienes un partido %{when} (%{date}) a las %{time} en %{court}",
+      participants_label: "Participantes:",
+      prebooking_request: "Solicitud de reserva previa para el partido #%{game_id} de %{name}",
+      dates_label: "Fechas: %{dates}",
+      approve_all: "Aprobar todas",
+      reject_all: "Rechazar todas",
+      telegram_connected: "Telegram se ha conectado a tu cuenta de GetCourt.",
+      registration_invalid: "El código de registro no es válido o ha caducado. Genera uno nuevo en los ajustes de tu cuenta.",
+      delete_game_no_permission: "No tienes permiso para eliminar este partido.",
+      user_fallback: "Usuario",
+      unknown_court: "una pista desconocida",
+      players_list_btn: "Lista de jugadores",
+      players_list_title: "Lista de jugadores (Partido #%{game_id})",
+      players_list_empty: "Todavía no hay jugadores.",
+      player_stats_row: "%{name} — %{games} partidos, %{wins} victorias (%{pct}%)",
+      guest_badge: "invitado",
+      back_to_game: "Volver al partido",
+      unknown_action: "Acción desconocida."
+    }.freeze
+
+    DICTS = { "ru" => RU, "en" => EN, "es" => ES }.freeze
+
     def self.spots_left_text(count, locale: DEFAULT_LOCALE)
-      if locale == "ru"
+      case locale.to_s
+      when "ru"
         n = count.abs % 100
         n1 = n % 10
         if n > 10 && n < 20
@@ -894,6 +1095,8 @@ module Telegram
         else
           t(:spots_left, locale: locale, count: count)
         end
+      when "es"
+        count == 1 ? t(:spot_left, locale: locale, count: count) : t(:spots_left, locale: locale, count: count)
       else
         count == 1 ? t(:spot_left, locale: locale, count: count) : t(:spots_left, locale: locale, count: count)
       end

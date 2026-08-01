@@ -40,7 +40,7 @@ class User < ApplicationRecord
 
   RECENT_INVITE_LISTS_LIMIT = 5
 
-  TELEGRAM_LOCALES = %w[ru en].freeze
+  TELEGRAM_LOCALES = %w[ru en es].freeze
   WEB_LOCALES = %w[en es ru].freeze
   NEARBY_NOTIFICATION_CHANNELS = %w[email telegram].freeze
 

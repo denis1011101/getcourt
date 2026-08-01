@@ -22,8 +22,26 @@ class GameInvitationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "sendMessage", api
     assert_equal target.telegram_chat_id.to_s, payload[:chat_id]
     assert_includes payload[:text], game_path(game)
+    assert_includes payload[:text], "You are invited to join:"
     assert_includes payload[:text], " — With coach\n\n"
+    assert_equal "Join ##{game.id}", payload[:reply_markup][:inline_keyboard].first.first[:text]
     assert_equal "game:join_invited:#{game.id}", payload[:reply_markup][:inline_keyboard].first.first[:callback_data]
+  end
+
+  test "invitation is localized in Russian" do
+    payload = invitation_payload_for("ru", chat_id: 90_007)
+
+    assert_includes payload[:text], "Вас приглашают присоединиться:"
+    assert_includes payload[:text], "Теннис ##{games(:one).id}"
+    assert_equal "Присоединиться ##{games(:one).id}", payload[:reply_markup][:inline_keyboard].first.first[:text]
+  end
+
+  test "invitation is localized in Spanish" do
+    payload = invitation_payload_for("es", chat_id: 90_008)
+
+    assert_includes payload[:text], "Te han invitado a unirte:"
+    assert_includes payload[:text], "Tenis ##{games(:one).id}"
+    assert_equal "Unirse ##{games(:one).id}", payload[:reply_markup][:inline_keyboard].first.first[:text]
   end
 
   test "invite omits coach mark when game has no coach" do
@@ -75,4 +93,22 @@ class GameInvitationsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :forbidden
   end
+
+  private
+    def invitation_payload_for(locale, chat_id:)
+      owner = users(:one)
+      target = users(:two)
+      game = games(:one)
+      owner.update!(email: "invite-#{locale}-owner@example.com")
+      target.update!(email: "invite-#{locale}-target@example.com", telegram_username: "@targetuser", telegram_chat_id: chat_id, telegram_locale: locale)
+      game.update!(user: owner, sport: "Tennis", with_coach: true)
+      post session_url, params: { email: owner.email }
+      calls = []
+
+      stub_singleton(Telegram::Api, :send_api, ->(*args) { calls << args; { "ok" => true } }) do
+        post game_invitations_path(game), params: { usernames: "@targetuser" }
+      end
+
+      calls.first.last
+    end
 end

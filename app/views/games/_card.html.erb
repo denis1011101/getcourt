@@ -56,7 +56,7 @@
     <div class="flex flex-wrap gap-1.5 mb-3">
       <% if game.respond_to?(:sport) && game.sport.present? %>
         <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:bg-slate-700 dark:text-slate-100">
-          <%= game.sport.to_s.titleize %>
+          <%= t("games.sports.#{game.sport.to_s.parameterize(separator: '_')}", default: game.sport.to_s.titleize) %>
         </span>
       <% end %>
 

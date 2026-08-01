@@ -10,7 +10,7 @@ class Telegram::Handlers::StartHandlerTest < ActiveSupport::TestCase
     menu_chat_id = nil
     survey_called = false
 
-    stub_singleton(Telegram::UserService, :find_or_create_for_chat, ->(_) { [ user, true ] }) do
+    stub_singleton(Telegram::UserService, :find_or_create_for_chat, ->(_, language_code:) { [ user, true ] }) do
       stub_singleton(Telegram::Handlers::SurveyHandler, :start, ->(*) { survey_called = true }) do
         stub_singleton(Telegram::Handlers::MenuHandler, :menu, ->(cid) { menu_chat_id = cid }) do
           Telegram::Handlers::StartHandler.handle(make_message("111"))
@@ -27,7 +27,7 @@ class Telegram::Handlers::StartHandlerTest < ActiveSupport::TestCase
     menu_chat_id = nil
     survey_called = false
 
-    stub_singleton(Telegram::UserService, :find_or_create_for_chat, ->(_) { [ user, false ] }) do
+    stub_singleton(Telegram::UserService, :find_or_create_for_chat, ->(_, language_code:) { [ user, false ] }) do
       stub_singleton(Telegram::Handlers::SurveyHandler, :start, ->(*) { survey_called = true }) do
         stub_singleton(Telegram::Handlers::MenuHandler, :menu, ->(cid) { menu_chat_id = cid }) do
           Telegram::Handlers::StartHandler.handle(make_message("222"))
@@ -43,7 +43,7 @@ class Telegram::Handlers::StartHandlerTest < ActiveSupport::TestCase
     menu_called = false
     survey_called = false
 
-    stub_singleton(Telegram::UserService, :find_or_create_for_chat, ->(_) { raise "db error" }) do
+    stub_singleton(Telegram::UserService, :find_or_create_for_chat, ->(_, language_code:) { raise "db error" }) do
       stub_singleton(Telegram::Handlers::SurveyHandler, :start, ->(*) { survey_called = true }) do
         stub_singleton(Telegram::Handlers::MenuHandler, :menu, ->(_) { menu_called = true }) do
           assert_nothing_raised { Telegram::Handlers::StartHandler.handle(make_message("333")) }
@@ -73,7 +73,7 @@ class Telegram::Handlers::StartHandlerTest < ActiveSupport::TestCase
 
   test "missing chat_id returns early without calling any handler" do
     called = false
-    stub_singleton(Telegram::UserService, :find_or_create_for_chat, ->(_) { called = true; [ nil, false ] }) do
+    stub_singleton(Telegram::UserService, :find_or_create_for_chat, ->(_, language_code:) { called = true; [ nil, false ] }) do
       Telegram::Handlers::StartHandler.handle({})
     end
     assert_not called

@@ -9,7 +9,7 @@ module Telegram
           return unless chat_id.present?
 
           begin
-            Telegram::UserService.find_or_create_for_chat(chat)
+            Telegram::UserService.find_or_create_for_chat(chat, language_code: message.dig("from", "language_code"))
           rescue => e
             Rails.logger.error "[Telegram::Handlers::StartHandler] user lookup error: #{e.class} #{e.message}"
           end

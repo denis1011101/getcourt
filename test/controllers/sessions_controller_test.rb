@@ -28,7 +28,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     User.find_by(email: email)&.destroy if defined?(email)
   end
 
-  test "new user created from unsupported telegram locale keeps default telegram locale" do
+  test "new user created from es locale stores es telegram locale" do
     host! "es.getcourt.co"
     email = "sessions_es_locale@example.com"
 
@@ -36,7 +36,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to root_path
     user = User.find_by!(email: email)
-    assert_equal "ru", user.telegram_locale
+    assert_equal "es", user.telegram_locale
     assert_equal "es", user.locale
   ensure
     User.find_by(email: email)&.destroy if defined?(email)

@@ -8,20 +8,21 @@ module Telegram
       user_name = actor_name(actor, locale)
       date = game.respond_to?(:next_date) ? (game.next_date || game.date) : game.date
       time = game.respond_to?(:next_time) ? (game.next_time || game.time) : game.time
-      date_str = date&.strftime("%Y-%m-%d")
-      time_str = time&.strftime("%H:%M")
+      date_str = date ? ::I18n.l(date, format: :short, locale: locale) : "—"
+      time_str = Telegram::Helpers::GameFormatting.format_time_hhmm(time, locale: locale) || "—:--"
       host = ENV.fetch("APP_HOST", ENV.fetch("HOSTNAME", "https://getcourt.co"))
       game_url = "#{host}/games/#{game.id}"
 
       action_text = case action.to_sym
-      when :joined then "joined your game"
-      when :left   then "left your game"
-      when :removed then "was removed from your game"
-      when :guest_added then "was added to your game"
+      when :joined then Telegram::I18n.t(:participation_joined, locale: locale)
+      when :left then Telegram::I18n.t(:participation_left, locale: locale)
+      when :removed then Telegram::I18n.t(:participation_removed, locale: locale)
+      when :guest_added then Telegram::I18n.t(:participation_guest_added, locale: locale)
       else action.to_s
       end
 
-      text = "#{user_name} #{action_text} on #{date_str} at #{time_str}\n\n#{game_url}"
+      text = Telegram::I18n.t(:participation_notification, locale: locale,
+        name: user_name, action: action_text, date: date_str, time: time_str) + "\n\n#{game_url}"
       SendTelegramNotificationJob.perform_later(game.user.telegram_chat_id, text)
     end
 
@@ -31,7 +32,8 @@ module Telegram
       elsif actor.is_a?(String)
         actor
       else
-        Telegram::Helpers::UserLookup.display_name(actor, fallback: "User ##{actor&.id}")
+        fallback = "#{Telegram::I18n.t(:user_fallback, locale: locale)} ##{actor&.id}"
+        Telegram::Helpers::UserLookup.display_name(actor, fallback: fallback)
       end
     end
   end

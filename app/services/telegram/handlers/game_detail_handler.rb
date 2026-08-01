@@ -28,14 +28,14 @@ module Telegram
           game_url = Rails.application.routes.url_helpers.game_url(game, host: host)
 
           lines = []
-          title = Telegram::Helpers::GameFormatting.game_title(game)
+          title = Telegram::Helpers::GameFormatting.game_title(game, locale: locale)
           title_text = "#{title || 'Game'} ##{game.id}"
           lines << "*#{title_text}*"
 
           coach = Telegram::Helpers::GameFormatting.coach_mark(game, locale: locale)
           lines << t.(:coach_label, value: coach) if coach.present?
 
-          when_str = Telegram::Helpers::GameFormatting.game_datetime(game)
+          when_str = Telegram::Helpers::GameFormatting.game_datetime(game, locale: locale)
           lines << t.(:when_label, datetime: when_str) if when_str.present?
 
           reading = Weather::GoogleForecast.for_game(game, timeout: { open: 2, read: 3 })

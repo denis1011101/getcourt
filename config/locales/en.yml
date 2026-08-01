@@ -47,6 +47,10 @@ en:
   date:
     formats:
       long: "%B %d, %Y"
+      short: "%m/%d/%Y"
+  time:
+    formats:
+      short: "%I:%M %p"
   meta:
     default_title: "GetCourt — easily create games and invite friends"
     default_description: "GetCourt — create games and invite friends for tennis, table tennis, squash and padel. Quick setup, participant management and Telegram reminders."
@@ -152,6 +156,11 @@ en:
       title: "Watch the final together"
       body: "Join us for the final at Moment hookah lounge, 20 Lenina Avenue, Yekaterinburg."
   games:
+    sports:
+      tennis: "Tennis"
+      padel: "Padel"
+      table_tennis: "Table tennis"
+      squash: "Squash"
     index:
       hero_title: "Find your next game"
       hero_subtitle: "Tennis, padel, squash, table tennis — join a match near you or create your own."

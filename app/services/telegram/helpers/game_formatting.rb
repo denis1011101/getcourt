@@ -3,23 +3,22 @@ module Telegram
     # Shared game date/time formatting extracted from GamesHandler and MessageHandler.
     # Both had identical copies of these methods.
     module GameFormatting
-      # Returns "YYYY-MM-DD HH:MM" or "YYYY-MM-DD" for a game.
-      def self.game_datetime(game)
+      def self.game_datetime(game, locale: Telegram::I18n::DEFAULT_LOCALE)
         d = resolve_date(game)
         return nil unless d.present?
 
         t = resolve_time(game)
 
-        date_str = d.respond_to?(:strftime) ? d.strftime("%Y-%m-%d") : d.to_s
-        time_str = format_time_hhmm(t)
+        date_str = d.respond_to?(:strftime) ? ::I18n.l(d, format: :short, locale: locale) : d.to_s
+        time_str = format_time_hhmm(t, locale: locale)
 
         time_str.present? ? "#{date_str} #{time_str}" : date_str
       end
 
       # Formats a time value (Time, String, nil) into "HH:MM" or nil.
-      def self.format_time_hhmm(t)
+      def self.format_time_hhmm(t, locale: Telegram::I18n::DEFAULT_LOCALE)
         return nil if t.nil?
-        return t.strftime("%H:%M") if t.respond_to?(:strftime)
+        return ::I18n.l(t, format: :short, locale: locale) if t.respond_to?(:strftime)
 
         s = t.to_s.strip
         return nil if s.empty?
@@ -33,11 +32,12 @@ module Telegram
       end
 
       # Extracts game title: title > sport > "Game"
-      def self.game_title(game)
+      def self.game_title(game, locale: Telegram::I18n::DEFAULT_LOCALE)
         if game.respond_to?(:has_attribute?) && game.has_attribute?(:title)
           game.title.to_s.strip.presence
         elsif game.respond_to?(:sport)
-          game.sport.to_s.strip.presence
+          sport = game.sport.to_s.strip
+          Telegram::I18n.t("sport_#{sport.downcase.tr(' ', '_')}", locale: locale) if sport.present?
         end
       end
 

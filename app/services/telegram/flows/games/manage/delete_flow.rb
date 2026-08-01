@@ -9,6 +9,8 @@ module Telegram
             def handle_callback(callback)
               cb = Telegram::Helpers::CallbackData.parse(callback)
               poller = Telegram::Poller.new
+              locale = Telegram::Helpers::UserLookup.locale_for(cb.chat_id)
+              t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
               case cb.data
               when /\Agame:delete:(\d+)(?::(\d+))?\z/
@@ -18,13 +20,13 @@ module Telegram
 
                 game = Game.find_by(id: game_id)
                 unless game
-                  send_or_edit_text(cb.chat_id, "Game not found.", message_id: cb.message_id)
+                  send_or_edit_text(cb.chat_id, t.(:game_not_found), message_id: cb.message_id)
                   return
                 end
 
                 user = Telegram::Helpers::UserLookup.find_user(cb.chat_id)
                 unless user && (user.admin? || user.id == game.user_id)
-                  send_or_edit_text(cb.chat_id, "No permission to delete this game.", message_id: cb.message_id)
+                  send_or_edit_text(cb.chat_id, t.(:delete_game_no_permission), message_id: cb.message_id)
                   return
                 end
 

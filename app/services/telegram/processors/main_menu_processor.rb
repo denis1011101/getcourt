@@ -50,11 +50,15 @@ module Telegram
             chat_id = message.dig("chat", "id") || message.dig("from", "id")
             begin
               user = User.find_or_initialize_by(telegram_chat_id: chat_id.to_s)
+              telegram_locale = Telegram::I18n.locale_from_language_code(message.dig("from", "language_code"))
+              user.telegram_locale = telegram_locale if telegram_locale && (user.new_record? || user.telegram_locale.blank?)
               if user.new_record?
                 user.telegram_username = message.dig("from", "username") rescue nil
                 user.name = message.dig("from", "first_name") rescue nil if user.respond_to?(:name=)
                 user.save(validate: false) rescue nil
                 Rails.logger.info "[Telegram::MainMenuProcessor] created user id=#{user.id} chat=#{chat_id}"
+              elsif user.will_save_change_to_telegram_locale?
+                user.save(validate: false) rescue nil
               end
             rescue => e
               Rails.logger.error "[Telegram::MainMenuProcessor] user create error: #{e.class} #{e.message}"
@@ -72,19 +76,25 @@ module Telegram
             user = token.present? ? User.find_by(telegram_registration_token: token) : nil
 
             if user
+              telegram_locale = Telegram::I18n.locale_from_language_code(message.dig("from", "language_code"))
+              attributes = {
+                telegram_chat_id: chat_id.to_s,
+                telegram_username: message.dig("from", "username").to_s.presence || user.telegram_username,
+                telegram_registration_token: nil,
+                updated_at: Time.current
+              }
+              attributes[:telegram_locale] = telegram_locale if telegram_locale && user.telegram_locale.blank?
+
               User.transaction do
                 User.where(telegram_chat_id: chat_id).where.not(id: user.id).update_all(telegram_chat_id: nil, updated_at: Time.current)
-                user.update_columns(
-                  telegram_chat_id: chat_id.to_s,
-                  telegram_username: message.dig("from", "username").to_s.presence || user.telegram_username,
-                  telegram_registration_token: nil,
-                  updated_at: Time.current
-                )
+                user.update_columns(attributes)
               end
-              Telegram::Api.send_simple(chat_id, "Telegram connected to your GetCourt account.", parse_mode: nil)
+              locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+              Telegram::Api.send_simple(chat_id, Telegram::I18n.t(:telegram_connected, locale: locale), parse_mode: nil)
               Telegram::Handlers::MenuHandler.menu(chat_id) rescue nil
             else
-              Telegram::Api.send_simple(chat_id, "Registration code is invalid or expired. Please regenerate it in your account settings.", parse_mode: nil)
+              locale = Telegram::I18n.locale_from_language_code(message.dig("from", "language_code")) || Telegram::I18n::DEFAULT_LOCALE
+              Telegram::Api.send_simple(chat_id, Telegram::I18n.t(:registration_invalid, locale: locale), parse_mode: nil)
             end
             nil
 

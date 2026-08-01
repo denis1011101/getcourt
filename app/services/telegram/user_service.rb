@@ -2,7 +2,7 @@ module Telegram
   class UserService
     # Найти или создать пользователя по данным чата Telegram.
     # Возвращает [user, created_bool]
-    def self.find_or_create_for_chat(chat_hash)
+    def self.find_or_create_for_chat(chat_hash, language_code: nil)
       Rails.logger.info("[BOT] UserService.find_or_create_for_chat chat=#{chat_hash.inspect}")
       chat_id  = chat_hash["id"].to_s
       username = chat_hash["username"].to_s.presence
@@ -10,12 +10,14 @@ module Telegram
 
       # 1) уже привязан по chat_id
       if (u = User.find_by(telegram_chat_id: chat_id))
+        update_telegram_locale(u, language_code)
         return [ u, false ]
       end
 
       # 2) попытка найти по username и привязать chat_id
       if username && (u = User.find_by(telegram_username: username))
         u.update_column(:telegram_chat_id, chat_id) unless u.telegram_chat_id == chat_id
+        update_telegram_locale(u, language_code)
         return [ u, false ]
       end
 
@@ -29,6 +31,7 @@ module Telegram
           name: first_name,
           telegram_username: username,
           telegram_chat_id: chat_id,
+          telegram_locale: Telegram::I18n.locale_from_language_code(language_code) || Telegram::I18n::DEFAULT_LOCALE,
           registration_source: "telegram",
           telegram_generated_email: true
         )
@@ -41,5 +44,11 @@ module Telegram
       # попробуем вернуть существующего пользователя по chat_id
       [ User.find_by(telegram_chat_id: chat_id) || User.find_by(telegram_username: username), false ]
     end
+
+    def self.update_telegram_locale(user, language_code)
+      locale = Telegram::I18n.locale_from_language_code(language_code)
+      user.update_column(:telegram_locale, locale) if locale && user.telegram_locale.blank?
+    end
+    private_class_method :update_telegram_locale
   end
 end
