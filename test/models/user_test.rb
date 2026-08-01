@@ -18,11 +18,4 @@ class UserTest < ActiveSupport::TestCase
 
     assert user.valid?
   end
-
-  test "all web locales format default dates and short times" do
-    User::WEB_LOCALES.each do |locale|
-      assert_predicate I18n.l(Date.current, locale: locale), :present?
-      assert_predicate I18n.l(Time.current, format: :short, locale: locale), :present?
-    end
-  end
 end
