@@ -19,4 +19,13 @@ class Telegram::UserServiceTest < ActiveSupport::TestCase
 
     assert_equal "en", user.reload.telegram_locale
   end
+
+  test "stores Telegram language for an existing user without a locale" do
+    user = users(:one)
+    user.update!(email: "unset-user-service@example.com", telegram_chat_id: 76_503, telegram_locale: nil)
+
+    Telegram::UserService.find_or_create_for_chat({ "id" => 76_503 }, language_code: "es-ES")
+
+    assert_equal "es", user.reload.telegram_locale
+  end
 end

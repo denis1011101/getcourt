@@ -18,4 +18,12 @@ class UserTest < ActiveSupport::TestCase
 
     assert user.valid?
   end
+
+  test "telegram locale is optional without an implicit default" do
+    column = User.columns_hash.fetch("telegram_locale")
+
+    assert column.null
+    assert_nil column.default
+    assert_nil User.new.telegram_locale
+  end
 end

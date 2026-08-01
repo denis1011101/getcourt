@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_26_104038) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_02_002000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -420,7 +420,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_26_104038) do
     t.json "skill_levels", default: {}, null: false
     t.bigint "telegram_chat_id"
     t.boolean "telegram_generated_email", default: false, null: false
-    t.string "telegram_locale", default: "ru", null: false
+    t.string "telegram_locale"
     t.string "telegram_registration_token"
     t.string "telegram_username"
     t.string "timezone", default: "Asia/Yekaterinburg"

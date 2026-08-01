@@ -3,7 +3,7 @@ require "test_helper"
 class Telegram::Processors::MainMenuProcessorTest < ActiveSupport::TestCase
   test "confirms successful account registration before showing the site link" do
     user = users(:one)
-    user.update!(email: "telegram-register@example.com", telegram_registration_token: "registration-token", telegram_locale: "")
+    user.update!(email: "telegram-register@example.com", telegram_registration_token: "registration-token", telegram_locale: nil)
     message = {
       "chat" => { "id" => 12_345 },
       "from" => { "id" => 12_345, "username" => "registered_user", "language_code" => "es-ES" },
@@ -56,5 +56,21 @@ class Telegram::Processors::MainMenuProcessorTest < ActiveSupport::TestCase
     end
 
     assert_equal "en", user.reload.telegram_locale
+  end
+
+  test "start stores telegram language for an existing user without a locale" do
+    user = users(:one)
+    user.update!(email: "unset-start-locale@example.com", telegram_chat_id: 98_767, telegram_locale: nil)
+    message = {
+      "chat" => { "id" => user.telegram_chat_id },
+      "from" => { "id" => user.telegram_chat_id, "language_code" => "es-ES" },
+      "text" => "/start"
+    }
+
+    stub_singleton(Telegram::Handlers::MenuHandler, :menu, ->(*) { }) do
+      Telegram::Processors::MainMenuProcessor.handle_message(message)
+    end
+
+    assert_equal "es", user.reload.telegram_locale
   end
 end

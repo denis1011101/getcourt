@@ -35,7 +35,7 @@ class User < ApplicationRecord
   attribute :preferred_sports, :json, default: []
   attribute :skill_levels, :json, default: {}
   attribute :timezone, :string
-  attribute :telegram_locale, :string, default: "ru"
+  attribute :telegram_locale, :string
   attribute :recent_invite_handles, :json, default: []
 
   RECENT_INVITE_LISTS_LIMIT = 5
