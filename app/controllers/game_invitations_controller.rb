@@ -42,11 +42,6 @@ class GameInvitationsController < ApplicationController
         next
       end
 
-      if user.notification_channel == "telegram" && user.telegram_chat_id.blank?
-        result[:no_telegram] << "@#{handle}"
-        next
-      end
-
       response = deliver_invitation(user)
       if response == false || (response.is_a?(Hash) && response["ok"] == false)
         result[:failed] << "@#{handle}"

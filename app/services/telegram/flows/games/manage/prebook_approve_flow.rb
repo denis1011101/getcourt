@@ -132,7 +132,8 @@ module Telegram
                   return
                 end
 
-                dates_text = pending_prebookings.map { |pb| pb.date.strftime("%Y-%m-%d") }.sort.join(", ")
+                dates = pending_prebookings.map(&:date).sort
+                dates_text = dates.map { |date| date.strftime("%Y-%m-%d") }.join(", ")
 
                 pending_prebookings.each do |pb|
                   pb.update!(user_id: nil, status: "approved", approved_at: nil)
@@ -151,7 +152,7 @@ module Telegram
                   }) rescue nil
                 end
 
-                GameRequestNotification.prebooking(user: requester, game: game, dates: dates_text.split(", ").map { |date| Date.iso8601(date) }, approved: false)
+                GameRequestNotification.prebooking(user: requester, game: game, dates: dates, approved: false)
 
                 nil
 

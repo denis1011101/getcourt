@@ -83,7 +83,7 @@ class NotifyUrgentPlayerSearchJobTest < ActiveJob::TestCase
     assert_includes calls[0][:args][1], "Center Court"
   end
 
-  test "does not fall back to email when telegram is selected but not connected" do
+  test "falls back to email when telegram is selected but not connected" do
     owner = User.create!(email: "owner_no_fallback@example.com", city_name: "Yekaterinburg")
     recipient = User.create!(
       email: "recipient_no_fallback@example.com",
@@ -95,13 +95,35 @@ class NotifyUrgentPlayerSearchJobTest < ActiveJob::TestCase
     game = Game.create!(court: court, user: owner, date: Date.current + 1.day, urgent_player_search: true)
     calls = []
 
-    assert_no_enqueued_emails do
+    assert_enqueued_emails 1 do
       with_stubbed_singleton_method(SendTelegramNotificationJob, :perform_later, ->(*args, **kwargs) { calls << { args: args, kwargs: kwargs } }) do
         NotifyUrgentPlayerSearchJob.perform_now(game.id)
       end
     end
 
     assert_empty calls
+  ensure
+    game&.destroy
+    court&.destroy
+    recipient&.destroy
+    owner&.destroy
+  end
+
+  test "does not email generated telegram address" do
+    owner = User.create!(email: "owner_generated_email@example.com", city_name: "Yekaterinburg")
+    recipient = User.create!(
+      email: "tg-#{SecureRandom.hex(8)}@telegram.getcourt",
+      telegram_generated_email: true,
+      city_name: "Yekaterinburg",
+      notify_nearby: true,
+      notification_channel: "email"
+    )
+    court = Court.create!(name: "Generated Email Court", city_name: "Yekaterinburg")
+    game = Game.create!(court: court, user: owner, date: Date.current + 1.day, urgent_player_search: true)
+
+    assert_no_enqueued_emails do
+      NotifyUrgentPlayerSearchJob.perform_now(game.id)
+    end
   ensure
     game&.destroy
     court&.destroy

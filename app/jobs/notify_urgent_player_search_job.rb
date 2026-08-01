@@ -22,9 +22,12 @@ class NotifyUrgentPlayerSearchJob < ApplicationJob
 
       case user.notification_channel
       when "email"
-        UserMailer.urgent_player_search(user, game).deliver_later
+        deliver_email(user, game)
       when "telegram"
-        next unless user.telegram_chat_id.present?
+        unless user.telegram_chat_id.present?
+          deliver_email(user, game)
+          next
+        end
 
         locale = (user.telegram_locale.presence || Telegram::I18n::DEFAULT_LOCALE).to_s
         text = Telegram::I18n.t(
@@ -46,6 +49,12 @@ class NotifyUrgentPlayerSearchJob < ApplicationJob
   end
 
   private
+
+  def deliver_email(user, game)
+    return false if user.telegram_generated_email?
+
+    UserMailer.urgent_player_search(user, game).deliver_later
+  end
 
   def owner_label(owner)
     return "—" unless owner
