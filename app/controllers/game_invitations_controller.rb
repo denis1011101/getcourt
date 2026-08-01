@@ -58,9 +58,16 @@ class GameInvitationsController < ApplicationController
   end
 
   def invitation_payload(user)
+    locale = Telegram::Helpers::UserLookup.locale_for(user.telegram_chat_id)
+    lines = [
+      "You are invited to join:",
+      Telegram::Handlers::GamesHandler.game_label(@game, owner: current_user, locale: locale),
+      Telegram::Helpers::GameFormatting.coach_mark(@game, locale: locale)
+    ]
+
     {
       chat_id: user.telegram_chat_id.to_s,
-      text: "You are invited to join:\n#{game_label_for(user)}\n\n#{invitation_game_url(@game)}",
+      text: "#{lines.compact.join("\n")}\n\n#{invitation_game_url(@game)}",
       reply_markup: {
         inline_keyboard: [ [
           { text: "Join ##{@game.id}", callback_data: "game:join_invited:#{@game.id}" },
@@ -68,11 +75,6 @@ class GameInvitationsController < ApplicationController
         ] ]
       }
     }
-  end
-
-  def game_label_for(user)
-    locale = Telegram::Helpers::UserLookup.locale_for(user.telegram_chat_id)
-    Telegram::Handlers::GamesHandler.game_label(@game, owner: current_user, locale: locale)
   end
 
   def invitation_game_url(game)

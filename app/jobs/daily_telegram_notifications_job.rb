@@ -31,10 +31,14 @@ class DailyTelegramNotificationsJob < ApplicationJob
       participants_text = participants.join("\n")
 
       game_url = "https://getcourt.co/games/#{game.id}"
-      text = "Reminder: you have a game #{when_text} (#{target_date.strftime('%Y-%m-%d')}) at #{time_str} on #{court_name}.\nParticipants:\n#{participants_text}\n\n#{game_url}"
+      reminder_head = "Reminder: you have a game #{when_text} (#{target_date.strftime('%Y-%m-%d')}) at #{time_str} on #{court_name}."
 
       recipients.each do |recipient|
         next unless recipient&.telegram_chat_id.present?
+
+        locale = Telegram::Helpers::UserLookup.locale_for(recipient.telegram_chat_id)
+        coach = Telegram::Helpers::GameFormatting.coach_mark(game, locale: locale)
+        text = [ reminder_head, coach, "Participants:\n#{participants_text}" ].compact.join("\n") + "\n\n#{game_url}"
         SendTelegramNotificationJob.perform_later(recipient.telegram_chat_id, text)
       end
     end

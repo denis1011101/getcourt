@@ -41,6 +41,11 @@ module Telegram
         end
       end
 
+      # Coach mark for invitations/reminders: nil when the game has no coach.
+      def self.coach_mark(game, locale: Telegram::I18n::DEFAULT_LOCALE)
+        Telegram::I18n.t(:coach_with, locale: locale) if game.respond_to?(:with_coach?) && game.with_coach?
+      end
+
       # Resolves date using the occurrence chain: display_date_for_show > next_date > date
       def self.resolve_date(game)
         if game.respond_to?(:display_date_for_show)

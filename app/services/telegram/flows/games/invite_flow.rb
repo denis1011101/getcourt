@@ -159,10 +159,10 @@ module Telegram
 
               next unless user.telegram_chat_id.present?
 
+              target_locale = Telegram::Helpers::UserLookup.locale_for(user.telegram_chat_id)
               label =
                 if Telegram::Handlers::GamesHandler.respond_to?(:game_label)
                   # IMPORTANT: show inviter nick (not game owner) in the label
-                  target_locale = Telegram::Helpers::UserLookup.locale_for(user.telegram_chat_id)
                   Telegram::Handlers::GamesHandler.game_label(game, owner: inviter, locale: target_locale)
                 else
                   "Game ##{game.id}"
@@ -173,7 +173,11 @@ module Telegram
 
               poller.send_api("sendMessage", {
                 chat_id: user.telegram_chat_id.to_s,
-                text: "You are invited to join:\n#{label}\n\n#{game_url}",
+                text: [
+                  "You are invited to join:",
+                  label,
+                  Telegram::Helpers::GameFormatting.coach_mark(game, locale: target_locale)
+                ].compact.join("\n") + "\n\n#{game_url}",
                 reply_markup: {
                   inline_keyboard: [ [
                     { text: "Join ##{game.id}", callback_data: "game:join_invited:#{game.id}" },

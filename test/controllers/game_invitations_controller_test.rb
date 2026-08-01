@@ -6,8 +6,8 @@ class GameInvitationsControllerTest < ActionDispatch::IntegrationTest
     target = users(:two)
     game = games(:one)
     owner.update!(email: "invite-owner@example.com", telegram_chat_id: 90_001)
-    target.update!(email: "invite-target@example.com", telegram_username: "@targetuser", telegram_chat_id: 90_002)
-    game.update!(user: owner)
+    target.update!(email: "invite-target@example.com", telegram_username: "@targetuser", telegram_chat_id: 90_002, telegram_locale: "en")
+    game.update!(user: owner, with_coach: true)
 
     post session_url, params: { email: owner.email }
 
@@ -22,7 +22,26 @@ class GameInvitationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "sendMessage", api
     assert_equal target.telegram_chat_id.to_s, payload[:chat_id]
     assert_includes payload[:text], game_path(game)
+    assert_includes payload[:text], "With coach"
     assert_equal "game:join_invited:#{game.id}", payload[:reply_markup][:inline_keyboard].first.first[:callback_data]
+  end
+
+  test "invite omits coach mark when game has no coach" do
+    owner = users(:one)
+    target = users(:two)
+    game = games(:one)
+    owner.update!(email: "invite-no-coach-owner@example.com")
+    target.update!(email: "invite-no-coach-target@example.com", telegram_username: "@targetuser", telegram_chat_id: 90_005, telegram_locale: "en")
+    game.update!(user: owner, with_coach: false)
+
+    post session_url, params: { email: owner.email }
+
+    calls = []
+    stub_singleton(Telegram::Api, :send_api, ->(*args) { calls << args; { "ok" => true } }) do
+      post game_invitations_path(game), params: { usernames: "@targetuser" }
+    end
+
+    assert_not_includes calls.first.last[:text], "With coach"
   end
 
   test "sent invite lists are remembered without order-only duplicates" do
