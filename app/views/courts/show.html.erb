@@ -78,6 +78,13 @@
     <% end %>
   <% end %>
 
+  <% if user_signed_in? && !can_manage?(@court) %>
+    <div class="mb-6 rounded-xl border border-indigo-100 bg-indigo-50 p-4 text-sm text-indigo-900 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-100">
+      <%= t("courts.suggestions.hint") %>
+      <%= link_to t("courts.suggestions.cta"), new_court_suggestion_path(@court), class: "ml-1 font-semibold underline" %>
+    </div>
+  <% end %>
+
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Left column: Map & Details -->
     <div class="lg:col-span-1 space-y-4">

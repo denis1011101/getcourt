@@ -65,6 +65,12 @@ Rails.application.routes.draw do
       post :approve
       post :reject
     end
+
+    resources :suggestions, only: %i[new create], controller: "court_suggestions"
+  end
+  resources :court_suggestions, only: %i[index show] do
+    resource :approval, only: :create, controller: "court_suggestion_approvals"
+    resource :rejection, only: :create, controller: "court_suggestion_rejections"
   end
   get "/courts(/:country_slug)(/:city_slug)", to: "courts#index", as: :courts_browse,
       constraints: { country_slug: /[a-z][a-z0-9-]*/, city_slug: /[a-z0-9-]+/ }

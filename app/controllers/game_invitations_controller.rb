@@ -42,12 +42,12 @@ class GameInvitationsController < ApplicationController
         next
       end
 
-      if user.telegram_chat_id.blank?
+      if user.notification_channel == "telegram" && user.telegram_chat_id.blank?
         result[:no_telegram] << "@#{handle}"
         next
       end
 
-      response = Telegram::Api.send_api("sendMessage", invitation_payload(user))
+      response = deliver_invitation(user)
       if response == false || (response.is_a?(Hash) && response["ok"] == false)
         result[:failed] << "@#{handle}"
       else
@@ -58,7 +58,7 @@ class GameInvitationsController < ApplicationController
   end
 
   def invitation_payload(user)
-    locale = Telegram::Helpers::UserLookup.locale_for(user.telegram_chat_id)
+    locale = Telegram::I18n.locale_for(user)
     t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
     lines = [
       t.(:invitation_title),
@@ -75,6 +75,26 @@ class GameInvitationsController < ApplicationController
         ] ]
       }
     }
+  end
+
+  def deliver_invitation(user)
+    payload = invitation_payload(user)
+    subject, body, action_label = I18n.with_locale(NotificationDelivery.email_locale(user)) do
+      [
+        I18n.t("user_mailer.notification.game_invitation_subject", game_id: @game.id),
+        I18n.t("user_mailer.notification.game_invitation_body", name: current_user.name.presence || current_user.email),
+        I18n.t("user_mailer.notification.view_game")
+      ]
+    end
+
+    NotificationDelivery.deliver(
+      user: user,
+      telegram_text: payload[:text],
+      email_subject: subject,
+      email_body: body,
+      actions: [ { label: action_label, url: invitation_game_url(@game) } ],
+      telegram_buttons: payload.dig(:reply_markup, :inline_keyboard)
+    )
   end
 
   def invitation_game_url(game)

@@ -1,4 +1,9 @@
 ru:
+  errors:
+    messages:
+      pending_exists: "уже имеет предложение для этого корта на проверке"
+      blank_suggestion: "Измените хотя бы одно поле или добавьте комментарий"
+      invalid_fields: "содержит поля, которые нельзя изменять"
   score_recognitions:
     errors:
       photo_required: "Выберите фото."
@@ -118,6 +123,8 @@ ru:
       review_game: "Рассмотреть заявку"
       game_reminder_subject: "Напоминание об игре"
       game_reminder_body: "Напоминание: у вас игра %{when} (%{date}) в %{time} на корте %{court}"
+      game_invitation_subject: "Приглашение в игру #%{game_id}"
+      game_invitation_body: "%{name} приглашает вас присоединиться к игре."
       stats_subject: "Заполните статистику игры"
       stats_body: "Игра %{datetime} завершилась. Заполните статистику. Если игра не состоялась, отметьте это."
       fill_stats: "Заполнить статистику"
@@ -126,6 +133,14 @@ ru:
       prebooking_body: "%{name} запросил даты: %{dates}."
       participation_subject: "Изменился состав игры #%{game_id}"
       participation_body: "%{name} %{action} — %{date}, %{time}."
+      participation_approved_subject: "Ваша заявка в игру #%{game_id} одобрена"
+      participation_approved_body: "Теперь вы участвуете в игре как подтверждённый игрок."
+      participation_rejected_subject: "Ваша заявка в игру #%{game_id} отклонена"
+      participation_rejected_body: "Организатор отклонил вашу заявку на участие."
+      prebooking_approved_subject: "Ваше предбронирование игры #%{game_id} одобрено"
+      prebooking_approved_body: "Запрошенные даты одобрены: %{dates}."
+      prebooking_rejected_subject: "Ваше предбронирование игры #%{game_id} отклонено"
+      prebooking_rejected_body: "Запрошенные даты отклонены: %{dates}."
       participation_actions:
         requested: "запросил участие в вашей игре"
         joined: "присоединился к вашей игре"
@@ -468,6 +483,41 @@ ru:
       match_added: "Матч добавлен."
       match_exists: "Такой матч уже есть."
   courts:
+    suggestions:
+      hint: "Нашли неточность?"
+      cta: "Предложите правку — опубликуем после проверки модератором."
+      new_title: "Предложить правку для корта «%{court}»"
+      new_help: "Измените только неточные данные. Текущий корт останется опубликованным до проверки предложения модератором."
+      comment: "Комментарий"
+      comment_placeholder: "Опишите то, для чего не подошли поля выше"
+      submit: "Отправить предложение"
+      cancel: "Отмена"
+      created: "Спасибо. Предложение отправлено на проверку модератору."
+      pending_exists: "У вас уже есть предложение для этого корта на проверке."
+      index_title: "Предложения правок кортов"
+      show_title: "Предложение правки для корта «%{court}»"
+      approve: "Одобрить"
+      reject: "Отклонить"
+      reject_confirm: "Отклонить это предложение?"
+      approved: "Предложение одобрено и применено."
+      rejected: "Предложение отклонено."
+      review_failed: "Не удалось обработать предложение."
+      open_court: "Открыть корт"
+      back_to_list: "К списку предложений"
+      statuses:
+        pending: "На проверке"
+        approved: "Одобрено"
+        rejected: "Отклонено"
+      fields:
+        name: "Название"
+        sport: "Спорт"
+        coordinates: "Координаты"
+        contact_type: "Тип контакта"
+        contact_value: "Контакт"
+        free: "Бесплатный"
+        outdoor: "Открытый"
+        indoor: "Крытый"
+        surfaces: "Покрытия"
     index:
       meta_title: "Корты для тенниса, падела и сквоша — GetCourt"
       meta_description: "Ищите корты для тенниса, падела, сквоша и настольного тенниса. Найдите корт рядом, смотрите ближайшие игры и присоединяйтесь к сообществу."

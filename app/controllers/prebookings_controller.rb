@@ -42,13 +42,17 @@ class PrebookingsController < ApplicationController
     return head :forbidden unless can_manage_game?
 
     @prebooking.update!(status: "approved", approved_at: Time.current)
+    GameRequestNotification.prebooking(user: @prebooking.user, game: @game, dates: @prebooking.date, approved: true)
     redirect_back fallback_location: game_path(@game), notice: "Prebooking approved."
   end
 
   def reject
     return head :forbidden unless can_manage_game?
 
+    requester = @prebooking.user
+    date = @prebooking.date
     @prebooking.update!(user: nil, status: "approved", approved_at: nil)
+    GameRequestNotification.prebooking(user: requester, game: @game, dates: date, approved: false)
     redirect_back fallback_location: game_path(@game), notice: "Prebooking rejected."
   end
 

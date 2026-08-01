@@ -73,6 +73,8 @@ class User < ApplicationRecord
   has_many :games
   has_many :participations
   has_many :favorite_court_links, class_name: "FavoriteCourt", dependent: :destroy
+  has_many :court_suggestions, dependent: :destroy
+  has_many :reviewed_court_suggestions, class_name: "CourtSuggestion", foreign_key: :reviewed_by_id, dependent: :nullify, inverse_of: :reviewed_by
   has_many :favorite_courts, through: :favorite_court_links, source: :court
 
   validates :email, presence: true, uniqueness: { case_sensitive: false }

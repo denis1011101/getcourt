@@ -1,4 +1,9 @@
 es:
+  errors:
+    messages:
+      pending_exists: "ya tiene una propuesta pendiente para esta pista"
+      blank_suggestion: "Cambia al menos un campo o añade un comentario"
+      invalid_fields: "contiene campos que no se pueden cambiar"
   score_recognitions:
     errors:
       photo_required: "Selecciona una foto."
@@ -123,6 +128,8 @@ es:
       review_game: "Revisar solicitud"
       game_reminder_subject: "Recordatorio del partido"
       game_reminder_body: "Recordatorio: tienes un partido %{when} (%{date}) a las %{time} en %{court}"
+      game_invitation_subject: "Invitación al partido #%{game_id}"
+      game_invitation_body: "%{name} te ha invitado a unirte a un partido."
       stats_subject: "Completa las estadísticas del partido"
       stats_body: "El partido del %{datetime} ha terminado. Completa las estadísticas. Si no se disputó, márcalo como no jugado."
       fill_stats: "Completar estadísticas"
@@ -131,6 +138,14 @@ es:
       prebooking_body: "%{name} ha solicitado estas fechas: %{dates}."
       participation_subject: "Participantes actualizados en el partido #%{game_id}"
       participation_body: "%{name} %{action} el %{date} a las %{time}."
+      participation_approved_subject: "Tu solicitud para el partido #%{game_id} ha sido aprobada"
+      participation_approved_body: "Ya puedes participar como jugador aprobado."
+      participation_rejected_subject: "Tu solicitud para el partido #%{game_id} ha sido rechazada"
+      participation_rejected_body: "El organizador ha rechazado tu solicitud para unirte."
+      prebooking_approved_subject: "Tu reserva para el partido #%{game_id} ha sido aprobada"
+      prebooking_approved_body: "Se han aprobado las fechas solicitadas: %{dates}."
+      prebooking_rejected_subject: "Tu reserva para el partido #%{game_id} ha sido rechazada"
+      prebooking_rejected_body: "Se han rechazado las fechas solicitadas: %{dates}."
       participation_actions:
         requested: "ha solicitado unirse a tu partido"
         joined: "se ha unido a tu partido"
@@ -459,6 +474,41 @@ es:
       match_added: "Partido añadido."
       match_exists: "Este partido ya existe."
   courts:
+    suggestions:
+      hint: "¿Has encontrado un dato incorrecto?"
+      cta: "Propón una corrección; la publicaremos tras la revisión del moderador."
+      new_title: "Proponer una corrección para %{court}"
+      new_help: "Cambia solo los datos incorrectos. La pista actual seguirá publicada hasta que un moderador revise la propuesta."
+      comment: "Comentario"
+      comment_placeholder: "Explica cualquier detalle que no aparezca en los campos anteriores"
+      submit: "Enviar propuesta"
+      cancel: "Cancelar"
+      created: "Gracias. Tu propuesta se ha enviado para revisión."
+      pending_exists: "Ya tienes una propuesta pendiente para esta pista."
+      index_title: "Correcciones de pistas"
+      show_title: "Corrección propuesta para %{court}"
+      approve: "Aprobar"
+      reject: "Rechazar"
+      reject_confirm: "¿Rechazar esta propuesta?"
+      approved: "La propuesta se ha aprobado y aplicado."
+      rejected: "La propuesta se ha rechazado."
+      review_failed: "No se pudo revisar la propuesta."
+      open_court: "Abrir pista"
+      back_to_list: "Volver a propuestas"
+      statuses:
+        pending: "Pendiente"
+        approved: "Aprobada"
+        rejected: "Rechazada"
+      fields:
+        name: "Nombre"
+        sport: "Deporte"
+        coordinates: "Coordenadas"
+        contact_type: "Tipo de contacto"
+        contact_value: "Contacto"
+        free: "Gratuita"
+        outdoor: "Exterior"
+        indoor: "Interior"
+        surfaces: "Superficies"
     index:
       meta_title: "Pistas de tenis, pádel y squash — GetCourt"
       meta_description: "Explora pistas de tenis, pádel, squash y tenis de mesa. Encuentra una pista cerca de ti, mira próximos partidos y únete a la comunidad."

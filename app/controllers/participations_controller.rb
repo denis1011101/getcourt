@@ -62,6 +62,7 @@ class ParticipationsController < ApplicationController
     return head :not_found unless @participation
 
     @participation.update(status: "approved", approved_at: Time.current)
+    GameRequestNotification.participation(user: @participation.user, game: @game, approved: true)
 
     respond_to do |format|
       format.turbo_stream do
@@ -115,7 +116,9 @@ class ParticipationsController < ApplicationController
     @participation = @game.participations.find_by(id: params[:id])
     return head :not_found unless @participation
 
+    requester = @participation.user
     @participation.destroy
+    GameRequestNotification.participation(user: requester, game: @game, approved: false)
 
     respond_to do |format|
       format.turbo_stream do

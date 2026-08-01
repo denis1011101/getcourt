@@ -1,31 +1,32 @@
 require "test_helper"
 
 class GameInvitationsControllerTest < ActionDispatch::IntegrationTest
+  include ActionMailer::TestHelper
+
   test "game owner can invite telegram users from web" do
     owner = users(:one)
     target = users(:two)
     game = games(:one)
     owner.update!(email: "invite-owner@example.com", telegram_chat_id: 90_001)
-    target.update!(email: "invite-target@example.com", telegram_username: "@targetuser", telegram_chat_id: 90_002, telegram_locale: "en")
+    target.update!(email: "invite-target@example.com", telegram_username: "@targetuser", telegram_chat_id: 90_002, telegram_locale: "en", notification_channel: "telegram")
     game.update!(user: owner, with_coach: true)
 
     post session_url, params: { email: owner.email }
 
     calls = []
-    stub_singleton(Telegram::Api, :send_api, ->(*args) { calls << args; { "ok" => true } }) do
+    stub_singleton(Telegram::Api, :send_with_buttons, ->(*args) { calls << args; { "ok" => true } }) do
       post game_invitations_path(game), params: { usernames: "@targetuser" }
     end
 
     assert_redirected_to game_path(game)
     assert_equal 1, calls.size
-    api, payload = calls.first
-    assert_equal "sendMessage", api
-    assert_equal target.telegram_chat_id.to_s, payload[:chat_id]
-    assert_includes payload[:text], game_path(game)
-    assert_includes payload[:text], "You are invited to join:"
-    assert_includes payload[:text], " — With coach\n\n"
-    assert_equal "Join ##{game.id}", payload[:reply_markup][:inline_keyboard].first.first[:text]
-    assert_equal "game:join_invited:#{game.id}", payload[:reply_markup][:inline_keyboard].first.first[:callback_data]
+    chat_id, text, buttons = calls.first
+    assert_equal target.telegram_chat_id, chat_id
+    assert_includes text, game_path(game)
+    assert_includes text, "You are invited to join:"
+    assert_includes text, " — With coach\n\n"
+    assert_equal "Join ##{game.id}", buttons.first.first[:text]
+    assert_equal "game:join_invited:#{game.id}", buttons.first.first[:callback_data]
   end
 
   test "invitation is localized in Russian" do
@@ -49,17 +50,17 @@ class GameInvitationsControllerTest < ActionDispatch::IntegrationTest
     target = users(:two)
     game = games(:one)
     owner.update!(email: "invite-no-coach-owner@example.com")
-    target.update!(email: "invite-no-coach-target@example.com", telegram_username: "@targetuser", telegram_chat_id: 90_005, telegram_locale: "en")
+    target.update!(email: "invite-no-coach-target@example.com", telegram_username: "@targetuser", telegram_chat_id: 90_005, telegram_locale: "en", notification_channel: "telegram")
     game.update!(user: owner, with_coach: false)
 
     post session_url, params: { email: owner.email }
 
     calls = []
-    stub_singleton(Telegram::Api, :send_api, ->(*args) { calls << args; { "ok" => true } }) do
+    stub_singleton(Telegram::Api, :send_with_buttons, ->(*args) { calls << args; { "ok" => true } }) do
       post game_invitations_path(game), params: { usernames: "@targetuser" }
     end
 
-    assert_not_includes calls.first.last[:text], " — With coach"
+    assert_not_includes calls.first.second, " — With coach"
   end
 
   test "sent invite lists are remembered without order-only duplicates" do
@@ -67,12 +68,12 @@ class GameInvitationsControllerTest < ActionDispatch::IntegrationTest
     target = users(:two)
     game = games(:one)
     owner.update!(email: "invite-history@example.com", telegram_chat_id: 90_003)
-    target.update!(email: "invite-history-target@example.com", telegram_username: "@targetuser", telegram_chat_id: 90_004)
+    target.update!(email: "invite-history-target@example.com", telegram_username: "@targetuser", telegram_chat_id: 90_004, notification_channel: "telegram")
     game.update!(user: owner)
 
     post session_url, params: { email: owner.email }
 
-    stub_singleton(Telegram::Api, :send_api, ->(*) { { "ok" => true } }) do
+    stub_singleton(Telegram::Api, :send_with_buttons, ->(*) { { "ok" => true } }) do
       post game_invitations_path(game), params: { usernames: "@targetuser @friend" }
       post game_invitations_path(game), params: { usernames: "@friend @targetuser" }
     end
@@ -94,21 +95,37 @@ class GameInvitationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
   end
 
+  test "invitation uses email when selected" do
+    owner = users(:one)
+    target = users(:two)
+    game = games(:one)
+    owner.update!(email: "invite-email-owner@example.com", name: "Owner")
+    target.update!(email: "invite-email-target@example.com", telegram_username: "@targetuser", notification_channel: "email", locale: "en")
+    game.update!(user: owner)
+    post session_url, params: { email: owner.email }
+
+    assert_enqueued_emails 1 do
+      post game_invitations_path(game), params: { usernames: "@targetuser" }
+    end
+
+    assert_redirected_to game_path(game)
+  end
+
   private
     def invitation_payload_for(locale, chat_id:)
       owner = users(:one)
       target = users(:two)
       game = games(:one)
       owner.update!(email: "invite-#{locale}-owner@example.com")
-      target.update!(email: "invite-#{locale}-target@example.com", telegram_username: "@targetuser", telegram_chat_id: chat_id, telegram_locale: locale)
+      target.update!(email: "invite-#{locale}-target@example.com", telegram_username: "@targetuser", telegram_chat_id: chat_id, telegram_locale: locale, notification_channel: "telegram")
       game.update!(user: owner, sport: "Tennis", with_coach: true)
       post session_url, params: { email: owner.email }
       calls = []
 
-      stub_singleton(Telegram::Api, :send_api, ->(*args) { calls << args; { "ok" => true } }) do
+      stub_singleton(Telegram::Api, :send_with_buttons, ->(*args) { calls << args; { "ok" => true } }) do
         post game_invitations_path(game), params: { usernames: "@targetuser" }
       end
 
-      calls.first.last
+      { text: calls.first.second, reply_markup: { inline_keyboard: calls.first.third } }
     end
 end

@@ -17,6 +17,16 @@ module Telegram
       send_message(text)
     end
 
+    def self.notify_court_suggestion(suggestion, base_url:)
+      host = base_url.to_s.presence || ENV["APP_HOST"].to_s.presence
+      return if host.blank?
+
+      url = "#{host}/court_suggestions/#{suggestion.id}"
+      text = "Court correction suggested: #{suggestion.court.name} — #{url}"
+
+      send_message(text)
+    end
+
     def self.send_message(text)
       token = ENV["TELEGRAM_BOT_TOKEN"].to_s
       return if token.empty?

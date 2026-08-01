@@ -1,0 +1,16 @@
+pending:
+  court: one
+  user: two
+  payload:
+    name: Suggested Court Name
+  comment: Please check the new name.
+  status: pending
+
+approved:
+  court: two
+  user: one
+  payload:
+    free: true
+  status: approved
+  reviewed_by: two
+  reviewed_at: <%= 1.day.ago %>

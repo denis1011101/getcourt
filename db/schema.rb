@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_02_003000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_02_004100) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -96,6 +96,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_02_003000) do
     t.index ["geoname_id"], name: "index_cities_on_geoname_id", unique: true
     t.index ["name"], name: "index_cities_on_name"
     t.index ["timezone"], name: "index_cities_on_timezone"
+  end
+
+  create_table "court_suggestions", force: :cascade do |t|
+    t.text "comment"
+    t.integer "court_id", null: false
+    t.datetime "created_at", null: false
+    t.json "payload", default: {}, null: false
+    t.datetime "reviewed_at"
+    t.integer "reviewed_by_id"
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["court_id", "status"], name: "index_court_suggestions_on_court_id_and_status"
+    t.index ["court_id", "user_id"], name: "index_unique_pending_court_suggestions", unique: true, where: "status = 'pending'"
+    t.index ["court_id"], name: "index_court_suggestions_on_court_id"
+    t.index ["reviewed_by_id"], name: "index_court_suggestions_on_reviewed_by_id"
+    t.index ["user_id"], name: "index_court_suggestions_on_user_id"
   end
 
   create_table "courts", force: :cascade do |t|
@@ -434,6 +451,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_02_003000) do
     t.index ["telegram_username"], name: "index_users_on_telegram_username"
   end
 
+  add_foreign_key "court_suggestions", "courts"
+  add_foreign_key "court_suggestions", "users"
+  add_foreign_key "court_suggestions", "users", column: "reviewed_by_id"
   add_foreign_key "courts", "users"
   add_foreign_key "favorite_courts", "courts"
   add_foreign_key "favorite_courts", "users"

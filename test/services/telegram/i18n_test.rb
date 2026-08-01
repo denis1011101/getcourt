@@ -13,8 +13,8 @@ class Telegram::I18nTest < ActiveSupport::TestCase
     participation_no_permission participation_approved participation_rejected user_accepted user_rejected
     participation_request_approved_user participation_request_rejected_user participation_joined participation_left
     participation_requested participation_removed participation_guest_added participation_notification today tomorrow reminder_head
-    participants_label prebooking_request dates_label approve_all reject_all post_game_stats_reminder fill_stats
-    game_did_not_happen telegram_connected registration_invalid
+    participants_label prebooking_request dates_label approve_all reject_all prebooking_request_approved_user
+    prebooking_request_rejected_user post_game_stats_reminder fill_stats game_did_not_happen telegram_connected registration_invalid
     delete_game_no_permission user_fallback unknown_court
   ].freeze
 

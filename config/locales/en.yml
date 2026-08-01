@@ -28,6 +28,11 @@
 #       enabled: "ON"
 
 en:
+  errors:
+    messages:
+      pending_exists: "already has a pending suggestion for this court"
+      blank_suggestion: "Change at least one field or add a comment"
+      invalid_fields: "contains fields that cannot be changed"
   score_recognitions:
     errors:
       photo_required: "Choose a photo."
@@ -148,6 +153,8 @@ en:
       review_game: "Review request"
       game_reminder_subject: "Game reminder"
       game_reminder_body: "Reminder: you have a game %{when} (%{date}) at %{time} on %{court}"
+      game_invitation_subject: "Invitation to Game #%{game_id}"
+      game_invitation_body: "%{name} invited you to join a game."
       stats_subject: "Fill in your game statistics"
       stats_body: "The game on %{datetime} has finished. Please fill in the statistics. If it did not take place, mark it as not played."
       fill_stats: "Fill stats"
@@ -156,6 +163,14 @@ en:
       prebooking_body: "%{name} requested these dates: %{dates}."
       participation_subject: "Game #%{game_id} participants updated"
       participation_body: "%{name} %{action} on %{date} at %{time}."
+      participation_approved_subject: "Your request to join Game #%{game_id} was approved"
+      participation_approved_body: "You can now join the game as an approved participant."
+      participation_rejected_subject: "Your request to join Game #%{game_id} was rejected"
+      participation_rejected_body: "The organizer declined your request to join the game."
+      prebooking_approved_subject: "Your prebooking for Game #%{game_id} was approved"
+      prebooking_approved_body: "Your requested dates were approved: %{dates}."
+      prebooking_rejected_subject: "Your prebooking for Game #%{game_id} was rejected"
+      prebooking_rejected_body: "Your requested dates were rejected: %{dates}."
       participation_actions:
         requested: "requested to join your game"
         joined: "joined your game"
@@ -484,6 +499,41 @@ en:
       match_added: "Match added."
       match_exists: "This match already exists."
   courts:
+    suggestions:
+      hint: "Found an inaccuracy?"
+      cta: "Suggest a correction — we’ll publish it after moderator review."
+      new_title: "Suggest a correction for %{court}"
+      new_help: "Change only the details that are inaccurate. The current court stays published until a moderator reviews your suggestion."
+      comment: "Comment"
+      comment_placeholder: "Explain anything that is not covered by the fields above"
+      submit: "Send suggestion"
+      cancel: "Cancel"
+      created: "Thank you. Your suggestion was sent for moderator review."
+      pending_exists: "You already have a pending suggestion for this court."
+      index_title: "Court corrections"
+      show_title: "Suggested correction for %{court}"
+      approve: "Approve"
+      reject: "Reject"
+      reject_confirm: "Reject this suggestion?"
+      approved: "Suggestion approved and applied."
+      rejected: "Suggestion rejected."
+      review_failed: "The suggestion could not be reviewed."
+      open_court: "Open court"
+      back_to_list: "Back to suggestions"
+      statuses:
+        pending: "Pending"
+        approved: "Approved"
+        rejected: "Rejected"
+      fields:
+        name: "Name"
+        sport: "Sport"
+        coordinates: "Coordinates"
+        contact_type: "Contact type"
+        contact_value: "Contact"
+        free: "Free"
+        outdoor: "Outdoor"
+        indoor: "Indoor"
+        surfaces: "Surfaces"
     index:
       meta_title: "Tennis, Padel & Squash Courts — GetCourt"
       meta_description: "Browse tennis, padel, squash and table tennis courts. Find a court near you, see upcoming games and join the community."

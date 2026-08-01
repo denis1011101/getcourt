@@ -41,12 +41,7 @@ module Telegram
                   end
                 end
 
-                if participation.user&.telegram_chat_id.present?
-                  target_chat_id = participation.user.telegram_chat_id
-                  target_locale = Telegram::Helpers::UserLookup.locale_for(target_chat_id)
-                  text = Telegram::I18n.t(:participation_request_approved_user, locale: target_locale, game_id: game.id)
-                  Telegram::Api.send_simple(target_chat_id, text) rescue nil
-                end
+                GameRequestNotification.participation(user: participation.user, game: game, approved: true)
 
                 nil
 
@@ -64,6 +59,7 @@ module Telegram
                   return
                 end
 
+                requester = participation.user
                 participation.destroy rescue nil
                 poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id, text: t.(:participation_rejected), show_alert: false }) rescue nil
 
@@ -80,12 +76,7 @@ module Telegram
                   end
                 end
 
-                if participation.user&.telegram_chat_id.present?
-                  target_chat_id = participation.user.telegram_chat_id
-                  target_locale = Telegram::Helpers::UserLookup.locale_for(target_chat_id)
-                  text = Telegram::I18n.t(:participation_request_rejected_user, locale: target_locale, game_id: game.id)
-                  Telegram::Api.send_simple(target_chat_id, text) rescue nil
-                end
+                GameRequestNotification.participation(user: requester, game: game, approved: false)
 
                 nil
 

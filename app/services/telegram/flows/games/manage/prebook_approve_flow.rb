@@ -37,12 +37,7 @@ module Telegram
 
                 update_notification_message(poller, chat_id, message_id, prebooking.id, "approved")
 
-                if prebooking.user&.telegram_chat_id.present?
-                  Telegram::Api.send_simple(
-                    prebooking.user.telegram_chat_id,
-                    "Your prebooking for Game ##{game.id} on #{prebooking.date.strftime('%Y-%m-%d')} was approved."
-                  ) rescue nil
-                end
+                GameRequestNotification.prebooking(user: prebooking.user, game: game, dates: prebooking.date, approved: true)
 
                 nil
 
@@ -71,12 +66,7 @@ module Telegram
 
                 update_notification_message(poller, chat_id, message_id, prebooking.id, "rejected")
 
-                if rejected_user&.telegram_chat_id.present?
-                  Telegram::Api.send_simple(
-                    rejected_user.telegram_chat_id,
-                    "Your prebooking for Game ##{game.id} on #{prebooking.date.strftime('%Y-%m-%d')} was rejected."
-                  ) rescue nil
-                end
+                GameRequestNotification.prebooking(user: rejected_user, game: game, dates: prebooking.date, approved: false)
 
                 nil
 
@@ -118,15 +108,7 @@ module Telegram
                   }) rescue nil
                 end
 
-                if requester&.telegram_chat_id.present?
-                  dates_text = pending_prebookings.map { |pb| pb.date.strftime("%Y-%m-%d") }.sort.join(", ")
-                  host = ENV.fetch("APP_HOST", ENV.fetch("HOSTNAME", "https://getcourt.co"))
-                  game_url = "#{host}/games/#{game.id}"
-                  Telegram::Api.send_simple(
-                    requester.telegram_chat_id,
-                    "Your prebooking requests for Game ##{game.id} were approved.\nDates: #{dates_text}\n\n#{game_url}"
-                  ) rescue nil
-                end
+                GameRequestNotification.prebooking(user: requester, game: game, dates: pending_prebookings.map(&:date), approved: true)
 
                 nil
 
@@ -169,14 +151,7 @@ module Telegram
                   }) rescue nil
                 end
 
-                if requester&.telegram_chat_id.present?
-                  host = ENV.fetch("APP_HOST", ENV.fetch("HOSTNAME", "https://getcourt.co"))
-                  game_url = "#{host}/games/#{game.id}"
-                  Telegram::Api.send_simple(
-                    requester.telegram_chat_id,
-                    "Your prebooking requests for Game ##{game.id} were rejected.\nDates: #{dates_text}\n\n#{game_url}"
-                  ) rescue nil
-                end
+                GameRequestNotification.prebooking(user: requester, game: game, dates: dates_text.split(", ").map { |date| Date.iso8601(date) }, approved: false)
 
                 nil
 
