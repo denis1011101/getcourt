@@ -4,13 +4,13 @@ class DailyTelegramNotificationsJobTest < ActiveJob::TestCase
   test "adds coach mark to game reminder" do
     text = reminder_text(with_coach: true)
 
-    assert_includes text, "With coach"
+    assert_match(/\A.* — With coach\n/, text)
   end
 
   test "omits coach mark from game reminder without coach" do
     text = reminder_text(with_coach: false)
 
-    assert_not_includes text, "With coach"
+    assert_not_includes text.lines.first, " — With coach"
   end
 
   private

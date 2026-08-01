@@ -39,9 +39,10 @@ module Telegram
           spots_left = required - taken
           spots_left = 0 if spots_left.negative?
           spots_text = Telegram::I18n.spots_left_text(spots_left, locale: locale)
+          coach = Telegram::Helpers::GameFormatting.coach_mark(g, locale: locale)
 
           title_with_id = "#{title || (g.respond_to?(:title) && g.title.to_s.presence) || 'Game'} ##{g.id}"
-          [ title_with_id, date, spots_text ].compact.join(" — ")
+          [ title_with_id, date, spots_text, coach ].compact.join(" — ")
         end
 
         # [bot-menu-off] Отключено намеренно: пользуемся сайтом getcourt.co,

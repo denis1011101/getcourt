@@ -61,8 +61,7 @@ class GameInvitationsController < ApplicationController
     locale = Telegram::Helpers::UserLookup.locale_for(user.telegram_chat_id)
     lines = [
       "You are invited to join:",
-      Telegram::Handlers::GamesHandler.game_label(@game, owner: current_user, locale: locale),
-      Telegram::Helpers::GameFormatting.coach_mark(@game, locale: locale)
+      Telegram::Handlers::GamesHandler.game_label(@game, owner: current_user, locale: locale)
     ]
 
     {

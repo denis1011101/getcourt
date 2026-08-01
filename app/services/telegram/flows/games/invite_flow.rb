@@ -165,8 +165,7 @@ module Telegram
                 chat_id: user.telegram_chat_id.to_s,
                 text: [
                   "You are invited to join:",
-                  label,
-                  Telegram::Helpers::GameFormatting.coach_mark(game, locale: target_locale)
+                  label
                 ].compact.join("\n") + "\n\n#{game_url}",
                 reply_markup: {
                   inline_keyboard: [ [

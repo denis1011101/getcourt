@@ -22,7 +22,7 @@ class GameInvitationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "sendMessage", api
     assert_equal target.telegram_chat_id.to_s, payload[:chat_id]
     assert_includes payload[:text], game_path(game)
-    assert_includes payload[:text], "With coach"
+    assert_includes payload[:text], " — With coach\n\n"
     assert_equal "game:join_invited:#{game.id}", payload[:reply_markup][:inline_keyboard].first.first[:callback_data]
   end
 
@@ -41,7 +41,7 @@ class GameInvitationsControllerTest < ActionDispatch::IntegrationTest
       post game_invitations_path(game), params: { usernames: "@targetuser" }
     end
 
-    assert_not_includes calls.first.last[:text], "With coach"
+    assert_not_includes calls.first.last[:text], " — With coach"
   end
 
   test "sent invite lists are remembered without order-only duplicates" do
