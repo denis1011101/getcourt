@@ -15,12 +15,12 @@ class NotifyPrebookingOwnerJob < ApplicationJob
     return unless game && user
 
     owner = game.user
-    return unless owner&.telegram_chat_id.present?
+    return unless owner
 
     pending_prebookings = game.prebookings.where(user_id: user.id, status: "pending")
     return if pending_prebookings.empty?
 
-    locale = Telegram::Helpers::UserLookup.locale_for(owner.telegram_chat_id)
+    locale = Telegram::I18n.locale_for(owner)
     t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
     requester = Telegram::Helpers::UserLookup.display_name(user, fallback: t.(:user_fallback))
 
@@ -36,11 +36,21 @@ class NotifyPrebookingOwnerJob < ApplicationJob
       ]
     ]
 
-    poller = Telegram::Poller.new
-    poller.send_api("sendMessage", {
-      chat_id: owner.telegram_chat_id,
-      text: text,
-      reply_markup: { inline_keyboard: buttons }
-    }) rescue nil
+    email_subject, email_body, action_label = I18n.with_locale(NotificationDelivery.email_locale(owner)) do
+      [
+        I18n.t("user_mailer.notification.prebooking_subject", game_id: game.id),
+        I18n.t("user_mailer.notification.prebooking_body", name: requester, dates: dates_text),
+        I18n.t("user_mailer.notification.review_game")
+      ]
+    end
+
+    NotificationDelivery.deliver(
+      user: owner,
+      telegram_text: text,
+      email_subject: email_subject,
+      email_body: email_body,
+      actions: [ { label: action_label, url: game_url } ],
+      telegram_buttons: buttons
+    )
   end
 end

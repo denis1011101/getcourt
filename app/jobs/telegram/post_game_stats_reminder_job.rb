@@ -11,30 +11,51 @@ module Telegram
       return if stats_already_filled?(game)
 
       creator = game.user
-      return unless creator&.telegram_chat_id
+      return unless creator
 
       host = ENV.fetch("APP_HOST", "http://localhost:3000")
       game_url = Rails.application.routes.url_helpers.game_url(game, host: host)
       signed = game.signed_id(expires_in: 7.days, purpose: "mark_not_happened")
+      not_happened_url = "#{game_url}?mark_not_happened=#{CGI.escape(signed)}"
+      locale = Telegram::I18n.locale_for(creator)
+      datetime = [
+        ::I18n.l(game.date, format: :telegram, locale: locale),
+        Telegram::Helpers::GameFormatting.format_time_hhmm(game.time, locale: locale)
+      ].compact.join(" ")
+      telegram_text = Telegram::I18n.t(:post_game_stats_reminder, locale: locale, datetime: datetime)
+      telegram_buttons = [
+        [ { text: Telegram::I18n.t(:fill_stats, locale: locale), url: game_url } ],
+        [ { text: Telegram::I18n.t(:game_did_not_happen, locale: locale), url: not_happened_url } ]
+      ]
 
-      text = <<~MSG
-        The game on #{game.date}#{game.time.present? ? " at #{game.time.strftime("%H:%M")}" : ""} has finished.
-        Please fill in the statistics via Telegram.
-        If it did not take place, press "Game did not happen".
-      MSG
+      email_subject, email_body, fill_label, not_happened_label = email_content(creator, game)
 
-      Telegram::Api.send_with_buttons(
-        creator.telegram_chat_id,
-        text.strip,
-        [
-          [ { text: "Fill stats", callback_data: "tg_fill:#{game.id}" } ],
-          # short id here — signed token is too long for callback_data
-          [ { text: "Game did not happen", url: "#{game_url}?mark_not_happened=#{CGI.escape(signed)}" } ]
-        ]
+      NotificationDelivery.deliver(
+        user: creator,
+        telegram_text: telegram_text,
+        email_subject: email_subject,
+        email_body: email_body,
+        actions: [
+          { label: fill_label, url: game_url },
+          { label: not_happened_label, url: not_happened_url }
+        ],
+        telegram_buttons: telegram_buttons
       )
     end
 
     private
+
+    def email_content(creator, game)
+      ::I18n.with_locale(NotificationDelivery.email_locale(creator)) do
+        datetime = [ ::I18n.l(game.date, format: :long), game.time&.strftime("%H:%M") ].compact.join(" ")
+        [
+          ::I18n.t("user_mailer.notification.stats_subject"),
+          ::I18n.t("user_mailer.notification.stats_body", datetime: datetime),
+          ::I18n.t("user_mailer.notification.fill_stats"),
+          ::I18n.t("user_mailer.notification.game_did_not_happen")
+        ]
+      end
+    end
 
     def stats_already_filled?(game)
       cycle_start = game.respond_to?(:current_cycle_start) ? game.current_cycle_start : nil

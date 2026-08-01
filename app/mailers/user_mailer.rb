@@ -28,4 +28,15 @@ class UserMailer < ApplicationMailer
       )
     end
   end
+
+  def notification(user, subject:, body:, actions: [])
+    @body = body
+    @actions = actions
+    @notifications_url = notifications_account_url
+    locale = NotificationDelivery.email_locale(user)
+
+    I18n.with_locale(locale) do
+      mail(to: user.email, subject: subject)
+    end
+  end
 end

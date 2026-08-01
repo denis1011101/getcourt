@@ -168,7 +168,7 @@ class UsersController < ApplicationController
       :city_name,
       :court_preferences_note,
       :notify_nearby,
-      :nearby_notification_channel,
+      :notification_channel,
       favorite_court_ids: [],
       preferred_sports: [],
       skill_levels: {} # permit JSON object

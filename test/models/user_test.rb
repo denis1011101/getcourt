@@ -26,4 +26,18 @@ class UserTest < ActiveSupport::TestCase
     assert_nil column.default
     assert_nil User.new.telegram_locale
   end
+
+  test "defaults notification channel to telegram when telegram is connected" do
+    user = User.new(email: "telegram-channel@example.com", telegram_chat_id: 12_345)
+
+    assert user.valid?
+    assert_equal "telegram", user.notification_channel
+  end
+
+  test "defaults notification channel to email without telegram" do
+    user = User.new(email: "email-channel@example.com")
+
+    assert user.valid?
+    assert_equal "email", user.notification_channel
+  end
 end

@@ -20,7 +20,7 @@ class NotifyUrgentPlayerSearchJob < ApplicationJob
     recipients.find_each do |user|
       next unless user.city_name.to_s.strip.downcase == game_city
 
-      case user.nearby_notification_channel
+      case user.notification_channel
       when "email"
         UserMailer.urgent_player_search(user, game).deliver_later
       when "telegram"

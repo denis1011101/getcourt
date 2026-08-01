@@ -23,7 +23,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     user = User.find_by!(email: email)
     assert_equal "en", user.telegram_locale
     assert_equal "en", user.locale
-    assert_equal "email", user.nearby_notification_channel
+    assert_equal "email", user.notification_channel
   ensure
     User.find_by(email: email)&.destroy if defined?(email)
   end

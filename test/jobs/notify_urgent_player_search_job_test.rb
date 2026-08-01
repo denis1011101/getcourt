@@ -28,7 +28,7 @@ class NotifyUrgentPlayerSearchJobTest < ActiveJob::TestCase
       telegram_chat_id: "2001",
       city_name: "Yekaterinburg",
       notify_nearby: true,
-      nearby_notification_channel: "telegram",
+      notification_channel: "telegram",
       telegram_locale: "ru"
     )
     User.create!(
@@ -36,7 +36,7 @@ class NotifyUrgentPlayerSearchJobTest < ActiveJob::TestCase
       name: "Nearby Email",
       city_name: "Yekaterinburg",
       notify_nearby: true,
-      nearby_notification_channel: "email",
+      notification_channel: "email",
       locale: "en"
     )
     User.create!(
@@ -45,7 +45,7 @@ class NotifyUrgentPlayerSearchJobTest < ActiveJob::TestCase
       telegram_chat_id: "2002",
       city_name: "Moscow",
       notify_nearby: true,
-      nearby_notification_channel: "telegram",
+      notification_channel: "telegram",
       telegram_locale: "ru"
     )
     User.create!(
@@ -53,7 +53,7 @@ class NotifyUrgentPlayerSearchJobTest < ActiveJob::TestCase
       name: "Missing City",
       telegram_chat_id: "2004",
       notify_nearby: true,
-      nearby_notification_channel: "telegram",
+      notification_channel: "telegram",
       telegram_locale: "ru"
     )
     User.create!(
@@ -62,7 +62,7 @@ class NotifyUrgentPlayerSearchJobTest < ActiveJob::TestCase
       telegram_chat_id: "2003",
       city_name: "Yekaterinburg",
       notify_nearby: false,
-      nearby_notification_channel: "telegram",
+      notification_channel: "telegram",
       telegram_locale: "ru"
     )
 
@@ -89,7 +89,7 @@ class NotifyUrgentPlayerSearchJobTest < ActiveJob::TestCase
       email: "recipient_no_fallback@example.com",
       city_name: "Yekaterinburg",
       notify_nearby: true,
-      nearby_notification_channel: "telegram"
+      notification_channel: "telegram"
     )
     court = Court.create!(name: "No Fallback Court", city_name: "Yekaterinburg")
     game = Game.create!(court: court, user: owner, date: Date.current + 1.day, urgent_player_search: true)
@@ -115,7 +115,7 @@ class NotifyUrgentPlayerSearchJobTest < ActiveJob::TestCase
       email: "recipient_without_game_city@example.com",
       city_name: "Yekaterinburg",
       notify_nearby: true,
-      nearby_notification_channel: "email"
+      notification_channel: "email"
     )
     court = Court.create!(name: "Court Without City")
     game = Game.create!(court: court, user: owner, date: Date.current + 1.day, urgent_player_search: true)

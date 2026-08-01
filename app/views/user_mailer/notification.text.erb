@@ -1,0 +1,7 @@
+GetCourt
+
+<%= @body %>
+
+<% @actions.each do |action| %><%= action.fetch(:label) %>: <%= action.fetch(:url) %>
+<% end %>
+<%= I18n.t("user_mailer.notification.manage", locale: I18n.locale) %>: <%= @notifications_url %>

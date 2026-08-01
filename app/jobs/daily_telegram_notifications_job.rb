@@ -23,9 +23,7 @@ class DailyTelegramNotificationsJob < ApplicationJob
       time = game.next_time || game.time
       game_url = "https://getcourt.co/games/#{game.id}"
       recipients.each do |recipient|
-        next unless recipient&.telegram_chat_id.present?
-
-        locale = Telegram::Helpers::UserLookup.locale_for(recipient.telegram_chat_id)
+        locale = Telegram::I18n.locale_for(recipient)
         t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
         time_str = Telegram::Helpers::GameFormatting.format_time_hhmm(time, locale: locale) || "—:--"
         when_text = day_offset == 1 ? t.(:tomorrow) : t.(:today)
@@ -40,9 +38,37 @@ class DailyTelegramNotificationsJob < ApplicationJob
           court: court_name)
         coach = Telegram::Helpers::GameFormatting.coach_mark(game, locale: locale)
         title = coach ? "#{reminder_head} — #{coach}" : "#{reminder_head}."
-        text = [ title, "#{t.(:participants_label)}\n#{participants_text}" ].join("\n") + "\n\n#{game_url}"
-        SendTelegramNotificationJob.perform_later(recipient.telegram_chat_id, text)
+        telegram_text = [ title, "#{t.(:participants_label)}\n#{participants_text}" ].join("\n") + "\n\n#{game_url}"
+
+        email_subject, email_body, action_label = email_reminder(game, recipient, target_date, time, recipients, day_offset)
+        NotificationDelivery.deliver(
+          user: recipient,
+          telegram_text: telegram_text,
+          email_subject: email_subject,
+          email_body: email_body,
+          actions: [ { label: action_label, url: game_url } ]
+        )
       end
+    end
+  end
+
+  private
+
+  def email_reminder(game, recipient, target_date, time, recipients, day_offset)
+    I18n.with_locale(NotificationDelivery.email_locale(recipient)) do
+      when_text = I18n.t(day_offset == 1 ? "user_mailer.notification.tomorrow" : "user_mailer.notification.today")
+      time_text = time&.strftime("%H:%M") || "—:--"
+      court_name = game.court&.name || I18n.t("user_mailer.notification.unknown_court")
+      coach = game.with_coach? ? " — #{I18n.t('user_mailer.notification.with_coach')}" : "."
+      title = I18n.t("user_mailer.notification.game_reminder_body",
+        when: when_text,
+        date: I18n.l(target_date, format: :long),
+        time: time_text,
+        court: court_name) + coach
+      names = recipients.map { |user| user.name.presence || user.email }.join("\n")
+      body = "#{title}\n\n#{I18n.t('user_mailer.notification.participants')}:\n#{names}"
+
+      [ I18n.t("user_mailer.notification.game_reminder_subject"), body, I18n.t("user_mailer.notification.view_game") ]
     end
   end
 end

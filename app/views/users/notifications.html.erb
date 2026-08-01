@@ -12,6 +12,26 @@
       <%= render "users/telegram_section", f: f %>
 
       <div class="mt-6 border-t border-gray-200 pt-4 dark:border-white/10">
+        <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("users.notifications.delivery_title") %></h2>
+        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("users.notifications.delivery_help") %></p>
+
+        <div class="mt-4">
+          <%= f.label :notification_channel, t("users.notifications.channel"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+          <%= f.select :notification_channel,
+                options_for_select([
+                  [t("users.notifications.channel_email"), "email"],
+                  [t("users.notifications.channel_telegram"), "telegram"]
+                ], @user.notification_channel),
+                {},
+                class: "mt-1 block rounded border px-3 py-2 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+        </div>
+
+        <% if @user.telegram_chat_id.blank? && @user.notification_channel == "telegram" %>
+          <p class="mt-2 text-xs text-amber-700 dark:text-amber-300"><%= t("users.notifications.telegram_required") %></p>
+        <% end %>
+      </div>
+
+      <div class="mt-6 border-t border-gray-200 pt-4 dark:border-white/10">
         <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("users.notifications.nearby_title") %></h2>
         <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("users.notifications.nearby_help") %></p>
 
@@ -19,21 +39,6 @@
           <%= f.check_box :notify_nearby, class: "h-4 w-4 text-indigo-600" %>
           <span class="text-sm text-gray-700 dark:text-slate-300"><%= t("users.notifications.nearby_enabled") %></span>
         </label>
-
-        <div class="mt-4">
-          <%= f.label :nearby_notification_channel, t("users.notifications.channel"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-          <%= f.select :nearby_notification_channel,
-                options_for_select([
-                  [t("users.notifications.channel_email"), "email"],
-                  [t("users.notifications.channel_telegram"), "telegram"]
-                ], @user.nearby_notification_channel),
-                {},
-                class: "mt-1 block rounded border px-3 py-2 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
-        </div>
-
-        <% if @user.telegram_chat_id.blank? && @user.nearby_notification_channel == "telegram" %>
-          <p class="mt-2 text-xs text-amber-700 dark:text-amber-300"><%= t("users.notifications.telegram_required") %></p>
-        <% end %>
 
         <% if @user.city_name.blank? %>
           <p class="mt-2 text-xs text-amber-700 dark:text-amber-300">

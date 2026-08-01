@@ -3,6 +3,8 @@ require "ostruct"
 
 module Telegram
   class PostGameStatsReminderJobTest < ActiveJob::TestCase
+    include ActionMailer::TestHelper
+
     test "does nothing when game is missing" do
       with_stubbed_singleton_method(Telegram::Api, :send_with_buttons, ->(*) { flunk "should not send message" }) do
         PostGameStatsReminderJob.perform_now(-1)
@@ -12,7 +14,7 @@ module Telegram
 
     test "sends reminder with action buttons to game creator" do
       game = games(:one)
-      game.user.update_column(:telegram_chat_id, 123_456)
+      game.user.update_columns(telegram_chat_id: 123_456, telegram_locale: "en", notification_channel: "telegram")
       sent = nil
 
       with_stubbed_singleton_method(Telegram::Api, :send_with_buttons, ->(*args) { sent = args }) do
@@ -20,9 +22,10 @@ module Telegram
       end
 
       assert_equal 123_456, sent[0]
-      assert_includes sent[1], "Please fill in the statistics via Telegram"
+      assert_includes sent[1], "Please fill in the statistics on GetCourt"
       assert_equal "Fill stats", sent[2][0][0][:text]
-      assert_equal "tg_fill:#{game.id}", sent[2][0][0][:callback_data]
+      assert_equal "http://localhost:3000/games/#{game.id}", sent[2][0][0][:url]
+      assert sent[2].flatten.none? { |button| button.key?(:callback_data) }
       assert_equal "Game did not happen", sent[2][1][0][:text]
       assert_includes sent[2][1][0][:url], "mark_not_happened="
     end
@@ -35,7 +38,7 @@ module Telegram
         time: "10:30",
         post_game_stats_reminder_job_id: "old-job-id"
       )
-      game.user.update_column(:telegram_chat_id, 123_456)
+      game.user.update_columns(telegram_chat_id: 123_456, notification_channel: "telegram")
 
       wait_until_seen = nil
       enqueued = OpenStruct.new(provider_job_id: "new-job-id")
@@ -57,12 +60,23 @@ module Telegram
 
     test "does not send reminder when creator has no telegram chat id" do
       game = games(:one)
-      game.user.update_column(:telegram_chat_id, nil)
+      game.user.update_columns(telegram_chat_id: nil, notification_channel: "telegram")
 
       with_stubbed_singleton_method(Telegram::Api, :send_with_buttons, ->(*) { flunk "should not send message" }) do
         PostGameStatsReminderJob.perform_now(game.id)
       end
       assert_nil game.user.reload.telegram_chat_id
+    end
+
+    test "sends reminder by email when email is selected" do
+      game = games(:one)
+      game.user.update_columns(email: "stats-reminder@example.com", locale: "en", notification_channel: "email")
+
+      assert_enqueued_emails 1 do
+        with_stubbed_singleton_method(Telegram::Api, :send_with_buttons, ->(*) { flunk "should not send telegram message" }) do
+          PostGameStatsReminderJob.perform_now(game.id)
+        end
+      end
     end
 
     private

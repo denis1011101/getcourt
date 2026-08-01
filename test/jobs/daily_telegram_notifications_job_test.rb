@@ -1,6 +1,8 @@
 require "test_helper"
 
 class DailyTelegramNotificationsJobTest < ActiveJob::TestCase
+  include ActionMailer::TestHelper
+
   test "adds coach mark to game reminder" do
     text = reminder_text(with_coach: true)
 
@@ -32,12 +34,23 @@ class DailyTelegramNotificationsJobTest < ActiveJob::TestCase
     assert text.lines.first.chomp.end_with?(".")
   end
 
+  test "sends game reminder by email when email is selected" do
+    game = games(:one)
+    recipient = users(:one)
+    game.update!(date: Date.current, recurring: false)
+    recipient.update!(email: "daily-email@example.com", notification_channel: "email", locale: "en")
+
+    assert_enqueued_emails 1 do
+      DailyTelegramNotificationsJob.perform_now
+    end
+  end
+
   private
     def reminder_text(with_coach:, locale: "en")
       game = games(:one)
       recipient = users(:one)
       game.update!(date: Date.current, recurring: false, with_coach: with_coach)
-      recipient.update!(email: "reminder-#{locale}-#{with_coach}@example.com", telegram_chat_id: 90_006, telegram_locale: locale)
+      recipient.update!(email: "reminder-#{locale}-#{with_coach}@example.com", telegram_chat_id: 90_006, telegram_locale: locale, notification_channel: "telegram")
       calls = []
 
       stub_singleton(SendTelegramNotificationJob, :perform_later, ->(*args) { calls << args }) do
