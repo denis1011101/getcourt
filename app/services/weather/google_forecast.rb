@@ -14,7 +14,7 @@ module Weather
     Reading = Data.define(:temperature_c, :condition_type, :description, :precipitation_percent)
 
     class << self
-      def for_game(game)
+      def for_game(game, timeout: nil)
         return nil if game.environment.to_s == "indoor"
 
         coordinates = game.court&.coordinates_pair
@@ -27,7 +27,7 @@ module Weather
         cache_period = target_time.utc.strftime("%Y%m%d%H")
         cache_key = "weather:google:#{lat.round(2)}:#{lng.round(2)}:#{cache_period}"
         cached = Rails.cache.fetch(cache_key, expires_in: CACHE_EXPIRY) do
-          fetch_reading(lat, lng, target_time) || :none
+          fetch_reading(lat, lng, target_time, timeout) || :none
         end
 
         cached == :none ? nil : cached
@@ -37,30 +37,30 @@ module Weather
       end
 
       private
-        def fetch_reading(lat, lng, target_time)
+        def fetch_reading(lat, lng, target_time, timeout)
           key = ENV["GOOGLE_WEATHER_API_KEY"].presence || ENV["GOOGLE_MAPS_API_KEY"].presence
           return nil unless key
 
           if target_time <= Time.current.end_of_hour
-            fetch_current(lat, lng, key)
+            fetch_current(lat, lng, key, timeout)
           elsif target_time > Time.current + HOURLY_HORIZON
-            fetch_daily(lat, lng, target_time, key)
+            fetch_daily(lat, lng, target_time, key, timeout)
           else
-            fetch_hourly(lat, lng, target_time, key)
+            fetch_hourly(lat, lng, target_time, key, timeout)
           end
         end
 
-        def fetch_current(lat, lng, key)
-          data = fetch_page("currentConditions:lookup", lat, lng, key)
+        def fetch_current(lat, lng, key, timeout)
+          data = fetch_page("currentConditions:lookup", lat, lng, key, timeout: timeout)
           build_reading(data) if data
         end
 
-        def fetch_hourly(lat, lng, target_time, key)
+        def fetch_hourly(lat, lng, target_time, key, timeout)
           hours = [ ((target_time - Time.current) / 1.hour).ceil + 1, MAX_HOURS ].min
           query = { hours: hours, pageSize: [ hours, PAGE_SIZE ].min }
 
           loop do
-            data = fetch_page("forecast/hours:lookup", lat, lng, key, query)
+            data = fetch_page("forecast/hours:lookup", lat, lng, key, query, timeout: timeout)
             return nil unless data
 
             forecast = Array(data["forecastHours"]).find { |hour| covers?(hour, target_time) }
@@ -73,15 +73,15 @@ module Weather
           end
         end
 
-        def fetch_daily(lat, lng, target_time, key)
-          data = fetch_page("forecast/days:lookup", lat, lng, key, days: 10, pageSize: 10)
+        def fetch_daily(lat, lng, target_time, key, timeout)
+          data = fetch_page("forecast/days:lookup", lat, lng, key, { days: 10, pageSize: 10 }, timeout: timeout)
           return nil unless data
 
           forecast = Array(data["forecastDays"]).find { |day| covers?(day, target_time) }
           build_daily_reading(forecast, target_time) if forecast
         end
 
-        def fetch_page(endpoint, lat, lng, key, query = {})
+        def fetch_page(endpoint, lat, lng, key, query = {}, timeout: nil)
           return nil if Weather::Quota.exceeded?
 
           uri = URI("https://weather.googleapis.com/v1/#{endpoint}")
@@ -91,7 +91,7 @@ module Weather
             "location.longitude": lng,
             unitsSystem: "METRIC"
           }.merge(query))
-          data = fetch_json(uri)
+          data = timeout ? fetch_json(uri, timeout: timeout) : fetch_json(uri)
           Weather::Quota.increment! if data
           data
         end
@@ -129,11 +129,11 @@ module Weather
           build_reading(part.merge("temperature" => forecast[temperature_key]))
         end
 
-        def fetch_json(uri)
+        def fetch_json(uri, timeout: nil)
           http = Net::HTTP.new(uri.host, uri.port)
           http.use_ssl = true
-          http.open_timeout = 5
-          http.read_timeout = 10
+          http.open_timeout = timeout&.fetch(:open, nil) || 5
+          http.read_timeout = timeout&.fetch(:read, nil) || 10
           response = http.request(Net::HTTP::Get.new(uri))
           JSON.parse(response.body) if response.is_a?(Net::HTTPSuccess)
         rescue Net::ReadTimeout, Net::OpenTimeout => e

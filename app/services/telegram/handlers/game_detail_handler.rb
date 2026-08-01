@@ -32,11 +32,14 @@ module Telegram
           title_text = "#{title || 'Game'} ##{game.id}"
           lines << "*#{title_text}*"
 
-          coach = coach_badge_for(game, locale)
+          coach = Telegram::Helpers::GameFormatting.coach_mark(game, locale: locale)
           lines << t.(:coach_label, value: coach) if coach.present?
 
           when_str = Telegram::Helpers::GameFormatting.game_datetime(game)
           lines << t.(:when_label, datetime: when_str) if when_str.present?
+
+          reading = Weather::GoogleForecast.for_game(game, timeout: { open: 2, read: 3 })
+          lines << t.(:weather_label, value: weather_text(reading)) if reading
 
           lines << players_line
           lines << t.(:court_label, name: game.court&.name) if game.respond_to?(:court) && game.court
@@ -44,7 +47,6 @@ module Telegram
           text = lines.compact.join("\n")
 
           buttons = []
-          buttons << [ { text: t.(:open_in_browser), url: game_url } ] unless host.to_s.include?("localhost")
 
           user = Telegram::Helpers::UserLookup.find_user(chat_id)
 
@@ -72,6 +74,8 @@ module Telegram
           buttons << row1
 
           buttons << [ { text: t.(:players_list_btn), callback_data: "game:players:#{game.id}:#{page}" } ]
+
+          buttons << [ { text: t.(:open_in_browser), url: game_url } ] unless host.to_s.include?("localhost")
 
           # [bot-menu-off] Отключено намеренно: пользуемся сайтом getcourt.co,
           # бот оставлен только для приглашений и карточки игры.
@@ -167,17 +171,10 @@ module Telegram
         #   end
         # end
 
-        def coach_badge_for(game, locale = "ru")
-          return nil unless game
-          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
-
-          if game.respond_to?(:with_coach?) && game.with_coach?
-            t.(:coach_with)
-          elsif game.respond_to?(:needs_coach?) && game.needs_coach?
-            t.(:coach_need)
-          elsif game.respond_to?(:with_coach?) || game.respond_to?(:needs_coach?)
-            t.(:coach_no)
-          end
+        def weather_text(reading)
+          text = "#{Weather::Icons.for(reading.condition_type)} #{reading.temperature_c.round}°"
+          text += " · #{reading.precipitation_percent}%" if reading.precipitation_percent.to_i >= 30
+          text
         end
       end
     end
