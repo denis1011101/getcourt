@@ -35,11 +35,11 @@ class DailyTelegramNotificationsJob < ApplicationJob
         end.compact.join("\n")
         reminder_head = t.(:reminder_head,
           when: when_text,
-          date: I18n.l(target_date, format: :short, locale: locale),
+          date: I18n.l(target_date, format: :telegram, locale: locale),
           time: time_str,
           court: court_name)
         coach = Telegram::Helpers::GameFormatting.coach_mark(game, locale: locale)
-        title = [ reminder_head, coach ].compact.join(" — ")
+        title = coach ? "#{reminder_head} — #{coach}" : "#{reminder_head}."
         text = [ title, "#{t.(:participants_label)}\n#{participants_text}" ].join("\n") + "\n\n#{game_url}"
         SendTelegramNotificationJob.perform_later(recipient.telegram_chat_id, text)
       end

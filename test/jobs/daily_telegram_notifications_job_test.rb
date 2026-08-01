@@ -29,6 +29,7 @@ class DailyTelegramNotificationsJobTest < ActiveJob::TestCase
     text = reminder_text(with_coach: false)
 
     assert_not_includes text.lines.first, " — With coach"
+    assert text.lines.first.chomp.end_with?(".")
   end
 
   private

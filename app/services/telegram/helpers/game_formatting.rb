@@ -9,7 +9,7 @@ module Telegram
 
         t = resolve_time(game)
 
-        date_str = d.respond_to?(:strftime) ? ::I18n.l(d, format: :short, locale: locale) : d.to_s
+        date_str = d.respond_to?(:strftime) ? ::I18n.l(d, format: :telegram, locale: locale) : d.to_s
         time_str = format_time_hhmm(t, locale: locale)
 
         time_str.present? ? "#{date_str} #{time_str}" : date_str
@@ -18,7 +18,7 @@ module Telegram
       # Formats a time value (Time, String, nil) into "HH:MM" or nil.
       def self.format_time_hhmm(t, locale: Telegram::I18n::DEFAULT_LOCALE)
         return nil if t.nil?
-        return ::I18n.l(t, format: :short, locale: locale) if t.respond_to?(:strftime)
+        return ::I18n.l(t, format: :telegram, locale: locale) if t.respond_to?(:strftime)
 
         s = t.to_s.strip
         return nil if s.empty?
@@ -37,7 +37,11 @@ module Telegram
           game.title.to_s.strip.presence
         elsif game.respond_to?(:sport)
           sport = game.sport.to_s.strip
-          Telegram::I18n.t("sport_#{sport.downcase.tr(' ', '_')}", locale: locale) if sport.present?
+          if sport.present?
+            key = "sport_#{sport.downcase.tr(' ', '_')}"
+            label = Telegram::I18n.t(key, locale: locale)
+            label == key ? sport : label
+          end
         end
       end
 

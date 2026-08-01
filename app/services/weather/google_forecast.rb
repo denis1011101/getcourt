@@ -26,11 +26,17 @@ module Weather
         lat, lng = coordinates
         cache_period = target_time.utc.strftime("%Y%m%d%H")
         cache_key = "weather:google:#{lat.round(2)}:#{lng.round(2)}:#{cache_period}"
-        cached = Rails.cache.fetch(cache_key, expires_in: CACHE_EXPIRY) do
-          fetch_reading(lat, lng, target_time, timeout) || :none
-        end
+        cached = Rails.cache.read(cache_key)
+        return nil if cached == :none
+        return cached if cached
 
-        cached == :none ? nil : cached
+        reading = fetch_reading(lat, lng, target_time, timeout)
+        if reading
+          Rails.cache.write(cache_key, reading, expires_in: CACHE_EXPIRY)
+        elsif timeout.nil?
+          Rails.cache.write(cache_key, :none, expires_in: CACHE_EXPIRY)
+        end
+        reading
       rescue => e
         Rails.logger.warn("Google weather error: #{e.class} #{e.message}")
         nil

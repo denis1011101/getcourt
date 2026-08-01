@@ -18,10 +18,10 @@ es:
   date:
     formats:
       long: "%d/%m/%Y"
-      short: "%d/%m/%Y"
+      telegram: "%d/%m/%Y"
   time:
     formats:
-      short: "%H:%M"
+      telegram: "%H:%M"
   meta:
     default_title: "GetCourt — crea partidos e invita amigos fácilmente"
     default_description: "GetCourt — crea partidos de tenis, tenis de mesa, squash y pádel. Configuración rápida, gestión de participantes y recordatorios por Telegram."

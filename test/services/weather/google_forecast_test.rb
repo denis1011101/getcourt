@@ -105,6 +105,27 @@ class Weather::GoogleForecastTest < ActiveSupport::TestCase
     assert_nil Weather::GoogleForecast.for_game(game)
   end
 
+  test "does not cache a miss from a shortened timeout" do
+    travel_to Time.zone.local(2026, 8, 1, 12, 0, 0) do
+      game = outdoor_game(date: Date.current + 1.day, time: "15:00")
+      writes = []
+      cache = Object.new
+      cache.define_singleton_method(:read) { |_| nil }
+      cache.define_singleton_method(:write) { |*args, **kwargs| writes << [ args, kwargs ] }
+
+      stub_singleton(Rails, :cache, -> { cache }) do
+        stub_singleton(Weather::GoogleForecast, :fetch_reading, ->(*) { nil }) do
+          assert_nil Weather::GoogleForecast.for_game(game, timeout: { open: 2, read: 3 })
+          assert_empty writes
+
+          assert_nil Weather::GoogleForecast.for_game(game)
+          assert_equal 1, writes.size
+          assert_equal :none, writes.first.first.second
+        end
+      end
+    end
+  end
+
   private
     def outdoor_game(date:, time:)
       game = games(:one)

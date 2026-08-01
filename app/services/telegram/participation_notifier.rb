@@ -8,7 +8,7 @@ module Telegram
       user_name = actor_name(actor, locale)
       date = game.respond_to?(:next_date) ? (game.next_date || game.date) : game.date
       time = game.respond_to?(:next_time) ? (game.next_time || game.time) : game.time
-      date_str = date ? ::I18n.l(date, format: :short, locale: locale) : "—"
+      date_str = date ? ::I18n.l(date, format: :telegram, locale: locale) : "—"
       time_str = Telegram::Helpers::GameFormatting.format_time_hhmm(time, locale: locale) || "—:--"
       host = ENV.fetch("APP_HOST", ENV.fetch("HOSTNAME", "https://getcourt.co"))
       game_url = "#{host}/games/#{game.id}"

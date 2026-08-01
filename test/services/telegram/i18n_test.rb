@@ -47,4 +47,18 @@ class Telegram::I18nTest < ActiveSupport::TestCase
     assert_equal "Tenis de mesa", Telegram::Helpers::GameFormatting.game_title(game, locale: "es")
     assert_includes Telegram::Helpers::GameFormatting.game_datetime(game, locale: "en"), "08/02/2026"
   end
+
+  test "keeps the Rails short format separate from Telegram formats" do
+    registered_at = Time.zone.local(2026, 8, 2, 23, 54)
+
+    assert_equal "02 Aug 23:54", I18n.l(registered_at, format: :short, locale: :en)
+    assert_equal "11:54 PM", Telegram::Helpers::GameFormatting.format_time_hhmm(registered_at, locale: "en")
+  end
+
+  test "keeps an unknown sport readable" do
+    game = games(:one)
+    game.update_columns(sport: "Badminton")
+
+    assert_equal "Badminton", Telegram::Helpers::GameFormatting.game_title(game, locale: "ru")
+  end
 end

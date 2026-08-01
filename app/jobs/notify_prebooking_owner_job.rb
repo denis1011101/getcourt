@@ -24,7 +24,7 @@ class NotifyPrebookingOwnerJob < ApplicationJob
     t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
     requester = Telegram::Helpers::UserLookup.display_name(user, fallback: t.(:user_fallback))
 
-    dates_text = pending_prebookings.map(&:date).sort.map { |date| I18n.l(date, format: :short, locale: locale) }.join(", ")
+    dates_text = pending_prebookings.map(&:date).sort.map { |date| I18n.l(date, format: :telegram, locale: locale) }.join(", ")
     host = ENV.fetch("APP_HOST", ENV.fetch("HOSTNAME", "https://getcourt.co"))
     game_url = "#{host}/games/#{game.id}"
     text = "#{t.(:prebooking_request, game_id: game.id, name: requester)}\n#{t.(:dates_label, dates: dates_text)}\n\n#{game_url}"

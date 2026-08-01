@@ -47,10 +47,10 @@ en:
   date:
     formats:
       long: "%B %d, %Y"
-      short: "%m/%d/%Y"
+      telegram: "%m/%d/%Y"
   time:
     formats:
-      short: "%I:%M %p"
+      telegram: "%I:%M %p"
   meta:
     default_title: "GetCourt — easily create games and invite friends"
     default_description: "GetCourt — create games and invite friends for tennis, table tennis, squash and padel. Quick setup, participant management and Telegram reminders."

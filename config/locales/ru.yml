@@ -17,10 +17,10 @@ ru:
   date:
     formats:
       long: "%d.%m.%Y"
-      short: "%d.%m.%Y"
+      telegram: "%d.%m.%Y"
   time:
     formats:
-      short: "%H:%M"
+      telegram: "%H:%M"
   meta:
     default_title: "GetCourt — создавайте игры и приглашайте друзей"
     default_description: "GetCourt — создавайте игры в теннис, настольный теннис, сквош и падел. Быстрая настройка, управление участниками и напоминания в Telegram."
