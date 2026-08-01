@@ -17,10 +17,14 @@ es:
     language_label: "Idioma"
   date:
     formats:
+      default: "%d/%m/%Y"
+      short: "%d/%m/%Y"
       long: "%d/%m/%Y"
       telegram: "%d/%m/%Y"
   time:
     formats:
+      default: "%d/%m/%Y %H:%M"
+      short: "%d/%m/%Y %H:%M"
       telegram: "%H:%M"
   meta:
     default_title: "GetCourt — crea partidos e invita amigos fácilmente"
