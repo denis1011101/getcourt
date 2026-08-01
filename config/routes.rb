@@ -71,6 +71,8 @@ Rails.application.routes.draw do
   resources :events, only: [ :show ], constraints: { id: /[a-z0-9-]+/ }
   root "games#index"
   resources :games, except: [ :index ], constraints: { id: /\d+/ } do
+    resource :weather, only: :show
+
     member do
       post :toggle_urgent_player_search
     end

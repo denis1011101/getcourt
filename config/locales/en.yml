@@ -183,6 +183,7 @@ en:
       time: "Time"
       duration: "Duration"
       court: "Court"
+      weather: "Weather"
       tournament: "Tournament"
       participants: "Participants"
       enter_statistics: "Enter statistics"

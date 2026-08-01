@@ -153,6 +153,7 @@ ru:
       time: "Время"
       duration: "Длительность"
       court: "Корт"
+      weather: "Погода"
       tournament: "Турнир"
       participants: "Участники"
       enter_statistics: "Внести статистику"

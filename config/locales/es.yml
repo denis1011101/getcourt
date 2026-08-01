@@ -154,6 +154,7 @@ es:
       time: "Hora"
       duration: "Duración"
       court: "Pista"
+      weather: "Tiempo"
       tournament: "Torneo"
       participants: "Participantes"
       enter_statistics: "Introducir estadísticas"
