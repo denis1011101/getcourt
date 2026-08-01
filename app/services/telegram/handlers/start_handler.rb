@@ -8,10 +8,8 @@ module Telegram
           chat_id = (chat["id"] || "").to_s
           return unless chat_id.present?
 
-          user = nil
-          created = false
           begin
-            user, created = Telegram::UserService.find_or_create_for_chat(chat)
+            Telegram::UserService.find_or_create_for_chat(chat)
           rescue => e
             Rails.logger.error "[Telegram::Handlers::StartHandler] user lookup error: #{e.class} #{e.message}"
           end

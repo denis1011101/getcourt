@@ -29,6 +29,49 @@ class Weather::GoogleForecastTest < ActiveSupport::TestCase
           assert_equal "Partly cloudy", reading.description
           assert_equal 40, reading.precipitation_percent
           assert_includes requested_uri.path, "forecast/hours:lookup"
+          assert_equal "METRIC", URI.decode_www_form(requested_uri.query).to_h["unitsSystem"]
+        end
+      end
+    end
+  end
+
+  test "uses one daily forecast request for a distant game" do
+    travel_to Time.zone.local(2026, 8, 1, 12, 0, 0) do
+      game = outdoor_game(date: Date.current + 9.days, time: "15:00")
+      target_time = game.start_at_for_ui
+      payload = {
+        "forecastDays" => [
+          {
+            "interval" => {
+              "startTime" => (target_time - 8.hours).iso8601,
+              "endTime" => (target_time + 16.hours).iso8601
+            },
+            "daytimeForecast" => {
+              "interval" => {
+                "startTime" => (target_time - 8.hours).iso8601,
+                "endTime" => (target_time + 4.hours).iso8601
+              },
+              "weatherCondition" => { "type" => "CLEAR", "description" => { "text" => "Clear" } },
+              "precipitation" => { "probability" => { "percent" => 5 } }
+            },
+            "maxTemperature" => { "degrees" => 24.5 },
+            "minTemperature" => { "degrees" => 12.0 }
+          }
+        ]
+      }
+      requested_uris = []
+
+      with_env("GOOGLE_WEATHER_API_KEY" => "weather-key") do
+        stub_singleton(Weather::GoogleForecast, :fetch_json, ->(uri) { requested_uris << uri; payload }) do
+          reading = Weather::GoogleForecast.for_game(game)
+
+          assert_in_delta 24.5, reading.temperature_c
+          assert_equal "CLEAR", reading.condition_type
+          assert_equal 1, requested_uris.size
+          assert_includes requested_uris.first.path, "forecast/days:lookup"
+          query = URI.decode_www_form(requested_uris.first.query).to_h
+          assert_equal "10", query["pageSize"]
+          assert_equal "METRIC", query["unitsSystem"]
         end
       end
     end

@@ -11,7 +11,13 @@ module Weather
     def self.increment!(by = 1)
       key = cache_key
       Rails.cache.fetch(key, expires_in: EXPIRY) { 0 }
-      value = Rails.cache.increment(key, by) if Rails.cache.respond_to?(:increment)
+      value = if Rails.cache.respond_to?(:increment)
+        begin
+          Rails.cache.increment(key, by)
+        rescue
+          nil
+        end
+      end
 
       if value.nil?
         value = (Rails.cache.read(key) || 0) + by

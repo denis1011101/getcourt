@@ -58,14 +58,16 @@ class Telegram::Handlers::StartHandlerTest < ActiveSupport::TestCase
   test "menu contains only the GetCourt site link" do
     sent = nil
 
-    stub_singleton(Telegram::Handlers::MenuHandler, :send_or_edit_with_buttons, ->(*args, **kwargs) { sent = [ args, kwargs ] }) do
-      Telegram::Handlers::MenuHandler.menu("444")
+    stub_singleton(Telegram::Helpers::UserLookup, :locale_for, ->(_) { "en" }) do
+      stub_singleton(Telegram::Handlers::MenuHandler, :send_or_edit_with_buttons, ->(*args, **kwargs) { sent = [ args, kwargs ] }) do
+        Telegram::Handlers::MenuHandler.menu("444")
+      end
     end
 
     args, kwargs = sent
     assert_equal "444", args.first
     assert_equal "All actions are available on getcourt.co.", args.second
-    assert_equal [ [ { text: "Open GetCourt", url: ENV.fetch("APP_HOST", "https://getcourt.co") } ] ], args.third
+    assert_equal [ [ { text: "Open in browser", url: ENV.fetch("APP_HOST", "https://getcourt.co") } ] ], args.third
     assert_nil kwargs[:message_id]
   end
 

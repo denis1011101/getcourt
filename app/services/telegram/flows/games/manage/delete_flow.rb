@@ -13,7 +13,8 @@ module Telegram
               case cb.data
               when /\Agame:delete:(\d+)(?::(\d+))?\z/
                 game_id = $1.to_i
-                page = ($2 || 1).to_i
+                # [bot-menu-off] Отключено намеренно вместе с возвратом в список игр.
+                # page = ($2 || 1).to_i
 
                 game = Game.find_by(id: game_id)
                 unless game
@@ -29,7 +30,8 @@ module Telegram
 
                 game.destroy rescue nil
                 poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id }) rescue nil
-                Telegram::Handlers::GamesHandler.list_page(cb.chat_id, page, message_id: cb.message_id) rescue nil
+                # [bot-menu-off] Отключено намеренно: список игр перенесён на сайт getcourt.co.
+                # Telegram::Handlers::GamesHandler.list_page(cb.chat_id, page, message_id: cb.message_id) rescue nil
                 nil
               else
                 nil

@@ -16,6 +16,7 @@ module Telegram
         t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
         case cb.data
+        # Недостижимая ветка сохраняет валидный case, пока сценарии ниже отключены.
         when nil
           false
         # [bot-menu-off] Отключено намеренно: пользуемся сайтом getcourt.co,

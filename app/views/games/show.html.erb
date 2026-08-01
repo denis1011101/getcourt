@@ -78,7 +78,7 @@
       </div>
 
       <% if @game.court&.coordinates_pair && @game.environment.to_s != "indoor" %>
-        <%= turbo_frame_tag dom_id(@game, :weather), src: game_weather_path(@game, context: "details"), loading: "lazy" %>
+        <%= turbo_frame_tag dom_id(@game, :weather), src: game_weather_path(@game, context: "details"), loading: "lazy", class: "contents" %>
       <% end %>
 
       <% if @game.tournament.present? %>

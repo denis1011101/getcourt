@@ -81,6 +81,7 @@ module Telegram
                   updated_at: Time.current
                 )
               end
+              Telegram::Api.send_simple(chat_id, "Telegram connected to your GetCourt account.", parse_mode: nil)
               Telegram::Handlers::MenuHandler.menu(chat_id) rescue nil
             else
               Telegram::Api.send_simple(chat_id, "Registration code is invalid or expired. Please regenerate it in your account settings.", parse_mode: nil)

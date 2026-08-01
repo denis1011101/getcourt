@@ -9,6 +9,7 @@ module Weather
     CACHE_EXPIRY = 3.hours
     MAX_HOURS = 240
     PAGE_SIZE = 24
+    HOURLY_HORIZON = 48.hours
 
     Reading = Data.define(:temperature_c, :condition_type, :description, :precipitation_percent)
 
@@ -23,7 +24,13 @@ module Weather
         return nil unless target_time && target_time >= Time.current && target_time <= Time.current + MAX_HORIZON
 
         lat, lng = coordinates
-        cache_key = "weather:google:#{lat.round(2)}:#{lng.round(2)}:#{target_time.utc.strftime('%Y%m%d%H')}"
+        cache_period = if target_time > Time.current + HOURLY_HORIZON
+          day_part = target_time.hour.between?(7, 18) ? "day" : "night"
+          "#{target_time.to_date.strftime('%Y%m%d')}:#{day_part}"
+        else
+          target_time.utc.strftime("%Y%m%d%H")
+        end
+        cache_key = "weather:google:#{lat.round(2)}:#{lng.round(2)}:#{cache_period}"
         cached = Rails.cache.fetch(cache_key, expires_in: CACHE_EXPIRY) do
           fetch_reading(lat, lng, target_time) || :none
         end
@@ -41,6 +48,8 @@ module Weather
 
           if target_time <= Time.current.end_of_hour
             fetch_current(lat, lng, key)
+          elsif target_time > Time.current + HOURLY_HORIZON
+            fetch_daily(lat, lng, target_time, key)
           else
             fetch_hourly(lat, lng, target_time, key)
           end
@@ -69,6 +78,14 @@ module Weather
           end
         end
 
+        def fetch_daily(lat, lng, target_time, key)
+          data = fetch_page("forecast/days:lookup", lat, lng, key, days: 10, pageSize: 10)
+          return nil unless data
+
+          forecast = Array(data["forecastDays"]).find { |day| covers?(day, target_time) }
+          build_daily_reading(forecast, target_time) if forecast
+        end
+
         def fetch_page(endpoint, lat, lng, key, query = {})
           return nil if Weather::Quota.exceeded?
 
@@ -76,7 +93,8 @@ module Weather
           uri.query = URI.encode_www_form({
             key: key,
             "location.latitude": lat,
-            "location.longitude": lng
+            "location.longitude": lng,
+            unitsSystem: "METRIC"
           }.merge(query))
           data = fetch_json(uri)
           Weather::Quota.increment! if data
@@ -84,6 +102,8 @@ module Weather
         end
 
         def covers?(forecast, target_time)
+          return false unless forecast
+
           starts_at = Time.iso8601(forecast.dig("interval", "startTime"))
           ends_at = Time.iso8601(forecast.dig("interval", "endTime"))
           target_time >= starts_at && target_time < ends_at
@@ -101,6 +121,17 @@ module Weather
             description: data.dig("weatherCondition", "description", "text"),
             precipitation_percent: data.dig("precipitation", "probability", "percent")
           )
+        end
+
+        def build_daily_reading(forecast, target_time)
+          part_key = %w[daytimeForecast nighttimeForecast].find do |key|
+            covers?(forecast[key], target_time)
+          end
+          part_key ||= target_time.hour.between?(7, 18) ? "daytimeForecast" : "nighttimeForecast"
+          temperature_key = part_key == "daytimeForecast" ? "maxTemperature" : "minTemperature"
+          part = forecast[part_key] || {}
+
+          build_reading(part.merge("temperature" => forecast[temperature_key]))
         end
 
         def fetch_json(uri)

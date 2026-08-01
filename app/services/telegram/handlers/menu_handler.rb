@@ -25,8 +25,10 @@ module Telegram
           #   [ { text: t.(:profile),                  callback_data: "profile:show" } ]
           # ]
 
-          text = "All actions are available on getcourt.co."
-          buttons = [ [ { text: "Open GetCourt", url: ENV.fetch("APP_HOST", "https://getcourt.co") } ] ]
+          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+          text = t.(:bot_moved_to_site)
+          buttons = [ [ { text: t.(:open_in_browser), url: ENV.fetch("APP_HOST", "https://getcourt.co") } ] ]
 
           send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
         end

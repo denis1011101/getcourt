@@ -30,6 +30,7 @@ module Telegram
     RU = {
       # Main menu
       main_menu: "Главное меню:",
+      bot_moved_to_site: "Все действия доступны на сайте getcourt.co.",
       create_game: "Создать игру",
       find_game: "Найти игру",
       create_court: "Создать корт",
@@ -454,6 +455,7 @@ module Telegram
     EN = {
       # Main menu
       main_menu: "Main menu:",
+      bot_moved_to_site: "All actions are available on getcourt.co.",
       create_game: "Create game",
       find_game: "Find game",
       create_court: "Create court",

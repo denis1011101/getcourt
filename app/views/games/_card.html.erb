@@ -79,10 +79,6 @@
         </span>
       <% end %>
 
-      <% if game.court&.coordinates_pair && game.environment.to_s != "indoor" %>
-        <%= turbo_frame_tag dom_id(game, :weather), src: game_weather_path(game), loading: "lazy" %>
-      <% end %>
-
       <% if game.respond_to?(:with_coach) && game.with_coach? %>
         <span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-500/15 dark:text-blue-200">
           Coach
@@ -99,6 +95,10 @@
         <span class="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-medium text-rose-700 dark:bg-rose-500/15 dark:text-rose-200">
     Players search
         </span>
+      <% end %>
+
+      <% if game.court&.coordinates_pair && game.environment.to_s != "indoor" %>
+        <%= turbo_frame_tag dom_id(game, :weather), src: game_weather_path(game), loading: "lazy", class: "contents" %>
       <% end %>
     </div>
 

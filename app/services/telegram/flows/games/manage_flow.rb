@@ -18,11 +18,11 @@ module Telegram
               Telegram::Flows::Games::Manage::JoinFlow.handle_callback(callback)
             when /\Agame:approve_participation:/, /\Agame:reject_participation:/
               Telegram::Flows::Games::Manage::ApproveFlow.handle_callback(callback)
+            when /\Agame:approve.*prebooking/, /\Agame:reject.*prebooking/
+              Telegram::Flows::Games::Manage::PrebookApproveFlow.handle_callback(callback)
             # [bot-menu-off] Отключено намеренно: пользуемся сайтом getcourt.co,
             # бот оставлен только для приглашений и карточки игры.
             # Раскомментировать, если решим вернуть функциональность в бот.
-            # when /\Agame:approve.*prebooking/, /\Agame:reject.*prebooking/
-            #   Telegram::Flows::Games::Manage::PrebookApproveFlow.handle_callback(callback)
             # when /\Agame:delete\b/
             #   Telegram::Flows::Games::Manage::DeleteFlow.handle_callback(callback)
             # when /\Agame:urgent_search\b/
