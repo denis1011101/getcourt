@@ -16,11 +16,15 @@ module Telegram
             Rails.logger.error "[Telegram::Handlers::StartHandler] user lookup error: #{e.class} #{e.message}"
           end
 
-          if !created
-            Telegram::Handlers::MenuHandler.menu(chat_id)
-          else
-            SurveyHandler.start(chat_id, user)
-          end
+          # [bot-menu-off] Отключено намеренно: пользуемся сайтом getcourt.co,
+          # бот оставлен только для приглашений и карточки игры.
+          # Раскомментировать, если решим вернуть функциональность в бот.
+          # if !created
+          #   Telegram::Handlers::MenuHandler.menu(chat_id)
+          # else
+          #   SurveyHandler.start(chat_id, user)
+          # end
+          Telegram::Handlers::MenuHandler.menu(chat_id)
         end
       end
     end

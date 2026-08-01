@@ -44,6 +44,7 @@ module Telegram
           text = lines.compact.join("\n")
 
           buttons = []
+          buttons << [ { text: t.(:open_in_browser), url: game_url } ] unless host.to_s.include?("localhost")
 
           user = Telegram::Helpers::UserLookup.find_user(chat_id)
 
@@ -61,41 +62,43 @@ module Telegram
 
           row1 = [ join_btn ]
 
-          if game.prebooking_enabled? && (!game.respond_to?(:recurring?) || game.recurring?)
-            row1 << { text: t.(:prebooking), callback_data: "game:prebook:#{game.id}" }
-          end
+          # [bot-menu-off] Отключено намеренно: пользуемся сайтом getcourt.co,
+          # бот оставлен только для приглашений и карточки игры.
+          # Раскомментировать, если решим вернуть функциональность в бот.
+          # if game.prebooking_enabled? && (!game.respond_to?(:recurring?) || game.recurring?)
+          #   row1 << { text: t.(:prebooking), callback_data: "game:prebook:#{game.id}" }
+          # end
 
           buttons << row1
 
-          can_fill_stats = can_fill_stats_for_game?(user, game)
-
           buttons << [ { text: t.(:players_list_btn), callback_data: "game:players:#{game.id}:#{page}" } ]
 
-          if game.started_for_ui?
-            if can_fill_stats
-              buttons << [ { text: t.(:statistics), callback_data: "tg_fill:#{game.id}:#{page}" } ]
-            else
-              buttons << [ { text: t.(:statistics), callback_data: "tg_stats_unauthorized:#{game.id}" } ]
-            end
-          else
-            buttons << [ { text: t.(:statistics_locked), callback_data: "tg_stats_locked:#{game.id}" } ]
-          end
-
-          if user && (user.admin? || user.id == game.user_id)
-            if game.urgent_player_search?
-              buttons << [ { text: t.(:urgent_search_disable), callback_data: "game:urgent_search:#{game.id}:off:#{page}" } ]
-            else
-              buttons << [ { text: t.(:urgent_search_enable), callback_data: "game:urgent_search:#{game.id}:on:#{page}" } ]
-            end
-            buttons << [ { text: t.(:invite_players), callback_data: "game:invite:#{game.id}" } ]
-            buttons << [ { text: t.(:manage_players), callback_data: "game:manage:#{game.id}:#{page}" } ]
-            buttons << [ { text: t.(:edit), callback_data: "game:edit:#{game.id}" } ]
-            buttons << [ { text: t.(:delete), callback_data: "game:delete:#{game.id}:#{page}" } ]
-          end
-
-          buttons << [ { text: t.(:share_game), callback_data: "game:share:#{game.id}:#{page}" } ]
-          buttons << [ { text: t.(:open_in_browser), url: game_url } ] unless host.to_s.include?("localhost")
-          buttons << [ { text: t.(:back_to_games), callback_data: "menu:games:page:#{page}" } ]
+          # [bot-menu-off] Отключено намеренно: пользуемся сайтом getcourt.co,
+          # бот оставлен только для приглашений и карточки игры.
+          # Раскомментировать, если решим вернуть функциональность в бот.
+          # can_fill_stats = can_fill_stats_for_game?(user, game)
+          # if game.started_for_ui?
+          #   if can_fill_stats
+          #     buttons << [ { text: t.(:statistics), callback_data: "tg_fill:#{game.id}:#{page}" } ]
+          #   else
+          #     buttons << [ { text: t.(:statistics), callback_data: "tg_stats_unauthorized:#{game.id}" } ]
+          #   end
+          # else
+          #   buttons << [ { text: t.(:statistics_locked), callback_data: "tg_stats_locked:#{game.id}" } ]
+          # end
+          # if user && (user.admin? || user.id == game.user_id)
+          #   if game.urgent_player_search?
+          #     buttons << [ { text: t.(:urgent_search_disable), callback_data: "game:urgent_search:#{game.id}:off:#{page}" } ]
+          #   else
+          #     buttons << [ { text: t.(:urgent_search_enable), callback_data: "game:urgent_search:#{game.id}:on:#{page}" } ]
+          #   end
+          #   buttons << [ { text: t.(:invite_players), callback_data: "game:invite:#{game.id}" } ]
+          #   buttons << [ { text: t.(:manage_players), callback_data: "game:manage:#{game.id}:#{page}" } ]
+          #   buttons << [ { text: t.(:edit), callback_data: "game:edit:#{game.id}" } ]
+          #   buttons << [ { text: t.(:delete), callback_data: "game:delete:#{game.id}:#{page}" } ]
+          # end
+          # buttons << [ { text: t.(:share_game), callback_data: "game:share:#{game.id}:#{page}" } ]
+          # buttons << [ { text: t.(:back_to_games), callback_data: "menu:games:page:#{page}" } ]
 
           send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
         end
@@ -150,17 +153,19 @@ module Telegram
 
         private
 
-        def can_fill_stats_for_game?(user, game)
-          return false unless user && game
-          return true if user.admin? || user.id == game.user_id
-
-          participations = game.participations
-          if participations.respond_to?(:approved)
-            participations.approved.exists?(user_id: user.id)
-          else
-            participations.exists?(user_id: user.id, status: "approved")
-          end
-        end
+        # [bot-menu-off] Отключено намеренно: пользуемся сайтом getcourt.co,
+        # бот оставлен только для приглашений и карточки игры.
+        # Раскомментировать, если решим вернуть функциональность в бот.
+        # def can_fill_stats_for_game?(user, game)
+        #   return false unless user && game
+        #   return true if user.admin? || user.id == game.user_id
+        #   participations = game.participations
+        #   if participations.respond_to?(:approved)
+        #     participations.approved.exists?(user_id: user.id)
+        #   else
+        #     participations.exists?(user_id: user.id, status: "approved")
+        #   end
+        # end
 
         def coach_badge_for(game, locale = "ru")
           return nil unless game

@@ -8,7 +8,7 @@ module Telegram
           # callback_query entry
           def handle_callback(callback)
             data = (callback["data"] || "").to_s
-            return false unless data.start_with?("game:invite:") || data.start_with?("game:invite_cancel:") || data.start_with?("game:invite_decline:")
+            return false unless data.start_with?("game:invite_decline:")
 
             cb_id = callback["id"]
             from = callback["from"] || {}
@@ -17,50 +17,40 @@ module Telegram
             poller = Telegram::Poller.new
 
             case data
-            when /\Agame:invite:(\d+)\z/
-              game_id = $1.to_i
-              game = Game.find_by(id: game_id)
-              inviter = User.find_by(telegram_chat_id: chat_id)
-
-              unless game && inviter && (inviter.admin? || game.user_id == inviter.id)
-                poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Only the game owner can invite", show_alert: false }) rescue nil
-                return true
-              end
-
-              # NEW: store "pending invite input" state instead of ForceReply (Telegram UI can get stuck with force_reply)
-              Rails.cache.write(invite_cache_key(chat_id), game_id, expires_in: 10.minutes)
-
-              poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Send usernames to invite", show_alert: false }) rescue nil
-              if message_id
-                poller.send_api("editMessageText", {
-                  chat_id: chat_id,
-                  message_id: message_id,
-                  text: "Send usernames to invite (e.g. @alice @bob).\nSend /cancel to abort.",
-                  reply_markup: {
-                    inline_keyboard: [ [
-                      { text: "Cancel", callback_data: "game:invite_cancel:#{game_id}" }
-                    ] ]
-                  }
-                }) rescue nil
-              else
-                poller.send_api("sendMessage", {
-                  chat_id: chat_id,
-                  text: "Send usernames to invite (e.g. @alice @bob).\nSend /cancel to abort.",
-                  reply_markup: {
-                    inline_keyboard: [ [
-                      { text: "Cancel", callback_data: "game:invite_cancel:#{game_id}" }
-                    ] ]
-                  }
-                }) rescue nil
-              end
-              return true
-
-            when /\Agame:invite_cancel:(\d+)\z/
-              game_id = $1.to_i
-              Rails.cache.delete(invite_cache_key(chat_id))
-              poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Invite cancelled", show_alert: false }) rescue nil
-              Telegram::Handlers::GamesHandler.show_game(chat_id, game_id, 1, message_id: message_id) rescue nil
-              return true
+            # [bot-menu-off] Отключено намеренно: пользуемся сайтом getcourt.co,
+            # бот оставлен только для приглашений и карточки игры.
+            # Раскомментировать, если решим вернуть функциональность в бот.
+            # when /\Agame:invite:(\d+)\z/
+            #   game_id = $1.to_i
+            #   game = Game.find_by(id: game_id)
+            #   inviter = User.find_by(telegram_chat_id: chat_id)
+            #   unless game && inviter && (inviter.admin? || game.user_id == inviter.id)
+            #     poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Only the game owner can invite", show_alert: false }) rescue nil
+            #     return true
+            #   end
+            #   Rails.cache.write(invite_cache_key(chat_id), game_id, expires_in: 10.minutes)
+            #   poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Send usernames to invite", show_alert: false }) rescue nil
+            #   if message_id
+            #     poller.send_api("editMessageText", {
+            #       chat_id: chat_id,
+            #       message_id: message_id,
+            #       text: "Send usernames to invite (e.g. @alice @bob).\nSend /cancel to abort.",
+            #       reply_markup: { inline_keyboard: [ [ { text: "Cancel", callback_data: "game:invite_cancel:#{game_id}" } ] ] }
+            #     }) rescue nil
+            #   else
+            #     poller.send_api("sendMessage", {
+            #       chat_id: chat_id,
+            #       text: "Send usernames to invite (e.g. @alice @bob).\nSend /cancel to abort.",
+            #       reply_markup: { inline_keyboard: [ [ { text: "Cancel", callback_data: "game:invite_cancel:#{game_id}" } ] ] }
+            #     }) rescue nil
+            #   end
+            #   return true
+            # when /\Agame:invite_cancel:(\d+)\z/
+            #   game_id = $1.to_i
+            #   Rails.cache.delete(invite_cache_key(chat_id))
+            #   poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Invite cancelled", show_alert: false }) rescue nil
+            #   Telegram::Handlers::GamesHandler.show_game(chat_id, game_id, 1, message_id: message_id) rescue nil
+            #   return true
 
             when /\Agame:invite_decline:(\d+)\z/
               game_id = $1.to_i

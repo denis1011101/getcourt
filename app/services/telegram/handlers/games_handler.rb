@@ -4,17 +4,19 @@ module Telegram
       class << self
         include Telegram::Handlers::ReplyHelpers
 
-        def menu(chat_id, message_id: nil)
-          locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
-          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
-
-          buttons = [
-            [ { text: t.(:all_games), callback_data: "menu:games:page:1" } ],
-            [ { text: t.(:create_game), callback_data: "game:create" } ],
-            [ { text: t.(:main_menu_btn), callback_data: "menu:main" } ]
-          ]
-          send_or_edit_with_buttons(chat_id, t.(:games_menu), buttons, message_id: message_id)
-        end
+        # [bot-menu-off] Отключено намеренно: пользуемся сайтом getcourt.co,
+        # бот оставлен только для приглашений и карточки игры.
+        # Раскомментировать, если решим вернуть функциональность в бот.
+        # def menu(chat_id, message_id: nil)
+        #   locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+        #   t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+        #   buttons = [
+        #     [ { text: t.(:all_games), callback_data: "menu:games:page:1" } ],
+        #     [ { text: t.(:create_game), callback_data: "game:create" } ],
+        #     [ { text: t.(:main_menu_btn), callback_data: "menu:main" } ]
+        #   ]
+        #   send_or_edit_with_buttons(chat_id, t.(:games_menu), buttons, message_id: message_id)
+        # end
 
         def owner_display(user)
           Telegram::Helpers::UserLookup.display_name(user)
@@ -42,13 +44,15 @@ module Telegram
           [ title_with_id, date, spots_text ].compact.join(" — ")
         end
 
-        def list_page(chat_id, page = 1, message_id: nil)
-          Telegram::Handlers::GamesListHandler.list_page(chat_id, page, message_id: message_id)
-        end
-
-        def my_games_page(chat_id, page = 1, message_id: nil)
-          Telegram::Handlers::GamesListHandler.my_games_page(chat_id, page, message_id: message_id)
-        end
+        # [bot-menu-off] Отключено намеренно: пользуемся сайтом getcourt.co,
+        # бот оставлен только для приглашений и карточки игры.
+        # Раскомментировать, если решим вернуть функциональность в бот.
+        # def list_page(chat_id, page = 1, message_id: nil)
+        #   Telegram::Handlers::GamesListHandler.list_page(chat_id, page, message_id: message_id)
+        # end
+        # def my_games_page(chat_id, page = 1, message_id: nil)
+        #   Telegram::Handlers::GamesListHandler.my_games_page(chat_id, page, message_id: message_id)
+        # end
 
         def show_game(chat_id, game_id, page = 1, message_id: nil)
           Telegram::Handlers::GameDetailHandler.show_game(chat_id, game_id, page, message_id: message_id)

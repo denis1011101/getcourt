@@ -5,20 +5,24 @@ class Telegram::Handlers::StartHandlerTest < ActiveSupport::TestCase
     { "chat" => { "id" => chat_id } }
   end
 
-  test "new user triggers SurveyHandler.start" do
+  test "new user receives site link without survey" do
     user = User.new
-    survey_args = nil
+    menu_chat_id = nil
+    survey_called = false
 
     stub_singleton(Telegram::UserService, :find_or_create_for_chat, ->(_) { [ user, true ] }) do
-      stub_singleton(Telegram::Handlers::SurveyHandler, :start, ->(cid, u) { survey_args = [ cid, u ] }) do
-        Telegram::Handlers::StartHandler.handle(make_message("111"))
+      stub_singleton(Telegram::Handlers::SurveyHandler, :start, ->(*) { survey_called = true }) do
+        stub_singleton(Telegram::Handlers::MenuHandler, :menu, ->(cid) { menu_chat_id = cid }) do
+          Telegram::Handlers::StartHandler.handle(make_message("111"))
+        end
       end
     end
 
-    assert_equal [ "111", user ], survey_args
+    assert_equal "111", menu_chat_id
+    assert_not survey_called
   end
 
-  test "existing user triggers MenuHandler.menu" do
+  test "existing user receives site link without survey" do
     user = User.new
     menu_chat_id = nil
     survey_called = false
@@ -49,6 +53,20 @@ class Telegram::Handlers::StartHandlerTest < ActiveSupport::TestCase
 
     assert menu_called
     assert_not survey_called
+  end
+
+  test "menu contains only the GetCourt site link" do
+    sent = nil
+
+    stub_singleton(Telegram::Handlers::MenuHandler, :send_or_edit_with_buttons, ->(*args, **kwargs) { sent = [ args, kwargs ] }) do
+      Telegram::Handlers::MenuHandler.menu("444")
+    end
+
+    args, kwargs = sent
+    assert_equal "444", args.first
+    assert_equal "All actions are available on getcourt.co.", args.second
+    assert_equal [ [ { text: "Open GetCourt", url: ENV.fetch("APP_HOST", "https://getcourt.co") } ] ], args.third
+    assert_nil kwargs[:message_id]
   end
 
   test "missing chat_id returns early without calling any handler" do

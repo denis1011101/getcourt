@@ -14,40 +14,31 @@ module Telegram
         def handle_message(message)
           Rails.logger.debug "[Telegram::MainMenuProcessor] incoming message: #{message.inspect}"
 
-          # 0) Score input (ожидаем счёт) — перехватываем первым
-          begin
-            return if Telegram::Flows::StatsScoreFlow.handle_message(message)
-          rescue => e
-            Rails.logger.error "[Telegram::MainMenuProcessor] StatsScoreFlow error: #{e.class} #{e.message}"
-          end
-
-          # 1) Stats field input (ожидаем число) — перехватываем первым
-          begin
-            return if Telegram::Flows::StatsFieldInputFlow.handle_message(message)
-          rescue => e
-            Rails.logger.error "[Telegram::MainMenuProcessor] StatsFieldInputFlow error: #{e.class} #{e.message}"
-          end
-
-          # route ordinary messages to edit flow responder if edit in progress for this chat
-          chat = message["chat"] || {}
-          chat_id = (chat["id"] || message.dig("from", "id")).to_s
-          if Rails.cache.read("telegram:edit:chat:#{chat_id}")
-            Telegram::Flows::Games::EditResponder.handle_message(message) rescue nil
-            return
-          end
-
-          # Wrap the entire if statement in a begin-rescue block
-          begin
-            if Telegram::Flows::Games::InviteFlow.handle_message(message)
-              return
-            end
-          rescue
-            false
-          end
-
-          # handle replies to ForceReply prompts globally
-          return if Telegram::Processors::ReplyProcessor.process(message)
-
+          # [bot-menu-off] Отключено намеренно: пользуемся сайтом getcourt.co,
+          # бот оставлен только для приглашений и карточки игры.
+          # Раскомментировать, если решим вернуть функциональность в бот.
+          # begin
+          #   return if Telegram::Flows::StatsScoreFlow.handle_message(message)
+          # rescue => e
+          #   Rails.logger.error "[Telegram::MainMenuProcessor] StatsScoreFlow error: #{e.class} #{e.message}"
+          # end
+          # begin
+          #   return if Telegram::Flows::StatsFieldInputFlow.handle_message(message)
+          # rescue => e
+          #   Rails.logger.error "[Telegram::MainMenuProcessor] StatsFieldInputFlow error: #{e.class} #{e.message}"
+          # end
+          # chat = message["chat"] || {}
+          # chat_id = (chat["id"] || message.dig("from", "id")).to_s
+          # if Rails.cache.read("telegram:edit:chat:#{chat_id}")
+          #   Telegram::Flows::Games::EditResponder.handle_message(message) rescue nil
+          #   return
+          # end
+          # begin
+          #   return if Telegram::Flows::Games::InviteFlow.handle_message(message)
+          # rescue
+          #   false
+          # end
+          # return if Telegram::Processors::ReplyProcessor.process(message)
 
           chat = message["chat"] || {}
           chat_id = (chat["id"] || message.dig("from", "id")).to_s
@@ -69,11 +60,11 @@ module Telegram
               Rails.logger.error "[Telegram::MainMenuProcessor] user create error: #{e.class} #{e.message}"
             end
 
-            if defined?(Telegram::Flows::ProfileFlow) && Telegram::Flows::ProfileFlow.respond_to?(:start_onboarding)
-              Telegram::Flows::ProfileFlow.start_onboarding(chat_id)
-            else
-              Telegram::Handlers::MenuHandler.menu(chat_id) rescue nil
-            end
+            # [bot-menu-off] Отключено намеренно: пользуемся сайтом getcourt.co,
+            # бот оставлен только для приглашений и карточки игры.
+            # Раскомментировать, если решим вернуть функциональность в бот.
+            # Telegram::Flows::ProfileFlow.start_onboarding(chat_id)
+            Telegram::Handlers::MenuHandler.menu(chat_id) rescue nil
             nil
 
           when /\A\/register(?:@\w+)?\z/
@@ -90,16 +81,18 @@ module Telegram
                   updated_at: Time.current
                 )
               end
-              Telegram::Api.send_simple(chat_id, "Telegram connected to your GetCourt account.", parse_mode: nil)
               Telegram::Handlers::MenuHandler.menu(chat_id) rescue nil
             else
               Telegram::Api.send_simple(chat_id, "Registration code is invalid or expired. Please regenerate it in your account settings.", parse_mode: nil)
             end
             nil
 
-          when "/menu"
-            Telegram::Handlers::MenuHandler.menu(chat_id) rescue nil
-            nil
+            # [bot-menu-off] Отключено намеренно: пользуемся сайтом getcourt.co,
+            # бот оставлен только для приглашений и карточки игры.
+            # Раскомментировать, если решим вернуть функциональность в бот.
+            # when "/menu"
+            #   Telegram::Handlers::MenuHandler.menu(chat_id) rescue nil
+            #   nil
           end
         rescue => e
           Rails.logger.error "[Telegram::MainMenuProcessor] handle_message error: #{e.class} #{e.message}\n#{e.backtrace.join("\n")}\nmessage: #{message.inspect}"

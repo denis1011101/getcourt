@@ -27,4 +27,10 @@ namespace :telegram do
   task update_usernames: :environment do
     Telegram::UpdateTelegramUsernamesJob.perform_now
   end
+
+  desc "Clear bot commands & menu button (bot is invitation-only now)"
+  task clear_menu: :environment do
+    Telegram::Api.send_api("setMyCommands", { commands: [] })
+    Telegram::Api.send_api("setChatMenuButton", { menu_button: { type: "default" } })
+  end
 end

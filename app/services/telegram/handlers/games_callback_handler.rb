@@ -7,16 +7,18 @@ module Telegram
 
         Rails.logger.debug "[Telegram::Handlers::GamesCallbackHandler] data=#{cb.data.inspect} chat_id=#{cb.chat_id}"
 
-        # pagination/menu handled by GamesHandler
-        if cb.data =~ /\Amenu:games:page:(\d+)\z/
-          page = $1.to_i
-          Telegram::Handlers::GamesHandler.list_page(cb.chat_id, page, message_id: cb.message_id) rescue nil
-          Rails.logger.debug "[Telegram::Handlers::GamesCallbackHandler] handled by GamesHandler.list_page page=#{page}"
-          return true
-        end
+        # [bot-menu-off] Отключено намеренно: пользуемся сайтом getcourt.co,
+        # бот оставлен только для приглашений и карточки игры.
+        # Раскомментировать, если решим вернуть функциональность в бот.
+        # if cb.data =~ /\Amenu:games:page:(\d+)\z/
+        #   page = $1.to_i
+        #   Telegram::Handlers::GamesHandler.list_page(cb.chat_id, page, message_id: cb.message_id) rescue nil
+        #   Rails.logger.debug "[Telegram::Handlers::GamesCallbackHandler] handled by GamesHandler.list_page page=#{page}"
+        #   return true
+        # end
 
         # delegate all game-related callbacks to GamesFlow
-        if cb.data.start_with?("game:") || cb.data.start_with?("prebook:") || cb.data.start_with?("create_game_from_court")
+        if cb.data.start_with?("game:")
           Rails.logger.debug "[Telegram::Handlers::GamesCallbackHandler] delegating to GamesFlow.handle_callback data=#{cb.data.inspect}"
           begin
             result = Telegram::Flows::GamesFlow.handle_callback(callback_query)
