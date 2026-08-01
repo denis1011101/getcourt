@@ -1,6 +1,6 @@
 require "test_helper"
 
-class ManageFlowTest < ActiveSupport::TestCase
+class Telegram::Flows::Games::ManageFlowTest < ActiveSupport::TestCase
   test "delegates prebooking notification callbacks" do
     callbacks = [
       { "data" => "game:approve_all_prebookings:1:2" },

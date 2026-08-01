@@ -24,12 +24,7 @@ module Weather
         return nil unless target_time && target_time >= Time.current && target_time <= Time.current + MAX_HORIZON
 
         lat, lng = coordinates
-        cache_period = if target_time > Time.current + HOURLY_HORIZON
-          day_part = target_time.hour.between?(7, 18) ? "day" : "night"
-          "#{target_time.to_date.strftime('%Y%m%d')}:#{day_part}"
-        else
-          target_time.utc.strftime("%Y%m%d%H")
-        end
+        cache_period = target_time.utc.strftime("%Y%m%d%H")
         cache_key = "weather:google:#{lat.round(2)}:#{lng.round(2)}:#{cache_period}"
         cached = Rails.cache.fetch(cache_key, expires_in: CACHE_EXPIRY) do
           fetch_reading(lat, lng, target_time) || :none
