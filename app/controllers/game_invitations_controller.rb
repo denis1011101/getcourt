@@ -30,7 +30,7 @@ class GameInvitationsController < ApplicationController
   end
 
   def send_invitations(handles)
-    result = { sent: [], not_found: [], skipped_self: [], no_telegram: [], failed: [] }
+    result = { sent: [], not_found: [], skipped_self: [], failed: [] }
     resolve_users_by_handles(handles).each do |handle, user|
       if user.blank?
         result[:not_found] << "@#{handle}"
@@ -101,7 +101,6 @@ class GameInvitationsController < ApplicationController
     parts << "Sent: #{result[:sent].join(', ')}" if result[:sent].any?
     parts << "Not found: #{result[:not_found].join(', ')}" if result[:not_found].any?
     parts << "Skipped self: #{result[:skipped_self].join(', ')}" if result[:skipped_self].any?
-    parts << "No Telegram chat: #{result[:no_telegram].join(', ')}" if result[:no_telegram].any?
     parts << "Failed: #{result[:failed].join(', ')}" if result[:failed].any?
     parts.presence&.join(". ") || "No invitations sent."
   end
