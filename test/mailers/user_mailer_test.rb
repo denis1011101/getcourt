@@ -39,7 +39,7 @@ class UserMailerTest < ActionMailer::TestCase
     mail = UserMailer.urgent_player_search(recipient, game)
     body = mail.parts.map(&:decoded).join
 
-    assert_equal "Se necesitan jugadores para un partido en Madrid", mail.subject
+    assert_equal "Búsqueda de jugador para un partido en Madrid", mail.subject
     assert_equal [ recipient.email ], mail.to
     assert_includes body, Rails.application.routes.url_helpers.game_url(game, host: "example.com")
     assert_includes body, Rails.application.routes.url_helpers.notifications_account_url(host: "example.com")

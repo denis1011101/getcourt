@@ -24,7 +24,7 @@ class GameInvitationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal target.telegram_chat_id, chat_id
     assert_includes text, game_path(game)
     assert_includes text, "You are invited to join:"
-    assert_includes text, " — With coach\n\n"
+    assert_includes text, " — With coach\n"
     assert_equal "Join ##{game.id}", buttons.first.first[:text]
     assert_equal "game:join_invited:#{game.id}", buttons.first.first[:callback_data]
   end

@@ -8,6 +8,15 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "sign-in page tells bot users how to link their existing account" do
+    get new_session_url
+
+    assert_response :success
+    assert_select '[data-testid="telegram-signup-hint"]', 1
+    assert_select '[data-testid="telegram-signup-hint"] summary', text: "Did you previously sign up through Telegram?"
+    assert_select '[data-testid="telegram-signup-hint"] a[href=?]', notifications_account_path
+  end
+
   test "should create session" do
     post session_url, params: { email: "sessions_test@example.com" }
     assert_redirected_to root_path

@@ -78,9 +78,10 @@ class NotifyUrgentPlayerSearchJobTest < ActiveJob::TestCase
     assert_nil calls[0][:kwargs][:parse_mode]
     assert_includes calls[0][:args][1], "Игра ##{game.id}"
     assert_includes calls[0][:args][1], "@owner_test"
-    assert_includes calls[0][:args][1], "Tennis"
-    assert_includes calls[0][:args][1], "Advanced"
+    assert_includes calls[0][:args][1], "Теннис"
+    assert_includes calls[0][:args][1], "Продвинутый"
     assert_includes calls[0][:args][1], "Center Court"
+    assert_includes calls[0][:args][1], "https://getcourt.co/games/#{game.id}"
   end
 
   test "falls back to email when telegram is selected but not connected" do

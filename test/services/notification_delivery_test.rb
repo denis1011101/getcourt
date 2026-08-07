@@ -35,9 +35,10 @@ class NotificationDeliveryTest < ActiveSupport::TestCase
   def delivery_arguments(user)
     {
       user: user,
-      telegram_text: "Telegram message",
-      email_subject: "Email subject",
-      email_body: "Email body"
+      notification: NotificationDelivery::Notification.new(
+        subject: "Email subject",
+        body: "Notification body"
+      )
     }
   end
 end

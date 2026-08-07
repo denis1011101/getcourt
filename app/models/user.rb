@@ -3,6 +3,8 @@ class User < ApplicationRecord
   before_validation :set_default_registration_source, on: :create
 
   has_one :player_statistic, dependent: :destroy
+  belongs_to :merged_into, class_name: "User", optional: true
+  has_many :merged_users, class_name: "User", foreign_key: :merged_into_id, dependent: :nullify, inverse_of: :merged_into
   after_create :ensure_player_statistic
 
   SKILL_LEVELS = %w[beginner intermediate advanced pro].freeze

@@ -1,6 +1,6 @@
 require "test_helper"
 
-class Telegram::ParticipationNotifierTest < ActiveSupport::TestCase
+class ParticipationNotifierTest < ActiveSupport::TestCase
   include ActionMailer::TestHelper
 
   test "guest notification uses guest name without telegram handle" do
@@ -10,7 +10,7 @@ class Telegram::ParticipationNotifierTest < ActiveSupport::TestCase
     calls = []
 
     stub_singleton(SendTelegramNotificationJob, :perform_later, ->(*args) { calls << args }) do
-      Telegram::ParticipationNotifier.notify_owner(game, participation, action: :removed)
+      ParticipationNotifier.notify_owner(game, participation, action: :removed)
     end
 
     assert_equal 1, calls.size
@@ -24,7 +24,7 @@ class Telegram::ParticipationNotifierTest < ActiveSupport::TestCase
     game = Game.create!(court: courts(:one), user: owner, date: Date.tomorrow, time: "10:00")
 
     assert_enqueued_emails 1 do
-      Telegram::ParticipationNotifier.notify_owner(game, "Alex", action: :requested)
+      ParticipationNotifier.notify_owner(game, "Alex", action: :requested)
     end
   end
 end

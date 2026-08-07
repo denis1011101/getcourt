@@ -27,6 +27,33 @@ class Telegram::Processors::MainMenuProcessorTest < ActiveSupport::TestCase
     assert_equal "es", user.telegram_locale
   end
 
+  test "reports a merge failure without partially connecting Telegram" do
+    user = users(:one)
+    user.update!(email: "telegram-merge-failure@example.com", telegram_registration_token: "merge-token")
+    donor = User.create!(
+      email: "tg-#{SecureRandom.hex(8)}@telegram.getcourt",
+      telegram_generated_email: true,
+      telegram_chat_id: 12_346
+    )
+    message = {
+      "chat" => { "id" => 12_346 },
+      "from" => { "id" => 12_346, "language_code" => "en" },
+      "text" => "/register merge-token"
+    }
+    notifications = []
+
+    stub_singleton(Users::Merge, :call, ->(**) { raise "merge failed" }) do
+      stub_singleton(Telegram::Api, :send_simple, ->(*args, **kwargs) { notifications << [ args, kwargs ] }) do
+        Telegram::Processors::MainMenuProcessor.handle_message(message)
+      end
+    end
+
+    assert_equal 12_346, donor.reload.telegram_chat_id
+    assert_nil user.reload.telegram_chat_id
+    assert_equal "merge-token", user.telegram_registration_token
+    assert_equal "Telegram could not be connected. Please try again later.", notifications.dig(0, 0, 1)
+  end
+
   test "start stores telegram language for a new user" do
     chat_id = 98_765
     message = {

@@ -1,8 +1,7 @@
 require "test_helper"
 require "ostruct"
 
-module Telegram
-  class PostGameStatsReminderJobTest < ActiveJob::TestCase
+class PostGameStatsReminderJobTest < ActiveJob::TestCase
     include ActionMailer::TestHelper
 
     test "does nothing when game is missing" do
@@ -45,7 +44,7 @@ module Telegram
       setter = Object.new
       setter.define_singleton_method(:perform_later) { |_game_id| enqueued }
 
-      with_stubbed_singleton_method(Telegram::PostGameStatsReminderJob, :set, ->(wait_until:) { wait_until_seen = wait_until; setter }) do
+      with_stubbed_singleton_method(PostGameStatsReminderJob, :set, ->(wait_until:) { wait_until_seen = wait_until; setter }) do
         with_stubbed_singleton_method(game, :cancel_post_game_stats_reminder, true) do
           with_stubbed_singleton_method(Telegram::Api, :send_with_buttons, ->(*) { }) do
             PostGameStatsReminderJob.perform_now(game.id)
@@ -99,5 +98,4 @@ module Telegram
         singleton.remove_method(method_name)
       end
     end
-  end
 end

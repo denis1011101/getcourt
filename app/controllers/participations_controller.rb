@@ -31,7 +31,7 @@ class ParticipationsController < ApplicationController
 
     if @participation.save
       if @participation.pending?
-        Telegram::ParticipationNotifier.notify_owner(@game, current_user, action: :requested) rescue nil
+        ParticipationNotifier.notify_owner(@game, current_user, action: :requested) rescue nil
       end
       respond_to do |format|
         format.turbo_stream
@@ -90,7 +90,7 @@ class ParticipationsController < ApplicationController
     @participation = @game.participations.build(guest_name: name, status: "approved", approved_at: Time.current)
 
     if @participation.save
-      Telegram::ParticipationNotifier.notify_owner(@game, @participation, action: :guest_added) if current_user != @game.user
+      ParticipationNotifier.notify_owner(@game, @participation, action: :guest_added) if current_user != @game.user
 
       respond_to do |format|
         format.turbo_stream do
@@ -156,10 +156,10 @@ class ParticipationsController < ApplicationController
 
     if @participation_id && @game.user
       if removed_participation.guest?
-        Telegram::ParticipationNotifier.notify_owner(@game, removed_participation, action: :removed) if current_user != @game.user
+        ParticipationNotifier.notify_owner(@game, removed_participation, action: :removed) if current_user != @game.user
       else
         action = (removed_user == current_user) ? :left : :removed
-        Telegram::ParticipationNotifier.notify_owner(@game, removed_user, action: action)
+        ParticipationNotifier.notify_owner(@game, removed_user, action: action)
       end
     end
 

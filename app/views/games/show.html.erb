@@ -81,6 +81,17 @@
         <%= turbo_frame_tag dom_id(@game, :weather), src: game_weather_path(@game, context: "details"), loading: "lazy", class: "contents" %>
       <% end %>
 
+      <% if @game.comment.present? %>
+        <%# Free-form text from the organizer: rendered as plain paragraphs, no autolinking. %>
+        <div class="sm:col-span-2" data-testid="game-comment">
+          <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("games.show.comment") %></p>
+          <div class="mt-1 space-y-2 break-words text-base text-gray-900 dark:text-slate-100">
+            <%# Escaped first, so any markup the organizer typed shows up as text instead of being stripped. %>
+            <%= simple_format(h(@game.comment), {}, sanitize: false) %>
+          </div>
+        </div>
+      <% end %>
+
       <% if @game.tournament.present? %>
         <div class="sm:col-span-2">
           <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("games.show.tournament") %></p>

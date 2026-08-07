@@ -68,6 +68,18 @@ class Telegram::Handlers::GameDetailHandlerTest < ActiveSupport::TestCase
     assert_includes text, "Cuándo: 02/08/2026"
   end
 
+  test "escapes dynamic text for legacy Markdown" do
+    @game.update_columns(sport: "Club_game", comment: "a_b *c* [d]")
+    @game.court.update_column(:name, "Court_name")
+    @game.user.update_column(:name, "Owner_name")
+
+    text, = render_game
+    assert_includes text, "*Club\\_game ##{@game.id}*"
+    assert_includes text, "Корт: Court\\_name"
+    assert_includes text, "Комментарий: a\\_b \\*c\\* \\[d\\]"
+    assert_includes text, "Организатор: Owner\\_name"
+  end
+
   private
     def render_game(reading: nil, locale: "ru")
       sent = nil

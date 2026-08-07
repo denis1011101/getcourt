@@ -9,6 +9,14 @@
       <%= email_field_tag :email, nil, required: true, class: "mt-1 block w-full rounded border px-3 py-2 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
     </div>
 
+    <%# People who started in the bot end up with a second account unless they link it — say so before they sign up. %>
+    <details class="mb-4 rounded-md border border-indigo-100 bg-indigo-50/70 p-3 dark:border-indigo-400/20 dark:bg-indigo-500/10" data-testid="telegram-signup-hint">
+      <summary class="cursor-pointer text-sm font-medium text-indigo-700 dark:text-indigo-300"><%= t("sessions.telegram_hint.summary") %></summary>
+      <p class="mt-2 text-xs text-gray-600 dark:text-slate-400">
+        <%= t("sessions.telegram_hint.body_html", account_url: notifications_account_path) %>
+      </p>
+    </details>
+
     <div class="mb-3">
       <label class="flex items-start gap-2">
         <%= check_box_tag :privacy_consent, "1", false, required: true,

@@ -19,8 +19,9 @@ class UserMailer < ApplicationMailer
       @owner = game.user.name.presence || t("user_mailer.urgent_player_search.organizer_fallback", id: game.user.id)
       @date = l((game.next_date || game.date).to_date, format: :long)
       @time = game.time&.strftime("%H:%M")
-      @sport = game.sport.to_s.presence || t("user_mailer.urgent_player_search.any_sport")
-      @skill = game.skill_level.to_s.presence&.titleize || t("user_mailer.urgent_player_search.any_level")
+      formatter = Telegram::Helpers::GameFormatting
+      @sport = formatter.sport_label(game.sport, locale: locale) || t("user_mailer.urgent_player_search.any_sport")
+      @skill = formatter.skill_level_label(game.skill_level, locale: locale)
 
       mail(
         to: user.email,

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_02_004100) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_05_000100) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -172,6 +172,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_02_004100) do
   end
 
   create_table "games", force: :cascade do |t|
+    t.text "comment"
     t.integer "court_id", null: false
     t.datetime "created_at", null: false
     t.date "date"
@@ -424,6 +425,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_02_004100) do
     t.string "login_code"
     t.datetime "login_code_sent_at"
     t.string "login_via"
+    t.datetime "merged_at"
+    t.integer "merged_into_id"
     t.string "name"
     t.string "notification_channel"
     t.boolean "notify_nearby", default: false, null: false
@@ -444,6 +447,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_02_004100) do
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true, where: "email IS NOT NULL"
     t.index ["login_code"], name: "index_users_on_login_code"
+    t.index ["merged_into_id"], name: "index_users_on_merged_into_id"
     t.index ["registration_source"], name: "index_users_on_registration_source"
     t.index ["skill_level"], name: "index_users_on_skill_level"
     t.index ["telegram_chat_id"], name: "index_users_on_telegram_chat_id_unique", unique: true
@@ -486,4 +490,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_02_004100) do
   add_foreign_key "tournament_participants", "tournaments"
   add_foreign_key "tournament_participants", "users"
   add_foreign_key "tournaments", "users"
+  add_foreign_key "users", "users", column: "merged_into_id"
 end

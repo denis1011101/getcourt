@@ -22,7 +22,6 @@ module Telegram
           players_line = t.(:players, count: participants_count, capacity: capacity)
           owner = User.find_by(id: game.user_id) rescue nil
           owner_name = Telegram::Helpers::UserLookup.display_name(owner, fallback: owner&.telegram_chat_id || "—")
-          owner_line = t.(:owner, name: owner_name)
 
           host = ENV.fetch("APP_HOST", "https://getcourt.co")
           game_url = Rails.application.routes.url_helpers.game_url(game, host: host)
@@ -30,7 +29,7 @@ module Telegram
           lines = []
           title = Telegram::Helpers::GameFormatting.game_title(game, locale: locale)
           title_text = "#{title || 'Game'} ##{game.id}"
-          lines << "*#{title_text}*"
+          lines << "*#{escape_markdown(title_text)}*"
 
           coach = Telegram::Helpers::GameFormatting.coach_mark(game, locale: locale)
           lines << t.(:coach_label, value: coach) if coach.present?
@@ -42,8 +41,9 @@ module Telegram
           lines << t.(:weather_label, value: weather_text(reading)) if reading
 
           lines << players_line
-          lines << t.(:court_label, name: game.court&.name) if game.respond_to?(:court) && game.court
-          lines << owner_line
+          lines << t.(:court_label, name: escape_markdown(game.court&.name)) if game.respond_to?(:court) && game.court
+          lines << t.(:comment_label, value: escape_markdown(game.comment)) if game.comment.present?
+          lines << t.(:owner, name: escape_markdown(owner_name))
           text = lines.compact.join("\n")
 
           buttons = []
@@ -170,6 +170,10 @@ module Telegram
         #     participations.exists?(user_id: user.id, status: "approved")
         #   end
         # end
+
+        def escape_markdown(text)
+          text.to_s.gsub(/([_*\[\]\x60])/) { |character| "\\#{character}" }
+        end
 
         def weather_text(reading)
           text = "#{Weather::Icons.for(reading.condition_type)} #{reading.temperature_c.round}°"

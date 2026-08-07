@@ -138,6 +138,12 @@ module Telegram
                   attrs[:players_count] = text.to_i
                 when "sport"
                   attrs[:sport] = text.presence
+                when "comment"
+                  if text.length > 500
+                    poller.send_api("sendMessage", { chat_id: chat_id, text: "Comment is too long (maximum 500 characters)." }) rescue nil
+                    return
+                  end
+                  attrs[:comment] = text.presence
                 when "court_id"
                   unless text =~ /\A\d+\z/
                     poller.send_api("sendMessage", { chat_id: chat_id, text: "Invalid court id. Send integer." }) rescue nil

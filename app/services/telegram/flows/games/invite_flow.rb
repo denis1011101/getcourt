@@ -56,6 +56,8 @@ module Telegram
 
             when /\Agame:invite_decline:(\d+)\z/
               game_id = $1.to_i
+              host = ENV.fetch("APP_HOST", ENV.fetch("HOSTNAME", "https://getcourt.co"))
+              game_url = "#{host}/games/#{game_id}"
               game = Game.find_by(id: game_id)
               decliner = User.find_by(telegram_chat_id: chat_id)
 
@@ -71,7 +73,7 @@ module Telegram
                 poller.send_api("editMessageText", {
                   chat_id: chat_id,
                   message_id: msg_id,
-                  text: t.(:invite_declined_user, game_id: game_id),
+                  text: "#{t.(:invite_declined_user, game_id: game_id)}\n\n#{game_url}",
                   reply_markup: { inline_keyboard: [] }
                 }) rescue nil
               end
@@ -84,7 +86,7 @@ module Telegram
                   "sendMessage",
                   {
                     chat_id: game.user.telegram_chat_id.to_s,
-                    text: Telegram::I18n.t(:invite_declined_owner, locale: owner_locale, name: name, game_id: game_id)
+                    text: "#{Telegram::I18n.t(:invite_declined_owner, locale: owner_locale, name: name, game_id: game_id)}\n\n#{game_url}"
                   }
                 ) rescue nil
               end

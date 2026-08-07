@@ -85,9 +85,18 @@ module Telegram
               }
               attributes[:telegram_locale] = telegram_locale if telegram_locale && user.telegram_locale.blank?
 
-              User.transaction do
-                User.where(telegram_chat_id: chat_id).where.not(id: user.id).update_all(telegram_chat_id: nil, updated_at: Time.current)
-                user.update_columns(attributes)
+              begin
+                User.transaction do
+                  donor = User.where(telegram_chat_id: chat_id).where.not(id: user.id).first
+                  Users::Merge.call(source: donor, target: user) if donor&.telegram_generated_email?
+                  User.where(telegram_chat_id: chat_id).where.not(id: user.id).update_all(telegram_chat_id: nil, updated_at: Time.current)
+                  user.update_columns(attributes)
+                end
+              rescue => e
+                Rails.logger.error "[Telegram::MainMenuProcessor] registration error: #{e.class} #{e.message}"
+                locale = telegram_locale || Telegram::I18n::DEFAULT_LOCALE
+                Telegram::Api.send_simple(chat_id, Telegram::I18n.t(:registration_failed, locale: locale), parse_mode: nil)
+                return nil
               end
               locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
               Telegram::Api.send_simple(chat_id, Telegram::I18n.t(:telegram_connected, locale: locale), parse_mode: nil)

@@ -15,7 +15,9 @@ class Telegram::I18nTest < ActiveSupport::TestCase
     participation_requested participation_removed participation_guest_added participation_notification today tomorrow reminder_head
     participants_label prebooking_request dates_label approve_all reject_all prebooking_request_approved_user
     prebooking_request_rejected_user post_game_stats_reminder fill_stats game_did_not_happen telegram_connected registration_invalid
-    delete_game_no_permission user_fallback unknown_court
+    delete_game_no_permission user_fallback unknown_court game_invitation_from sport_any
+    skill_any skill_beginner skill_intermediate skill_advanced skill_pro urgent_search_notification
+    admin_partnership admin_court_pending admin_court_suggestion comment_label
   ].freeze
 
   test "returns Spanish translations" do
@@ -25,12 +27,12 @@ class Telegram::I18nTest < ActiveSupport::TestCase
   end
 
   test "falls back to English for a missing Spanish key" do
-    assert_equal Telegram::I18n::EN[:main_menu], Telegram::I18n.t(:main_menu, locale: "es")
+    assert_equal I18n.t("telegram.main_menu", locale: :en), Telegram::I18n.t(:main_menu, locale: "es")
   end
 
   test "all live keys exist in every supported dictionary" do
     Telegram::I18n::LOCALES.each do |locale|
-      missing = LIVE_KEYS.reject { |key| Telegram::I18n::DICTS.fetch(locale).key?(key) }
+      missing = LIVE_KEYS.reject { |key| I18n.exists?("telegram.#{key}", locale) }
 
       assert_empty missing, "Missing #{locale} Telegram translations: #{missing.join(', ')}"
     end
