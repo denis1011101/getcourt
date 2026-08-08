@@ -4,7 +4,7 @@ export default class extends Controller {
   static values = {
     url: String,
     filename: { type: String, default: "image.png" },
-    successLabel: { type: String, default: "Downloaded!" }
+    successLabel: String
   }
 
   async download(event) {

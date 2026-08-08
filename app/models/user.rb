@@ -7,6 +7,10 @@ class User < ApplicationRecord
   has_many :merged_users, class_name: "User", foreign_key: :merged_into_id, dependent: :nullify, inverse_of: :merged_into
   after_create :ensure_player_statistic
 
+  # Accounts merged into another one stay in the table for history, but must not
+  # show up anywhere people are listed or picked.
+  scope :not_merged, -> { where(merged_at: nil) }
+
   SKILL_LEVELS = %w[beginner intermediate advanced pro].freeze
   SPORTS = SportCatalog::SPORTS
 

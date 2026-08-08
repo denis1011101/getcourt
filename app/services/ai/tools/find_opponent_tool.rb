@@ -13,7 +13,7 @@ module Ai
         search_city = city.to_s.strip.presence || @user&.city_name.to_s.strip.presence
         return { error: "City is required. Ask the user to set their city in profile or specify a city." } if search_city.blank?
 
-        scope = User.where("LOWER(city_name) LIKE LOWER(?)", "%#{search_city}%")
+        scope = User.not_merged.where("LOWER(city_name) LIKE LOWER(?)", "%#{search_city}%")
                     .where(coach: [ false, nil ])
                     .where.not(id: @user&.id)
         scope = scope.where(skill_level: skill_level.to_s.strip) if skill_level.to_s.strip.present?

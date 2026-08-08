@@ -1,9 +1,9 @@
-<% content_for :meta_title, "Find a Tennis Coach — GetCourt" %>
-<% content_for :meta_description, "Find a professional tennis coach near you. Browse instructor profiles, see their sports and city, and contact them directly via Telegram on GetCourt." %>
+<% content_for :meta_title, t("coaches.index.meta_title") %>
+<% content_for :meta_description, t("coaches.index.meta_description") %>
 
 <div class="max-w-4xl mx-auto px-4 py-6">
-  <h1 class="text-2xl font-semibold text-gray-900 dark:text-slate-100">Find a Tennis Coach</h1>
-  <p class="mt-1 text-sm text-gray-600 dark:text-slate-400">Browse tennis instructors and contact them directly in chat or by Telegram username.</p>
+  <h1 class="text-2xl font-semibold text-gray-900 dark:text-slate-100"><%= t("coaches.index.title") %></h1>
+  <p class="mt-1 text-sm text-gray-600 dark:text-slate-400"><%= t("coaches.index.subtitle") %></p>
 
   <%= render "shared/location_filters",
         url: coaches_path,
@@ -18,7 +18,7 @@
 
   <div class="mt-4 flex items-center justify-between gap-3">
     <p class="text-sm text-gray-500 dark:text-slate-400" data-testid="results-summary">
-      <%= pluralize(@coaches.size, "coach") %>
+      <%= t("coaches.index.count", count: @coaches.size) %>
       <% if active_filters.any? %>
         &middot; <%= safe_join(active_filters, " &middot; ".html_safe) %>
       <% end %>
@@ -49,13 +49,13 @@
           </h2>
 
           <p class="mt-1 text-sm text-gray-700 dark:text-slate-300">
-            <span class="font-medium text-gray-800 dark:text-slate-200">Sports:</span>
-            <%= coach.preferred_sports.present? ? Array(coach.preferred_sports).join(", ") : "Not specified" %>
+            <span class="font-medium text-gray-800 dark:text-slate-200"><%= t("coaches.index.sports_label") %>:</span>
+            <%= coach.preferred_sports.present? ? Array(coach.preferred_sports).join(", ") : t("common.not_specified") %>
           </p>
 
           <p class="mt-1 text-sm text-gray-700 dark:text-slate-300">
-            <span class="font-medium text-gray-800 dark:text-slate-200">City:</span>
-            <%= coach.city_name.presence || "Not specified" %>
+            <span class="font-medium text-gray-800 dark:text-slate-200"><%= t("coaches.index.city_label") %>:</span>
+            <%= coach.city_name.presence || t("common.not_specified") %>
           </p>
 
           <% if coach.court_preferences_note.present? %>
@@ -83,32 +83,25 @@
     </div>
   <% elsif location_filtered %>
     <div class="mt-6 rounded-lg border border-dashed border-gray-200 dark:border-white/10 p-8 text-center text-sm text-gray-500 dark:text-slate-400">
-      <p>No coaches in this location yet.</p>
-      <%= link_to "Show all coaches", coaches_path, class: "inline-flex items-center gap-1.5 mt-4 rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition" %>
+      <p><%= t("coaches.index.empty_location") %></p>
+      <%= link_to t("coaches.index.show_all"), coaches_path, class: "inline-flex items-center gap-1.5 mt-4 rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition" %>
     </div>
   <% else %>
     <div class="mt-6 space-y-4 text-sm text-gray-600 dark:text-slate-400">
-      <p>
-        No coaches have joined yet. If you are a tennis instructor, you can
-        <%= link_to "create an account", new_session_path, class: "text-indigo-600 dark:text-indigo-400 hover:underline" %>
-        and enable the coach profile in your account settings — your profile will appear here.
-      </p>
+      <p><%= t("coaches.index.empty_html", link: link_to(t("coaches.index.create_account"), new_session_path, class: "text-indigo-600 dark:text-indigo-400 hover:underline")) %></p>
 
       <div>
-        <h2 class="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2">How to choose a tennis coach</h2>
+        <h2 class="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2"><%= t("coaches.index.how_to_title") %></h2>
         <ul class="list-disc list-inside space-y-1">
-          <li>Look for a coach whose skill level matches yours — beginner, intermediate, or advanced.</li>
-          <li>Check the city so you can find someone who trains locally or online.</li>
-          <li>Reach out directly via Telegram to discuss schedule, price, and format.</li>
+          <li><%= t("coaches.index.how_to_1") %></li>
+          <li><%= t("coaches.index.how_to_2") %></li>
+          <li><%= t("coaches.index.how_to_3") %></li>
         </ul>
       </div>
 
       <div>
-        <h2 class="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2">For coaches</h2>
-        <p>
-          GetCourt is a free platform for organising tennis games and connecting with players.
-          Register, fill in your sport and city, and players in your area will be able to find and contact you.
-        </p>
+        <h2 class="text-base font-semibold text-gray-800 dark:text-slate-200 mb-2"><%= t("coaches.index.for_coaches_title") %></h2>
+        <p><%= t("coaches.index.for_coaches_body") %></p>
       </div>
     </div>
   <% end %>

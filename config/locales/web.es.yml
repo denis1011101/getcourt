@@ -1,0 +1,580 @@
+---
+es:
+  layout:
+    toggle_theme: Cambiar tema
+  sessions:
+    email_label: Email
+    code_label: Código
+    submit: Entrar
+    sign_in_title: Inicia sesión o crea una cuenta
+    go_home: Ir al inicio
+    signed_in:
+      title: Sesión iniciada
+      body_html: Has iniciado sesión como %{email}.
+      fallback_user: usuario
+    signed_out:
+      title: Sesión cerrada
+      body: Has cerrado sesión.
+    verify:
+      submit: Verificar
+  common:
+    back: Atrás
+    back_to_account: Volver a la cuenta
+    cancel: Cancelar
+    save_changes: Guardar cambios
+    approve: Aprobar
+    reject: Rechazar
+    remove: Eliminar
+    search: Buscar
+    prev: Anterior
+    next: Siguiente
+    close: Cerrar
+    not_specified: Sin especificar
+  player_statistics:
+    title: "%{name} — Estadísticas"
+    empty: Todavía no hay estadísticas.
+    not_available: N/D
+    hours:
+      title: Horas
+      singles: Individuales
+      doubles: Dobles
+      total: Total
+      unit: h
+    activity:
+      title: Entrenamientos / Partidos
+      individual_training: Entrenamiento individual
+      group_training: Entrenamiento en grupo
+      singles_games: Partidos individuales
+      doubles_games: Partidos de dobles
+      win_rate: porcentaje de victorias
+    match_stats:
+      title: Estadísticas de partido
+      aces: Aces
+      double_faults: Dobles faltas
+      first_serve_percent: "% de primer servicio"
+      break_points_saved: Puntos de break salvados
+      break_points_converted: Puntos de break convertidos
+      winners: Golpes ganadores
+      unforced_errors: Errores no forzados
+      net_points_won: Puntos ganados en la red
+      service_points_won: Puntos ganados al servicio
+      return_points_won: Puntos ganados al resto
+      return_games_won: Juegos ganados al resto
+      games_won_total: Juegos ganados en total
+    last_games:
+      title: Últimos 5 partidos
+      win: V
+      draw: E
+      loss: D
+    ratings:
+      title: Ratings
+      singles: Rating individual
+      doubles: Rating de dobles
+  games:
+    show:
+      schema_name: Partido %{date}
+      request_sent: Solicitud enviada
+      cancel_request: Cancelar solicitud
+      leave_game: Salir del partido
+      join: Unirse
+      request_to_join: Solicitar unirse
+      login_to_join: Inicia sesión para unirte
+      remove_participant_confirm: "¿Eliminar a este jugador del partido?"
+      no_participants: Todavía no hay participantes.
+      pending_requests: Solicitudes pendientes
+      unknown_user: Usuario
+      classic_limit: El formato clásico admite hasta 4 jugadores.
+      urgent_hint: Pulsa aquí para añadir la etiqueta «buscando jugadores» al partido
+        y enviar una notificación a los miembros de GetCourt en el chat de Telegram
+        de tu ciudad.
+      urgent_announce: Anunciar búsqueda de jugadores
+      urgent_cancel: Cancelar búsqueda de jugadores
+      stats_submit: Guardar estadísticas
+      additional_stats: Estadísticas adicionales del partido
+      match_block_title: Partido %{number}
+      remove_match: Eliminar partido
+      add_team_player: Añadir jugador
+    form:
+      errors:
+        one: '1 error impidió guardar el partido:'
+        few: "%{count} errores impidieron guardar el partido:"
+        many: "%{count} errores impidieron guardar el partido:"
+        other: "%{count} errores impidieron guardar el partido:"
+      recurring: Repetir cada semana
+      recurring_hint: Si lo marcas, esta fecha y hora se repetirán cada semana.
+      prebooking: Activar reserva previa
+      prebooking_hint: Los jugadores podrán reservar plazas para las próximas fechas.
+      prebooking_note: 'Nota: las plazas de reserva previa se crearán al guardar el
+        partido.'
+      prebooking_locked: La reserva previa solo se puede activar en partidos recurrentes
+        (semanales).
+      prebooking_locked_hint: Marca «Repetir cada semana» para activar la reserva
+        previa.
+      with_coach: Con entrenador
+      with_coach_hint: Si lo marcas, el partido se jugará con entrenador.
+      urgent_player_search: Búsqueda de jugadores
+      urgent_player_search_hint: Muestra este partido en «Partidos que buscan jugadores»
+        y notifica a los usuarios con alertas cercanas activadas.
+      players_count: Jugadores
+      players_count_hint: Elige el número de jugadores necesario (2 o 4).
+      sport: Deporte
+      sport_any: "— elige un deporte —"
+      skill_level: Nivel requerido
+      skill_level_any: Cualquier nivel
+      duration: Duración (opcional)
+      duration_any: "— sin especificar —"
+      duration_hint: Tiempo de juego aproximado o exacto. Ayuda a otros a saber cuánto
+        tiempo estará ocupada la pista.
+      court: Lugar
+      court_hint: Elige una pista de la lista o pulsa un marcador en el mapa.
+      submit_create: Crear partido
+      submit_update: Guardar partido
+      view_game: Ver partido
+      delete_game: Eliminar partido
+      delete_confirm: "¿Seguro?"
+    new:
+      title: Crear partido
+      subtitle: Indica la fecha, la hora y el lugar del nuevo partido.
+    edit:
+      title: Editar partido
+      subtitle: Actualiza los detalles y los participantes del partido.
+    badges:
+      coach: Entrenador
+      player_search: Buscando jugadores
+    card:
+      spots_left:
+        one: 1 plaza libre
+        few: "%{count} plazas libres"
+        many: "%{count} plazas libres"
+        other: "%{count} plazas libres"
+      full: Completo
+    prebookings:
+      title: Reservas previas
+      date: Fecha
+      slot: Plaza %{number}
+      restore_date: Restaurar fecha
+      cancel_date: Cancelar fecha
+      cancel_date_confirm: "¿Cancelar todas las reservas del %{date}?"
+      cancelled: Cancelado — reservas deshabilitadas para esta fecha
+      pending: Pendiente
+      cancel: Cancelar
+      book: Reservar
+      request: Solicitar
+      sign_in_to_book: Inicia sesión para reservar
+    ai_chat:
+      title: Asistente de tenis
+      subtitle: Con IA
+      open: Abrir asistente de IA
+      greeting: "¡Hola! Puedo ayudarte a encontrar rivales, pistas o entrenadores.
+        ¿Qué buscas?"
+      quick_opponent: "\U0001F3BE Buscar rival"
+      quick_opponent_message: Búscame un rival
+      quick_court: "\U0001F3DF Buscar pista"
+      quick_court_message: Búscame una pista
+      quick_coach: "\U0001F468‍\U0001F3EB Buscar entrenador"
+      quick_coach_message: Búscame un entrenador
+      quick_record: "\U0001F4DD Registrar resultado"
+      placeholder: Pregúntame lo que quieras...
+      connection_error: Error de conexión. Inténtalo de nuevo.
+    index:
+      count:
+        one: 1 partido
+        few: "%{count} partidos"
+        many: "%{count} partidos"
+        other: "%{count} partidos"
+  courts:
+    show:
+      pending_moderation: Esta pista está en moderación.
+      reject_confirm: "¿Rechazar esta pista?"
+      no_coordinates: Coordenadas no disponibles
+      create_game: Crear partido
+      sign_in_to_create_game: Inicia sesión para crear un partido
+    form:
+      errors:
+        one: '1 error impidió guardar la pista:'
+        few: "%{count} errores impidieron guardar la pista:"
+        many: "%{count} errores impidieron guardar la pista:"
+        other: "%{count} errores impidieron guardar la pista:"
+      submit: Guardar pista
+      name_placeholder: Nombre de la pista (p. ej. Pista Central)
+      name_hint: Escribe un nombre corto y claro para la pista.
+      sport_blank: Elige un deporte
+      sport_hint: Elige el deporte principal de esta pista.
+      map_label: Selecciona en el mapa
+      use_my_location: Usar mi ubicación
+      map_hint: Pulsa en el mapa o arrastra el marcador
+      contacts: Contactos
+      contacts_hint: Hasta 3 contactos, cada uno con su tipo.
+      contact_type: Tipo de contacto %{number}
+      contact_type_blank: Elegir
+      contact_value: Contacto %{number}
+      contact_value_placeholder: Teléfono, web, email o mensajería
+      contacts_example: 'Por ejemplo: Telegram + Viber + web, o cualquier otra combinación.'
+    new:
+      title: Crear pista
+      subtitle: Añade los detalles y la ubicación de una nueva pista.
+      back: Volver a pistas
+    edit:
+      title: Editar pista
+    index:
+      count:
+        one: 1 pista
+        few: "%{count} pistas"
+        many: "%{count} pistas"
+        other: "%{count} pistas"
+  users:
+    edit:
+      title: Cuenta
+      my_games: Mis partidos
+      profile: Perfil
+      notifications: Telegram y notificaciones
+      security: Seguridad
+      statistics_title: Estadísticas
+      view_full_statistics: Ver todas las estadísticas →
+      singles_rating: Rating individual
+      doubles_rating: Rating de dobles
+      hours_played: Horas jugadas
+      games: Partidos
+      no_statistics: Todavía no hay estadísticas.
+    profile:
+      title: Perfil
+      name: Nombre
+      email: Email
+      skill_levels: Niveles de juego
+      skill_levels_hint: Indica tu nivel para cada deporte.
+      coach: Soy entrenador
+      coach_hint: 'Márcalo si entrenas: ayuda a que otros encuentren y contraten entrenadores.'
+      city: Ciudad
+      city_placeholder: p. ej. Madrid
+      city_hint: Escribe un lugar. Al guardar, el sistema transliterará el nombre
+        e intentará detectar la zona horaria. Pulsa «Guardar cambios».
+      about_me: Sobre mí
+      about_me_placeholder: Cuenta algo sobre ti…
+      no_city_matches: Sin resultados.
+    security:
+      title: Seguridad
+      verification_title: Se recomienda verificar la cuenta
+      verification_body: Si vas a crear pistas u organizar partidos, te recomendamos
+        activar la verificación de inicio de sesión (email o Telegram). Genera confianza
+        y evita abusos.
+      require_verification: Exigir verificación para acciones sensibles
+      verification_method: 'Método de verificación:'
+      verification_hint: Por defecto inicias sesión sin código. Activa la verificación
+        para exigir un código de un solo uso enviado por el método elegido.
+    telegram:
+      connected: Telegram conectado
+      instructions_html: 'Para recibir notificaciones de Telegram, abre un chat con
+        nuestro bot %{link} y envía:'
+      regenerate_token: Regenerar token
+    games:
+      title: Mis partidos
+      empty: Todavía no hay partidos.
+      open_game: Abrir partido
+      enter_stats: Introducir marcador y estadísticas
+      past_title: Partidos anteriores
+      past_subtitle: Historial de partidos de entradas eliminadas o externas. No está
+        vinculado a partidos activos.
+      history_badge: Historial
+      matches_count:
+        one: 1 partido
+        few: "%{count} partidos"
+        many: "%{count} partidos"
+        other: "%{count} partidos"
+  coaches:
+    index:
+      meta_title: Encuentra un entrenador de tenis — GetCourt
+      meta_description: Encuentra un entrenador de tenis profesional cerca de ti.
+        Consulta perfiles, deportes y ciudad, y contacta directamente por Telegram
+        en GetCourt.
+      title: Encuentra un entrenador de tenis
+      subtitle: Consulta los perfiles de los entrenadores y contacta con ellos por
+        chat o por su usuario de Telegram.
+      count:
+        one: 1 entrenador
+        few: "%{count} entrenadores"
+        many: "%{count} entrenadores"
+        other: "%{count} entrenadores"
+      sports_label: Deportes
+      city_label: Ciudad
+      empty_location: Todavía no hay entrenadores en esta ubicación.
+      show_all: Ver todos los entrenadores
+      empty_html: 'Todavía no se ha registrado ningún entrenador. Si eres monitor
+        de tenis, puedes %{link} y activar el perfil de entrenador en los ajustes
+        de tu cuenta: aparecerá aquí.'
+      create_account: crear una cuenta
+      how_to_title: Cómo elegir un entrenador de tenis
+      how_to_1: 'Busca un entrenador cuyo nivel encaje con el tuyo: principiante,
+        intermedio o avanzado.'
+      how_to_2: Comprueba la ciudad para encontrar a alguien que entrene cerca o en
+        línea.
+      how_to_3: Escríbele directamente por Telegram para hablar de horario, precio
+        y formato.
+      for_coaches_title: Para entrenadores
+      for_coaches_body: GetCourt es una plataforma gratuita para organizar partidos
+        de tenis y conectar con jugadores. Regístrate, indica tu deporte y tu ciudad,
+        y los jugadores de tu zona podrán encontrarte y contactarte.
+  searches:
+    index:
+      title: Pistas de tenis cercanas
+      subtitle: Escribe un lugar o pega coordenadas (lat,lng). Elige una sugerencia
+        (o pega las coordenadas) y pulsa «Buscar»; también puedes usar tu ubicación
+        actual.
+      placeholder: p. ej. Madrid, 40.41,-3.70 o Pista Central
+      use_my_location: Usar mi ubicación
+      nearby_title: Pistas cercanas
+      coords: 'coordenadas:'
+      empty: No se han encontrado pistas cerca.
+      geolocation:
+        unsupported: Tu navegador no admite la geolocalización.
+        permission_denied: Acceso a la ubicación denegado. Permítelo en la configuración
+          del navegador.
+        unavailable: La información de ubicación no está disponible.
+        timeout: La solicitud de ubicación ha agotado el tiempo de espera.
+        failed: No se pudo obtener la ubicación.
+        locating: Localizando...
+        searching: Buscando...
+        no_results: No se encontraron resultados
+        search_error: Error de búsqueda. Inténtalo de nuevo.
+        rate_limited: Demasiadas solicitudes. Inténtalo más tarde.
+  shared:
+    pagy:
+      label: Paginación
+    results_summary:
+      available: disponibles
+    map_panel:
+      quota_exceeded: 'Se ha superado la cuota diaria de geocodificación de Google
+        (límite: %{limit}). La búsqueda de direcciones por Google está desactivada:
+        el mapa no está disponible.'
+      hidden: El mapa está oculto para usuarios no autenticados.
+      sign_in: Inicia sesión o regístrate para ver el mapa
+    location_filters:
+      any_country: Cualquier país
+      any_city: Cualquier ciudad
+    moment_logo_alt: Moment · espacio de cachimba
+  geocoding:
+    quota_exceeded: 'Se ha superado la cuota diaria de geocodificación de Google (límite:
+      %{limit}). La búsqueda de direcciones por Google está desactivada.'
+    reset: Restablecer cuota
+    reset_title: Restablecer la cuota de geocodificación
+  tennis_life:
+    scoreboard:
+      title: Marcador de tenis
+      empty: Todavía no hay datos del marcador.
+    statistics:
+      telegram: Telegram
+      singles_elo: ELO individual
+      doubles_elo: ELO dobles
+      score: Marcador
+      outcome: Resultado
+      surface: Superficie
+    user_fallback: Usuario n.º %{id}
+    anonymous_player: Jugador anónimo
+  pages:
+    ntrp:
+      faq_q1: "¿Qué es el NTRP en tenis?"
+      faq_a1: El NTRP (National Tennis Rating Program) es un sistema estandarizado
+        para valorar a los jugadores de tenis del 1.0 (principiante) al 7.0 (profesional
+        del circuito). Ayuda a encontrar partidos equilibrados y una competición adecuada.
+      faq_q2: "¿Cómo sé cuál es mi nivel NTRP?"
+      faq_a2: Puedes estimar tu nivel NTRP valorando tu regularidad, variedad de golpes,
+        movimiento, servicio y resultados en partido. La mejor forma de validarlo
+        es jugar partidos competitivos contra jugadores con rating conocido.
+      intro: El NTRP (National Tennis Rating Program) es un sistema estandarizado
+        para valorar a los jugadores de tenis. Te ayuda a encontrar partidos equilibrados
+        con jugadores de nivel similar. Puedes estimar tu rating valorando tu regularidad,
+        variedad de golpes, movimiento, servicio y resultados en partido.
+      start_quiz: Empezar test
+      retake_quiz: Repetir el test
+      result_label: 'Tu nivel estimado:'
+      find_players: Encuentra jugadores de tu nivel
+      validate_note: La mejor forma de validar tu estimación es jugar varios partidos
+        competitivos contra jugadores con rating conocido y comparar resultados.
+      quiz:
+        q1: 1/5 — ¿Cómo de regular eres en los peloteos?
+        q1_a1: Mantengo la bola unos pocos golpes, pero fallo a menudo
+        q1_a2: Aguanto peloteos a ritmo moderado en la mayoría de golpes
+        q1_a3: Peloteo con regularidad y puedo dirigir la bola con intención
+        q1_a4: Casi nunca fallo en el peloteo y controlo ritmo y profundidad
+        q2: 2/5 — Describe tu servicio
+        q2_a1: Meto el servicio, pero con poca velocidad o efecto
+        q2_a2: Tengo un primer servicio fiable y un segundo constante
+        q2_a3: Puedo colocar el servicio, variar la velocidad y a veces usar efecto
+        q2_a4: 'Mi servicio es un arma: uso velocidad, efecto y colocación para ganar
+          puntos directos'
+        q3: 3/5 — ¿Cómo te sientes en la red?
+        q3_a1: Evito la red o me cuestan las voleas
+        q3_a2: Volea cuando la bola es fácil, pero subo poco a la red
+        q3_a3: Subo a la red con confianza y cierro puntos con la volea
+        q3_a4: Juego una red agresiva y manejo passings y globos
+        q4: 4/5 — ¿Cómo describirías tu movimiento?
+        q4_a1: Cubro la pista, pero llego tarde a las bolas abiertas
+        q4_a2: Me muevo bien, pero a veces me sacan de posición
+        q4_a3: Recupero rápido y uso split-step y desplazamiento lateral
+        q4_a4: Anticipo los golpes y uso el juego de pies para crear posiciones ofensivas
+        q5: 5/5 — ¿Cómo rindes en los partidos?
+        q5_a1: Pierdo concentración y cometo muchos errores no forzados bajo presión
+        q5_a2: Compito, pero me cuesta cerrar los juegos ajustados
+        q5_a3: Construyo los puntos y adapto mi juego a cada rival
+        q5_a4: Rindo bien bajo presión y puedo cambiar de táctica durante el partido
+      chart:
+        level: Nivel
+        groundstrokes: Golpes de fondo
+        serve_return: Servicio y resto
+        tactics: Táctica y movimiento
+        r1_g: Pelotea a ritmo moderado. Regularidad limitada bajo presión. La derecha
+          es más fuerte que el revés.
+        r1_s: Mete el servicio pero con poca velocidad. El resto es sobre todo defensivo.
+        r1_t: Cubre la pista pero llega tarde a menudo. Depende del error del rival
+          más que de construir el punto.
+        r2_g: Golpes más fiables por ambos lados. Empieza a dirigir la bola y a dar
+          topspin moderado.
+        r2_s: Primer servicio fiable con algo de velocidad. Segundo servicio constante.
+          Resta la mayoría de servicios.
+        r2_t: 'Usa táctica básica: peloteos cruzados, subidas en bolas cortas. Mejor
+          colocación en pista.'
+        r3_g: Golpes de fondo constantes con control direccional. Puede golpear ganadores
+          desde posiciones favorables.
+        r3_s: Puede colocar el servicio y variar la velocidad. Restos agresivos al
+          segundo servicio.
+        r3_t: Construye el punto con profundidad y ángulos. Buen movimiento y recuperación.
+          Cómodo en la red.
+        r4_g: Juego fuerte en toda la pista. Controla ritmo y efecto. Maneja bien
+          bolas altas y cortadas bajas.
+        r4_s: El servicio es un arma con variación de velocidad y efecto. Los restos
+          son ofensivos.
+        r4_t: Patrones avanzados y buena lectura de pista. Usa split-step y anticipación.
+          Adapta la táctica al rival.
+        r5_g: Golpes potentes y fiables con flexibilidad táctica. Puede dictar el
+          peloteo por ambos lados.
+        r5_s: Porcentaje constante de primer servicio con colocación. Servicios liftados
+          y cortados eficaces.
+        r5_t: Movimiento y selección de golpe excepcionales. Domina a rivales inferiores
+          y compite con los mejores.
+        r6_g: Golpes de nivel de torneo. Alta regularidad incluso bajo presión. Variedad
+          con dejadas y ángulos.
+        r6_s: El servicio prepara el punto. Puede hacer aces y ganadores con el segundo
+          servicio.
+        r6_t: Gestiona el partido bajo presión. Cambia de táctica durante el encuentro.
+          Juega a alto nivel competitivo.
+        r7_g: Golpes de nivel élite. Entrenamiento intensivo y resultados nacionales/internacionales.
+        r7_s: Servicio y resto de nivel profesional.
+        r7_t: Juego completo. Compite a nivel nacional o internacional.
+      levels:
+        '2_5': 'Eres principiante: peloteas a ritmo moderado, pero la regularidad
+          baja bajo presión.'
+        '3_0': 'Estás progresando: los peloteos son más largos y empiezas a usar táctica
+          básica.'
+        '3_5': 'Nivel intermedio: golpes más fiables, táctica básica y mejor colocación
+          en pista.'
+        '4_0': 'Intermedio avanzado: servicio y golpes de fondo constantes, control
+          direccional y construcción del punto.'
+        '4_5': 'Avanzado: juego fuerte en toda la pista, control del ritmo, patrones
+          avanzados y alta regularidad.'
+        '5_0': 'Avanzado alto: golpes potentes y fiables con flexibilidad táctica.'
+        '5_5': 'Nivel de torneo: regularidad excepcional, variedad de golpes y gestión
+          del partido bajo presión.'
+        '6_0': Competidor de nivel élite con formación y resultados nacionales/internacionales.
+    formats:
+      schema_headline: Formatos divertidos de partidos de tenis y ejercicios en grupo
+      schema_description: 'Formatos de tenis en grupo con reglas y esquemas de pista:
+        Rey de la pista, 2v2 con dos bolas, sistema de ascenso en 3 pistas.'
+      players_4_8: 4–8 jugadores
+      players_4: 4 jugadores
+      players_3: 3 jugadores
+      courts_1: 1 pista
+      courts_1_2: 1–2 pistas
+      singles_or_doubles: Individual o dobles
+      doubles: Dobles
+      singles: Individual
+      scoring: Puntuación
+      king:
+        title: Rey de la pista
+        body: Un lado de la pista es el lado del «Rey». Los aspirantes van entrando
+          desde el otro lado e intentan ganar un punto. Si gana el aspirante, se convierte
+          en el Rey. Si gana el Rey, el aspirante sale y entra el siguiente.
+        score_1: Cada punto ganado como Rey vale 1 punto
+        score_2: Se juega a una puntuación objetivo (p. ej. 10) o por rondas cronometradas
+          (5 min)
+        score_3: Gana quien tenga más puntos al final
+        variations: Variantes
+        var_1_html: "<strong>Rey en dobles:</strong> equipos de 2, los aspirantes
+          entran por parejas"
+        var_2_html: "<strong>Rey al saque:</strong> el Rey siempre saca para mantener
+          la ventaja"
+        diagram_side: LADO DEL REY
+        diagram_waiting: esperando
+      two_balls:
+        title: 2 contra 2 con dos bolas
+        body_html: 'Dobles 2v2 normales, pero el equipo al saque pone <strong>dos
+          bolas a la vez</strong> desde un lado. Los dos peloteos van simultáneos:
+          caos, velocidad y mucha diversión. Cuando una bola sale de juego, alguien
+          grita <strong>«¡Bola!»</strong> y ambos equipos siguen con la bola restante
+          (la principal) según las reglas normales de dobles.'
+        score_1_html: Los puntos se cuentan solo con la <strong>bola principal</strong>
+          (después de que una bola salga de juego)
+        score_2: Gana el primer equipo que llegue a 10 puntos (o a la meta que fijéis)
+        score_3: El saque cambia tras cada punto, como en los dobles normales
+        safety_title: Consejo de seguridad
+        safety_body: Estad atentos a las dos bolas en todo momento. Gritad «¡Bola!»
+          con claridad para que todos pasen de inmediato a la bola principal.
+        diagram_balls: 2 bolas →
+      three_pairs:
+        title: 3 parejas — formato con marcador
+        body: 'Tres jugadores comparten una pista. Dos juegan un punto individual
+          mientras el tercero se coloca junto al poste de la red y lleva el marcador.
+          Tras cada punto, el perdedor sale y entra quien llevaba el marcador: pasa
+          a ser el nuevo aspirante y el perdedor se encarga del marcador.'
+        scoreboard_title: Marcador
+        scoreboard_body: 'Un marcador de tenis normal registra cada combinación de
+          jugadores por separado: una fila por pareja (A vs B, A vs C, B vs C). Quien
+          lleva el marcador actualiza la fila del partido en curso tras cada punto.'
+        rule_1: Cada fila se juega hasta una puntuación fijada (p. ej. 6 puntos)
+        rule_2: El ganador se queda en pista y el perdedor pasa a llevar el marcador
+        rule_3: Gana quien más victorias sume en todas las filas al final de la sesión
+        why_title: Por qué funciona
+        why_body: 'Nadie espera parado: el tercer jugador siempre participa llevando
+          el marcador. Las rotaciones son rápidas y la sesión no se hace larga.'
+        pair_ab: Pareja A vs B
+        pair_ac: Pareja A vs C
+        pair_bc: Pareja B vs C
+        diagram_note: La pareja que descansa lleva el marcador
+      round_robin:
+        title: Round Robin
+        body: Cada jugador disputa un partido corto (p. ej. un set o un tiempo fijado)
+          contra todos los demás. Los resultados se anotan en un marcador. Quien más
+          victorias sume al final es el campeón.
+        score_1: Victoria = 2 puntos, derrota = 0 puntos (o 3/1/0 por victoria/derrota
+          ajustada/derrota)
+        score_2: 'Desempate: resultado directo y después diferencia de juegos'
+        note: El Round Robin garantiza que todos jueguen el mismo número de partidos
+          y es el formato más justo para grupos pequeños.
+      drills:
+        title: Ejercicios clásicos en grupo
+        subtitle: 'Calentamiento o práctica antes de una sesión de partidos. Sin puntuación:
+          el foco está en la técnica y el movimiento.'
+        d1_title: Peloteo cruzado
+        d1_body: 'Dos jugadores pelotean en cruzado de forma continua: uno de derecha
+          y otro de revés. Cambiad de lado cada 3–5 minutos. Ideal para la regularidad
+          y para calentar el juego de pies.'
+        d1_meta: 2 jugadores · media pista
+        d2_title: Alimentación con cesto — paralelo
+        d2_body: Un jugador alimenta bolas desde un cesto en la red mientras el otro
+          golpea paralelo desde el fondo, alternando derecha y revés. Se trabaja la
+          colocación y la trayectoria del swing.
+        d2_meta: 2 jugadores · 1 cesto de bolas
+        d3_title: Volea contra volea
+        d3_body: Ambos jugadores se sitúan en sus líneas de saque y volean de ida
+          y vuelta sin dejar botar la bola. Aguantad el peloteo el mayor tiempo posible.
+          Excelente para los reflejos y la técnica en la red.
+        d3_meta: 2 jugadores · 1 pista
+        d4_title: Peloteo en forma de 8
+        d4_body: 'El jugador A golpea siempre cruzado y el jugador B siempre paralelo:
+          la bola dibuja un 8 sobre la red. Cambiad de rol cada 5 minutos. Desarrolla
+          el control direccional y la anticipación.'
+        d4_meta: 2 jugadores · pista completa
+        d5_title: Práctica de saque en formación australiana
+        d5_body: 'Ejercicio de dobles: el que saca y su compañero de red se colocan
+          del mismo lado de la línea central (formación australiana). El sacador practica
+          el saque a la T y el compañero, la volea agresiva. El restador practica
+          el resto abierto.'
+        d5_meta: 4 jugadores · pista completa

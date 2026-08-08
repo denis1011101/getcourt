@@ -9,7 +9,7 @@
     </div>
     <% else %>
     <% unless params[:selected_city_name].present? || @selected_city_name.present? || params[:selected_city_timezone].present? || current_user&.timezone.present? %>
-    <p class="text-sm text-gray-500 mt-2">No matches.</p>
+    <p class="text-sm text-gray-500 mt-2"><%= t("users.profile.no_city_matches") %></p>
     <% end %>
     <% end %>
 </div>

@@ -4,7 +4,7 @@
   <a href="#close" data-turbo="false" class="absolute inset-0 z-40" aria-hidden="true"></a>
 
   <div class="fixed left-1/2 top-16 z-50 w-[90%] md:w-auto max-w-2xl transform -translate-x-1/2 bg-white dark:bg-slate-800/80 p-6 md:p-8 rounded-lg shadow-lg pointer-events-auto">
-    <a href="#close" data-turbo="false" class="absolute top-3 right-3 text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 text-xl" aria-label="Close">✕</a>
+    <a href="#close" data-turbo="false" class="absolute top-3 right-3 text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 text-xl" aria-label="<%= t("common.close") %>">✕</a>
 
     <%= render partial: "player_statistics/summary",
                locals: {

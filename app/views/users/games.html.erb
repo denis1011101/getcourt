@@ -1,9 +1,9 @@
-<% content_for :meta_title, "My games" %>
+<% content_for :meta_title, t("users.games.title") %>
 
 <div class="mx-auto max-w-3xl space-y-4 px-4 py-6">
   <div class="flex items-center justify-between">
-    <h1 class="text-2xl font-bold">My games</h1>
-    <%= link_to "Back to account", edit_account_path, class: "text-sm text-indigo-600 hover:underline dark:text-indigo-400" %>
+    <h1 class="text-2xl font-bold"><%= t("users.games.title") %></h1>
+    <%= link_to t("common.back_to_account"), edit_account_path, class: "text-sm text-indigo-600 hover:underline dark:text-indigo-400" %>
   </div>
 
   <div class="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
@@ -11,7 +11,7 @@
   </div>
 
   <% if @games.empty? %>
-    <p class="text-gray-500">No games yet.</p>
+    <p class="text-gray-500"><%= t("users.games.empty") %></p>
   <% else %>
     <% @games.each do |game| %>
       <div class="rounded-lg border bg-white p-4 dark:border-white/10 dark:bg-slate-800/80">
@@ -25,11 +25,11 @@
               <%= link_to game.court&.name, game_path(game), class: "hover:underline" %>
             </p>
           </div>
-          <%= link_to "Open game", game_path(game), class: "text-sm text-indigo-600 hover:underline dark:text-indigo-400" %>
+          <%= link_to t("users.games.open_game"), game_path(game), class: "text-sm text-indigo-600 hover:underline dark:text-indigo-400" %>
         </div>
 
         <details class="border-t pt-3 dark:border-white/10">
-          <summary class="cursor-pointer text-sm font-medium">Enter score & stats</summary>
+          <summary class="cursor-pointer text-sm font-medium"><%= t("users.games.enter_stats") %></summary>
           <div class="mt-3">
             <%= render "games/stats_form", game: game %>
           </div>
@@ -42,9 +42,9 @@
 
   <% if @past_match_groups.any? %>
     <div class="mt-8 space-y-4">
-      <h2 class="text-xl font-bold text-gray-900 dark:text-slate-100">Past matches</h2>
+      <h2 class="text-xl font-bold text-gray-900 dark:text-slate-100"><%= t("users.games.past_title") %></h2>
       <p class="text-sm text-gray-500 dark:text-slate-400">
-        Match history from before deleted or external entries. Not linked to active games.
+        <%= t("users.games.past_subtitle") %>
       </p>
 
       <% @past_match_groups.each do |date, matches_for_date| %>
@@ -55,12 +55,11 @@
                 <%= l(date, format: :long) rescue date.to_s %>
               </p>
               <p class="text-lg font-medium text-gray-900 dark:text-slate-100">
-                <%= matches_for_date.size %>
-                <%= matches_for_date.size == 1 ? "match" : "matches" %>
+                <%= t("users.games.matches_count", count: matches_for_date.size) %>
               </p>
             </div>
             <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-slate-700 dark:text-slate-300">
-              History
+              <%= t("users.games.history_badge") %>
             </span>
           </div>
 

@@ -17,11 +17,11 @@
 
   <%# show Remove button to game owner or admin (not for self — self has "Leave" control elsewhere) %>
   <% if participation.guest? ? can_manage?(g) : (can_remove_participant?(g, participation.user) && participation.user != current_user) %>
-    <%= button_to "Remove",
+    <%= button_to t("common.remove"),
           game_participation_path(g, participation),
           method: :delete,
           form: { data: { turbo: true } },
-          data: { confirm: "Remove this player from the game?" },
+          data: { confirm: t("games.show.remove_participant_confirm") },
           class: "px-3 py-1.5 text-xs text-red-600 bg-red-50 rounded hover:bg-red-100 transition-colors font-medium" %>
   <% end %>
 </li>

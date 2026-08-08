@@ -2,7 +2,11 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["panel", "input", "messages", "button", "spinner", "quickReplies"]
-  static values = { url: String, open: { type: Boolean, default: false } }
+  static values = {
+    url: String,
+    open: { type: Boolean, default: false },
+    connectionError: String
+  }
 
   toggle() {
     this.openValue = !this.openValue
@@ -42,7 +46,7 @@ export default class extends Controller {
       const data = await response.json()
       this.appendMessage("assistant", data.reply || data.error || "Error", data.reply_html)
     } catch {
-      this.appendMessage("assistant", "Connection error. Try again.")
+      this.appendMessage("assistant", this.connectionErrorValue)
     } finally {
       this.inputTarget.disabled = false
       this.spinnerTarget.classList.add("hidden")

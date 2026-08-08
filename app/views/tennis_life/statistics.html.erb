@@ -28,19 +28,19 @@
                 <tr class="border-b border-gray-100 dark:border-white/10 text-left text-gray-500 dark:text-slate-400">
                   <th class="py-2 pr-4 font-medium"><%= t("tennis_life.statistics.rank") %></th>
                   <th class="py-2 pr-4 font-medium"><%= t("tennis_life.statistics.player") %></th>
-                  <th class="py-2 pr-4 font-medium">Telegram</th>
+                  <th class="py-2 pr-4 font-medium"><%= t("tennis_life.statistics.telegram") %></th>
                   <th class="py-2 pr-4 font-medium"><%= t("tennis_life.statistics.wins") %></th>
                   <th class="py-2 pr-4 font-medium"><%= t("tennis_life.statistics.games") %></th>
                   <th class="py-2 pr-4 font-medium"><%= t("tennis_life.statistics.win_pct") %></th>
-                  <th class="py-2 pr-4 font-medium">Singles ELO</th>
-                  <th class="py-2 font-medium">Doubles ELO</th>
+                  <th class="py-2 pr-4 font-medium"><%= t("tennis_life.statistics.singles_elo") %></th>
+                  <th class="py-2 font-medium"><%= t("tennis_life.statistics.doubles_elo") %></th>
                 </tr>
               </thead>
               <tbody>
                 <% @rating_rows.each_with_index do |row, idx| %>
                   <% user = row[:user] %>
                   <% telegram_username = user&.telegram_username.to_s.strip.delete_prefix("@") %>
-                  <% player_name = user&.name.presence || (user&.id.present? ? "User ##{user.id}" : "Anonymous player") %>
+                  <% player_name = user&.name.presence || (user&.id.present? ? t("tennis_life.user_fallback", id: user.id) : t("tennis_life.anonymous_player")) %>
                   <tr class="border-b border-gray-100 dark:border-white/10 text-gray-800 dark:text-slate-200">
                     <td class="py-3 pr-4"><%= idx + 1 %></td>
                     <td class="py-3 pr-4 font-medium"><%= player_name %></td>
@@ -86,7 +86,7 @@
       <% names_by_id =
         if related_ids.any?
           User.where(id: related_ids).each_with_object({}) do |user, result|
-            result[user.id] = user.name.presence || Telegram::Helpers::UserLookup.display_name(user, fallback: "User ##{user.id}")
+            result[user.id] = user.name.presence || Telegram::Helpers::UserLookup.display_name(user, fallback: t("tennis_life.user_fallback", id: user.id))
           end
         else
           {}
@@ -103,9 +103,9 @@
             </div>
             <p class="mt-1 text-sm font-medium text-gray-900 dark:text-slate-100"><%= match_title %></p>
             <p class="mt-1 text-sm text-gray-600 dark:text-slate-300">
-              Score: <%= match.score.presence || "-" %>
-              · Outcome: <%= match.outcome.to_s.presence&.titleize || "-" %>
-              · Surface: <%= match.surface.presence || "-" %>
+              <%= t("tennis_life.statistics.score") %>: <%= match.score.presence || "-" %>
+              · <%= t("tennis_life.statistics.outcome") %>: <%= match.outcome.to_s.presence&.titleize || "-" %>
+              · <%= t("tennis_life.statistics.surface") %>: <%= match.surface.presence || "-" %>
             </p>
           </article>
         <% end %>

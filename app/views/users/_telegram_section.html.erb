@@ -4,15 +4,14 @@
       <svg class="h-4 w-4 flex-shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
       </svg>
-      Telegram connected<% if @user.telegram_username.present? %>:
+      <%= t("users.telegram.connected") %><% if @user.telegram_username.present? %>:
         <%= telegram_profile_link(@user.telegram_username, class: "text-indigo-600 dark:text-indigo-400 hover:underline") %>
       <% end %>
     </p>
   <% end %>
 
   <p class="text-sm text-gray-700 dark:text-slate-300">
-    To receive Telegram notifications, please open a chat with our bot...
-    <a href="https://telegram.me/GetCourtBot" class="text-indigo-600 dark:text-indigo-400 hover:underline" target="_blank" rel="noopener">https://telegram.me/GetCourtBot</a> and send:
+    <%= t("users.telegram.instructions_html", link: link_to("https://telegram.me/GetCourtBot", "https://telegram.me/GetCourtBot", class: "text-indigo-600 dark:text-indigo-400 hover:underline", target: "_blank", rel: "noopener")) %>
   </p>
 
   <div class="p-3 bg-gray-50 border rounded dark:bg-slate-700/50 dark:border-white/10">
@@ -20,7 +19,7 @@
   </div>
 
   <div class="flex items-center gap-3">
-    <%= link_to "Regenerate token",
+    <%= link_to t("users.telegram.regenerate_token"),
           regenerate_token_account_path,
           data: { turbo_method: :post },
           class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition text-sm font-medium decoration-0" %>

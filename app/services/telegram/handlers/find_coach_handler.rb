@@ -15,7 +15,7 @@ module Telegram
           favorite_ids = user&.favorite_court_ids || []
 
           # Find coaches, prioritize overlapping favorite courts, then same city
-          scope = User.where(coach: true).includes(:favorite_courts)
+          scope = User.not_merged.where(coach: true).includes(:favorite_courts)
           user_city = user&.city_name.to_s.strip.downcase.presence
 
           coaches = scope.to_a.sort_by do |coach|
@@ -61,7 +61,7 @@ module Telegram
           locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
           t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
-          coach = User.find_by(id: coach_id, coach: true)
+          coach = User.not_merged.find_by(id: coach_id, coach: true)
           unless coach
             send_or_edit_text(chat_id, t.(:user_not_found), message_id: message_id)
             return

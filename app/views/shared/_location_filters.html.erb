@@ -20,17 +20,17 @@
       </svg>
       <%= f.select :country,
             options_for_select(countries, selected_country),
-            { include_blank: "Any country" },
+            { include_blank: t("shared.location_filters.any_country") },
             class: "#{select_classes} pl-9 pr-4",
             data: { action: "change->location-filters#countryChanged", location_filters_target: "country" } %>
     </div>
     <div class="relative flex-1">
       <%= f.select :city,
             options_for_select(cities, selected_city),
-            { include_blank: "Any city" },
+            { include_blank: t("shared.location_filters.any_city") },
             class: "#{select_classes} px-4",
-            data: { location_filters_target: "city", placeholder: "Any city" } %>
+            data: { location_filters_target: "city", placeholder: t("shared.location_filters.any_city") } %>
     </div>
-    <%= f.submit "Search", class: submit_classes %>
+    <%= f.submit t("common.search"), class: submit_classes %>
   <% end %>
 </div>

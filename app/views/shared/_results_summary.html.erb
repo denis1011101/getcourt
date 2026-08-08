@@ -1,13 +1,12 @@
 <div class="flex items-center justify-between mb-4">
   <div>
-    <% total_count = local_assigns.fetch(:total_count, @pagy&.count || count) %>
     <% if filters.any? %>
       <p class="text-sm text-gray-500" data-testid="results-summary">
-        <%= total_count %> <%= noun %><%= total_count == 1 ? "" : "s" %> &middot; <%= safe_join(filters, " &middot; ".html_safe) %>
+        <%= label %> &middot; <%= safe_join(filters, " &middot; ".html_safe) %>
       </p>
     <% else %>
       <p class="text-sm text-gray-500" data-testid="results-summary">
-        <%= total_count %> <%= noun %><%= total_count == 1 ? "" : "s" %> available
+        <%= label %> <%= t("shared.results_summary.available") %>
       </p>
     <% end %>
   </div>

@@ -1,0 +1,569 @@
+---
+en:
+  layout:
+    toggle_theme: Toggle theme
+  sessions:
+    email_label: Email
+    code_label: Code
+    submit: Enter
+    sign_in_title: Sign in or create an account
+    go_home: Go to Home
+    signed_in:
+      title: Signed in
+      body_html: You are signed in as %{email}.
+      fallback_user: user
+    signed_out:
+      title: Signed out
+      body: You have been signed out.
+    verify:
+      submit: Verify
+  common:
+    back: Back
+    back_to_account: Back to account
+    cancel: Cancel
+    save_changes: Save Changes
+    approve: Approve
+    reject: Reject
+    remove: Remove
+    search: Search
+    prev: Prev
+    next: Next
+    close: Close
+    not_specified: Not specified
+  player_statistics:
+    title: "%{name} — Statistics"
+    empty: No statistics available yet.
+    not_available: N/A
+    hours:
+      title: Hours
+      singles: Singles
+      doubles: Doubles
+      total: Total
+      unit: h
+    activity:
+      title: Trainings / Games
+      individual_training: Individual training
+      group_training: Group training
+      singles_games: Singles games
+      doubles_games: Doubles games
+      win_rate: win rate
+    match_stats:
+      title: Match stats
+      aces: Aces
+      double_faults: Double faults
+      first_serve_percent: 1st serve %
+      break_points_saved: Break points saved
+      break_points_converted: Break points converted
+      winners: Winners
+      unforced_errors: Unforced errors
+      net_points_won: Net points won
+      service_points_won: Service points won
+      return_points_won: Return points won
+      return_games_won: Return games won
+      games_won_total: Games won total
+    last_games:
+      title: Last 5 games
+      win: W
+      draw: D
+      loss: L
+    ratings:
+      title: Ratings
+      singles: Singles rating
+      doubles: Doubles rating
+  games:
+    show:
+      schema_name: Game %{date}
+      request_sent: Request sent
+      cancel_request: Cancel request
+      leave_game: Leave Game
+      join: Join
+      request_to_join: Request to join
+      login_to_join: Login to join
+      remove_participant_confirm: Remove this player from the game?
+      no_participants: No participants yet.
+      pending_requests: Pending requests
+      unknown_user: User
+      classic_limit: Classic format supports up to 4 players.
+      urgent_hint: Tap this to add a "looking for players" label to the game and send
+        a notification to GetCourt members in your city's Telegram chat.
+      urgent_announce: Announce players search
+      urgent_cancel: Cancel players search
+      stats_submit: Save statistics
+      additional_stats: Additional match statistics
+      match_block_title: Game %{number}
+      remove_match: Remove game
+      add_team_player: Add player
+    form:
+      errors:
+        one: '1 error prohibited this game from being saved:'
+        few: "%{count} errors prohibited this game from being saved:"
+        many: "%{count} errors prohibited this game from being saved:"
+        other: "%{count} errors prohibited this game from being saved:"
+      recurring: Repeat weekly
+      recurring_hint: If checked, this date and time will recur every week.
+      prebooking: Enable prebooking
+      prebooking_hint: Players can reserve slots for upcoming dates.
+      prebooking_note: 'Note: prebooking slots will be created after saving the game.'
+      prebooking_locked: Prebooking can be enabled only for repeating (weekly) games.
+      prebooking_locked_hint: Check "Repeat weekly" to enable prebooking.
+      with_coach: With coach
+      with_coach_hint: If checked, this game will be held with a coach.
+      urgent_player_search: Players search
+      urgent_player_search_hint: Show this game in "Games looking for player" and
+        notify users with enabled nearby alerts.
+      players_count: Players
+      players_count_hint: Select required number of players (2 or 4).
+      sport: Sport
+      sport_any: "— select sport —"
+      skill_level: Required level
+      skill_level_any: Any level
+      duration: Duration (optional)
+      duration_any: "— not specified —"
+      duration_hint: Approximate or exact playing time. Helps others see how long
+        the court will be busy.
+      court: Place
+      court_hint: Choose court from list or click marker on the map.
+      submit_create: Create Game
+      submit_update: Update Game
+      view_game: View Game
+      delete_game: Delete Game
+      delete_confirm: Are you sure?
+    new:
+      title: Create New Game
+      subtitle: Set date, time and place for a new game.
+    edit:
+      title: Edit Game
+      subtitle: Update game details and participants.
+    badges:
+      coach: Coach
+      player_search: Players search
+    card:
+      spots_left:
+        one: 1 spot left
+        few: "%{count} spots left"
+        many: "%{count} spots left"
+        other: "%{count} spots left"
+      full: Full
+    prebookings:
+      title: Prebookings
+      date: Date
+      slot: Slot %{number}
+      restore_date: Restore date
+      cancel_date: Cancel date
+      cancel_date_confirm: Cancel all bookings for %{date}?
+      cancelled: Cancelled — bookings disabled for this date
+      pending: Pending
+      cancel: Cancel
+      book: Book
+      request: Request
+      sign_in_to_book: Sign in to book
+    ai_chat:
+      title: Tennis Assistant
+      subtitle: Powered by AI
+      open: Open AI assistant
+      greeting: Hi! I can help you find opponents, courts or coaches. What are you
+        looking for?
+      quick_opponent: "\U0001F3BE Find opponent"
+      quick_opponent_message: Find me an opponent
+      quick_court: "\U0001F3DF Find court"
+      quick_court_message: Find me a court
+      quick_coach: "\U0001F468‍\U0001F3EB Find coach"
+      quick_coach_message: Find me a coach
+      quick_record: "\U0001F4DD Record result"
+      placeholder: Ask me anything...
+      connection_error: Connection error. Try again.
+    index:
+      count:
+        one: 1 game
+        few: "%{count} games"
+        many: "%{count} games"
+        other: "%{count} games"
+  courts:
+    show:
+      pending_moderation: This court is under moderation.
+      reject_confirm: Reject this court?
+      no_coordinates: Coordinates not available
+      create_game: Create Game
+      sign_in_to_create_game: Sign in to Create Game
+    form:
+      errors:
+        one: '1 error prohibited this court from being saved:'
+        few: "%{count} errors prohibited this court from being saved:"
+        many: "%{count} errors prohibited this court from being saved:"
+        other: "%{count} errors prohibited this court from being saved:"
+      submit: Save Court
+      name_placeholder: Court name (e.g. Central Court)
+      name_hint: Enter a clear short name for the court.
+      sport_blank: Select a sport
+      sport_hint: Choose the main sport for this court.
+      map_label: Select on the map
+      use_my_location: Use my location
+      map_hint: Click on the map or drag the marker
+      contacts: Contacts
+      contacts_hint: Up to 3 contacts, each with its own type.
+      contact_type: Contact type %{number}
+      contact_type_blank: Select
+      contact_value: Contact %{number}
+      contact_value_placeholder: Phone, website, email or messenger
+      contacts_example: 'Example: Telegram + Viber + website, or any other combination.'
+    new:
+      title: Create New Court
+      subtitle: Add details and location for a new court.
+      back: Back to Courts
+    edit:
+      title: Editing Court
+    index:
+      count:
+        one: 1 court
+        few: "%{count} courts"
+        many: "%{count} courts"
+        other: "%{count} courts"
+  users:
+    edit:
+      title: Account
+      my_games: My games
+      profile: Profile
+      notifications: Telegram & notifications
+      security: Security
+      statistics_title: Statistics
+      view_full_statistics: View full statistics →
+      singles_rating: Singles rating
+      doubles_rating: Doubles rating
+      hours_played: Hours played
+      games: Games
+      no_statistics: No statistics yet.
+    profile:
+      title: Profile
+      name: Name
+      email: Email
+      skill_levels: Skill levels
+      skill_levels_hint: Set your skill level for each sport.
+      coach: I am a coach
+      coach_hint: Tick if you coach — this helps others find and hire coaches in the
+        future.
+      city: City
+      city_placeholder: e.g. Moskva
+      city_hint: Enter a place. The system will transliterate names and try to detect
+        timezone automatically on save. Press "Save Changes".
+      about_me: About me
+      about_me_placeholder: Tell others a bit about yourself…
+      no_city_matches: No matches.
+    security:
+      title: Security
+      verification_title: Account verification recommended
+      verification_body: If you plan to create courts or host games, we recommend
+        enabling sign-in verification (email or Telegram). This helps build trust
+        and prevents abuse.
+      require_verification: Require verification for sensitive actions
+      verification_method: 'Verification method:'
+      verification_hint: By default you sign in without a code. Enable verification
+        to require a one-time code sent via your selected method.
+    telegram:
+      connected: Telegram connected
+      instructions_html: 'To receive Telegram notifications, please open a chat with
+        our bot %{link} and send:'
+      regenerate_token: Regenerate token
+    games:
+      title: My games
+      empty: No games yet.
+      open_game: Open game
+      enter_stats: Enter score & stats
+      past_title: Past matches
+      past_subtitle: Match history from before deleted or external entries. Not linked
+        to active games.
+      history_badge: History
+      matches_count:
+        one: 1 match
+        few: "%{count} matches"
+        many: "%{count} matches"
+        other: "%{count} matches"
+  coaches:
+    index:
+      meta_title: Find a Tennis Coach — GetCourt
+      meta_description: Find a professional tennis coach near you. Browse instructor
+        profiles, see their sports and city, and contact them directly via Telegram
+        on GetCourt.
+      title: Find a Tennis Coach
+      subtitle: Browse tennis instructors and contact them directly in chat or by
+        Telegram username.
+      count:
+        one: 1 coach
+        few: "%{count} coaches"
+        many: "%{count} coaches"
+        other: "%{count} coaches"
+      sports_label: Sports
+      city_label: City
+      empty_location: No coaches in this location yet.
+      show_all: Show all coaches
+      empty_html: No coaches have joined yet. If you are a tennis instructor, you
+        can %{link} and enable the coach profile in your account settings — your profile
+        will appear here.
+      create_account: create an account
+      how_to_title: How to choose a tennis coach
+      how_to_1: Look for a coach whose skill level matches yours — beginner, intermediate,
+        or advanced.
+      how_to_2: Check the city so you can find someone who trains locally or online.
+      how_to_3: Reach out directly via Telegram to discuss schedule, price, and format.
+      for_coaches_title: For coaches
+      for_coaches_body: GetCourt is a free platform for organising tennis games and
+        connecting with players. Register, fill in your sport and city, and players
+        in your area will be able to find and contact you.
+  searches:
+    index:
+      title: Tennis Courts Nearby
+      subtitle: Enter a place or paste coordinates (lat,lng). Choose a suggestion
+        (or paste coords) and press "Search"; you can also use your current location.
+      placeholder: e.g. New York, 40.78,-73.96 or Central Court
+      use_my_location: Use my location
+      nearby_title: Nearby Courts
+      coords: 'coords:'
+      empty: No courts found nearby.
+      geolocation:
+        unsupported: Geolocation is not supported by your browser.
+        permission_denied: Location access denied. Please allow location access in
+          your browser settings.
+        unavailable: Location information is unavailable.
+        timeout: Location request timed out.
+        failed: Failed to get location.
+        locating: Locating...
+        searching: Searching...
+        no_results: No results found
+        search_error: Error searching. Please try again.
+        rate_limited: Too many requests. Please try again later.
+  shared:
+    pagy:
+      label: Pagination
+    results_summary:
+      available: available
+    map_panel:
+      quota_exceeded: 'Google geocoding quota exceeded for today (limit: %{limit}).
+        Address lookup via Google is disabled — map unavailable.'
+      hidden: Map is hidden for unauthenticated users.
+      sign_in: Sign in or Sign up to view the map
+    location_filters:
+      any_country: Any country
+      any_city: Any city
+    moment_logo_alt: Moment · hookah space
+  geocoding:
+    quota_exceeded: 'Google geocoding quota exceeded for today (limit: %{limit}).
+      Address lookup via Google is disabled.'
+    reset: Reset quota
+    reset_title: Reset geocoding quota
+  tennis_life:
+    scoreboard:
+      title: Tennis Scoreboard
+      empty: No tennis scoreboard data yet.
+    statistics:
+      telegram: Telegram
+      singles_elo: Singles ELO
+      doubles_elo: Doubles ELO
+      score: Score
+      outcome: Outcome
+      surface: Surface
+    user_fallback: 'User #%{id}'
+    anonymous_player: Anonymous player
+  pages:
+    ntrp:
+      faq_q1: What is NTRP in tennis?
+      faq_a1: NTRP (National Tennis Rating Program) is a standardized system for rating
+        tennis players from 1.0 (beginner) to 7.0 (touring professional). It helps
+        players find balanced matches and appropriate competition.
+      faq_q2: How do I find my NTRP level?
+      faq_a2: You can estimate your NTRP level by evaluating your consistency, shot
+        variety, movement, serve, and match results. The best way to validate is to
+        play competitive matches against players with known ratings.
+      intro: NTRP (National Tennis Rating Program) is a standardized system for rating
+        tennis players. It helps you find balanced matches by matching with players
+        of a similar skill level. You can estimate your rating by evaluating your
+        consistency, shot variety, movement, serve, and match results.
+      start_quiz: Start Quiz
+      retake_quiz: Retake quiz
+      result_label: 'Your estimated level:'
+      find_players: Find players at your level
+      validate_note: The best way to validate your estimate is to play several competitive
+        matches against players with known ratings and compare results.
+      quiz:
+        q1: 1/5 — How consistent are your rallies?
+        q1_a1: I can keep the ball in play for a few shots but often miss
+        q1_a2: I can sustain rallies at a moderate pace on most shots
+        q1_a3: I rally consistently and can direct the ball with purpose
+        q1_a4: I rarely miss in rallies and can control pace and depth
+        q2: 2/5 — Describe your serve
+        q2_a1: I can get the serve in but with little pace or spin
+        q2_a2: I have a reliable first serve and a consistent second serve
+        q2_a3: I can place my serve, vary speed, and sometimes use spin
+        q2_a4: My serve is a weapon — I use pace, spin, and placement to win free
+          points
+        q3: 3/5 — How comfortable are you at the net?
+        q3_a1: I avoid the net or struggle with volleys
+        q3_a2: I can volley when I get an easy ball but don't come to the net often
+        q3_a3: I approach the net with confidence and finish points with volleys
+        q3_a4: I play aggressive net tennis, can handle passing shots and lobs
+        q4: 4/5 — How would you describe your movement?
+        q4_a1: I cover the court but am often late to wide balls
+        q4_a2: I move well enough but get pulled out of position sometimes
+        q4_a3: I recover quickly and use split-steps and lateral movement
+        q4_a4: I anticipate shots and use footwork to set up offensive positions
+        q5: 5/5 — How do you perform in matches?
+        q5_a1: I lose focus and make many unforced errors under pressure
+        q5_a2: I can compete but struggle to close out tight games
+        q5_a3: I construct points and adapt my game to different opponents
+        q5_a4: I thrive under pressure and can change tactics mid-match
+      chart:
+        level: Level
+        groundstrokes: Groundstrokes
+        serve_return: Serve & Return
+        tactics: Tactics & Movement
+        r1_g: Can rally at a moderate pace. Limited consistency under pressure. Forehand
+          is stronger than backhand.
+        r1_s: Gets the serve in but with little pace. Return is mostly defensive.
+        r1_t: Covers the court but is often late. Relies on opponent errors rather
+          than constructing points.
+        r2_g: More reliable strokes on both sides. Starting to hit with direction
+          and moderate topspin.
+        r2_s: Reliable first serve with some pace. Second serve is consistent. Can
+          return most serves.
+        r2_t: 'Uses basic tactics: crosscourt rallies, approaches on short balls.
+          Better court positioning.'
+        r3_g: Consistent groundstrokes with directional control. Can hit winners from
+          favorable positions.
+        r3_s: Can place serves and vary speed. Aggressive returns on second serves.
+        r3_t: Constructs points with depth and angles. Good movement and recovery.
+          Comfortable at the net.
+        r4_g: Strong all-court game. Controls pace and spin. Handles high balls and
+          low slices effectively.
+        r4_s: Serve is a weapon with pace and spin variation. Returns are offensive.
+        r4_t: Advanced patterns and court awareness. Uses split-steps and anticipation.
+          Adapts tactics to opponents.
+        r5_g: Powerful, reliable strokes with tactical flexibility. Can dictate rallies
+          from both wings.
+        r5_s: Consistent first-serve percentage with placement. Effective kick and
+          slice serves.
+        r5_t: Exceptional movement and shot selection. Dominates weaker opponents
+          and competes with top-level players.
+        r6_g: Tournament-quality strokes. High consistency even under pressure. Shot
+          variety includes dropshots, angles.
+        r6_s: Serve sets up the point. Can ace opponents and hit second-serve winners.
+        r6_t: Match management under pressure. Changes tactics mid-match. Plays at
+          a high competitive level.
+        r7_g: Elite-level strokes. Has had intensive training and national/international
+          results.
+        r7_s: Professional-level serve and return game.
+        r7_t: Complete game. Competing at national or international level.
+      levels:
+        '2_5': You are a beginner — you can rally at a moderate pace, but consistency
+          drops under pressure.
+        '3_0': You are developing — rallies are more sustained and you're starting
+          to use basic tactics.
+        '3_5': Intermediate level — more reliable strokes, basic tactics, and better
+          court positioning.
+        '4_0': Advanced intermediate — consistent serves and groundstrokes, directional
+          control, and point construction.
+        '4_5': Advanced — strong all-court game, pace control, advanced patterns,
+          and high match consistency.
+        '5_0': Strong advanced — powerful, reliable strokes with tactical flexibility.
+        '5_5': Tournament-level — exceptional consistency, shot variety, and match
+          management under pressure.
+        '6_0': Elite-level competitor with national/international training and results.
+    formats:
+      schema_headline: Fun Tennis Game Formats and Group Drills
+      schema_description: 'Popular tennis group formats with rules and court diagrams:
+        King of the Court, 2v2 with two balls, 3-courts promotion system.'
+      players_4_8: 4–8 players
+      players_4: 4 players
+      players_3: 3 players
+      courts_1: 1 court
+      courts_1_2: 1–2 courts
+      singles_or_doubles: Singles or Doubles
+      doubles: Doubles
+      singles: Singles
+      scoring: Scoring
+      king:
+        title: King of the Court
+        body: One side of the court is the "King" side. Challengers rotate in from
+          the other side and try to win a point. If the challenger wins, they become
+          the King. If the King wins, the challenger rotates out and the next one
+          comes in.
+        score_1: Each point won as King counts as 1 point
+        score_2: Play to a target score (e.g., 10) or by timed rounds (5 min)
+        score_3: The player with the most points at the end wins
+        variations: Variations
+        var_1_html: "<strong>Doubles King:</strong> teams of 2, challengers rotate
+          as pairs"
+        var_2_html: "<strong>Serve King:</strong> King always serves to keep an advantage"
+        diagram_side: KING SIDE
+        diagram_waiting: waiting
+      two_balls:
+        title: 2 vs 2 with Two Balls
+        body_html: Standard 2v2 doubles, but the serving team feeds <strong>two balls
+          at once</strong> from one side. Both rallies run simultaneously — chaos,
+          speed, and great fun. When one ball goes out of play, someone shouts <strong>"Ball!"</strong>
+          and both teams switch to playing the remaining (main) ball with standard
+          doubles rules.
+        score_1_html: Points are scored with the <strong>main ball</strong> only (after
+          one ball drops out)
+        score_2: First team to 10 points wins (or set your own target)
+        score_3: Serve switches after each point as in regular doubles
+        safety_title: Safety tip
+        safety_body: Stay aware of both balls at all times. Shout "Ball!" clearly
+          so everyone switches focus to the main ball immediately.
+        diagram_balls: 2 balls →
+      three_pairs:
+        title: 3 Pairs — Scoreboard Format
+        body: Three players share one court. Two play a singles point while the third
+          stands at the net post and keeps score. After each point, the loser steps
+          off and the scorer steps in — the scorer becomes the new challenger, and
+          the previous loser takes over scoring.
+        scoreboard_title: Scoreboard
+        scoreboard_body: A standard tennis scoreboard tracks each player combination
+          separately — one row per pair (A vs B, A vs C, B vs C). The scorer updates
+          the row for the current match after each point.
+        rule_1: Each row is played to a set score (e.g., 6 points)
+        rule_2: Winner stays on court, loser becomes the new scorer
+        rule_3: Most wins across all rows at the end of the session wins
+        why_title: Why it works
+        why_body: Nobody waits idly — the third player is always involved as scorer.
+          Rotations are fast and the session never drags.
+        pair_ab: Pair A vs B
+        pair_ac: Pair A vs C
+        pair_bc: Pair B vs C
+        diagram_note: Resting pair keeps score
+      round_robin:
+        title: Round Robin
+        body: Every player plays a short match (e.g., one set or a timed period) against
+          every other player. Results are tracked on a scoreboard. The player with
+          the most wins at the end is the champion.
+        score_1: Win = 2 points, loss = 0 points (or 3/1/0 for win/close-loss/loss)
+        score_2: 'Tiebreaker: head-to-head result, then games difference'
+        note: Round Robin ensures everyone plays the same number of matches and is
+          the fairest format for small groups.
+      drills:
+        title: Classic Group Drills
+        subtitle: Warm-up or practice exercises to run before a game session. No scoring
+          — focus is on technique and movement.
+        d1_title: Cross-Court Rally
+        d1_body: Two players rally crosscourt continuously — one hitting forehands,
+          the other backhands. Switch sides after 3–5 minutes. Great for consistency
+          and footwork warm-up.
+        d1_meta: 2 players · 1 half of the court
+        d2_title: Basket Feed — Down the Line
+        d2_body: One player feeds balls from a basket at the net while the other hits
+          down the line from the baseline, alternating forehand and backhand. Focuses
+          on placement and swing path.
+        d2_meta: 2 players · 1 basket of balls
+        d3_title: Volley-to-Volley
+        d3_body: Both players stand at their respective service lines and volley back
+          and forth without letting the ball bounce. Keep the rally going as long
+          as possible. Excellent for reflexes and net technique.
+        d3_meta: 2 players · 1 court
+        d4_title: Figure-8 Rally
+        d4_body: Player A always hits crosscourt, Player B always hits down the line
+          — the ball traces a figure-8 pattern across the net. Switch roles every
+          5 minutes. Builds directional control and anticipation.
+        d4_meta: 2 players · full court
+        d5_title: Australian Formation Serve Practice
+        d5_body: 'Doubles drill: server and net partner line up on the same side of
+          the center line (Australian formation). Server practices T-serves while
+          net partner practices aggressive volleying. Receiver practices returning
+          wide.'
+        d5_meta: 4 players · full court

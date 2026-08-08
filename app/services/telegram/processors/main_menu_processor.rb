@@ -77,19 +77,23 @@ module Telegram
 
             if user
               telegram_locale = Telegram::I18n.locale_from_language_code(message.dig("from", "language_code"))
-              attributes = {
-                telegram_chat_id: chat_id.to_s,
-                telegram_username: message.dig("from", "username").to_s.presence || user.telegram_username,
-                telegram_registration_token: nil,
-                updated_at: Time.current
-              }
-              attributes[:telegram_locale] = telegram_locale if telegram_locale && user.telegram_locale.blank?
+              telegram_username = message.dig("from", "username").to_s.presence
 
               begin
                 User.transaction do
                   donor = User.where(telegram_chat_id: chat_id).where.not(id: user.id).first
                   Users::Merge.call(source: donor, target: user) if donor&.telegram_generated_email?
                   User.where(telegram_chat_id: chat_id).where.not(id: user.id).update_all(telegram_chat_id: nil, updated_at: Time.current)
+
+                  # Built after the merge: it may have filled the username and the locale
+                  # from the bot account, and those must not be overwritten with stale values.
+                  attributes = {
+                    telegram_chat_id: chat_id.to_s,
+                    telegram_registration_token: nil,
+                    updated_at: Time.current
+                  }
+                  attributes[:telegram_username] = telegram_username || user.telegram_username
+                  attributes[:telegram_locale] = telegram_locale if telegram_locale && user.telegram_locale.blank?
                   user.update_columns(attributes)
                 end
               rescue => e

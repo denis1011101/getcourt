@@ -2,14 +2,14 @@
 <% required = @game.prebooking_required_players %>
 
 <div id="prebookings-<%= @game.id %>" class="mt-6">
-  <h3 class="text-sm font-semibold text-gray-700 mb-2">Prebookings</h3>
+  <h3 class="text-sm font-semibold text-gray-700 mb-2"><%= t("games.prebookings.title") %></h3>
   <div class="overflow-auto border rounded">
     <table class="w-full text-sm">
       <thead class="bg-gray-50">
         <tr>
-          <th class="px-3 py-2 text-left">Date</th>
+          <th class="px-3 py-2 text-left"><%= t("games.prebookings.date") %></th>
           <% (1..required).each do |i| %>
-            <th class="px-3 py-2 text-left">Slot <%= i %></th>
+            <th class="px-3 py-2 text-left"><%= t("games.prebookings.slot", number: i) %></th>
           <% end %>
         </tr>
       </thead>
@@ -21,15 +21,15 @@
               <%= d.strftime("%Y-%m-%d") %>
               <% if user_signed_in? && (current_user.admin? || @game.user == current_user) %>
                 <% if cancellation %>
-                  <%= button_to "Restore date", game_prebooking_cancellation_path(@game, cancellation), method: :delete, class: "ml-2 text-xs text-green-600" %>
+                  <%= button_to t("games.prebookings.restore_date"), game_prebooking_cancellation_path(@game, cancellation), method: :delete, class: "ml-2 text-xs text-green-600" %>
                 <% else %>
-                  <%= button_to "Cancel date", game_prebooking_cancellations_path(@game, date: d), method: :post, data: { confirm: "Cancel all bookings for #{d.strftime('%Y-%m-%d')}?" }, class: "ml-2 text-xs text-red-600" %>
+                  <%= button_to t("games.prebookings.cancel_date"), game_prebooking_cancellations_path(@game, date: d), method: :post, data: { confirm: t("games.prebookings.cancel_date_confirm", date: d.strftime("%Y-%m-%d")) }, class: "ml-2 text-xs text-red-600" %>
                 <% end %>
               <% end %>
             </td>
 
             <% if cancellation %>
-              <td class="px-3 py-2 text-red-600" colspan="<%= required %>">Cancelled — bookings disabled for this date</td>
+              <td class="px-3 py-2 text-red-600" colspan="<%= required %>"><%= t("games.prebookings.cancelled") %></td>
             <% else %>
               <% (1..required).each do |si| %>
                 <% pb = @game.prebookings.find_by(date: d, slot_index: si) %>
@@ -38,19 +38,19 @@
                     <% if pb.pending? %>
                       <div class="flex items-center gap-2">
                         <span><%= pb.user.name.presence || pb.user.email %></span>
-                        <span class="inline-flex items-center rounded-md bg-amber-50 px-1.5 py-0.5 text-xs text-amber-700">Pending</span>
+                        <span class="inline-flex items-center rounded-md bg-amber-50 px-1.5 py-0.5 text-xs text-amber-700"><%= t("games.prebookings.pending") %></span>
                         <% if user_signed_in? && (current_user.admin? || @game.user == current_user) %>
-                          <%= button_to "Approve", approve_game_prebooking_path(@game, pb), method: :post, class: "text-xs text-emerald-600" %>
-                          <%= button_to "Reject", reject_game_prebooking_path(@game, pb), method: :post, class: "text-xs text-red-600" %>
+                          <%= button_to t("common.approve"), approve_game_prebooking_path(@game, pb), method: :post, class: "text-xs text-emerald-600" %>
+                          <%= button_to t("common.reject"), reject_game_prebooking_path(@game, pb), method: :post, class: "text-xs text-red-600" %>
                         <% elsif pb.user == current_user %>
-                          <%= button_to "Cancel", cancel_game_prebooking_path(@game, pb), method: :post, class: "text-xs text-red-600" %>
+                          <%= button_to t("games.prebookings.cancel"), cancel_game_prebooking_path(@game, pb), method: :post, class: "text-xs text-red-600" %>
                         <% end %>
                       </div>
                     <% else %>
                       <div class="flex items-center gap-2">
                         <span><%= pb.user.name.presence || pb.user.email %></span>
                         <% if pb.user == current_user || (user_signed_in? && (current_user.admin? || @game.user == current_user)) %>
-                          <%= button_to "Cancel", cancel_game_prebooking_path(@game, pb), method: :post, class: "text-xs text-red-600" %>
+                          <%= button_to t("games.prebookings.cancel"), cancel_game_prebooking_path(@game, pb), method: :post, class: "text-xs text-red-600" %>
                         <% end %>
                       </div>
                     <% end %>
@@ -58,13 +58,13 @@
                     <% if user_signed_in? %>
                       <% if pb %>
                         <% direct_book = current_user == @game.user || (current_user.respond_to?(:admin?) && current_user.admin?) %>
-                        <% book_label = direct_book ? "Book" : "Request" %>
+                        <% book_label = direct_book ? t("games.prebookings.book") : t("games.prebookings.request") %>
                         <%= button_to book_label, book_game_prebooking_path(@game, pb), method: :post, class: "text-xs bg-indigo-600 text-white px-2 py-1 rounded" %>
                       <% else %>
                         <span class="text-xs text-gray-400">—</span>
                       <% end %>
                     <% else %>
-                      <span class="text-xs text-gray-400">Sign in to book</span>
+                      <span class="text-xs text-gray-400"><%= t("games.prebookings.sign_in_to_book") %></span>
                     <% end %>
                   <% end %>
                 </td>

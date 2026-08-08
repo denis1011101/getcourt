@@ -1,5 +1,10 @@
 module Users
   class Merge
+    # Match composition is duplicated in the stats JSON, so a merge has to rewrite
+    # those ids as well — ELO reads teams from there, not from the columns.
+    STATS_ID_LISTS = %w[team_a_ids team_b_ids opponent_ids].freeze
+    STATS_ID_SCALARS = %w[entered_by partner_id].freeze
+
     def self.call(source:, target:)
       new(source: source, target: target).call
     end
@@ -121,21 +126,102 @@ module Users
     end
 
     def transfer_matches!
-      Match.where(user_id: source.id, opponent_id: target.id)
-        .or(Match.where(user_id: target.id, opponent_id: source.id))
-        .delete_all
+      drop_matches_between_accounts!
       Match.where(user_id: source.id).update_all(user_id: target.id)
       Match.where(opponent_id: source.id).update_all(opponent_id: target.id)
+      rewrite_match_stats!
       %i[player_a_id player_a2_id player_b_id player_b2_id].each do |column|
         TournamentMatch.where(column => source.id).update_all(column => target.id)
       end
     end
 
+    # Both accounts on the same court means the merged player would face themselves,
+    # and ELO has no answer for that — the whole event goes away.
+    def drop_matches_between_accounts!
+      degenerate = match_candidates.select { |match| sides_overlap?(match) }
+      return if degenerate.empty?
+
+      keys = degenerate.map { |match| event_key(match) }.uniq
+      siblings = Match.where(game_id: degenerate.map(&:game_id).uniq).to_a | degenerate
+      ids = siblings.select { |match| keys.include?(event_key(match)) }.map(&:id)
+      Match.where(id: ids).delete_all
+    end
+
+    def rewrite_match_stats!
+      # Re-read: the rows were loaded before the column transfer, and some of them
+      # may have been dropped as self-matches.
+      Match.where(id: matches_mentioning_source.map(&:id)).find_each do |match|
+        stats = match.stats.to_h
+        rewritten = remap_stats(stats, match)
+        next if rewritten == stats
+
+        match.update_columns(stats: rewritten, updated_at: Time.current)
+      end
+    end
+
+    def remap_stats(stats, match)
+      rewritten = stats.deep_dup
+      STATS_ID_LISTS.each do |key|
+        next unless rewritten.key?(key)
+
+        rewritten[key] = Array(rewritten[key]).map { |id| remap_id(id) }.compact.uniq
+      end
+      STATS_ID_SCALARS.each do |key|
+        rewritten[key] = remap_id(rewritten[key]) if rewritten[key].present?
+      end
+      # After the merge the partner may be the player themselves — drop it rather than
+      # leave a row claiming it played alongside itself.
+      rewritten["partner_id"] = nil if rewritten["partner_id"].present? && rewritten["partner_id"].to_i == match.user_id
+      rewritten
+    end
+
+    def remap_id(value)
+      return nil if value.nil?
+
+      value.to_i == source.id ? target.id : value.to_i
+    end
+
+    def match_candidates
+      ids = [ source.id, target.id ]
+      (Match.where(user_id: ids).or(Match.where(opponent_id: ids)).to_a + matches_mentioning_source).uniq
+    end
+
+    # `stats` is a JSON text column, so the LIKE is only a prefilter — the ids are
+    # compared exactly once the row is parsed.
+    def matches_mentioning_source
+      @matches_mentioning_source ||= Match.where("stats LIKE ?", "%#{source.id}%").to_a
+    end
+
+    def sides_overlap?(match)
+      side_a, side_b = match_sides(match)
+      (side_a & side_b).any?
+    end
+
+    def match_sides(match)
+      stats = match.stats.to_h
+
+      if match.mode == "doubles"
+        [ remap_ids(stats["team_a_ids"]), remap_ids(stats["team_b_ids"]) ]
+      else
+        opponents = remap_ids(stats["opponent_ids"])
+        opponents = [ remap_id(match.opponent_id) ].compact if opponents.empty?
+        [ [ remap_id(match.user_id) ].compact, opponents ]
+      end
+    end
+
+    def remap_ids(values)
+      Array(values).filter_map { |id| remap_id(id) }.uniq
+    end
+
+    # Mirrors PlayerStatistic's ELO grouping: one event is one game at one moment
+    # between the same two sides.
+    def event_key(match)
+      [ match.mode, match.game_id, match.played_at, match_sides(match).map(&:sort).sort ]
+    end
+
     def affected_match_modes
-      Match.where(user_id: source.id)
-        .or(Match.where(opponent_id: source.id))
-        .distinct
-        .pluck(:mode)
+      column_modes = Match.where(user_id: source.id).or(Match.where(opponent_id: source.id)).distinct.pluck(:mode)
+      (column_modes + matches_mentioning_source.map(&:mode)).compact.uniq
     end
 
     def merge_player_statistics!
@@ -152,6 +238,10 @@ module Users
       sums[:first_serve_percent] = target_stats.first_serve_percent || source_stats.first_serve_percent
       sums[:stats_reset_at] = [ target_stats.stats_reset_at, source_stats.stats_reset_at ].compact.max
       target_stats.update!(sums)
+
+      # Everything now lives on the target, so the donor must not keep a second copy
+      # of the same counters and a rating for games it no longer owns.
+      source_stats.update_columns(PlayerStatistic.reset_attributes.merge(updated_at: Time.current))
     end
 
     def archive_source!
@@ -165,6 +255,7 @@ module Users
         login_via: nil,
         notification_channel: "email",
         notify_nearby: false,
+        coach: false,
         merged_into_id: target.id,
         merged_at: Time.current,
         updated_at: Time.current

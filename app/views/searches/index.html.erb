@@ -1,27 +1,41 @@
 <div class="max-w-5xl mx-auto px-4 py-2">
   <div class="flex items-center justify-between mb-6">
     <div>
-      <h1 class="text-2xl font-semibold">Tennis Courts Nearby</h1>
-      <p class="text-gray-600 dark:text-slate-400">Enter a place or paste coordinates (lat,lng). Choose a suggestion (or paste coords) and press "Search"; you can also use your current location.</p>
+      <h1 class="text-2xl font-semibold"><%= t("searches.index.title") %></h1>
+      <p class="text-gray-600 dark:text-slate-400"><%= t("searches.index.subtitle") %></p>
     </div>
   </div>
 
   <%= form_with url: searches_path, method: :get, local: true,
-      data: { controller: "geolocation", action: "submit->geolocation#onFormSubmit" } do %>
+      data: {
+        controller: "geolocation",
+        action: "submit->geolocation#onFormSubmit",
+        geolocation_unsupported_value: t("searches.index.geolocation.unsupported"),
+        geolocation_permission_denied_value: t("searches.index.geolocation.permission_denied"),
+        geolocation_unavailable_value: t("searches.index.geolocation.unavailable"),
+        geolocation_timeout_value: t("searches.index.geolocation.timeout"),
+        geolocation_failed_value: t("searches.index.geolocation.failed"),
+        geolocation_locating_value: t("searches.index.geolocation.locating"),
+        geolocation_use_location_value: t("searches.index.use_my_location"),
+        geolocation_searching_value: t("searches.index.geolocation.searching"),
+        geolocation_no_results_value: t("searches.index.geolocation.no_results"),
+        geolocation_search_error_value: t("searches.index.geolocation.search_error"),
+        geolocation_rate_limited_value: t("searches.index.geolocation.rate_limited")
+      } do %>
     <div class="relative">
       <!-- Location input -->
       <div class="flex items-stretch gap-2">
         <%= text_field_tag :location, params[:location], id: "location-input",
-              placeholder: "e.g. New York, 40.78,-73.96 or Central Court",
+              placeholder: t("searches.index.placeholder"),
               class: "w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500",
               autocomplete: "off",
               data: { "geolocation-target" => "input",
                       action: "input->geolocation#onLocationInput keydown.enter->geolocation#onEnter" } %>
   
-        <%= submit_tag "Search",
+        <%= submit_tag t("common.search"),
               class: "rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition" %>
   
-        <%= button_tag "Use my location",
+        <%= button_tag t("searches.index.use_my_location"),
               type: "button",
               class: "inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-500 transition",
               data: { "geolocation-target" => "button",
@@ -35,7 +49,7 @@
   <% end %>
 
   <% if @courts.present? %>
-    <h2 class="text-lg font-medium mb-3 mt-6">Nearby Courts</h2>
+    <h2 class="text-lg font-medium mb-3 mt-6"><%= t("searches.index.nearby_title") %></h2>
     <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <% @courts.each do |court| %>
         <% addr = court.address %>
@@ -51,21 +65,21 @@
                   <svg class="h-4 w-4 <%= unknown ? 'text-gray-300' : 'text-indigo-500' %>" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                     <path fill-rule="evenodd" d="M10 2a6 6 0 00-6 6c0 4.418 6 10 6 10s6-5.582 6-10a6 6 0 00-6-6zm0 8a2 2 0 110-4 2 2 0 010 4z" clip-rule="evenodd"/>
                   </svg>
-                  <%= unknown ? "Address unavailable" : addr %>
+                  <%= unknown ? t("courts.index.address_unavailable") : addr %>
                 </span>
               </p>
               <% if court.coordinates.present? %>
-                <p class="mt-1 text-xs text-gray-400 dark:text-slate-500 font-mono">coords: <%= court.coordinates %></p>
+                <p class="mt-1 text-xs text-gray-400 dark:text-slate-500 font-mono"><%= t("searches.index.coords") %> <%= court.coordinates %></p>
               <% end %>
             </div>
-            <%= link_to "View", court_path(court), class: "text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700" %>
+            <%= link_to t("common.view"), court_path(court), class: "text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700" %>
           </div>
         </li>
       <% end %>
     </ul>
   <% else %>
     <div class="rounded-lg border border-dashed dark:border-white/10 p-8 text-center text-gray-500 dark:text-slate-400 mt-6">
-      No courts found nearby.
+      <%= t("searches.index.empty") %>
     </div>
   <% end %>
 </div>

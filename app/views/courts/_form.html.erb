@@ -1,7 +1,7 @@
 <%= form_with(model: court, local: true) do |form| %>
   <% if court.errors.any? %>
     <div id="error_explanation" class="mb-4 rounded-md bg-red-50 border border-red-200 p-4 text-red-700">
-      <h2 class="font-semibold"><%= pluralize(court.errors.count, "error") %> prohibited this court from being saved:</h2>
+      <h2 class="font-semibold"><%= t("courts.form.errors", count: court.errors.count) %></h2>
       <ul class="mt-2 list-disc list-inside text-sm">
         <% court.errors.full_messages.each do |message| %>
           <li><%= message %></li>
@@ -13,7 +13,7 @@
   <%= render "courts/fields", form: form, court: court %>
 
   <div class="mt-4 flex items-center gap-2">
-    <%= form.submit "Save Court", class: "rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition" %>
-    <%= link_to "Cancel", courts_path, class: "block inline-flex items-center rounded-md border border-gray-300 dark:border-white/10 px-3 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/5 transition" %>
+    <%= form.submit t("courts.form.submit"), class: "rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition" %>
+    <%= link_to t("common.cancel"), courts_path, class: "block inline-flex items-center rounded-md border border-gray-300 dark:border-white/10 px-3 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/5 transition" %>
   </div>
 <% end %>

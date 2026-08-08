@@ -4,7 +4,7 @@ class CoachesController < ApplicationController
   skip_before_action :authenticate_user!, only: :index
 
   def index
-    scope = User.where(coach: true).includes(:favorite_courts)
+    scope = User.not_merged.where(coach: true).includes(:favorite_courts)
     prepare_location_filters(scope.where.not(city_name: [ nil, "" ]).distinct.pluck(:city_name))
 
     coaches = scope.order(name: :asc).to_a
