@@ -1,5 +1,10 @@
 # Rake tasks to fetch Telegram channels/posts
 namespace :tg do
+  desc "Import gist posts into telegram_posts (what the Tennis Life feed reads). Run from cron."
+  task import_gist_posts: :environment do
+    puts "Imported gist posts: #{TennisLife::GistPostImporter.call}"
+  end
+
   desc "Enqueue daily fetch for all Telegram channels"
   task fetch_all: :environment do
     FetchAllTelegramChannelsJob.perform_later

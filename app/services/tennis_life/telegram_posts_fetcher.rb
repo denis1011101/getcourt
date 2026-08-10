@@ -20,13 +20,19 @@ module TennisLife
         end
       end
 
+      # Every post in the gist. The importer passes force: true because it runs
+      # on a schedule and wants the live gist rather than the page cache.
+      def all_posts(force: false)
+        fetch_posts(force: force)
+      end
+
       private
 
-      def fetch_posts
+      def fetch_posts(force: false)
         gist_id = ENV["TELEGRAM_POSTS_GIST_ID"].to_s.strip
         return [] if gist_id.blank?
 
-        Rails.cache.fetch("tennis_life/telegram_posts", expires_in: 30.minutes) do
+        Rails.cache.fetch("tennis_life/telegram_posts", expires_in: 30.minutes, force: force) do
           raw = fetch_from_api(gist_id)
           next [] if raw.nil?
 
