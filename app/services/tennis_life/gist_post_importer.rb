@@ -52,6 +52,11 @@ module TennisLife
       post.text_en = nil if !created && post.text != text
       post.text = text
       post.published_at = parse_time(payload["published_at"])
+      # The feed only shows records created at or before the hourly snapshot it
+      # pins (Feed::Sources::Base#snapshotted). Stamping an imported post with
+      # its publication time instead of the import time keeps it from being
+      # invisible until the next hour rolls over.
+      post.created_at = post.published_at || Time.current if created
 
       if created
         result.created += 1

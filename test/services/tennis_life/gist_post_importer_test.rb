@@ -47,6 +47,43 @@ class TennisLife::GistPostImporterTest < ActiveSupport::TestCase
     end
   end
 
+  # The feed pins its snapshot to the top of the hour, so a post stamped with the
+  # import time stays invisible until the hour rolls over.
+  test "a post imported now is visible in the snapshot the feed pins right away" do
+    travel_to Time.utc(2026, 8, 10, 20, 11, 9) do
+      TennisLife::GistPostImporter.call(posts: POSTS)
+
+      ids = TennisLife::Feed::Sources::TelegramPosts.new(snapshot_ts: Time.current.beginning_of_hour).ids
+      post = TelegramPost.find_by(message_id: 36_322)
+
+      assert_equal Time.utc(2026, 8, 10, 19, 4, 53), post.created_at
+      assert_includes ids, post.id
+    end
+  end
+
+  test "falls back to the import time when the gist has no publication date" do
+    travel_to Time.utc(2026, 8, 10, 20, 11, 9) do
+      TennisLife::GistPostImporter.call(posts: [ POSTS.first.merge("published_at" => nil) ])
+
+      post = TelegramPost.find_by(message_id: 36_322)
+      assert_nil post.published_at
+      assert_equal Time.current, post.created_at
+    end
+  end
+
+  test "re-import does not move created_at of an existing post" do
+    travel_to Time.utc(2026, 8, 10, 20, 11, 9) do
+      TennisLife::GistPostImporter.call(posts: POSTS)
+    end
+    original = TelegramPost.find_by(message_id: 36_322).created_at
+
+    travel_to Time.utc(2026, 8, 12, 9, 0, 0) do
+      TennisLife::GistPostImporter.call(posts: [ POSTS.first.merge("text" => "правка") ])
+    end
+
+    assert_equal original, TelegramPost.find_by(message_id: 36_322).created_at
+  end
+
   test "re-importing the same gist creates nothing new" do
     TennisLife::GistPostImporter.call(posts: POSTS)
 

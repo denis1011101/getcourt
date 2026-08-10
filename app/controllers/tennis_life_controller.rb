@@ -4,7 +4,6 @@ class TennisLifeController < ApplicationController
   skip_before_action :authenticate_user!, only: %i[index classic feed statistics featured_translation]
   before_action :set_secondary_page_meta, only: %i[classic feed]
 
-  FEED_LIMIT = 20
   FEED_PAGE_SIZE = 20
   PINNED_RATING_LIMIT = 3
   RATING_LIMIT = 10
@@ -64,16 +63,9 @@ class TennisLifeController < ApplicationController
   def prepare_classic
     @season_label = Season.current_label
     @tennis_score_raw = TennisScoreboard::Fetcher.raw_text
+    # Classic shows a single featured post. The stored posts belong to the feed,
+    # where they are interleaved with the other cards.
     @random_telegram_post = TennisLife::TelegramPostsFetcher.featured_post
-
-    @feed_posts = TelegramPost
-      .includes(:telegram_channel)
-      .joins(:telegram_channel)
-      .where.not(message_id: nil)
-      .where.not(telegram_channels: { username: [ nil, "" ] })
-      .order(published_at: :desc)
-      .limit(FEED_LIMIT)
-    enqueue_feed_post_translations(@feed_posts)
 
     rating_rows = build_rating_rows
     @rating_rows = rating_rows.first(RATING_LIMIT)

@@ -170,7 +170,44 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     match&.destroy
   end
 
-  test "index enqueues translation jobs for feed posts without english text" do
+  # Stored posts belong to the feed, so classic keeps showing the single gist
+  # post no matter how many of them are in the database.
+  test "classic shows the featured gist post and not the stored ones" do
+    channel = TelegramChannel.create!(username: "@classic_check", url: "https://t.me/classic_check")
+    TelegramPost.create!(
+      telegram_channel: channel,
+      message_id: 103,
+      text: "Пост из базы",
+      published_at: Time.current
+    )
+
+    stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, SAMPLE_POST) do
+      get tennis_life_classic_url
+
+      assert_response :success
+      assert_includes response.body, SAMPLE_POST["text"]
+      assert_not_includes response.body, "Пост из базы"
+      assert_not_includes response.body, "classic_check/103"
+    end
+  end
+
+  test "classic falls back to the empty state when the gist has no post" do
+    TelegramPost.create!(
+      telegram_channel: TelegramChannel.create!(username: "@classic_empty", url: "https://t.me/classic_empty"),
+      message_id: 104,
+      text: "Пост из базы",
+      published_at: Time.current
+    )
+
+    stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, nil) do
+      get tennis_life_classic_url
+
+      assert_response :success
+      assert_includes response.body, I18n.t("tennis_life.index.no_posts")
+    end
+  end
+
+  test "feed enqueues translation jobs for posts without english text" do
     TelegramPost.delete_all
     TelegramChannel.delete_all
     ActiveJob::Base.queue_adapter.enqueued_jobs.clear
@@ -181,45 +218,40 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
       message_id: 101,
       text: "Новый пост",
       text_en: nil,
-      published_at: Time.current
+      published_at: Time.current,
+      created_at: 1.day.ago
     )
 
     stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, nil) do
-      get tennis_life_index_url
+      get tennis_life_feed_url
 
       assert_response :success
       assert_equal 1, ActiveJob::Base.queue_adapter.enqueued_jobs.count
       assert_equal TranslateTelegramPostJob, ActiveJob::Base.queue_adapter.enqueued_jobs.last[:job]
       assert_equal [ post.id ], ActiveJob::Base.queue_adapter.enqueued_jobs.last[:args]
     end
-  ensure
-    post&.destroy
-    channel&.destroy
   end
 
-  test "index does not enqueue translation jobs for feed posts with cached english text" do
+  test "feed does not enqueue translation jobs for posts with cached english text" do
     TelegramPost.delete_all
     TelegramChannel.delete_all
     ActiveJob::Base.queue_adapter.enqueued_jobs.clear
 
-    channel = TelegramChannel.create!(username: "@feed_ready", url: "https://t.me/feed_ready")
-    post = TelegramPost.create!(
-      telegram_channel: channel,
+    TelegramPost.create!(
+      telegram_channel: TelegramChannel.create!(username: "@feed_ready", url: "https://t.me/feed_ready"),
       message_id: 102,
       text: "Готовый пост",
       text_en: "Ready post",
-      published_at: Time.current
+      published_at: Time.current,
+      created_at: 1.day.ago
     )
 
     stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, nil) do
-      get tennis_life_index_url
+      get tennis_life_feed_url
 
       assert_response :success
       assert_equal 0, ActiveJob::Base.queue_adapter.enqueued_jobs.count
     end
-  ensure
-    post&.destroy
-    channel&.destroy
   end
 
   test "feed rejects malformed and future cursors" do
