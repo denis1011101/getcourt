@@ -178,12 +178,13 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "results summary shows total games count instead of current page size" do
+    initial_count = Game.count
     11.times { |i| Game.create!(court: courts(:one), user: users(:one), date: Date.current + (i + 3).days, time: "10:00") }
 
     get root_url
 
     assert_response :success
-    assert_select "[data-testid='results-summary']", text: /13 games available/
+    assert_select "[data-testid='results-summary']", text: /#{initial_count + 11} games available/
   end
 
   test "index page 2 returns overflow games" do

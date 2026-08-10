@@ -36,6 +36,16 @@ class SitemapGeneratorTest < ActiveSupport::TestCase
     end
   end
 
+  test "indexable tennis life pages are listed, paginated and legacy ones are not" do
+    SitemapGenerator.generate!
+    document = Nokogiri::XML(File.read(@sitemap_file))
+
+    assert_includes locs(document), "https://getcourt.co#{tennis_life_path}"
+    assert_includes locs(document), "https://getcourt.co#{tennis_life_statistics_path}"
+    assert_not_includes locs(document), "https://getcourt.co#{tennis_life_feed_path}"
+    assert_not_includes locs(document), "https://getcourt.co#{tennis_life_classic_path}"
+  end
+
   test "dynamic records include localized urls alternates and lastmod" do
     match = FeaturedMatch.create!(
       tournament_label: "Madrid Open Final",

@@ -367,6 +367,83 @@ es:
       score: Marcador
       outcome: Resultado
       surface: Superficie
+    feed:
+      title: Vida del tenis
+      subtitle: Partidos, jugadores, pistas e historias de la comunidad local.
+      classic_link: Vista clásica
+      pinned_title: Líderes de la temporada
+      pinned_subtitle: Mejores jugadores · temporada %{season}
+      all_statistics: Ver todas las estadísticas
+      rank: "#%{rank}"
+      player_record: "%{wins} victorias en %{games} partidos"
+      load_more: Mostrar más
+      load_error: No se pudieron cargar más tarjetas. Inténtalo de nuevo.
+      expired_title: El feed se ha actualizado
+      expired_body: Hay nuevas tarjetas. Vuelve a empezar para ver el feed más reciente.
+      restart: Volver a empezar
+      end_title: Eso es todo
+      end_body: Has llegado al final de este feed.
+      telegram:
+        title: Desde Telegram
+        read: Leer en Telegram
+      match:
+        title: Resultado del partido
+        versus: "%{player} contra %{opponent}"
+        score: Marcador
+        outcome: Resultado
+        surface: Superficie
+        view_game: Ver partido
+        outcomes:
+          win: Victoria
+          loss: Derrota
+          draw: Empate
+      player:
+        title: Jugador
+        singles_elo: "ELO individual: %{value}"
+        doubles_elo: "ELO dobles: %{value}"
+      game:
+        title: Próximo partido
+        join: Abrir partido
+        spots_left:
+          one: Queda %{count} plaza
+          few: Quedan %{count} plazas
+          many: Quedan %{count} plazas
+          other: Quedan %{count} plazas
+      urgent:
+        title: Se necesitan jugadores urgentemente
+      tournament:
+        title: Torneo
+        view: Ver torneo
+        participants:
+          one: "%{count} participante"
+          few: "%{count} participantes"
+          many: "%{count} participantes"
+          other: "%{count} participantes"
+      featured:
+        title: Partido destacado
+        view: Seguir el partido
+      court_update:
+        title: Actualización de la comunidad
+        body: La comunidad actualizó la información de %{court}.
+        view: Ver pista
+      fact:
+        title: Dato de GetCourt
+        total_hours:
+          one: "%{count} hora jugada en GetCourt"
+          few: "%{count} horas jugadas en GetCourt"
+          many: "%{count} horas jugadas en GetCourt"
+          other: "%{count} horas jugadas en GetCourt"
+        courts_cities: "%{courts} pistas en %{cities} ciudades"
+        longest_match: "Marcador más largo de la temporada: %{score} (%{games} juegos)"
+        popular_surface: "Superficie más popular: %{surface} (%{count} partidos)"
+        player_month: "%{player} fue quien más jugó este mes: %{count} partidos"
+        new_players_month:
+          one: "%{count} nuevo jugador este mes"
+          few: "%{count} nuevos jugadores este mes"
+          many: "%{count} nuevos jugadores este mes"
+          other: "%{count} nuevos jugadores este mes"
+        busiest_court: "%{court} es la pista con más actividad: %{count} partidos"
+        no_data: Pronto habrá más datos de la comunidad.
     user_fallback: Usuario n.º %{id}
     anonymous_player: Jugador anónimo
   pages:

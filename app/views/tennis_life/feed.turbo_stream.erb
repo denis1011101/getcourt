@@ -1,0 +1,13 @@
+<% if @feed_expired %>
+  <%= turbo_stream.replace "tennis-life-feed-sentinel" do %>
+    <%= render "tennis_life/feed/expired" %>
+  <% end %>
+<% else %>
+  <%= turbo_stream.append "tennis-life-feed" do %>
+    <%= render partial: "tennis_life/feed/card", collection: @cards, as: :card %>
+  <% end %>
+
+  <%= turbo_stream.replace "tennis-life-feed-sentinel" do %>
+    <%= render "tennis_life/feed/sentinel", next_cursor: @next_cursor %>
+  <% end %>
+<% end %>

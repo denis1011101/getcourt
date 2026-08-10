@@ -52,21 +52,23 @@ class CourtsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "results summary shows total courts count instead of current page size" do
+    initial_count = Court.approved.count
     13.times { |i| Court.create!(name: "Paged Court #{i}", moderation_status: "approved", approved_at: Time.current) }
 
     get courts_url
 
     assert_response :success
-    assert_select "[data-testid='results-summary']", text: /13 courts available/
+    assert_select "[data-testid='results-summary']", text: /#{initial_count + 13} courts available/
   end
 
   test "index page 2 returns the overflow record" do
+    initial_count = Court.approved.count
     13.times { |i| Court.create!(name: "Paged Court #{i}", moderation_status: "approved", approved_at: Time.current) }
 
     get courts_url, params: { page: 2 }
 
     assert_response :success
-    assert_equal 1, assigns(:courts).size
+    assert_equal initial_count + 1, assigns(:courts).size
   end
 
   test "index first page contains 12 courts when 13 exist" do
@@ -78,11 +80,12 @@ class CourtsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "pagy reports correct total count" do
+    initial_count = Court.approved.count
     13.times { |i| Court.create!(name: "Total Court #{i}", moderation_status: "approved", approved_at: Time.current) }
 
     get courts_url
 
-    assert_equal 13, assigns(:pagy).count
+    assert_equal initial_count + 13, assigns(:pagy).count
   end
 
   test "pagy reports 2 pages when 13 courts exist" do

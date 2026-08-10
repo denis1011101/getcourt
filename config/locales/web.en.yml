@@ -360,6 +360,83 @@ en:
       score: Score
       outcome: Outcome
       surface: Surface
+    feed:
+      title: Tennis Life
+      subtitle: Games, players, courts and stories from the local tennis community.
+      classic_link: Classic view
+      pinned_title: Season leaders
+      pinned_subtitle: Top players · season %{season}
+      all_statistics: View all statistics
+      rank: "#%{rank}"
+      player_record: "%{wins} wins in %{games} matches"
+      load_more: Show more
+      load_error: Could not load more cards. Please try again.
+      expired_title: The feed has been updated
+      expired_body: New cards are available. Start again to see the latest feed.
+      restart: Start again
+      end_title: That's everything
+      end_body: You have reached the end of this feed.
+      telegram:
+        title: From Telegram
+        read: Read in Telegram
+      match:
+        title: Match result
+        versus: "%{player} vs %{opponent}"
+        score: Score
+        outcome: Outcome
+        surface: Surface
+        view_game: View game
+        outcomes:
+          win: Win
+          loss: Loss
+          draw: Draw
+      player:
+        title: Player
+        singles_elo: "Singles ELO: %{value}"
+        doubles_elo: "Doubles ELO: %{value}"
+      game:
+        title: Upcoming game
+        join: Open game
+        spots_left:
+          one: "%{count} spot left"
+          few: "%{count} spots left"
+          many: "%{count} spots left"
+          other: "%{count} spots left"
+      urgent:
+        title: Players needed urgently
+      tournament:
+        title: Tournament
+        view: View tournament
+        participants:
+          one: "%{count} participant"
+          few: "%{count} participants"
+          many: "%{count} participants"
+          other: "%{count} participants"
+      featured:
+        title: Featured match
+        view: Follow match
+      court_update:
+        title: Community update
+        body: The community updated information about %{court}.
+        view: View court
+      fact:
+        title: GetCourt fact
+        total_hours:
+          one: "%{count} hour played on GetCourt"
+          few: "%{count} hours played on GetCourt"
+          many: "%{count} hours played on GetCourt"
+          other: "%{count} hours played on GetCourt"
+        courts_cities: "%{courts} courts across %{cities} cities"
+        longest_match: "Longest scoreline this season: %{score} (%{games} games)"
+        popular_surface: "Most popular surface: %{surface} (%{count} matches)"
+        player_month: "%{player} played the most this month: %{count} matches"
+        new_players_month:
+          one: "%{count} new player joined this month"
+          few: "%{count} new players joined this month"
+          many: "%{count} new players joined this month"
+          other: "%{count} new players joined this month"
+        busiest_court: "%{court} is the busiest court this season: %{count} games"
+        no_data: More community facts are coming soon.
     user_fallback: 'User #%{id}'
     anonymous_player: Anonymous player
   pages:

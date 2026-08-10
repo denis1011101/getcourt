@@ -1,0 +1,9 @@
+<% match = card.record %>
+
+<div class="bg-gradient-to-br from-indigo-600 to-violet-700 p-5 text-white">
+  <p class="text-xs font-semibold uppercase tracking-wide text-indigo-100"><%= t("tennis_life.feed.featured.title") %></p>
+  <h2 class="mt-2 text-lg font-semibold"><%= match.player_left_name %> · <%= match.player_right_name %></h2>
+  <p class="mt-1 text-sm text-indigo-100"><%= match.tournament_label %> · <%= match.starts_at.strftime("%Y-%m-%d %H:%M") %></p>
+  <% if match.result.present? %><p class="mt-2 font-semibold"><%= match.result %></p><% end %>
+  <%= link_to "#{t("tennis_life.feed.featured.view")} →", event_path(match), class: "mt-4 inline-block text-sm font-medium text-white underline" %>
+</div>

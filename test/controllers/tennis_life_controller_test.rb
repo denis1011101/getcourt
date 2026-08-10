@@ -216,6 +216,147 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     channel&.destroy
   end
 
+  test "feed rejects malformed and future cursors" do
+    get tennis_life_feed_url, params: { cursor: "not-a-cursor" }, as: :turbo_stream
+    assert_response :bad_request
+
+    future_cursor = TennisLife::Feed::Cursor.new(seed: 1, snapshot_ts: 1.hour.from_now, offset: 0)
+    get tennis_life_feed_url, params: { cursor: future_cursor.to_param }, as: :turbo_stream
+    assert_response :bad_request
+  end
+
+  test "default feed includes recent content without an explicit seed" do
+    travel_to Time.zone.local(2026, 8, 9, 12, 5) do
+      channel = TelegramChannel.create!(username: "@recent_feed")
+      post = TelegramPost.create!(
+        telegram_channel: channel,
+        message_id: 992_999,
+        text: "Recent feed post",
+        text_en: "Recent feed post",
+        published_at: 10.minutes.ago,
+        created_at: 10.minutes.ago
+      )
+
+      get tennis_life_feed_url, as: :turbo_stream
+
+      assert_response :success
+      assert_includes response.body, %(data-feed-card-id="telegram_post:#{post.id}")
+    ensure
+      post&.destroy
+      channel&.destroy
+    end
+  end
+
+  test "cursor remains valid while scrolling across midnight" do
+    travel_to Time.zone.local(2026, 8, 9, 23, 50)
+    cursor = TennisLife::Feed::Cursor.start(seed: 1, snapshot_ts: Time.current.beginning_of_hour)
+
+    travel 20.minutes
+    get tennis_life_feed_url, params: { cursor: cursor.to_param }, as: :turbo_stream
+
+    assert_response :success
+  ensure
+    travel_back
+  end
+
+  test "expired cursor returns a restart card" do
+    cursor = TennisLife::Feed::Cursor.start(
+      seed: 1,
+      snapshot_ts: TennisLife::Feed::Cursor::MAX_AGE.ago - 1.minute
+    )
+
+    get tennis_life_feed_url, params: { cursor: cursor.to_param }, as: :turbo_stream
+
+    assert_response :gone
+    assert_select "turbo-stream[action='replace'][target='tennis-life-feed-sentinel']", count: 1
+    assert_includes response.body, I18n.t("tennis_life.feed.expired_title")
+    assert_includes response.body, %(href="#{tennis_life_path}")
+  end
+
+  # A crawler following a stale cursor link sends */* — it should land on the live
+  # feed, not on a 410 turbo-stream fragment it cannot render.
+  test "expired cursor redirects clients that do not ask for a turbo stream" do
+    cursor = TennisLife::Feed::Cursor.start(
+      seed: 1,
+      snapshot_ts: TennisLife::Feed::Cursor::MAX_AGE.ago - 1.minute
+    )
+
+    get tennis_life_feed_url, params: { cursor: cursor.to_param }, headers: { "HTTP_ACCEPT" => "*/*" }
+
+    assert_response :see_other
+    assert_redirected_to tennis_life_path
+  end
+
+  test "feed is finite and does not repeat cards between pages" do
+    channel = TelegramChannel.create!(username: "@finite_feed")
+    25.times do |index|
+      TelegramPost.create!(
+        telegram_channel: channel,
+        message_id: 993_000 + index,
+        text: "Feed post #{index}",
+        text_en: "Feed post #{index}",
+        published_at: Time.current
+      )
+    end
+
+    seen = []
+    kinds = []
+    path = tennis_life_feed_path(seed: 123)
+
+    20.times do
+      get path, as: :turbo_stream
+      assert_response :success
+
+      ids = response.body.scan(/data-feed-card-id="([^"]+)"/).flatten
+      assert_empty seen & ids, "duplicates while loading #{path}"
+      seen.concat(ids)
+      kinds.concat(ids.map { |id| id.split(":", 2).first })
+
+      link_tag = response.body[/<a\b(?=[^>]*data-infinite-feed-target="link")[^>]*>/]
+      encoded_path = link_tag&.[](/href="([^"]+)"/, 1)
+      path = encoded_path ? CGI.unescapeHTML(encoded_path) : nil
+      break unless path
+    end
+
+    assert_nil path, "feed did not finish"
+    assert_equal seen.size, seen.uniq.size
+    assert_operator seen.size, :>=, 25
+    assert_equal %w[court_update fact featured_match match player scoreboard telegram_post tournament upcoming_game urgent_search], kinds.uniq.sort
+    assert_not_includes response.body, "telegram-widget.js"
+  end
+
+  test "feed HTML is noindex and canonical to tennis life" do
+    get tennis_life_feed_url, headers: { "HTTP_ACCEPT" => "*/*" }
+
+    assert_response :success
+    assert_equal "text/html", response.media_type
+    assert_select %q(meta[name="robots"][content="noindex, follow"])
+    assert_select %q(link[rel="canonical"][href="https://getcourt.co/tennis_life"])
+  end
+
+  test "classic is noindex and canonical to tennis life" do
+    get tennis_life_classic_url
+
+    assert_response :success
+    assert_select %q(meta[name="robots"][content="noindex, follow"])
+    assert_select %q(link[rel="canonical"][href="https://getcourt.co/tennis_life"])
+  end
+
+  test "feature flag switches index to the new feed and classic remains available" do
+    previous = ENV["TENNIS_LIFE_FEED"]
+    ENV["TENNIS_LIFE_FEED"] = "1"
+
+    get tennis_life_url
+    assert_response :success
+    assert_select "[data-controller='infinite-feed']", count: 1
+
+    get tennis_life_classic_url
+    assert_response :success
+    assert_select "[data-controller='infinite-feed']", count: 0
+  ensure
+    ENV["TENNIS_LIFE_FEED"] = previous
+  end
+
   test "statistics shows full player rating and recent matches" do
     users(:one).update_columns(
       name: "Stats Player",

@@ -1,0 +1,39 @@
+feed_singles:
+  user: one
+  opponent: two
+  mode: singles
+  outcome: win
+  played_at: <%= 1.day.ago %>
+  score: 6-4 6-3
+  surface: hard
+  created_at: <%= 1.day.ago %>
+  updated_at: <%= 1.day.ago %>
+
+feed_second_player:
+  user: two
+  opponent: one
+  mode: singles
+  outcome: loss
+  played_at: <%= 1.day.ago %>
+  score: 6-4 6-3
+  created_at: <%= 1.day.ago %>
+  updated_at: <%= 1.day.ago %>
+
+feed_third_player:
+  user: three
+  opponent: four
+  mode: singles
+  outcome: win
+  played_at: <%= 1.day.ago %>
+  created_at: <%= 1.day.ago %>
+  updated_at: <%= 1.day.ago %>
+
+feed_fourth_player:
+  user: four
+  opponent: three
+  mode: singles
+  outcome: loss
+  played_at: <%= 1.day.ago %>
+  created_at: <%= 1.day.ago %>
+  updated_at: <%= 1.day.ago %>
+

@@ -361,6 +361,83 @@ ru:
       score: Счёт
       outcome: Результат
       surface: Покрытие
+    feed:
+      title: Теннисная жизнь
+      subtitle: Игры, игроки, корты и истории местного теннисного сообщества.
+      classic_link: Классический вид
+      pinned_title: Лидеры сезона
+      pinned_subtitle: Лучшие игроки · сезон %{season}
+      all_statistics: Вся статистика
+      rank: "#%{rank}"
+      player_record: "%{wins} побед из %{games} матчей"
+      load_more: Показать ещё
+      load_error: Не удалось загрузить карточки. Попробуйте ещё раз.
+      expired_title: Лента обновилась
+      expired_body: Появились новые карточки. Начните заново, чтобы увидеть свежую ленту.
+      restart: Начать заново
+      end_title: Это всё
+      end_body: Вы дошли до конца этой ленты.
+      telegram:
+        title: Из Telegram
+        read: Читать в Telegram
+      match:
+        title: Результат матча
+        versus: "%{player} против %{opponent}"
+        score: Счёт
+        outcome: Результат
+        surface: Покрытие
+        view_game: Открыть игру
+        outcomes:
+          win: Победа
+          loss: Поражение
+          draw: Ничья
+      player:
+        title: Игрок
+        singles_elo: "ELO одиночный: %{value}"
+        doubles_elo: "ELO парный: %{value}"
+      game:
+        title: Ближайшая игра
+        join: Открыть игру
+        spots_left:
+          one: Осталось %{count} место
+          few: Осталось %{count} места
+          many: Осталось %{count} мест
+          other: Осталось %{count} места
+      urgent:
+        title: Срочно нужны игроки
+      tournament:
+        title: Турнир
+        view: Открыть турнир
+        participants:
+          one: "%{count} участник"
+          few: "%{count} участника"
+          many: "%{count} участников"
+          other: "%{count} участника"
+      featured:
+        title: Главный матч
+        view: Следить за матчем
+      court_update:
+        title: Обновление сообщества
+        body: Сообщество уточнило информацию о корте «%{court}».
+        view: Открыть корт
+      fact:
+        title: Факт GetCourt
+        total_hours:
+          one: На GetCourt сыгран %{count} час
+          few: На GetCourt сыграно %{count} часа
+          many: На GetCourt сыграно %{count} часов
+          other: На GetCourt сыграно %{count} часа
+        courts_cities: "%{courts} кортов в %{cities} городах"
+        longest_match: "Самый длинный счёт сезона: %{score} (%{games} геймов)"
+        popular_surface: "Самое популярное покрытие — %{surface} (%{count} матчей)"
+        player_month: "%{player} сыграл больше всех за месяц: %{count} матчей"
+        new_players_month:
+          one: За месяц присоединился %{count} новый игрок
+          few: За месяц присоединилось %{count} новых игрока
+          many: За месяц присоединилось %{count} новых игроков
+          other: За месяц присоединилось %{count} нового игрока
+        busiest_court: "Самый загруженный корт сезона — «%{court}»: %{count} игр"
+        no_data: Скоро здесь появятся новые факты сообщества.
     user_fallback: 'Пользователь #%{id}'
     anonymous_player: Анонимный игрок
   pages:

@@ -1,0 +1,7 @@
+<div id="tennis-life-feed-sentinel" class="rounded-xl border border-indigo-200 bg-indigo-50 p-5 text-center dark:border-indigo-400/20 dark:bg-indigo-500/10">
+  <p class="font-semibold text-gray-900 dark:text-slate-100"><%= t("tennis_life.feed.expired_title") %></p>
+  <p class="mt-1 text-sm text-gray-600 dark:text-slate-400"><%= t("tennis_life.feed.expired_body") %></p>
+  <%= link_to t("tennis_life.feed.restart"),
+              tennis_life_path,
+              class: "mt-3 inline-flex rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700" %>
+</div>

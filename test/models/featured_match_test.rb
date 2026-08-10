@@ -26,9 +26,9 @@ class FeaturedMatchTest < ActiveSupport::TestCase
   end
 
   test "banner ignores deactivated matches" do
-    FeaturedMatch.create!(valid_attributes(starts_at: 1.hour.ago, active: false))
+    match = FeaturedMatch.create!(valid_attributes(starts_at: 1.hour.ago, active: false))
 
-    assert_nil FeaturedMatch.banner.first
+    assert_not_includes FeaturedMatch.banner, match
   end
 
   test "activating a match deactivates other active matches" do

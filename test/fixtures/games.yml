@@ -11,3 +11,24 @@ two:
   time: 2025-08-27 21:06:12
   court: two
   user: two
+
+feed_upcoming:
+  date: <%= 1.day.from_now.to_date %>
+  time: "18:00:00"
+  court: feed_approved
+  user: one
+  players_count: 4
+  sport: tennis
+  created_at: <%= 1.day.ago %>
+  updated_at: <%= 1.day.ago %>
+
+feed_urgent:
+  date: <%= 2.days.from_now.to_date %>
+  time: "19:00:00"
+  court: feed_approved
+  user: two
+  players_count: 4
+  sport: tennis
+  urgent_player_search: true
+  created_at: <%= 1.day.ago %>
+  updated_at: <%= 1.day.ago %>

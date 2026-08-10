@@ -25,6 +25,8 @@ Rails.application.routes.draw do
   end
 
   get "/tennis_life", to: "tennis_life#index", as: :tennis_life
+  get "/tennis_life/classic", to: "tennis_life#classic", as: :tennis_life_classic
+  get "/tennis_life/feed", to: "tennis_life#feed", as: :tennis_life_feed
   get "/tennis_life/statistics", to: "tennis_life#statistics", as: :tennis_life_statistics
   get "/tennis_life/featured_translation", to: "tennis_life#featured_translation", as: :tennis_life_featured_translation
 
