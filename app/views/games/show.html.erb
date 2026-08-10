@@ -78,7 +78,9 @@
       </div>
 
       <% if @game.court&.coordinates_pair && @game.environment.to_s != "indoor" %>
-        <%= turbo_frame_tag dom_id(@game, :weather), src: game_weather_path(@game, context: "details"), loading: "lazy", class: "contents" %>
+        <%# No display:contents here: it removes the frame's box, so the observer
+            Turbo uses for lazy frames never fires and the badge never loads. %>
+        <%= turbo_frame_tag dom_id(@game, :weather), src: game_weather_path(@game, context: "details"), loading: "lazy" %>
       <% end %>
 
       <% if @game.comment.present? %>
