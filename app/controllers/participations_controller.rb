@@ -154,9 +154,10 @@ class ParticipationsController < ApplicationController
     removed_participation = @participation
     @participation.destroy
 
-    if @participation_id && @game.user
+    # The owner does not need to be told about a removal they performed themselves.
+    if @participation_id && @game.user && current_user != @game.user
       if removed_participation.guest?
-        ParticipationNotifier.notify_owner(@game, removed_participation, action: :removed) if current_user != @game.user
+        ParticipationNotifier.notify_owner(@game, removed_participation, action: :removed)
       else
         action = (removed_user == current_user) ? :left : :removed
         ParticipationNotifier.notify_owner(@game, removed_user, action: action)
