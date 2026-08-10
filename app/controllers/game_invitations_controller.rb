@@ -30,7 +30,7 @@ class GameInvitationsController < ApplicationController
   end
 
   def send_invitations(handles)
-    result = { sent: [], not_found: [], skipped_self: [], no_telegram: [], failed: [] }
+    result = { sent: [], not_found: [], skipped_self: [], failed: [] }
     resolve_users_by_handles(handles).each do |handle, user|
       if user.blank?
         result[:not_found] << "@#{handle}"
@@ -42,12 +42,7 @@ class GameInvitationsController < ApplicationController
         next
       end
 
-      if user.telegram_chat_id.blank?
-        result[:no_telegram] << "@#{handle}"
-        next
-      end
-
-      response = Telegram::Api.send_api("sendMessage", invitation_payload(user))
+      response = deliver_invitation(user)
       if response == false || (response.is_a?(Hash) && response["ok"] == false)
         result[:failed] << "@#{handle}"
       else
@@ -57,22 +52,37 @@ class GameInvitationsController < ApplicationController
     result
   end
 
-  def invitation_payload(user)
-    {
-      chat_id: user.telegram_chat_id.to_s,
-      text: "You are invited to join:\n#{game_label_for(user)}\n\n#{invitation_game_url(@game)}",
-      reply_markup: {
-        inline_keyboard: [ [
-          { text: "Join ##{@game.id}", callback_data: "game:join_invited:#{@game.id}" },
-          { text: "Decline ##{@game.id}", callback_data: "game:invite_decline:#{@game.id}" }
-        ] ]
-      }
-    }
-  end
+  def deliver_invitation(user)
+    game_url = invitation_game_url(@game)
+    inviter_name = current_user.name.presence || current_user.email
+    notification = NotificationDelivery::Notification.new(
+      subject: ->(locale) { I18n.t("user_mailer.notification.game_invitation_subject", locale: locale, game_id: @game.id) },
+      body: lambda do |locale|
+        lines = [
+          Telegram::I18n.t(:invitation_title, locale: locale),
+          Telegram::Handlers::GamesHandler.game_label(@game, owner: current_user, locale: locale),
+          Telegram::I18n.t(:game_invitation_from, locale: locale, name: inviter_name)
+        ]
+        "#{lines.compact.join("\n")}\n\n#{game_url}"
+      end,
+      actions: lambda do |locale|
+        [
+          {
+            label: Telegram::I18n.t(:invitation_join, locale: locale, game_id: @game.id),
+            callback_data: "game:join_invited:#{@game.id}",
+            row: 0,
+            url: game_url
+          },
+          {
+            label: Telegram::I18n.t(:invitation_decline, locale: locale, game_id: @game.id),
+            callback_data: "game:invite_decline:#{@game.id}",
+            row: 0
+          }
+        ]
+      end
+    )
 
-  def game_label_for(user)
-    locale = Telegram::Helpers::UserLookup.locale_for(user.telegram_chat_id)
-    Telegram::Handlers::GamesHandler.game_label(@game, owner: current_user, locale: locale)
+    NotificationDelivery.deliver(user: user, notification: notification)
   end
 
   def invitation_game_url(game)
@@ -84,7 +94,6 @@ class GameInvitationsController < ApplicationController
     parts << "Sent: #{result[:sent].join(', ')}" if result[:sent].any?
     parts << "Not found: #{result[:not_found].join(', ')}" if result[:not_found].any?
     parts << "Skipped self: #{result[:skipped_self].join(', ')}" if result[:skipped_self].any?
-    parts << "No Telegram chat: #{result[:no_telegram].join(', ')}" if result[:no_telegram].any?
     parts << "Failed: #{result[:failed].join(', ')}" if result[:failed].any?
     parts.presence&.join(". ") || "No invitations sent."
   end

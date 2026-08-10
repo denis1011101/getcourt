@@ -171,7 +171,7 @@
   <% active_filters << t("games.index.looking_for_players") if params[:looking_for_players].present? %>
   <% active_filters << t("games.index.tournament_games") if params[:tournament_games].present? %>
 
-  <%= render "shared/results_summary", count: @games.size, noun: "game", filters: active_filters do %>
+  <%= render "shared/results_summary", count: @games.size, label: t("games.index.count", count: @pagy&.count || @games.size), filters: active_filters do %>
     <% if user_signed_in? %>
       <%= link_to new_game_path, class: "hidden md:inline-flex items-center gap-1.5 rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition" do %>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

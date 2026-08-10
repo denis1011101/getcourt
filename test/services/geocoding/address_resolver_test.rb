@@ -77,10 +77,22 @@ class Geocoding::AddressResolverTest < ActiveSupport::TestCase
   # geocode_text
   # ---------------------------------------------------------------------------
 
-  test "geocode_text returns nil when Google key is absent" do
-    with_env("GOOGLE_GEOCODING_API_KEY" => "") do
-      assert_nil Geocoding::AddressResolver.geocode_text("Moscow")
+  test "geocode_text falls back to Nominatim when Google key is absent" do
+    resolver = Geocoding::AddressResolver.new
+    requested_uri = nil
+    resolver.define_singleton_method(:fetch_json) do |uri, **|
+      requested_uri = uri
+      [ { "lat" => "55.75", "lon" => "37.62" } ]
     end
+
+    with_env("GOOGLE_GEOCODING_API_KEY" => "") do
+      stub_singleton(Geocoding::AddressResolver, :new, -> { resolver }) do
+        assert_equal [ 55.75, 37.62 ], Geocoding::AddressResolver.geocode_text("Moscow")
+      end
+    end
+
+    assert_equal "/search", requested_uri.path
+    assert_includes requested_uri.query, "q=Moscow"
   end
 
   test "geocode_text returns nil on non-OK Google status" do

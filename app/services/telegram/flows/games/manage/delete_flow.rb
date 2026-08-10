@@ -9,27 +9,31 @@ module Telegram
             def handle_callback(callback)
               cb = Telegram::Helpers::CallbackData.parse(callback)
               poller = Telegram::Poller.new
+              locale = Telegram::Helpers::UserLookup.locale_for(cb.chat_id)
+              t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
               case cb.data
               when /\Agame:delete:(\d+)(?::(\d+))?\z/
                 game_id = $1.to_i
-                page = ($2 || 1).to_i
+                # [bot-menu-off] Отключено намеренно вместе с возвратом в список игр.
+                # page = ($2 || 1).to_i
 
                 game = Game.find_by(id: game_id)
                 unless game
-                  send_or_edit_text(cb.chat_id, "Game not found.", message_id: cb.message_id)
+                  send_or_edit_text(cb.chat_id, t.(:game_not_found), message_id: cb.message_id)
                   return
                 end
 
                 user = Telegram::Helpers::UserLookup.find_user(cb.chat_id)
                 unless user && (user.admin? || user.id == game.user_id)
-                  send_or_edit_text(cb.chat_id, "No permission to delete this game.", message_id: cb.message_id)
+                  send_or_edit_text(cb.chat_id, t.(:delete_game_no_permission), message_id: cb.message_id)
                   return
                 end
 
                 game.destroy rescue nil
                 poller.send_api("answerCallbackQuery", { callback_query_id: cb.cb_id }) rescue nil
-                Telegram::Handlers::GamesHandler.list_page(cb.chat_id, page, message_id: cb.message_id) rescue nil
+                # [bot-menu-off] Отключено намеренно: список игр перенесён на сайт getcourt.co.
+                # Telegram::Handlers::GamesHandler.list_page(cb.chat_id, page, message_id: cb.message_id) rescue nil
                 nil
               else
                 nil

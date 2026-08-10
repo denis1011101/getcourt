@@ -28,7 +28,7 @@ class NotifyUrgentPlayerSearchJobTest < ActiveJob::TestCase
       telegram_chat_id: "2001",
       city_name: "Yekaterinburg",
       notify_nearby: true,
-      nearby_notification_channel: "telegram",
+      notification_channel: "telegram",
       telegram_locale: "ru"
     )
     User.create!(
@@ -36,7 +36,7 @@ class NotifyUrgentPlayerSearchJobTest < ActiveJob::TestCase
       name: "Nearby Email",
       city_name: "Yekaterinburg",
       notify_nearby: true,
-      nearby_notification_channel: "email",
+      notification_channel: "email",
       locale: "en"
     )
     User.create!(
@@ -45,7 +45,7 @@ class NotifyUrgentPlayerSearchJobTest < ActiveJob::TestCase
       telegram_chat_id: "2002",
       city_name: "Moscow",
       notify_nearby: true,
-      nearby_notification_channel: "telegram",
+      notification_channel: "telegram",
       telegram_locale: "ru"
     )
     User.create!(
@@ -53,7 +53,7 @@ class NotifyUrgentPlayerSearchJobTest < ActiveJob::TestCase
       name: "Missing City",
       telegram_chat_id: "2004",
       notify_nearby: true,
-      nearby_notification_channel: "telegram",
+      notification_channel: "telegram",
       telegram_locale: "ru"
     )
     User.create!(
@@ -62,7 +62,7 @@ class NotifyUrgentPlayerSearchJobTest < ActiveJob::TestCase
       telegram_chat_id: "2003",
       city_name: "Yekaterinburg",
       notify_nearby: false,
-      nearby_notification_channel: "telegram",
+      notification_channel: "telegram",
       telegram_locale: "ru"
     )
 
@@ -78,24 +78,25 @@ class NotifyUrgentPlayerSearchJobTest < ActiveJob::TestCase
     assert_nil calls[0][:kwargs][:parse_mode]
     assert_includes calls[0][:args][1], "Игра ##{game.id}"
     assert_includes calls[0][:args][1], "@owner_test"
-    assert_includes calls[0][:args][1], "Tennis"
-    assert_includes calls[0][:args][1], "Advanced"
+    assert_includes calls[0][:args][1], "Теннис"
+    assert_includes calls[0][:args][1], "Продвинутый"
     assert_includes calls[0][:args][1], "Center Court"
+    assert_includes calls[0][:args][1], "https://getcourt.co/games/#{game.id}"
   end
 
-  test "does not fall back to email when telegram is selected but not connected" do
+  test "falls back to email when telegram is selected but not connected" do
     owner = User.create!(email: "owner_no_fallback@example.com", city_name: "Yekaterinburg")
     recipient = User.create!(
       email: "recipient_no_fallback@example.com",
       city_name: "Yekaterinburg",
       notify_nearby: true,
-      nearby_notification_channel: "telegram"
+      notification_channel: "telegram"
     )
     court = Court.create!(name: "No Fallback Court", city_name: "Yekaterinburg")
     game = Game.create!(court: court, user: owner, date: Date.current + 1.day, urgent_player_search: true)
     calls = []
 
-    assert_no_enqueued_emails do
+    assert_enqueued_emails 1 do
       with_stubbed_singleton_method(SendTelegramNotificationJob, :perform_later, ->(*args, **kwargs) { calls << { args: args, kwargs: kwargs } }) do
         NotifyUrgentPlayerSearchJob.perform_now(game.id)
       end
@@ -109,13 +110,35 @@ class NotifyUrgentPlayerSearchJobTest < ActiveJob::TestCase
     owner&.destroy
   end
 
+  test "does not email generated telegram address" do
+    owner = User.create!(email: "owner_generated_email@example.com", city_name: "Yekaterinburg")
+    recipient = User.create!(
+      email: "tg-#{SecureRandom.hex(8)}@telegram.getcourt",
+      telegram_generated_email: true,
+      city_name: "Yekaterinburg",
+      notify_nearby: true,
+      notification_channel: "email"
+    )
+    court = Court.create!(name: "Generated Email Court", city_name: "Yekaterinburg")
+    game = Game.create!(court: court, user: owner, date: Date.current + 1.day, urgent_player_search: true)
+
+    assert_no_enqueued_emails do
+      NotifyUrgentPlayerSearchJob.perform_now(game.id)
+    end
+  ensure
+    game&.destroy
+    court&.destroy
+    recipient&.destroy
+    owner&.destroy
+  end
+
   test "does not notify anyone when the game court has no city" do
     owner = User.create!(email: "owner_without_game_city@example.com")
     recipient = User.create!(
       email: "recipient_without_game_city@example.com",
       city_name: "Yekaterinburg",
       notify_nearby: true,
-      nearby_notification_channel: "email"
+      notification_channel: "email"
     )
     court = Court.create!(name: "Court Without City")
     game = Game.create!(court: court, user: owner, date: Date.current + 1.day, urgent_player_search: true)

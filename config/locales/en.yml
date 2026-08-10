@@ -28,6 +28,11 @@
 #       enabled: "ON"
 
 en:
+  errors:
+    messages:
+      pending_exists: "already has a pending suggestion for this court"
+      blank_suggestion: "Change at least one field or add a comment"
+      invalid_fields: "contains fields that cannot be changed"
   score_recognitions:
     errors:
       photo_required: "Choose a photo."
@@ -41,12 +46,16 @@ en:
   language_name: "English"
   locale_suggestion:
     body: "Looks like you speak %{locale_name}. Switch to that version?"
-    yes: "Yes"
+    "yes": "Yes"
     stay: "No, stay here"
     language_label: "Language"
   date:
     formats:
       long: "%B %d, %Y"
+      telegram: "%m/%d/%Y"
+  time:
+    formats:
+      telegram: "%I:%M %p"
   meta:
     default_title: "GetCourt — easily create games and invite friends"
     default_description: "GetCourt — create games and invite friends for tennis, table tennis, squash and padel. Quick setup, participant management and Telegram reminders."
@@ -120,9 +129,9 @@ en:
       expiry: "The code expires in 10 minutes."
       ignore: "If you didn't request it, you can ignore this email."
     urgent_player_search:
-      subject: "Players needed for a game in %{city}"
+      subject: "Player search for a game in %{city}"
       greeting: "Hi %{name},"
-      intro: "%{owner} is urgently looking for players for a game in %{city}."
+      intro: "%{owner} is looking for players for a game in %{city}."
       organizer_fallback: "GetCourt user #%{id}"
       date: "Date"
       court: "Court"
@@ -133,9 +142,24 @@ en:
       view_game: "View game"
       manage_html: "You received this because nearby game alerts are enabled. <a href='%{url}'>Manage notifications</a>."
       manage_text: "Manage notifications"
+    notification:
+      manage: "Manage notifications"
+      view_game: "View game"
+      game_reminder_subject: "Game reminder"
+      game_invitation_subject: "Invitation to Game #%{game_id}"
+      stats_subject: "Fill in your game statistics"
+      prebooking_subject: "Prebooking request for Game #%{game_id}"
+      participation_subject: "Game #%{game_id} participants updated"
+      participation_approved_subject: "Your request to join Game #%{game_id} was approved"
+      participation_rejected_subject: "Your request to join Game #%{game_id} was rejected"
+      prebooking_approved_subject: "Your prebooking for Game #%{game_id} was approved"
+      prebooking_rejected_subject: "Your prebooking for Game #%{game_id} was rejected"
   sessions:
     privacy_consent_html: "I agree to the <a href='%{url}' class='text-indigo-600 dark:text-indigo-400 hover:underline' target='_blank'>Privacy Policy</a> and consent to processing my email for authentication"
     age_consent: "I confirm I am at least 16 years old"
+    telegram_hint:
+      summary: "Did you previously sign up through Telegram?"
+      body_html: "Sign in with your email as usual, then open <a href='%{account_url}' class='text-indigo-600 dark:text-indigo-400 hover:underline'>Account → Notifications</a> and send the /register command to the bot. Your games and statistics from the bot will move to this account."
     login_code_sent_email: "Login code sent to your email"
     verify:
       title_email: "Enter email code"
@@ -152,6 +176,11 @@ en:
       title: "Watch the final together"
       body: "Join us for the final at Moment hookah lounge, 20 Lenina Avenue, Yekaterinburg."
   games:
+    sports:
+      tennis: "Tennis"
+      padel: "Padel"
+      table_tennis: "Table tennis"
+      squash: "Squash"
     index:
       hero_title: "Find your next game"
       hero_subtitle: "Tennis, padel, squash, table tennis — join a match near you or create your own."
@@ -183,6 +212,8 @@ en:
       time: "Time"
       duration: "Duration"
       court: "Court"
+      weather: "Weather"
+      comment: "Comment"
       tournament: "Tournament"
       participants: "Participants"
       enter_statistics: "Enter statistics"
@@ -270,6 +301,9 @@ en:
       tournament_notice: "This game is part of a tournament, so its schedule, court and options follow the tournament."
       tournament_dates_hint: "Within the tournament dates: %{range}."
       tournament_courts_hint: "Only the courts selected for the tournament."
+      comment: "Comment"
+      comment_placeholder: "Balls are on me, entrance from the yard, we play 1.5 hours"
+      comment_hint: "Anything the fields above do not cover. Up to 500 characters, everyone can see it."
     badges:
       with_coach: "With coach"
       need_coach: "Need coach"
@@ -449,6 +483,41 @@ en:
       match_added: "Match added."
       match_exists: "This match already exists."
   courts:
+    suggestions:
+      hint: "Found an inaccuracy?"
+      cta: "Suggest a correction — we’ll publish it after moderator review."
+      new_title: "Suggest a correction for %{court}"
+      new_help: "Change only the details that are inaccurate. The current court stays published until a moderator reviews your suggestion."
+      comment: "Comment"
+      comment_placeholder: "Explain anything that is not covered by the fields above"
+      submit: "Send suggestion"
+      cancel: "Cancel"
+      created: "Thank you. Your suggestion was sent for moderator review."
+      pending_exists: "You already have a pending suggestion for this court."
+      index_title: "Court corrections"
+      show_title: "Suggested correction for %{court}"
+      approve: "Approve"
+      reject: "Reject"
+      reject_confirm: "Reject this suggestion?"
+      approved: "Suggestion approved and applied."
+      rejected: "Suggestion rejected."
+      review_failed: "The suggestion could not be reviewed."
+      open_court: "Open court"
+      back_to_list: "Back to suggestions"
+      statuses:
+        pending: "Pending"
+        approved: "Approved"
+        rejected: "Rejected"
+      fields:
+        name: "Name"
+        sport: "Sport"
+        coordinates: "Coordinates"
+        contact_type: "Contact type"
+        contact_value: "Contact"
+        free: "Free"
+        outdoor: "Outdoor"
+        indoor: "Indoor"
+        surfaces: "Surfaces"
     index:
       meta_title: "Tennis, Padel & Squash Courts — GetCourt"
       meta_description: "Browse tennis, padel, squash and table tennis courts. Find a court near you, see upcoming games and join the community."
@@ -659,6 +728,8 @@ en:
     delete_account_confirm: "Delete your account and all data? This cannot be undone."
     delete_account_button: "Delete my account"
     notifications:
+      delivery_title: "Notification delivery"
+      delivery_help: "Use this channel for game reminders, requests, participant updates, statistics and urgent player searches."
       nearby_title: "Urgent player search alerts"
       nearby_help: "Get notified when an organizer urgently needs players in your city."
       nearby_enabled: "Notify me about urgent player searches nearby"

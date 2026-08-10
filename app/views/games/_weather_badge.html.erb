@@ -1,0 +1,20 @@
+<%= turbo_frame_tag dom_id(game, :weather) do %>
+  <% if reading %>
+    <% if details %>
+      <div>
+        <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("games.show.weather") %></p>
+        <p class="text-lg font-medium text-gray-900 dark:text-slate-100">
+          <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-100">
+            <%= weather_emoji(reading.condition_type) %> <%= reading.temperature_c.round %>°
+            <% if reading.precipitation_percent.to_i >= 30 %>· <%= reading.precipitation_percent %>%<% end %>
+          </span>
+        </p>
+      </div>
+    <% else %>
+      <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-100">
+        <%= weather_emoji(reading.condition_type) %> <%= reading.temperature_c.round %>°
+        <% if reading.precipitation_percent.to_i >= 30 %>· <%= reading.precipitation_percent %>%<% end %>
+      </span>
+    <% end %>
+  <% end %>
+<% end %>

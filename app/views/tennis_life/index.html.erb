@@ -91,9 +91,9 @@
               <% display_name = if user&.name.present?
                 user.name
               elsif user&.id.present?
-                "User ##{user.id}"
+                t("tennis_life.user_fallback", id: user.id)
               else
-                "Anonymous player"
+                t("tennis_life.anonymous_player")
               end %>
               <li class="flex items-start justify-between gap-2 border-b border-gray-100 dark:border-white/10 pb-2">
                 <div>

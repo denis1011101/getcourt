@@ -1,4 +1,8 @@
 module GamesHelper
+  def weather_emoji(condition_type)
+    Weather::Icons.for(condition_type)
+  end
+
   def format_duration_minutes(minutes)
     minutes = minutes.to_i
     return "" if minutes <= 0

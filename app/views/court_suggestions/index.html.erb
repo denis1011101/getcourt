@@ -1,0 +1,23 @@
+<% content_for :meta_robots, "noindex, nofollow" %>
+
+<div class="mx-auto max-w-5xl px-4 py-6">
+  <h1 class="text-2xl font-semibold"><%= t("courts.suggestions.index_title") %></h1>
+
+  <div class="mt-6 overflow-hidden rounded-xl border bg-white dark:border-white/10 dark:bg-slate-800/80">
+    <% @court_suggestions.each do |suggestion| %>
+      <%= link_to court_suggestion_path(suggestion), class: "block border-b p-4 last:border-b-0 hover:bg-gray-50 dark:border-white/10 dark:hover:bg-white/5" do %>
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="font-semibold text-gray-900 dark:text-slate-100"><%= suggestion.court.name %></p>
+            <p class="mt-1 text-sm text-gray-500 dark:text-slate-400"><%= suggestion.user.name.presence || suggestion.user.email %> · <%= l(suggestion.created_at, format: :short) %></p>
+          </div>
+          <span class="rounded-full px-2.5 py-1 text-xs font-medium <%= suggestion.pending? ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-700' %>">
+            <%= t("courts.suggestions.statuses.#{suggestion.status}") %>
+          </span>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+
+  <%= render "shared/pagy", pagy: @pagy %>
+</div>

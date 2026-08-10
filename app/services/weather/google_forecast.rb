@@ -1,0 +1,154 @@
+require "json"
+require "net/http"
+require "time"
+require "uri"
+
+module Weather
+  class GoogleForecast
+    MAX_HORIZON = 10.days
+    CACHE_EXPIRY = 3.hours
+    MAX_HOURS = 240
+    PAGE_SIZE = 24
+    HOURLY_HORIZON = 48.hours
+
+    Reading = Data.define(:temperature_c, :condition_type, :description, :precipitation_percent)
+
+    class << self
+      def for_game(game, timeout: nil)
+        return nil if game.environment.to_s == "indoor"
+
+        coordinates = game.court&.coordinates_pair
+        return nil unless coordinates
+
+        target_time = game.start_at_for_ui
+        return nil unless target_time && target_time >= Time.current && target_time <= Time.current + MAX_HORIZON
+
+        lat, lng = coordinates
+        cache_period = target_time.utc.strftime("%Y%m%d%H")
+        cache_key = "weather:google:#{lat.round(2)}:#{lng.round(2)}:#{cache_period}"
+        cached = Rails.cache.read(cache_key)
+        return nil if cached == :none
+        return cached if cached
+
+        reading = fetch_reading(lat, lng, target_time, timeout)
+        if reading
+          Rails.cache.write(cache_key, reading, expires_in: CACHE_EXPIRY)
+        elsif timeout.nil?
+          Rails.cache.write(cache_key, :none, expires_in: CACHE_EXPIRY)
+        end
+        reading
+      rescue => e
+        Rails.logger.warn("Google weather error: #{e.class} #{e.message}")
+        nil
+      end
+
+      private
+        def fetch_reading(lat, lng, target_time, timeout)
+          key = ENV["GOOGLE_WEATHER_API_KEY"].presence || ENV["GOOGLE_MAPS_API_KEY"].presence
+          return nil unless key
+
+          if target_time <= Time.current.end_of_hour
+            fetch_current(lat, lng, key, timeout)
+          elsif target_time > Time.current + HOURLY_HORIZON
+            fetch_daily(lat, lng, target_time, key, timeout)
+          else
+            fetch_hourly(lat, lng, target_time, key, timeout)
+          end
+        end
+
+        def fetch_current(lat, lng, key, timeout)
+          data = fetch_page("currentConditions:lookup", lat, lng, key, timeout: timeout)
+          build_reading(data) if data
+        end
+
+        def fetch_hourly(lat, lng, target_time, key, timeout)
+          hours = [ ((target_time - Time.current) / 1.hour).ceil + 1, MAX_HOURS ].min
+          query = { hours: hours, pageSize: [ hours, PAGE_SIZE ].min }
+
+          loop do
+            data = fetch_page("forecast/hours:lookup", lat, lng, key, query, timeout: timeout)
+            return nil unless data
+
+            forecast = Array(data["forecastHours"]).find { |hour| covers?(hour, target_time) }
+            return build_reading(forecast) if forecast
+
+            page_token = data["nextPageToken"].presence
+            return nil unless page_token
+
+            query[:pageToken] = page_token
+          end
+        end
+
+        def fetch_daily(lat, lng, target_time, key, timeout)
+          data = fetch_page("forecast/days:lookup", lat, lng, key, { days: 10, pageSize: 10 }, timeout: timeout)
+          return nil unless data
+
+          forecast = Array(data["forecastDays"]).find { |day| covers?(day, target_time) }
+          build_daily_reading(forecast, target_time) if forecast
+        end
+
+        def fetch_page(endpoint, lat, lng, key, query = {}, timeout: nil)
+          return nil if Weather::Quota.exceeded?
+
+          uri = URI("https://weather.googleapis.com/v1/#{endpoint}")
+          uri.query = URI.encode_www_form({
+            key: key,
+            "location.latitude": lat,
+            "location.longitude": lng,
+            unitsSystem: "METRIC"
+          }.merge(query))
+          data = timeout ? fetch_json(uri, timeout: timeout) : fetch_json(uri)
+          Weather::Quota.increment! if data
+          data
+        end
+
+        def covers?(forecast, target_time)
+          return false unless forecast
+
+          starts_at = Time.iso8601(forecast.dig("interval", "startTime"))
+          ends_at = Time.iso8601(forecast.dig("interval", "endTime"))
+          target_time >= starts_at && target_time < ends_at
+        rescue ArgumentError, TypeError
+          false
+        end
+
+        def build_reading(data)
+          temperature = data&.dig("temperature", "degrees")
+          return nil if temperature.nil?
+
+          Reading.new(
+            temperature_c: temperature.to_f,
+            condition_type: data.dig("weatherCondition", "type"),
+            description: data.dig("weatherCondition", "description", "text"),
+            precipitation_percent: data.dig("precipitation", "probability", "percent")
+          )
+        end
+
+        def build_daily_reading(forecast, target_time)
+          part_key = %w[daytimeForecast nighttimeForecast].find do |key|
+            covers?(forecast[key], target_time)
+          end
+          part_key ||= target_time.hour.between?(7, 18) ? "daytimeForecast" : "nighttimeForecast"
+          temperature_key = part_key == "daytimeForecast" ? "maxTemperature" : "minTemperature"
+          part = forecast[part_key] || {}
+
+          build_reading(part.merge("temperature" => forecast[temperature_key]))
+        end
+
+        def fetch_json(uri, timeout: nil)
+          http = Net::HTTP.new(uri.host, uri.port)
+          http.use_ssl = true
+          http.open_timeout = timeout&.fetch(:open, nil) || 5
+          http.read_timeout = timeout&.fetch(:read, nil) || 10
+          response = http.request(Net::HTTP::Get.new(uri))
+          JSON.parse(response.body) if response.is_a?(Net::HTTPSuccess)
+        rescue Net::ReadTimeout, Net::OpenTimeout => e
+          Rails.logger.warn("Google weather timeout: #{e.class}")
+          nil
+        rescue => e
+          Rails.logger.warn("Google weather HTTP error: #{e.class} #{e.message}")
+          nil
+        end
+    end
+  end
+end

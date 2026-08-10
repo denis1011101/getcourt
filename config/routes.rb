@@ -25,6 +25,8 @@ Rails.application.routes.draw do
   end
 
   get "/tennis_life", to: "tennis_life#index", as: :tennis_life
+  get "/tennis_life/classic", to: "tennis_life#classic", as: :tennis_life_classic
+  get "/tennis_life/feed", to: "tennis_life#feed", as: :tennis_life_feed
   get "/tennis_life/statistics", to: "tennis_life#statistics", as: :tennis_life_statistics
   get "/tennis_life/featured_translation", to: "tennis_life#featured_translation", as: :tennis_life_featured_translation
 
@@ -65,12 +67,22 @@ Rails.application.routes.draw do
       post :approve
       post :reject
     end
+
+    # Named `corrections` so the helpers stay distinct from the top-level
+    # court_suggestions index below, which owns court_suggestions_path.
+    resources :suggestions, only: %i[new create], controller: "court_suggestions", as: :corrections
+  end
+  resources :court_suggestions, only: %i[index show] do
+    resource :approval, only: :create, controller: "court_suggestion_approvals"
+    resource :rejection, only: :create, controller: "court_suggestion_rejections"
   end
   get "/courts(/:country_slug)(/:city_slug)", to: "courts#index", as: :courts_browse,
       constraints: { country_slug: /[a-z][a-z0-9-]*/, city_slug: /[a-z0-9-]+/ }
   resources :events, only: [ :show ], constraints: { id: /[a-z0-9-]+/ }
   root "games#index"
   resources :games, except: [ :index ], constraints: { id: /\d+/ } do
+    resource :weather, only: :show
+
     member do
       post :toggle_urgent_player_search
     end

@@ -8,38 +8,10 @@ class NotifyUrgentPlayerSearchJob < ApplicationJob
     game_city = game.court&.city_name.to_s.strip.downcase
     return if game_city.blank?
 
-    date = Telegram::Helpers::GameFormatting.game_datetime(game) || "—"
-    sport = game.respond_to?(:sport) ? game.sport.to_s.presence : nil
-    skill = game.respond_to?(:skill_level) ? game.skill_level.to_s.presence : nil
-    court = game.court&.name.to_s.presence || "—"
-    owner = owner_label(game.user)
-
-    recipients = User.where(notify_nearby: true)
-                     .where.not(id: game.user_id)
-
-    recipients.find_each do |user|
+    User.where(notify_nearby: true).where.not(id: game.user_id).find_each do |user|
       next unless user.city_name.to_s.strip.downcase == game_city
 
-      case user.nearby_notification_channel
-      when "email"
-        UserMailer.urgent_player_search(user, game).deliver_later
-      when "telegram"
-        next unless user.telegram_chat_id.present?
-
-        locale = (user.telegram_locale.presence || Telegram::I18n::DEFAULT_LOCALE).to_s
-        text = Telegram::I18n.t(
-          :urgent_search_notification,
-          locale: locale,
-          id: game.id,
-          owner: owner,
-          date: date,
-          sport: sport || fallback(locale, "sport"),
-          skill: (skill&.titleize || fallback(locale, "level")),
-          court: court
-        )
-
-        SendTelegramNotificationJob.perform_later(user.telegram_chat_id, text, parse_mode: nil)
-      end
+      deliver(user, game)
     end
   rescue => e
     Rails.logger.error "[NotifyUrgentPlayerSearchJob] #{e.class}: #{e.message}"
@@ -47,14 +19,47 @@ class NotifyUrgentPlayerSearchJob < ApplicationJob
 
   private
 
-  def owner_label(owner)
-    return "—" unless owner
-    Telegram::Helpers::UserLookup.display_name(owner, fallback: "User ##{owner.id}")
+  def deliver(user, game)
+    if user.notification_channel == "telegram" && user.telegram_chat_id.present?
+      deliver_telegram(user, game)
+    else
+      deliver_email(user, game)
+    end
   end
 
-  def fallback(locale, type)
-    return "any" if locale.start_with?("en")
-    return "any" if type == "level"
-    "any"
+  def deliver_telegram(user, game)
+    locale = Telegram::I18n.locale_for(user)
+    formatter = Telegram::Helpers::GameFormatting
+    game_url = "#{app_host}/games/#{game.id}"
+    text = Telegram::I18n.t(
+      :urgent_search_notification,
+      locale: locale,
+      id: game.id,
+      owner: owner_label(game.user, locale),
+      date: formatter.game_datetime(game, locale: locale) || "—",
+      sport: formatter.sport_label(game.sport, locale: locale) || Telegram::I18n.t(:sport_any, locale: locale),
+      skill: formatter.skill_level_label(game.skill_level, locale: locale),
+      court: game.court&.name.to_s.presence || "—",
+      url: game_url
+    )
+
+    SendTelegramNotificationJob.perform_later(user.telegram_chat_id, text, parse_mode: nil)
+  end
+
+  def deliver_email(user, game)
+    return false if user.telegram_generated_email?
+
+    UserMailer.urgent_player_search(user, game).deliver_later
+  end
+
+  def owner_label(owner, locale)
+    return "—" unless owner
+
+    fallback = "#{Telegram::I18n.t(:user_fallback, locale: locale)} ##{owner.id}"
+    Telegram::Helpers::UserLookup.display_name(owner, fallback: fallback)
+  end
+
+  def app_host
+    ENV.fetch("APP_HOST", ENV.fetch("HOSTNAME", "https://getcourt.co"))
   end
 end

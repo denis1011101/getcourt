@@ -37,6 +37,7 @@ class SitemapGenerator
       [ root_path, nil ],
       [ courts_path, nil ],
       [ tennis_life_path, nil ],
+      [ tennis_life_statistics_path, nil ],
       [ contacts_path, nil ],
       [ mission_path, nil ],
       [ partnership_path, nil ],

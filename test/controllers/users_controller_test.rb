@@ -195,13 +195,13 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
     patch account_url, params: {
       section: "notifications",
-      user: { notify_nearby: "1", nearby_notification_channel: "email" }
+      user: { notify_nearby: "1", notification_channel: "email" }
     }
 
     assert_redirected_to notifications_account_path
     user.reload
     assert_equal true, user.notify_nearby
-    assert_equal "email", user.nearby_notification_channel
+    assert_equal "email", user.notification_channel
   ensure
     user&.destroy
   end
@@ -213,14 +213,14 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     get notifications_account_url
 
     assert_response :success
-    assert_select "select[name='user[nearby_notification_channel]']" do
+    assert_select "select[name='user[notification_channel]']" do
       assert_select "option[value='email']"
       assert_select "option[value='telegram']"
     end
     assert_not_includes response.body, I18n.t("users.notifications.telegram_required")
 
     user = User.find_by!(email: user_email)
-    user.update!(nearby_notification_channel: "telegram")
+    user.update!(notification_channel: "telegram")
     get notifications_account_url
 
     assert_includes response.body, I18n.t("users.notifications.telegram_required")

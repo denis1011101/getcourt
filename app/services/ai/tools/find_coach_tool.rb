@@ -12,7 +12,7 @@ module Ai
         search_city = city.to_s.strip.presence || @user&.city_name.to_s.strip.presence
         return { error: "City is required. Ask the user to set their city in profile or specify a city." } if search_city.blank?
 
-        coaches = User.where(coach: true)
+        coaches = User.not_merged.where(coach: true)
                       .where("LOWER(city_name) LIKE LOWER(?)", "%#{search_city}%")
                       .where.not(id: @user&.id)
                       .limit(5)

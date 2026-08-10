@@ -18,6 +18,7 @@ class Game < ApplicationRecord
   before_validation :drop_options_managed_by_tournament, if: -> { tournament_id.present? }
 
   validates :date, presence: { message: "must be present" }
+  validates :comment, length: { maximum: 500 }, allow_blank: true
 
   validates :players_count, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   validates :surface, inclusion: { in: SURFACES }, allow_blank: true
@@ -61,7 +62,7 @@ class Game < ApplicationRecord
 
     cancel_post_game_stats_reminder if post_game_stats_reminder_job_id.present?
 
-    enqueued = Telegram::PostGameStatsReminderJob.set(wait_until: t).perform_later(id)
+    enqueued = PostGameStatsReminderJob.set(wait_until: t).perform_later(id)
     jid = enqueued.respond_to?(:provider_job_id) ? enqueued.provider_job_id : (enqueued.respond_to?(:job_id) ? enqueued.job_id : nil)
     update_column(:post_game_stats_reminder_job_id, jid) if jid
   end

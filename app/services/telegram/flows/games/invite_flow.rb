@@ -8,68 +8,62 @@ module Telegram
           # callback_query entry
           def handle_callback(callback)
             data = (callback["data"] || "").to_s
-            return false unless data.start_with?("game:invite:") || data.start_with?("game:invite_cancel:") || data.start_with?("game:invite_decline:")
+            return false unless data.start_with?("game:invite_decline:")
 
             cb_id = callback["id"]
             from = callback["from"] || {}
             chat_id = (callback.dig("message", "chat", "id") || from["id"]).to_s
             message_id = callback.dig("message", "message_id")
             poller = Telegram::Poller.new
+            locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+            t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
             case data
-            when /\Agame:invite:(\d+)\z/
-              game_id = $1.to_i
-              game = Game.find_by(id: game_id)
-              inviter = User.find_by(telegram_chat_id: chat_id)
-
-              unless game && inviter && (inviter.admin? || game.user_id == inviter.id)
-                poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Only the game owner can invite", show_alert: false }) rescue nil
-                return true
-              end
-
-              # NEW: store "pending invite input" state instead of ForceReply (Telegram UI can get stuck with force_reply)
-              Rails.cache.write(invite_cache_key(chat_id), game_id, expires_in: 10.minutes)
-
-              poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Send usernames to invite", show_alert: false }) rescue nil
-              if message_id
-                poller.send_api("editMessageText", {
-                  chat_id: chat_id,
-                  message_id: message_id,
-                  text: "Send usernames to invite (e.g. @alice @bob).\nSend /cancel to abort.",
-                  reply_markup: {
-                    inline_keyboard: [ [
-                      { text: "Cancel", callback_data: "game:invite_cancel:#{game_id}" }
-                    ] ]
-                  }
-                }) rescue nil
-              else
-                poller.send_api("sendMessage", {
-                  chat_id: chat_id,
-                  text: "Send usernames to invite (e.g. @alice @bob).\nSend /cancel to abort.",
-                  reply_markup: {
-                    inline_keyboard: [ [
-                      { text: "Cancel", callback_data: "game:invite_cancel:#{game_id}" }
-                    ] ]
-                  }
-                }) rescue nil
-              end
-              return true
-
-            when /\Agame:invite_cancel:(\d+)\z/
-              game_id = $1.to_i
-              Rails.cache.delete(invite_cache_key(chat_id))
-              poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Invite cancelled", show_alert: false }) rescue nil
-              Telegram::Handlers::GamesHandler.show_game(chat_id, game_id, 1, message_id: message_id) rescue nil
-              return true
+            # [bot-menu-off] Отключено намеренно: пользуемся сайтом getcourt.co,
+            # бот оставлен только для приглашений и карточки игры.
+            # Раскомментировать, если решим вернуть функциональность в бот.
+            # when /\Agame:invite:(\d+)\z/
+            #   game_id = $1.to_i
+            #   game = Game.find_by(id: game_id)
+            #   inviter = User.find_by(telegram_chat_id: chat_id)
+            #   unless game && inviter && (inviter.admin? || game.user_id == inviter.id)
+            #     poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Only the game owner can invite", show_alert: false }) rescue nil
+            #     return true
+            #   end
+            #   Rails.cache.write(invite_cache_key(chat_id), game_id, expires_in: 10.minutes)
+            #   poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Send usernames to invite", show_alert: false }) rescue nil
+            #   if message_id
+            #     poller.send_api("editMessageText", {
+            #       chat_id: chat_id,
+            #       message_id: message_id,
+            #       text: "Send usernames to invite (e.g. @alice @bob).\nSend /cancel to abort.",
+            #       reply_markup: { inline_keyboard: [ [ { text: "Cancel", callback_data: "game:invite_cancel:#{game_id}" } ] ] }
+            #     }) rescue nil
+            #   else
+            #     poller.send_api("sendMessage", {
+            #       chat_id: chat_id,
+            #       text: "Send usernames to invite (e.g. @alice @bob).\nSend /cancel to abort.",
+            #       reply_markup: { inline_keyboard: [ [ { text: "Cancel", callback_data: "game:invite_cancel:#{game_id}" } ] ] }
+            #     }) rescue nil
+            #   end
+            #   return true
+            # when /\Agame:invite_cancel:(\d+)\z/
+            #   game_id = $1.to_i
+            #   Rails.cache.delete(invite_cache_key(chat_id))
+            #   poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Invite cancelled", show_alert: false }) rescue nil
+            #   Telegram::Handlers::GamesHandler.show_game(chat_id, game_id, 1, message_id: message_id) rescue nil
+            #   return true
 
             when /\Agame:invite_decline:(\d+)\z/
               game_id = $1.to_i
+              host = ENV.fetch("APP_HOST", ENV.fetch("HOSTNAME", "https://getcourt.co"))
+              game_url = "#{host}/games/#{game_id}"
               game = Game.find_by(id: game_id)
               decliner = User.find_by(telegram_chat_id: chat_id)
 
               poller.send_api(
                 "answerCallbackQuery",
-                { callback_query_id: cb_id, text: "Invite declined", show_alert: false }
+                { callback_query_id: cb_id, text: t.(:invite_declined), show_alert: false }
               ) rescue nil
 
               # NEW: update the invite message text + remove buttons
@@ -79,16 +73,21 @@ module Telegram
                 poller.send_api("editMessageText", {
                   chat_id: chat_id,
                   message_id: msg_id,
-                  text: "You declined the invitation to the game ##{game_id}.",
+                  text: "#{t.(:invite_declined_user, game_id: game_id)}\n\n#{game_url}",
                   reply_markup: { inline_keyboard: [] }
                 }) rescue nil
               end
 
               if game&.user&.telegram_chat_id.present?
-                name = decliner&.name.presence || decliner&.username.presence || decliner&.telegram_username.presence || "User"
+                owner_locale = Telegram::Helpers::UserLookup.locale_for(game.user.telegram_chat_id)
+                fallback = Telegram::I18n.t(:user_fallback, locale: owner_locale)
+                name = Telegram::Helpers::UserLookup.display_name(decliner, fallback: fallback)
                 poller.send_api(
                   "sendMessage",
-                  { chat_id: game.user.telegram_chat_id.to_s, text: "#{name} declined invite to game ##{game_id}." }
+                  {
+                    chat_id: game.user.telegram_chat_id.to_s,
+                    text: "#{Telegram::I18n.t(:invite_declined_owner, locale: owner_locale, name: name, game_id: game_id)}\n\n#{game_url}"
+                  }
                 ) rescue nil
               end
 
@@ -106,11 +105,13 @@ module Telegram
             chat_id = message.dig("chat", "id").to_s
             text = message["text"].to_s.strip
             poller = Telegram::Poller.new
+            locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+            t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
 
             # allow explicit cancel
             if text.casecmp("/cancel").zero?
               if Rails.cache.delete(invite_cache_key(chat_id))
-                poller.send_api("sendMessage", { chat_id: chat_id, text: "Invite cancelled." }) rescue nil
+                poller.send_api("sendMessage", { chat_id: chat_id, text: t.(:invite_cancelled) }) rescue nil
                 return true
               end
               return false
@@ -132,13 +133,13 @@ module Telegram
 
             unless game && inviter && (inviter.admin? || game.user_id == inviter.id)
               Rails.cache.delete(invite_cache_key(chat_id))
-              poller.send_api("sendMessage", { chat_id: chat_id, text: "Only the game owner can send invites." }) rescue nil
+              poller.send_api("sendMessage", { chat_id: chat_id, text: t.(:only_game_owner_can_invite) }) rescue nil
               return true
             end
 
             handles = text.scan(/@[\w\d_]+/i).map { |h| h.delete_prefix("@").downcase }.uniq
             if handles.empty?
-              poller.send_api("sendMessage", { chat_id: chat_id, text: "No usernames found. Example: @alice @bob" }) rescue nil
+              poller.send_api("sendMessage", { chat_id: chat_id, text: t.(:invite_handles_invalid) }) rescue nil
               return true
             end
 
@@ -159,10 +160,11 @@ module Telegram
 
               next unless user.telegram_chat_id.present?
 
+              target_locale = Telegram::Helpers::UserLookup.locale_for(user.telegram_chat_id)
+              target_t = ->(key, **args) { Telegram::I18n.t(key, locale: target_locale, **args) }
               label =
                 if Telegram::Handlers::GamesHandler.respond_to?(:game_label)
                   # IMPORTANT: show inviter nick (not game owner) in the label
-                  target_locale = Telegram::Helpers::UserLookup.locale_for(user.telegram_chat_id)
                   Telegram::Handlers::GamesHandler.game_label(game, owner: inviter, locale: target_locale)
                 else
                   "Game ##{game.id}"
@@ -173,11 +175,14 @@ module Telegram
 
               poller.send_api("sendMessage", {
                 chat_id: user.telegram_chat_id.to_s,
-                text: "You are invited to join:\n#{label}\n\n#{game_url}",
+                text: [
+                  target_t.(:invitation_title),
+                  label
+                ].compact.join("\n") + "\n\n#{game_url}",
                 reply_markup: {
                   inline_keyboard: [ [
-                    { text: "Join ##{game.id}", callback_data: "game:join_invited:#{game.id}" },
-                    { text: "Decline ##{game.id}", callback_data: "game:invite_decline:#{game.id}" }
+                    { text: target_t.(:invitation_join, game_id: game.id), callback_data: "game:join_invited:#{game.id}" },
+                    { text: target_t.(:invitation_decline, game_id: game.id), callback_data: "game:invite_decline:#{game.id}" }
                   ] ]
                 }
               }) rescue nil
@@ -185,12 +190,12 @@ module Telegram
 
             summary =
               if not_found.empty? && skipped_self.empty?
-                "Invitations sent."
+                t.(:invitations_sent)
               else
                 parts = []
-                parts << "Not found: #{not_found.join(', ')}" if not_found.any?
-                parts << "Skipped self: #{skipped_self.join(', ')}" if skipped_self.any?
-                "Invitations processed. #{parts.join('. ')}"
+                parts << t.(:invite_not_found, users: not_found.join(", ")) if not_found.any?
+                parts << t.(:invite_skipped_self, users: skipped_self.join(", ")) if skipped_self.any?
+                t.(:invitations_processed, details: parts.join(". "))
               end
 
             Rails.cache.delete(invite_cache_key(chat_id))

@@ -31,7 +31,7 @@ class ParticipationsController < ApplicationController
 
     if @participation.save
       if @participation.pending?
-        Telegram::ParticipationNotifier.notify_owner(@game, current_user, action: :requested) rescue nil
+        ParticipationNotifier.notify_owner(@game, current_user, action: :requested) rescue nil
       end
       respond_to do |format|
         format.turbo_stream
@@ -62,6 +62,7 @@ class ParticipationsController < ApplicationController
     return head :not_found unless @participation
 
     @participation.update(status: "approved", approved_at: Time.current)
+    GameRequestNotification.participation(user: @participation.user, game: @game, approved: true)
 
     respond_to do |format|
       format.turbo_stream do
@@ -89,7 +90,7 @@ class ParticipationsController < ApplicationController
     @participation = @game.participations.build(guest_name: name, status: "approved", approved_at: Time.current)
 
     if @participation.save
-      Telegram::ParticipationNotifier.notify_owner(@game, @participation, action: :guest_added) if current_user != @game.user
+      ParticipationNotifier.notify_owner(@game, @participation, action: :guest_added) if current_user != @game.user
 
       respond_to do |format|
         format.turbo_stream do
@@ -115,7 +116,9 @@ class ParticipationsController < ApplicationController
     @participation = @game.participations.find_by(id: params[:id])
     return head :not_found unless @participation
 
+    requester = @participation.user
     @participation.destroy
+    GameRequestNotification.participation(user: requester, game: @game, approved: false)
 
     respond_to do |format|
       format.turbo_stream do
@@ -151,12 +154,13 @@ class ParticipationsController < ApplicationController
     removed_participation = @participation
     @participation.destroy
 
-    if @participation_id && @game.user&.telegram_chat_id.present?
+    # The owner does not need to be told about a removal they performed themselves.
+    if @participation_id && @game.user && current_user != @game.user
       if removed_participation.guest?
-        Telegram::ParticipationNotifier.notify_owner(@game, removed_participation, action: :removed) if current_user != @game.user
+        ParticipationNotifier.notify_owner(@game, removed_participation, action: :removed)
       else
         action = (removed_user == current_user) ? :left : :removed
-        Telegram::ParticipationNotifier.notify_owner(@game, removed_user, action: action)
+        ParticipationNotifier.notify_owner(@game, removed_user, action: action)
       end
     end
 

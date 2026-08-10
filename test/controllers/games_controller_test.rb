@@ -178,12 +178,13 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "results summary shows total games count instead of current page size" do
+    initial_count = Game.count
     11.times { |i| Game.create!(court: courts(:one), user: users(:one), date: Date.current + (i + 3).days, time: "10:00") }
 
     get root_url
 
     assert_response :success
-    assert_select "[data-testid='results-summary']", text: /13 games available/
+    assert_select "[data-testid='results-summary']", text: /#{initial_count + 11} games available/
   end
 
   test "index page 2 returns overflow games" do
@@ -470,6 +471,60 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to game_path(game)
     assert_equal 6, game.reload.players_count
+  end
+
+  test "owner can save a comment and it is rendered escaped on the game page" do
+    post session_url, params: { email: "comment_owner@example.com" }
+    owner = User.find_by!(email: "comment_owner@example.com")
+    game = Game.create!(court: courts(:one), user: owner, date: Date.current + 2.days, time: "10:00")
+
+    patch game_url(game), params: {
+      game: {
+        court_id: game.court_id,
+        date: game.date,
+        time: "10:00",
+        comment: "Balls are on me\n<b>entrance from the yard</b>"
+      }
+    }
+
+    assert_redirected_to game_path(game)
+    assert_equal "Balls are on me\n<b>entrance from the yard</b>", game.reload.comment
+
+    get game_url(game)
+
+    assert_response :success
+    assert_select '[data-testid="game-comment"]', 1
+    assert_includes @response.body, "&lt;b&gt;entrance from the yard&lt;/b&gt;"
+    assert_not_includes @response.body, "<b>entrance from the yard</b>"
+  end
+
+  test "game form offers the comment field" do
+    post session_url, params: { email: "comment_form_user@example.com" }
+
+    get new_game_url
+
+    assert_response :success
+    assert_select "textarea[name='game[comment]'][maxlength='500']", 1
+  end
+
+  test "index card shows the comment as a single truncated line" do
+    owner = User.create!(email: "comment_card_owner@example.com")
+    Game.create!(
+      court: courts(:one),
+      user: owner,
+      date: Date.current + 2.days,
+      time: "10:00",
+      comment: "#{'a' * 200}\nsecond line"
+    )
+
+    get root_url
+
+    assert_response :success
+    assert_select '[data-testid="game-card-comment"]', 1 do |elements|
+      text = elements.first.text.strip
+      assert_operator text.length, :<=, 80
+      assert_includes text, "..."
+    end
   end
 
   test "owner can toggle players search on and off" do

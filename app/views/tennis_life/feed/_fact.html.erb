@@ -1,0 +1,24 @@
+<% fact = card.record %>
+
+<div class="bg-gradient-to-br from-lime-50 to-emerald-50 p-5 dark:from-emerald-500/10 dark:to-lime-500/10">
+  <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300"><%= t("tennis_life.feed.fact.title") %></p>
+  <p class="mt-2 text-lg font-semibold text-gray-900 dark:text-slate-100">
+    <% case fact[:key] %>
+    <% when "total_hours" %>
+      <%= t("tennis_life.feed.fact.total_hours", count: fact[:value]) %>
+    <% when "courts_cities" %>
+      <%= t("tennis_life.feed.fact.courts_cities", courts: fact[:courts], cities: fact[:cities]) %>
+    <% when "longest_match" %>
+      <%= fact[:score].present? ? t("tennis_life.feed.fact.longest_match", score: fact[:score], games: fact[:games]) : t("tennis_life.feed.fact.no_data") %>
+    <% when "popular_surface" %>
+      <%= fact[:surface].present? ? t("tennis_life.feed.fact.popular_surface", surface: t("courts.surfaces.#{fact[:surface]}", default: fact[:surface]), count: fact[:count]) : t("tennis_life.feed.fact.no_data") %>
+    <% when "player_month" %>
+      <% name = fact[:name].presence || (fact[:player_id] && t("tennis_life.user_fallback", id: fact[:player_id])) %>
+      <%= name ? t("tennis_life.feed.fact.player_month", player: name, count: fact[:count]) : t("tennis_life.feed.fact.no_data") %>
+    <% when "new_players_month" %>
+      <%= t("tennis_life.feed.fact.new_players_month", count: fact[:count]) %>
+    <% when "busiest_court" %>
+      <%= fact[:name].present? ? t("tennis_life.feed.fact.busiest_court", court: fact[:name], count: fact[:count]) : t("tennis_life.feed.fact.no_data") %>
+    <% end %>
+  </p>
+</div>

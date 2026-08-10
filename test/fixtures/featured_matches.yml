@@ -1,0 +1,11 @@
+feed_active:
+  active: true
+  court: feed_approved
+  player_left_name: Feed Player One
+  player_right_name: Feed Player Two
+  slug: feed-featured-match
+  starts_at: <%= 1.day.from_now %>
+  status: scheduled
+  tournament_label: Feed Open
+  created_at: <%= 1.day.ago %>
+  updated_at: <%= 1.day.ago %>

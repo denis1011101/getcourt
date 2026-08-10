@@ -20,7 +20,7 @@ export default class extends Controller {
     const cities = this.countryCitiesValue[selectedCountry] || []
 
     this.cityTarget.innerHTML = ""
-    this.cityTarget.appendChild(this.buildOption("", this.cityTarget.dataset.placeholder || "Any city"))
+    this.cityTarget.appendChild(this.buildOption("", this.cityTarget.dataset.placeholder || ""))
 
     cities.forEach((city) => {
       this.cityTarget.appendChild(this.buildOption(city, city))

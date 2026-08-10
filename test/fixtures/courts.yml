@@ -7,3 +7,13 @@ one:
 two:
   name: MyString
   coordinates: MyString
+
+feed_approved:
+  name: Feed Court
+  coordinates: "55.75, 37.61"
+  moderation_status: approved
+  approved_at: <%= 1.day.ago %>
+  sport: tennis
+  outdoor: true
+  created_at: <%= 1.day.ago %>
+  updated_at: <%= 1.day.ago %>

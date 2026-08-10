@@ -6,6 +6,13 @@ require "uri"
 
 module Geocoding
   class AddressResolver
+    NOMINATIM_MUTEX = Mutex.new
+
+    class << self
+      attr_accessor :nominatim_last_request_at
+    end
+    self.nominatim_last_request_at = -Float::INFINITY
+
     # Resolves lat/lng to { address: String, city_name: String | nil } or nil.
     # Tries Google first, falls back to Nominatim.
     def resolve(lat, lng)
@@ -14,7 +21,8 @@ module Geocoding
 
     # Forward geocoding: text string -> [lat, lng] or nil.
     def self.geocode_text(str)
-      new.send(:geocode_text_google, str)
+      resolver = new
+      resolver.send(:geocode_text_google, str) || resolver.send(:geocode_text_nominatim, str)
     end
 
     # Pure haversine distance in km.
@@ -69,12 +77,38 @@ module Geocoding
       nil
     end
 
+    def geocode_text_nominatim(str)
+      query = str.to_s.strip
+      return nil if query.blank?
+
+      uri = URI("https://nominatim.openstreetmap.org/search" \
+                "?format=json&limit=1&q=#{URI.encode_www_form_component(query)}")
+      data = with_nominatim_rate_limit do
+        fetch_json(
+          uri,
+          headers: { "User-Agent" => "GetCourt/1.0 (hello@getcourt.co)" },
+          retries: 3
+        )
+      end
+      result = Array(data).first
+      return nil unless result&.dig("lat") && result&.dig("lon")
+
+      [ Float(result["lat"]), Float(result["lon"]) ]
+    rescue => e
+      Rails.logger.warn("Nominatim text geocoding error: #{e.message}")
+      nil
+    end
+
     def geocode_nominatim_structured(lat, lng)
       uri = URI("https://nominatim.openstreetmap.org/reverse" \
                 "?format=json&lat=#{lat}&lon=#{lng}&accept-language=en")
-      data = fetch_json(uri,
-                        headers: { "User-Agent" => "GetCourt/1.0 (hello@getcourt.co)" },
-                        retries: 3)
+      data = with_nominatim_rate_limit do
+        fetch_json(
+          uri,
+          headers: { "User-Agent" => "GetCourt/1.0 (hello@getcourt.co)" },
+          retries: 3
+        )
+      end
       return nil unless data
 
       addr      = data["address"]
@@ -83,6 +117,16 @@ module Geocoding
     rescue => e
       Rails.logger.warn("Nominatim error: #{e.message}")
       nil
+    end
+
+    def with_nominatim_rate_limit
+      self.class::NOMINATIM_MUTEX.synchronize do
+        now = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        wait = 1.0 - (now - self.class.nominatim_last_request_at)
+        sleep(wait) if wait.positive?
+        self.class.nominatim_last_request_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        yield
+      end
     end
 
     def fetch_json(uri, headers: {}, retries: 1)

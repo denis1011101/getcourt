@@ -39,7 +39,7 @@
       </div>
 
       <% if can_manage?(game) %>
-        <%= link_to edit_game_path(game), class: "relative z-10 p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition dark:hover:bg-white/10 dark:text-slate-400 dark:hover:text-slate-200", title: "Edit" do %>
+        <%= link_to edit_game_path(game), class: "relative z-10 p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition dark:hover:bg-white/10 dark:text-slate-400 dark:hover:text-slate-200", title: t("common.edit") do %>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/>
           </svg>
@@ -56,7 +56,7 @@
     <div class="flex flex-wrap gap-1.5 mb-3">
       <% if game.respond_to?(:sport) && game.sport.present? %>
         <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:bg-slate-700 dark:text-slate-100">
-          <%= game.sport.to_s.titleize %>
+          <%= t("games.sports.#{game.sport.to_s.parameterize(separator: '_')}", default: game.sport.to_s.titleize) %>
         </span>
       <% end %>
 
@@ -81,20 +81,24 @@
 
       <% if game.respond_to?(:with_coach) && game.with_coach? %>
         <span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-500/15 dark:text-blue-200">
-          Coach
+          <%= t("games.badges.coach") %>
         </span>
       <% end %>
 
       <% if game.respond_to?(:recurring) && game.recurring? %>
         <span class="inline-flex items-center rounded-full bg-purple-50 px-2.5 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-500/15 dark:text-purple-200">
-          Weekly
+        <%= t("games.badges.weekly") %>
         </span>
       <% end %>
 
       <% if game.respond_to?(:urgent_player_search?) && game.urgent_player_search? %>
         <span class="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-medium text-rose-700 dark:bg-rose-500/15 dark:text-rose-200">
-    Players search
+    <%= t("games.badges.player_search") %>
         </span>
+      <% end %>
+
+      <% if game.court&.coordinates_pair && game.environment.to_s != "indoor" %>
+        <%= turbo_frame_tag dom_id(game, :weather), src: game_weather_path(game), loading: "lazy", class: "contents" %>
       <% end %>
     </div>
 
@@ -110,6 +114,13 @@
                     tournament_path(game.tournament),
                     class: "relative z-10 truncate font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800" %>
       </div>
+    <% end %>
+
+    <% if game.comment.present? %>
+      <%# One muted line — the full text lives on the game page. %>
+      <p class="mb-3 truncate text-xs text-gray-500 dark:text-slate-400" data-testid="game-card-comment">
+        <%= truncate(game.comment.squish, length: 80) %>
+      </p>
     <% end %>
 
     <!-- Players bar -->
@@ -138,9 +149,9 @@
       </div>
 
       <% if spots_left > 0 %>
-        <span class="text-xs font-medium text-green-600"><%= spots_left %> spot<%= spots_left == 1 ? '' : 's' %> left</span>
+        <span class="text-xs font-medium text-green-600"><%= t("games.card.spots_left", count: spots_left) %></span>
       <% else %>
-        <span class="text-xs font-medium text-red-500">Full</span>
+        <span class="text-xs font-medium text-red-500"><%= t("games.card.full") %></span>
       <% end %>
     </div>
   </div>

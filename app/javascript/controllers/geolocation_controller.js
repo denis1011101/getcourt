@@ -2,6 +2,19 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["input", "button", "results"]
+  static values = {
+    unsupported: String,
+    permissionDenied: String,
+    unavailable: String,
+    timeout: String,
+    failed: String,
+    locating: String,
+    useLocation: String,
+    searching: String,
+    noResults: String,
+    searchError: String,
+    rateLimited: String
+  }
 
   connect() {
     this.isLocating = false
@@ -36,7 +49,7 @@ export default class extends Controller {
 
   locate() {
     if (this.isLocating || !navigator.geolocation) {
-      !navigator.geolocation && window.alert("Geolocation is not supported by your browser.")
+      !navigator.geolocation && window.alert(this.unsupportedValue)
       return
     }
 
@@ -61,19 +74,23 @@ export default class extends Controller {
 
   getGeolocationErrorMessage(err) {
     const messages = {
-      [err.PERMISSION_DENIED]: "Location access denied. Please allow location access in your browser settings.",
-      [err.POSITION_UNAVAILABLE]: "Location information is unavailable.",
-      [err.TIMEOUT]: "Location request timed out."
+      [err.PERMISSION_DENIED]: this.permissionDeniedValue,
+      [err.POSITION_UNAVAILABLE]: this.unavailableValue,
+      [err.TIMEOUT]: this.timeoutValue
     }
-    return messages[err.code] || "Failed to get location."
+    return messages[err.code] || this.failedValue
   }
 
   updateButton(disabled) {
     if (!this.hasButtonTarget) return
     this.buttonTarget.disabled = disabled
-    this.buttonTarget.textContent = disabled ? "Locating..." : (this.buttonTarget.dataset.prevText || "Use my location")
-    if (!disabled) delete this.buttonTarget.dataset.prevText
-    else this.buttonTarget.dataset.prevText = this.buttonTarget.textContent
+    if (disabled) {
+      this.buttonTarget.dataset.prevText ||= this.buttonTarget.textContent
+      this.buttonTarget.textContent = this.locatingValue
+    } else {
+      this.buttonTarget.textContent = this.buttonTarget.dataset.prevText || this.useLocationValue
+      delete this.buttonTarget.dataset.prevText
+    }
   }
 
   setCoordinates(lat, lon) {
@@ -105,7 +122,7 @@ export default class extends Controller {
     if (!query || this.isCoordinates(query) || this.isSearching) return
 
     this.isSearching = true
-    this.renderResults([{ label: "Searching...", class: "muted" }])
+    this.renderResults([{ label: this.searchingValue, class: "muted" }])
 
     try {
       let data = await this.fetchResults(query, "en")
@@ -118,11 +135,11 @@ export default class extends Controller {
               lat: parseFloat(item.lat),
               lon: parseFloat(item.lon)
             }))
-          : [{ label: "No results found", class: "muted" }]
+          : [{ label: this.noResultsValue, class: "muted" }]
       )
     } catch (err) {
       console.warn("Geocoding error:", err)
-      this.renderResults([{ label: "Error searching. Please try again.", class: "muted" }])
+      this.renderResults([{ label: this.searchErrorValue, class: "muted" }])
     } finally {
       this.isSearching = false
     }
@@ -133,7 +150,7 @@ export default class extends Controller {
     const res = await fetch(url)
 
     if (res.status === 429) {
-      this.renderResults([{ label: "Too many requests. Please try again later.", class: "muted" }])
+      this.renderResults([{ label: this.rateLimitedValue, class: "muted" }])
       this.isSearching = false
       return []
     }

@@ -1,4 +1,9 @@
 es:
+  errors:
+    messages:
+      pending_exists: "ya tiene una propuesta pendiente para esta pista"
+      blank_suggestion: "Cambia al menos un campo o añade un comentario"
+      invalid_fields: "contiene campos que no se pueden cambiar"
   score_recognitions:
     errors:
       photo_required: "Selecciona una foto."
@@ -12,12 +17,20 @@ es:
   language_name: "Español"
   locale_suggestion:
     body: "Parece que hablas español. ¿Ir a la versión en español?"
-    yes: "Sí"
+    "yes": "Sí"
     stay: "No, quedarme aquí"
     language_label: "Idioma"
   date:
     formats:
+      default: "%d/%m/%Y"
+      short: "%d/%m/%Y"
       long: "%d/%m/%Y"
+      telegram: "%d/%m/%Y"
+  time:
+    formats:
+      default: "%d/%m/%Y %H:%M"
+      short: "%d/%m/%Y %H:%M"
+      telegram: "%H:%M"
   meta:
     default_title: "GetCourt — crea partidos e invita amigos fácilmente"
     default_description: "GetCourt — crea partidos de tenis, tenis de mesa, squash y pádel. Configuración rápida, gestión de participantes y recordatorios por Telegram."
@@ -91,9 +104,9 @@ es:
       expiry: "El código expira en 10 minutos."
       ignore: "Si no lo solicitaste, puedes ignorar este correo."
     urgent_player_search:
-      subject: "Se necesitan jugadores para un partido en %{city}"
+      subject: "Búsqueda de jugador para un partido en %{city}"
       greeting: "Hola %{name},"
-      intro: "%{owner} busca urgentemente jugadores para un partido en %{city}."
+      intro: "%{owner} busca jugadores para un partido en %{city}."
       organizer_fallback: "Usuario de GetCourt #%{id}"
       date: "Fecha"
       court: "Pista"
@@ -104,9 +117,24 @@ es:
       view_game: "Ver partido"
       manage_html: "Recibes este mensaje porque tienes activadas las alertas de partidos cercanos. <a href='%{url}'>Gestionar notificaciones</a>."
       manage_text: "Gestionar notificaciones"
+    notification:
+      manage: "Gestionar notificaciones"
+      view_game: "Ver partido"
+      game_reminder_subject: "Recordatorio del partido"
+      game_invitation_subject: "Invitación al partido #%{game_id}"
+      stats_subject: "Completa las estadísticas del partido"
+      prebooking_subject: "Solicitud de reserva para el partido #%{game_id}"
+      participation_subject: "Participantes actualizados en el partido #%{game_id}"
+      participation_approved_subject: "Tu solicitud para el partido #%{game_id} ha sido aprobada"
+      participation_rejected_subject: "Tu solicitud para el partido #%{game_id} ha sido rechazada"
+      prebooking_approved_subject: "Tu reserva para el partido #%{game_id} ha sido aprobada"
+      prebooking_rejected_subject: "Tu reserva para el partido #%{game_id} ha sido rechazada"
   sessions:
     privacy_consent_html: "Acepto la <a href='%{url}' class='text-indigo-600 dark:text-indigo-400 hover:underline' target='_blank'>Política de privacidad</a> y consiento el tratamiento de mi email para la autenticación"
     age_consent: "Confirmo que tengo al menos 16 años"
+    telegram_hint:
+      summary: "¿Ya te habías registrado a través de Telegram?"
+      body_html: "Inicia sesión con tu email como siempre y luego abre <a href='%{account_url}' class='text-indigo-600 dark:text-indigo-400 hover:underline'>Cuenta → Notificaciones</a> y envía el comando /register al bot. Tus partidos y estadísticas del bot pasarán a esta cuenta."
     login_code_sent_email: "Código de inicio de sesión enviado a tu email"
     verify:
       title_email: "Introduce el código del email"
@@ -123,6 +151,11 @@ es:
       title: "Ver la final juntos"
       body: "Ven a ver la final en el salón de cachimbas Moment, Avenida Lenin 20, Ekaterimburgo."
   games:
+    sports:
+      tennis: "Tenis"
+      padel: "Pádel"
+      table_tennis: "Tenis de mesa"
+      squash: "Squash"
     index:
       hero_title: "Encuentra tu próximo partido"
       hero_subtitle: "Tenis, pádel, squash, tenis de mesa — únete a un partido cerca de ti o crea el tuyo."
@@ -154,6 +187,8 @@ es:
       time: "Hora"
       duration: "Duración"
       court: "Pista"
+      weather: "Tiempo"
+      comment: "Comentario"
       tournament: "Torneo"
       participants: "Participantes"
       enter_statistics: "Introducir estadísticas"
@@ -241,6 +276,9 @@ es:
       tournament_notice: "Este partido forma parte de un torneo, así que el calendario, la pista y las opciones vienen del torneo."
       tournament_dates_hint: "Dentro de las fechas del torneo: %{range}."
       tournament_courts_hint: "Solo las pistas seleccionadas para el torneo."
+      comment: "Comentario"
+      comment_placeholder: "Llevo las pelotas, entrada por el patio, jugamos 1,5 horas"
+      comment_hint: "Todo lo que no cubren los campos de arriba. Hasta 500 caracteres, visible para todos."
     badges:
       with_coach: "Con entrenador"
       need_coach: "Se necesita entrenador"
@@ -420,6 +458,41 @@ es:
       match_added: "Partido añadido."
       match_exists: "Este partido ya existe."
   courts:
+    suggestions:
+      hint: "¿Has encontrado un dato incorrecto?"
+      cta: "Propón una corrección; la publicaremos tras la revisión del moderador."
+      new_title: "Proponer una corrección para %{court}"
+      new_help: "Cambia solo los datos incorrectos. La pista actual seguirá publicada hasta que un moderador revise la propuesta."
+      comment: "Comentario"
+      comment_placeholder: "Explica cualquier detalle que no aparezca en los campos anteriores"
+      submit: "Enviar propuesta"
+      cancel: "Cancelar"
+      created: "Gracias. Tu propuesta se ha enviado para revisión."
+      pending_exists: "Ya tienes una propuesta pendiente para esta pista."
+      index_title: "Correcciones de pistas"
+      show_title: "Corrección propuesta para %{court}"
+      approve: "Aprobar"
+      reject: "Rechazar"
+      reject_confirm: "¿Rechazar esta propuesta?"
+      approved: "La propuesta se ha aprobado y aplicado."
+      rejected: "La propuesta se ha rechazado."
+      review_failed: "No se pudo revisar la propuesta."
+      open_court: "Abrir pista"
+      back_to_list: "Volver a propuestas"
+      statuses:
+        pending: "Pendiente"
+        approved: "Aprobada"
+        rejected: "Rechazada"
+      fields:
+        name: "Nombre"
+        sport: "Deporte"
+        coordinates: "Coordenadas"
+        contact_type: "Tipo de contacto"
+        contact_value: "Contacto"
+        free: "Gratuita"
+        outdoor: "Exterior"
+        indoor: "Interior"
+        surfaces: "Superficies"
     index:
       meta_title: "Pistas de tenis, pádel y squash — GetCourt"
       meta_description: "Explora pistas de tenis, pádel, squash y tenis de mesa. Encuentra una pista cerca de ti, mira próximos partidos y únete a la comunidad."
@@ -630,6 +703,8 @@ es:
     delete_account_confirm: "¿Eliminar tu cuenta y todos los datos? Esta acción no se puede deshacer."
     delete_account_button: "Eliminar mi cuenta"
     notifications:
+      delivery_title: "Entrega de notificaciones"
+      delivery_help: "Usa este canal para recordatorios, solicitudes, cambios de participantes, estadísticas y búsquedas urgentes."
       nearby_title: "Alertas de búsqueda urgente de jugadores"
       nearby_help: "Recibe un aviso cuando un organizador necesite jugadores urgentemente en tu ciudad."
       nearby_enabled: "Avisarme de búsquedas urgentes de jugadores cercanas"

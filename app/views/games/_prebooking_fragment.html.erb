@@ -4,18 +4,18 @@
   <div class="mb-4">
     <label class="inline-flex items-center gap-2">
       <%= check_box_tag "game[prebooking_enabled]", "1", game.prebooking_enabled?, class: "h-4 w-4 text-indigo-600", id: "game_prebooking_enabled", disabled: !game.recurring? %>
-      <span class="text-sm text-gray-700">Enable prebooking</span>
+      <span class="text-sm text-gray-700"><%= t("games.form.prebooking") %></span>
     </label>
-    <p class="mt-1 text-xs text-gray-500">Players can reserve slots for upcoming dates.</p>
+    <p class="mt-1 text-xs text-gray-500"><%= t("games.form.prebooking_hint") %></p>
     <% unless game.persisted? %>
-      <p class="mt-1 text-xs text-yellow-600">Note: prebooking slots will be created after saving the game.</p>
+      <p class="mt-1 text-xs text-yellow-600"><%= t("games.form.prebooking_note") %></p>
     <% end %>
   </div>
 <% else %>
   <div class="rounded-md border p-3 bg-gray-50 text-sm text-gray-600">
-    Prebooking can be enabled only for repeating (weekly) games.
+    <%= t("games.form.prebooking_locked") %>
     <% unless game.recurring? %>
-      Check "Repeat weekly" to enable prebooking.
+      <%= t("games.form.prebooking_locked_hint") %>
     <% end %>
   </div>
 <% end %>

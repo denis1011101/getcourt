@@ -134,12 +134,14 @@ module ApplicationHelper
   end
 
   def meta_robots_content
+    return @meta_robots if @meta_robots.present?
     return content_for(:meta_robots) if content_for?(:meta_robots)
 
     seo_indexable_locale? ? "index, follow" : "noindex, follow"
   end
 
   def canonical_url
+    return @canonical_url if @canonical_url.present?
     return content_for(:canonical_url) if content_for?(:canonical_url)
 
     "https://#{ApplicationHelper.canonical_host_for(request)}#{request.path}"

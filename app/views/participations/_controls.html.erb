@@ -10,24 +10,24 @@
     <% if user_signed_in? %>
       <% if user_participation %>
         <% if user_participation.respond_to?(:pending?) && user_participation.pending? %>
-          <span class="inline-flex items-center rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:bg-amber-500/15 dark:text-amber-200">Request sent</span>
+          <span class="inline-flex items-center rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:bg-amber-500/15 dark:text-amber-200"><%= t("games.show.request_sent") %></span>
           <%= form_with url: game_participation_path(g, user_participation), method: :delete, data: { turbo: true }, html: { class: "inline-flex" } do |f| %>
-            <%= f.button "Cancel request", type: :submit, class: "inline-flex items-center rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700 transition" %>
+            <%= f.button t("games.show.cancel_request"), type: :submit, class: "inline-flex items-center rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700 transition" %>
           <% end %>
         <% else %>
           <%= form_with url: game_participation_path(g, user_participation), method: :delete, data: { turbo: true }, html: { class: "inline-flex" } do |f| %>
-            <%= f.button "Leave Game", type: :submit, class: "inline-flex items-center rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700 transition" %>
+            <%= f.button t("games.show.leave_game"), type: :submit, class: "inline-flex items-center rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700 transition" %>
           <% end %>
         <% end %>
       <% else %>
         <%= form_with url: game_participations_path(g), method: :post, data: { turbo: true }, html: { class: "inline-flex" } do |f| %>
-          <% join_label = (current_user == g.user || (current_user.respond_to?(:admin?) && current_user.admin?)) ? "Join" : "Request to join" %>
+          <% join_label = (current_user == g.user || (current_user.respond_to?(:admin?) && current_user.admin?)) ? t("games.show.join") : t("games.show.request_to_join") %>
           <%= f.button join_label, type: :submit, class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition" %>
         <% end %>
       <% end %>
     <% else %>
       <a href="<%= sign_in_path %>" class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition">
-        Login to join
+        <%= t("games.show.login_to_join") %>
       </a>
     <% end %>
   </div>

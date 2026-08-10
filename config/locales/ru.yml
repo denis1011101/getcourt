@@ -1,4 +1,9 @@
 ru:
+  errors:
+    messages:
+      pending_exists: "уже имеет предложение для этого корта на проверке"
+      blank_suggestion: "Измените хотя бы одно поле или добавьте комментарий"
+      invalid_fields: "содержит поля, которые нельзя изменять"
   score_recognitions:
     errors:
       photo_required: "Выберите фото."
@@ -11,12 +16,16 @@ ru:
   language_name: "Русский"
   locale_suggestion:
     body: "Похоже, вы говорите по-русски. Перейти на русскую версию?"
-    yes: "Да"
+    "yes": "Да"
     stay: "Нет, остаться"
     language_label: "Язык"
   date:
     formats:
       long: "%d.%m.%Y"
+      telegram: "%d.%m.%Y"
+  time:
+    formats:
+      telegram: "%H:%M"
   meta:
     default_title: "GetCourt — создавайте игры и приглашайте друзей"
     default_description: "GetCourt — создавайте игры в теннис, настольный теннис, сквош и падел. Быстрая настройка, управление участниками и напоминания в Telegram."
@@ -90,9 +99,9 @@ ru:
       expiry: "Код действует 10 минут."
       ignore: "Если вы не запрашивали код — просто проигнорируйте это письмо."
     urgent_player_search:
-      subject: "Ищем игроков на игру в городе %{city}"
+      subject: "Поиск игрока для игры в городе %{city}"
       greeting: "Здравствуйте, %{name}!"
-      intro: "%{owner} срочно ищет игроков на игру в городе %{city}."
+      intro: "%{owner} ищет игроков на игру в городе %{city}."
       organizer_fallback: "Пользователь GetCourt №%{id}"
       date: "Дата"
       court: "Корт"
@@ -103,9 +112,24 @@ ru:
       view_game: "Открыть игру"
       manage_html: "Вы получили это письмо, потому что включили уведомления об играх рядом. <a href='%{url}'>Настроить уведомления</a>."
       manage_text: "Настроить уведомления"
+    notification:
+      manage: "Настроить уведомления"
+      view_game: "Открыть игру"
+      game_reminder_subject: "Напоминание об игре"
+      game_invitation_subject: "Приглашение в игру #%{game_id}"
+      stats_subject: "Заполните статистику игры"
+      prebooking_subject: "Запрос на предбронирование игры #%{game_id}"
+      participation_subject: "Изменился состав игры #%{game_id}"
+      participation_approved_subject: "Ваша заявка в игру #%{game_id} одобрена"
+      participation_rejected_subject: "Ваша заявка в игру #%{game_id} отклонена"
+      prebooking_approved_subject: "Ваше предбронирование игры #%{game_id} одобрено"
+      prebooking_rejected_subject: "Ваше предбронирование игры #%{game_id} отклонено"
   sessions:
     privacy_consent_html: "Я согласен с <a href='%{url}' class='text-indigo-600 dark:text-indigo-400 hover:underline' target='_blank'>Политикой конфиденциальности</a> и даю согласие на обработку email для входа"
     age_consent: "Я подтверждаю, что мне уже исполнилось 16 лет"
+    telegram_hint:
+      summary: "Регистрировались раньше через Telegram?"
+      body_html: "Войдите по своей почте как обычно, потом откройте <a href='%{account_url}' class='text-indigo-600 dark:text-indigo-400 hover:underline'>Кабинет → Уведомления</a> и отправьте боту команду /register. Игры и статистика из бота переедут в этот аккаунт."
     login_code_sent_email: "Код входа отправлен на ваш email"
     verify:
       title_email: "Введите код из письма"
@@ -122,6 +146,11 @@ ru:
       title: "Смотрим финал вместе"
       body: "Приходите смотреть финал в кальянную «Момент», проспект Ленина, 20, Екатеринбург."
   games:
+    sports:
+      tennis: "Теннис"
+      padel: "Падел"
+      table_tennis: "Настольный теннис"
+      squash: "Сквош"
     index:
       hero_title: "Найдите следующую игру"
       hero_subtitle: "Теннис, падел, сквош, настольный теннис — присоединяйтесь к матчу рядом или создайте свой."
@@ -153,6 +182,8 @@ ru:
       time: "Время"
       duration: "Длительность"
       court: "Корт"
+      weather: "Погода"
+      comment: "Комментарий"
       tournament: "Турнир"
       participants: "Участники"
       enter_statistics: "Внести статистику"
@@ -242,6 +273,9 @@ ru:
       tournament_notice: "Эта игра — часть турнира, поэтому расписание, корт и настройки берутся из турнира."
       tournament_dates_hint: "В пределах дат турнира: %{range}."
       tournament_courts_hint: "Только корты, выбранные для турнира."
+      comment: "Комментарий"
+      comment_placeholder: "Мяч свой, вход со двора, играем 1,5 часа"
+      comment_hint: "Всё, что не влезло в поля выше. До 500 символов, видно всем."
     badges:
       with_coach: "С тренером"
       need_coach: "Нужен тренер"
@@ -433,6 +467,41 @@ ru:
       match_added: "Матч добавлен."
       match_exists: "Такой матч уже есть."
   courts:
+    suggestions:
+      hint: "Нашли неточность?"
+      cta: "Предложите правку — опубликуем после проверки модератором."
+      new_title: "Предложить правку для корта «%{court}»"
+      new_help: "Измените только неточные данные. Текущий корт останется опубликованным до проверки предложения модератором."
+      comment: "Комментарий"
+      comment_placeholder: "Опишите то, для чего не подошли поля выше"
+      submit: "Отправить предложение"
+      cancel: "Отмена"
+      created: "Спасибо. Предложение отправлено на проверку модератору."
+      pending_exists: "У вас уже есть предложение для этого корта на проверке."
+      index_title: "Предложения правок кортов"
+      show_title: "Предложение правки для корта «%{court}»"
+      approve: "Одобрить"
+      reject: "Отклонить"
+      reject_confirm: "Отклонить это предложение?"
+      approved: "Предложение одобрено и применено."
+      rejected: "Предложение отклонено."
+      review_failed: "Не удалось обработать предложение."
+      open_court: "Открыть корт"
+      back_to_list: "К списку предложений"
+      statuses:
+        pending: "На проверке"
+        approved: "Одобрено"
+        rejected: "Отклонено"
+      fields:
+        name: "Название"
+        sport: "Спорт"
+        coordinates: "Координаты"
+        contact_type: "Тип контакта"
+        contact_value: "Контакт"
+        free: "Бесплатный"
+        outdoor: "Открытый"
+        indoor: "Крытый"
+        surfaces: "Покрытия"
     index:
       meta_title: "Корты для тенниса, падела и сквоша — GetCourt"
       meta_description: "Ищите корты для тенниса, падела, сквоша и настольного тенниса. Найдите корт рядом, смотрите ближайшие игры и присоединяйтесь к сообществу."
@@ -645,6 +714,8 @@ ru:
     delete_account_confirm: "Удалить аккаунт и все данные? Это действие нельзя отменить."
     delete_account_button: "Удалить мой аккаунт"
     notifications:
+      delivery_title: "Доставка уведомлений"
+      delivery_help: "Этот канал используется для напоминаний, заявок, изменений состава, статистики и срочного поиска игроков."
       nearby_title: "Срочный поиск игроков"
       nearby_help: "Получайте уведомления, когда организатору срочно нужны игроки в вашем городе."
       nearby_enabled: "Уведомлять меня о срочном поиске игроков рядом"

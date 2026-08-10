@@ -1,0 +1,13 @@
+<% tournament = card.record %>
+<% participants = tournament.approved_participants_count %>
+
+<div class="p-4">
+  <p class="text-xs font-semibold uppercase tracking-wide text-fuchsia-600 dark:text-fuchsia-300"><%= t("tennis_life.feed.tournament.title") %></p>
+  <h2 class="mt-2 text-base font-semibold text-gray-900 dark:text-slate-100"><%= tournament.name %></h2>
+  <p class="mt-1 text-sm text-gray-600 dark:text-slate-300">
+    <%= tournament.start_date&.strftime("%Y-%m-%d") || t("tournaments.card.date_tbd") %>
+    <% if tournament.format.present? %> · <%= t("tournaments.formats.#{tournament.format}", default: tournament.format) %><% end %>
+  </p>
+  <p class="mt-2 text-xs text-gray-500 dark:text-slate-400"><%= t("tennis_life.feed.tournament.participants", count: participants) %></p>
+  <%= link_to "#{t("tennis_life.feed.tournament.view")} →", tournament_path(tournament), class: "mt-3 inline-block text-sm text-indigo-600 hover:underline dark:text-indigo-400" %>
+</div>

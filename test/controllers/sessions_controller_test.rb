@@ -8,6 +8,15 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "sign-in page tells bot users how to link their existing account" do
+    get new_session_url
+
+    assert_response :success
+    assert_select '[data-testid="telegram-signup-hint"]', 1
+    assert_select '[data-testid="telegram-signup-hint"] summary', text: "Did you previously sign up through Telegram?"
+    assert_select '[data-testid="telegram-signup-hint"] a[href=?]', notifications_account_path
+  end
+
   test "should create session" do
     post session_url, params: { email: "sessions_test@example.com" }
     assert_redirected_to root_path
@@ -23,12 +32,12 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     user = User.find_by!(email: email)
     assert_equal "en", user.telegram_locale
     assert_equal "en", user.locale
-    assert_equal "email", user.nearby_notification_channel
+    assert_equal "email", user.notification_channel
   ensure
     User.find_by(email: email)&.destroy if defined?(email)
   end
 
-  test "new user created from unsupported telegram locale keeps default telegram locale" do
+  test "new user created from es locale stores es telegram locale" do
     host! "es.getcourt.co"
     email = "sessions_es_locale@example.com"
 
@@ -36,7 +45,7 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to root_path
     user = User.find_by!(email: email)
-    assert_equal "ru", user.telegram_locale
+    assert_equal "es", user.telegram_locale
     assert_equal "es", user.locale
   ensure
     User.find_by(email: email)&.destroy if defined?(email)

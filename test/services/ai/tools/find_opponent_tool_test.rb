@@ -5,13 +5,9 @@ class Ai::Tools::FindOpponentToolTest < ActiveSupport::TestCase
     requester = User.new(id: 99, city_name: "Moscow")
     matching = User.new(id: 2, city_name: "Moscow", skill_level: "beginner", telegram_username: "match_user")
     relation = FakeRelation.new([ matching ])
-    where_args = nil
     fake_summary = { games: 5, wins: 3, win_pct: 60.0 }
 
-    stub_singleton(User, :where, ->(*args) {
-      where_args = args
-      relation
-    }) do
+    stub_singleton(User, :not_merged, ->(*) { relation }) do
       stub_singleton(PlayerStatistic, :summary_for, ->(_u) { fake_summary }) do
         result = Ai::Tools::FindOpponentTool.new(requester).execute(city: "Moscow", skill_level: "beginner")
 
@@ -23,7 +19,7 @@ class Ai::Tools::FindOpponentToolTest < ActiveSupport::TestCase
         assert_equal 5, opponent[:games]
         assert_equal 3, opponent[:wins]
         assert_equal 60.0, opponent[:win_pct]
-        assert_equal [ "LOWER(city_name) LIKE LOWER(?)", "%Moscow%" ], where_args
+        assert_equal [ [ "LOWER(city_name) LIKE LOWER(?)", "%Moscow%" ] ], relation.where_calls
         assert_equal [ { id: 99 } ], relation.where_not_calls
         assert_equal [ { coach: [ false, nil ] }, { skill_level: "beginner" } ], relation.extra_where_calls
       end
@@ -34,7 +30,7 @@ class Ai::Tools::FindOpponentToolTest < ActiveSupport::TestCase
     requester = User.new(city_name: "Kazan")
     relation = FakeRelation.new([])
 
-    stub_singleton(User, :where, relation) do
+    stub_singleton(User, :not_merged, ->(*) { relation }) do
       result = Ai::Tools::FindOpponentTool.new(requester).execute
 
       assert_equal "Kazan", result[:city]

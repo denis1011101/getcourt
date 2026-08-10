@@ -3,42 +3,58 @@ class NotifyPrebookingOwnerJob < ApplicationJob
 
   def perform(game_id, user_id, batch_ts)
     cache_key = "prebooking_notify:#{game_id}:#{user_id}"
-    cached_ts = Rails.cache.read(cache_key)
-
-    # Only proceed if this is the latest batch (debounce: skip if a newer booking was made)
-    return unless cached_ts.to_s == batch_ts.to_s
+    return unless Rails.cache.read(cache_key).to_s == batch_ts.to_s
 
     Rails.cache.delete(cache_key)
 
     game = Game.find_by(id: game_id)
-    user = User.find_by(id: user_id)
-    return unless game && user
+    requester = User.find_by(id: user_id)
+    owner = game&.user
+    return unless game && requester && owner
 
-    owner = game.user
-    return unless owner&.telegram_chat_id.present?
+    pending = game.prebookings.where(user_id: requester.id, status: "pending")
+    return if pending.empty?
 
-    pending_prebookings = game.prebookings.where(user_id: user.id, status: "pending")
-    return if pending_prebookings.empty?
+    game_url = "#{app_host}/games/#{game.id}"
+    notification = NotificationDelivery::Notification.new(
+      subject: lambda do |locale|
+        I18n.t("user_mailer.notification.prebooking_subject", locale: locale, game_id: game.id)
+      end,
+      body: ->(locale) { notification_text(game, requester, pending, locale, game_url) },
+      actions: ->(locale) { notification_actions(game, requester, locale, game_url) }
+    )
 
-    requester = Telegram::Helpers::UserLookup.display_name(user)
+    NotificationDelivery.deliver(user: owner, notification: notification)
+  end
 
-    dates_text = pending_prebookings.map { |pb| pb.date.strftime("%Y-%m-%d") }.sort.join(", ")
-    host = ENV.fetch("APP_HOST", ENV.fetch("HOSTNAME", "https://getcourt.co"))
-    game_url = "#{host}/games/#{game.id}"
-    text = "Prebooking request for Game ##{game.id} from #{requester}\nDates: #{dates_text}\n\n#{game_url}"
+  private
 
-    buttons = [
-      [
-        { text: "Approve All", callback_data: "game:approve_all_prebookings:#{game.id}:#{user.id}" },
-        { text: "Reject All",  callback_data: "game:reject_all_prebookings:#{game.id}:#{user.id}" }
-      ]
+  def notification_text(game, requester, pending, locale, game_url)
+    fallback = Telegram::I18n.t(:user_fallback, locale: locale)
+    name = Telegram::Helpers::UserLookup.display_name(requester, fallback: fallback)
+    dates = pending.map(&:date).sort.map { |date| I18n.l(date, format: :telegram, locale: locale) }.join(", ")
+    request = Telegram::I18n.t(:prebooking_request, locale: locale, game_id: game.id, name: name)
+    dates_line = Telegram::I18n.t(:dates_label, locale: locale, dates: dates)
+    [ request, dates_line, game_url ].join("\n")
+  end
+
+  def notification_actions(game, requester, locale, game_url)
+    [
+      {
+        label: Telegram::I18n.t(:approve_all, locale: locale),
+        callback_data: "game:approve_all_prebookings:#{game.id}:#{requester.id}",
+        row: 0,
+        url: game_url
+      },
+      {
+        label: Telegram::I18n.t(:reject_all, locale: locale),
+        callback_data: "game:reject_all_prebookings:#{game.id}:#{requester.id}",
+        row: 0
+      }
     ]
+  end
 
-    poller = Telegram::Poller.new
-    poller.send_api("sendMessage", {
-      chat_id: owner.telegram_chat_id,
-      text: text,
-      reply_markup: { inline_keyboard: buttons }
-    }) rescue nil
+  def app_host
+    ENV.fetch("APP_HOST", ENV.fetch("HOSTNAME", "https://getcourt.co"))
   end
 end

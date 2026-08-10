@@ -1,9 +1,15 @@
 class User < ApplicationRecord
-  before_validation :normalize_email, :titleize_city_name, :set_default_nearby_notification_channel
+  before_validation :normalize_email, :titleize_city_name, :set_default_notification_channel
   before_validation :set_default_registration_source, on: :create
 
   has_one :player_statistic, dependent: :destroy
+  belongs_to :merged_into, class_name: "User", optional: true
+  has_many :merged_users, class_name: "User", foreign_key: :merged_into_id, dependent: :nullify, inverse_of: :merged_into
   after_create :ensure_player_statistic
+
+  # Accounts merged into another one stay in the table for history, but must not
+  # show up anywhere people are listed or picked.
+  scope :not_merged, -> { where(merged_at: nil) }
 
   SKILL_LEVELS = %w[beginner intermediate advanced pro].freeze
   SPORTS = SportCatalog::SPORTS
@@ -35,18 +41,18 @@ class User < ApplicationRecord
   attribute :preferred_sports, :json, default: []
   attribute :skill_levels, :json, default: {}
   attribute :timezone, :string
-  attribute :telegram_locale, :string, default: "ru"
+  attribute :telegram_locale, :string
   attribute :recent_invite_handles, :json, default: []
 
   RECENT_INVITE_LISTS_LIMIT = 5
 
-  TELEGRAM_LOCALES = %w[ru en].freeze
+  TELEGRAM_LOCALES = %w[ru en es].freeze
   WEB_LOCALES = %w[en es ru].freeze
-  NEARBY_NOTIFICATION_CHANNELS = %w[email telegram].freeze
+  NOTIFICATION_CHANNELS = %w[email telegram].freeze
 
   validates :telegram_locale, inclusion: { in: TELEGRAM_LOCALES }, allow_blank: true
   validates :locale, inclusion: { in: WEB_LOCALES }, allow_blank: true
-  validates :nearby_notification_channel, inclusion: { in: NEARBY_NOTIFICATION_CHANNELS }
+  validates :notification_channel, inclusion: { in: NOTIFICATION_CHANNELS }
 
   # возвращает уровень для спорта (строка или nil)
   def skill_level_for(sport)
@@ -73,6 +79,8 @@ class User < ApplicationRecord
   has_many :games
   has_many :participations
   has_many :favorite_court_links, class_name: "FavoriteCourt", dependent: :destroy
+  has_many :court_suggestions, dependent: :destroy
+  has_many :reviewed_court_suggestions, class_name: "CourtSuggestion", foreign_key: :reviewed_by_id, dependent: :nullify, inverse_of: :reviewed_by
   has_many :favorite_courts, through: :favorite_court_links, source: :court
 
   validates :email, presence: true, uniqueness: { case_sensitive: false }
@@ -161,8 +169,8 @@ class User < ApplicationRecord
     true  # явно возвращаем true
   end
 
-  def set_default_nearby_notification_channel
-    self.nearby_notification_channel ||= telegram_chat_id.present? ? "telegram" : "email"
+  def set_default_notification_channel
+    self.notification_channel ||= telegram_chat_id.present? ? "telegram" : "email"
   end
 
   def skill_levels_values_valid

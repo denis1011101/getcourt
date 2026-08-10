@@ -6,8 +6,8 @@
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
       "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Home", "item": root_url },
-        { "@type": "ListItem", "position": 2, "name": "Courts", "item": courts_url },
+        { "@type": "ListItem", "position": 1, "name": t("layout.nav.home"), "item": root_url },
+        { "@type": "ListItem", "position": 2, "name": t("layout.nav.courts"), "item": courts_url },
         { "@type": "ListItem", "position": 3, "name": @court.name }
       ]
     }.to_json).html_safe %>
@@ -68,14 +68,21 @@
 
   <% if @court.pending? %>
     <div class="mb-4 rounded-xl border border-yellow-200 bg-yellow-50 dark:bg-yellow-500/10 dark:border-yellow-500/20 p-4 text-sm text-yellow-800 dark:text-yellow-200">
-      This court is under moderation.
+      <%= t("courts.show.pending_moderation") %>
     </div>
     <% if current_user&.admin? %>
       <div class="mb-4 flex items-center gap-2">
-        <%= button_to "Approve", approve_court_path(@court), method: :post, class: "inline-flex items-center rounded-full bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition" %>
-        <%= button_to "Reject", reject_court_path(@court), method: :post, data: { turbo_confirm: "Reject this court?" }, class: "inline-flex items-center rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition" %>
+        <%= button_to t("common.approve"), approve_court_path(@court), method: :post, class: "inline-flex items-center rounded-full bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition" %>
+        <%= button_to t("common.reject"), reject_court_path(@court), method: :post, data: { turbo_confirm: t("courts.show.reject_confirm") }, class: "inline-flex items-center rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition" %>
       </div>
     <% end %>
+  <% end %>
+
+  <% if user_signed_in? && !can_manage?(@court) %>
+    <div class="mb-6 rounded-xl border border-indigo-100 bg-indigo-50 p-4 text-sm text-indigo-900 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-100">
+      <%= t("courts.suggestions.hint") %>
+      <%= link_to t("courts.suggestions.cta"), new_court_correction_path(@court), class: "ml-1 font-semibold underline" %>
+    </div>
   <% end %>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -92,7 +99,7 @@
                  class="h-48 w-full"></div>
           <% else %>
             <div class="h-48 w-full bg-gray-50 dark:bg-slate-700 flex items-center justify-center text-gray-400 dark:text-slate-500">
-              Coordinates not available
+              <%= t("courts.show.no_coordinates") %>
             </div>
           <% end %>
         <% end %>
@@ -159,11 +166,11 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
             </svg>
-            Create Game
+            <%= t("courts.show.create_game") %>
           <% end %>
         <% else %>
           <%= link_to sign_in_path, class: "inline-flex items-center gap-1.5 rounded-full bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition" do %>
-            Sign in to Create Game
+            <%= t("courts.show.sign_in_to_create_game") %>
           <% end %>
         <% end %>
         </div>

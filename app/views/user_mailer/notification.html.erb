@@ -1,0 +1,19 @@
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; color: #1e1b4b;">
+  <h1 style="font-size: 22px; font-weight: 700; margin: 0 0 16px;">
+    <span style="color: #1e1b4b;">Get</span><span style="color: #7c6fea;">Court</span>
+  </h1>
+
+  <div style="font-size: 15px; line-height: 1.6; white-space: pre-line;"><%= @body %></div>
+
+  <% if @actions.present? %>
+    <div style="margin: 20px 0;">
+      <% @actions.each do |action| %>
+        <a href="<%= action.fetch(:url) %>" style="display: inline-block; border-radius: 6px; background: #4f46e5; margin: 0 8px 8px 0; padding: 10px 16px; color: #fff; text-decoration: none;"><%= action.fetch(:label) %></a>
+      <% end %>
+    </div>
+  <% end %>
+
+  <p style="font-size: 12px; color: #777; line-height: 1.5;">
+    <a href="<%= @notifications_url %>"><%= I18n.t("user_mailer.notification.manage", locale: I18n.locale) %></a>
+  </p>
+</div>

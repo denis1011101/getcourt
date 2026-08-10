@@ -67,4 +67,46 @@ class ParticipationsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :forbidden
   end
+
+  # Removing someone from your own game is your own action — you should not get
+  # a notification about it. The guest branches above already guard against this.
+  test "owner is not notified about a participant they removed themselves" do
+    post session_url, params: { email: "removal_owner@example.com" }
+    owner = User.find_by!(email: "removal_owner@example.com")
+    player = User.create!(email: "removal_player@example.com")
+    game = Game.create!(court: courts(:one), user: owner, date: Date.tomorrow, time: "10:00")
+    participation = Participation.create!(game: game, user: player, status: "approved")
+
+    assert_enqueued_emails 0 do
+      delete game_participation_url(game, participation)
+    end
+
+    assert_redirected_to game_path(game)
+  end
+
+  test "owner is notified when a participant leaves on their own" do
+    owner = User.create!(email: "leave_owner@example.com")
+    game = Game.create!(court: courts(:one), user: owner, date: Date.tomorrow, time: "10:00")
+    post session_url, params: { email: "leave_player@example.com" }
+    player = User.find_by!(email: "leave_player@example.com")
+    participation = Participation.create!(game: game, user: player, status: "approved")
+
+    assert_enqueued_emails 1 do
+      delete game_participation_url(game, participation)
+    end
+  end
+
+  test "owner is notified when an admin removes a participant" do
+    owner = User.create!(email: "admin_removal_owner@example.com")
+    game = Game.create!(court: courts(:one), user: owner, date: Date.tomorrow, time: "10:00")
+    player = User.create!(email: "admin_removal_player@example.com")
+    participation = Participation.create!(game: game, user: player, status: "approved")
+
+    post session_url, params: { email: "admin_removal_admin@example.com" }
+    User.find_by!(email: "admin_removal_admin@example.com").update!(admin: true)
+
+    assert_enqueued_emails 1 do
+      delete game_participation_url(game, participation)
+    end
+  end
 end

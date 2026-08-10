@@ -120,7 +120,7 @@
     </div>
   </div>
 
-  <%= render "shared/results_summary", count: @courts.size, noun: "court", filters: location_filter_labels do %>
+  <%= render "shared/results_summary", count: @courts.size, label: t("courts.index.count", count: @pagy&.count || @courts.size), filters: location_filter_labels do %>
     <% if user_signed_in? %>
       <%= link_to new_court_path, class: "hidden md:inline-flex items-center gap-1.5 rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition" do %>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

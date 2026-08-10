@@ -22,25 +22,28 @@ module Telegram
           players_line = t.(:players, count: participants_count, capacity: capacity)
           owner = User.find_by(id: game.user_id) rescue nil
           owner_name = Telegram::Helpers::UserLookup.display_name(owner, fallback: owner&.telegram_chat_id || "—")
-          owner_line = t.(:owner, name: owner_name)
 
           host = ENV.fetch("APP_HOST", "https://getcourt.co")
           game_url = Rails.application.routes.url_helpers.game_url(game, host: host)
 
           lines = []
-          title = Telegram::Helpers::GameFormatting.game_title(game)
+          title = Telegram::Helpers::GameFormatting.game_title(game, locale: locale)
           title_text = "#{title || 'Game'} ##{game.id}"
-          lines << "*#{title_text}*"
+          lines << "*#{escape_markdown(title_text)}*"
 
-          coach = coach_badge_for(game, locale)
+          coach = Telegram::Helpers::GameFormatting.coach_mark(game, locale: locale)
           lines << t.(:coach_label, value: coach) if coach.present?
 
-          when_str = Telegram::Helpers::GameFormatting.game_datetime(game)
+          when_str = Telegram::Helpers::GameFormatting.game_datetime(game, locale: locale)
           lines << t.(:when_label, datetime: when_str) if when_str.present?
 
+          reading = Weather::GoogleForecast.for_game(game, timeout: { open: 2, read: 3 })
+          lines << t.(:weather_label, value: weather_text(reading)) if reading
+
           lines << players_line
-          lines << t.(:court_label, name: game.court&.name) if game.respond_to?(:court) && game.court
-          lines << owner_line
+          lines << t.(:court_label, name: escape_markdown(game.court&.name)) if game.respond_to?(:court) && game.court
+          lines << t.(:comment_label, value: escape_markdown(game.comment)) if game.comment.present?
+          lines << t.(:owner, name: escape_markdown(owner_name))
           text = lines.compact.join("\n")
 
           buttons = []
@@ -61,41 +64,45 @@ module Telegram
 
           row1 = [ join_btn ]
 
-          if game.prebooking_enabled? && (!game.respond_to?(:recurring?) || game.recurring?)
-            row1 << { text: t.(:prebooking), callback_data: "game:prebook:#{game.id}" }
-          end
+          # [bot-menu-off] Отключено намеренно: пользуемся сайтом getcourt.co,
+          # бот оставлен только для приглашений и карточки игры.
+          # Раскомментировать, если решим вернуть функциональность в бот.
+          # if game.prebooking_enabled? && (!game.respond_to?(:recurring?) || game.recurring?)
+          #   row1 << { text: t.(:prebooking), callback_data: "game:prebook:#{game.id}" }
+          # end
 
           buttons << row1
 
-          can_fill_stats = can_fill_stats_for_game?(user, game)
-
           buttons << [ { text: t.(:players_list_btn), callback_data: "game:players:#{game.id}:#{page}" } ]
 
-          if game.started_for_ui?
-            if can_fill_stats
-              buttons << [ { text: t.(:statistics), callback_data: "tg_fill:#{game.id}:#{page}" } ]
-            else
-              buttons << [ { text: t.(:statistics), callback_data: "tg_stats_unauthorized:#{game.id}" } ]
-            end
-          else
-            buttons << [ { text: t.(:statistics_locked), callback_data: "tg_stats_locked:#{game.id}" } ]
-          end
-
-          if user && (user.admin? || user.id == game.user_id)
-            if game.urgent_player_search?
-              buttons << [ { text: t.(:urgent_search_disable), callback_data: "game:urgent_search:#{game.id}:off:#{page}" } ]
-            else
-              buttons << [ { text: t.(:urgent_search_enable), callback_data: "game:urgent_search:#{game.id}:on:#{page}" } ]
-            end
-            buttons << [ { text: t.(:invite_players), callback_data: "game:invite:#{game.id}" } ]
-            buttons << [ { text: t.(:manage_players), callback_data: "game:manage:#{game.id}:#{page}" } ]
-            buttons << [ { text: t.(:edit), callback_data: "game:edit:#{game.id}" } ]
-            buttons << [ { text: t.(:delete), callback_data: "game:delete:#{game.id}:#{page}" } ]
-          end
-
-          buttons << [ { text: t.(:share_game), callback_data: "game:share:#{game.id}:#{page}" } ]
           buttons << [ { text: t.(:open_in_browser), url: game_url } ] unless host.to_s.include?("localhost")
-          buttons << [ { text: t.(:back_to_games), callback_data: "menu:games:page:#{page}" } ]
+
+          # [bot-menu-off] Отключено намеренно: пользуемся сайтом getcourt.co,
+          # бот оставлен только для приглашений и карточки игры.
+          # Раскомментировать, если решим вернуть функциональность в бот.
+          # can_fill_stats = can_fill_stats_for_game?(user, game)
+          # if game.started_for_ui?
+          #   if can_fill_stats
+          #     buttons << [ { text: t.(:statistics), callback_data: "tg_fill:#{game.id}:#{page}" } ]
+          #   else
+          #     buttons << [ { text: t.(:statistics), callback_data: "tg_stats_unauthorized:#{game.id}" } ]
+          #   end
+          # else
+          #   buttons << [ { text: t.(:statistics_locked), callback_data: "tg_stats_locked:#{game.id}" } ]
+          # end
+          # if user && (user.admin? || user.id == game.user_id)
+          #   if game.urgent_player_search?
+          #     buttons << [ { text: t.(:urgent_search_disable), callback_data: "game:urgent_search:#{game.id}:off:#{page}" } ]
+          #   else
+          #     buttons << [ { text: t.(:urgent_search_enable), callback_data: "game:urgent_search:#{game.id}:on:#{page}" } ]
+          #   end
+          #   buttons << [ { text: t.(:invite_players), callback_data: "game:invite:#{game.id}" } ]
+          #   buttons << [ { text: t.(:manage_players), callback_data: "game:manage:#{game.id}:#{page}" } ]
+          #   buttons << [ { text: t.(:edit), callback_data: "game:edit:#{game.id}" } ]
+          #   buttons << [ { text: t.(:delete), callback_data: "game:delete:#{game.id}:#{page}" } ]
+          # end
+          # buttons << [ { text: t.(:share_game), callback_data: "game:share:#{game.id}:#{page}" } ]
+          # buttons << [ { text: t.(:back_to_games), callback_data: "menu:games:page:#{page}" } ]
 
           send_or_edit_with_buttons(chat_id, text, buttons, message_id: message_id)
         end
@@ -150,29 +157,28 @@ module Telegram
 
         private
 
-        def can_fill_stats_for_game?(user, game)
-          return false unless user && game
-          return true if user.admin? || user.id == game.user_id
+        # [bot-menu-off] Отключено намеренно: пользуемся сайтом getcourt.co,
+        # бот оставлен только для приглашений и карточки игры.
+        # Раскомментировать, если решим вернуть функциональность в бот.
+        # def can_fill_stats_for_game?(user, game)
+        #   return false unless user && game
+        #   return true if user.admin? || user.id == game.user_id
+        #   participations = game.participations
+        #   if participations.respond_to?(:approved)
+        #     participations.approved.exists?(user_id: user.id)
+        #   else
+        #     participations.exists?(user_id: user.id, status: "approved")
+        #   end
+        # end
 
-          participations = game.participations
-          if participations.respond_to?(:approved)
-            participations.approved.exists?(user_id: user.id)
-          else
-            participations.exists?(user_id: user.id, status: "approved")
-          end
+        def escape_markdown(text)
+          text.to_s.gsub(/([_*\[\]\x60])/) { |character| "\\#{character}" }
         end
 
-        def coach_badge_for(game, locale = "ru")
-          return nil unless game
-          t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
-
-          if game.respond_to?(:with_coach?) && game.with_coach?
-            t.(:coach_with)
-          elsif game.respond_to?(:needs_coach?) && game.needs_coach?
-            t.(:coach_need)
-          elsif game.respond_to?(:with_coach?) || game.respond_to?(:needs_coach?)
-            t.(:coach_no)
-          end
+        def weather_text(reading)
+          text = "#{Weather::Icons.for(reading.condition_type)} #{reading.temperature_c.round}°"
+          text += " · #{reading.precipitation_percent}%" if reading.precipitation_percent.to_i >= 30
+          text
         end
       end
     end

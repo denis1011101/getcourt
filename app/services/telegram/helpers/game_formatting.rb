@@ -1,47 +1,59 @@
 module Telegram
   module Helpers
-    # Shared game date/time formatting extracted from GamesHandler and MessageHandler.
-    # Both had identical copies of these methods.
     module GameFormatting
-      # Returns "YYYY-MM-DD HH:MM" or "YYYY-MM-DD" for a game.
-      def self.game_datetime(game)
-        d = resolve_date(game)
-        return nil unless d.present?
+      def self.game_datetime(game, locale: Telegram::I18n::DEFAULT_LOCALE)
+        date = resolve_date(game)
+        return nil unless date.present?
 
-        t = resolve_time(game)
-
-        date_str = d.respond_to?(:strftime) ? d.strftime("%Y-%m-%d") : d.to_s
-        time_str = format_time_hhmm(t)
-
-        time_str.present? ? "#{date_str} #{time_str}" : date_str
+        time = resolve_time(game)
+        date_text = date.respond_to?(:strftime) ? ::I18n.l(date, format: :telegram, locale: locale) : date.to_s
+        time_text = format_time_hhmm(time, locale: locale)
+        time_text.present? ? "#{date_text} #{time_text}" : date_text
       end
 
-      # Formats a time value (Time, String, nil) into "HH:MM" or nil.
-      def self.format_time_hhmm(t)
-        return nil if t.nil?
-        return t.strftime("%H:%M") if t.respond_to?(:strftime)
+      def self.format_time_hhmm(time, locale: Telegram::I18n::DEFAULT_LOCALE)
+        return nil if time.nil?
+        return ::I18n.l(time, format: :telegram, locale: locale) if time.respond_to?(:strftime)
 
-        s = t.to_s.strip
-        return nil if s.empty?
+        value = time.to_s.strip
+        return nil if value.empty?
 
-        parts = s.split(":")
+        parts = value.split(":")
         return nil if parts.size < 2
 
-        hh = parts[0].to_i.to_s.rjust(2, "0")
-        mm = parts[1].to_i.to_s.rjust(2, "0")
-        "#{hh}:#{mm}"
+        "#{parts[0].to_i.to_s.rjust(2, "0")}:#{parts[1].to_i.to_s.rjust(2, "0")}"
       end
 
-      # Extracts game title: title > sport > "Game"
-      def self.game_title(game)
+      def self.game_title(game, locale: Telegram::I18n::DEFAULT_LOCALE)
         if game.respond_to?(:has_attribute?) && game.has_attribute?(:title)
           game.title.to_s.strip.presence
         elsif game.respond_to?(:sport)
-          game.sport.to_s.strip.presence
+          sport_label(game.sport, locale: locale)
         end
       end
 
-      # Resolves date using the occurrence chain: display_date_for_show > next_date > date
+      def self.sport_label(sport, locale: Telegram::I18n::DEFAULT_LOCALE)
+        value = sport.to_s.strip
+        return nil if value.blank?
+
+        key = "sport_#{value.downcase.tr(" ", "_")}"
+        label = Telegram::I18n.t(key, locale: locale)
+        label == key ? value : label
+      end
+
+      def self.skill_level_label(level, locale: Telegram::I18n::DEFAULT_LOCALE)
+        value = level.to_s.strip
+        return Telegram::I18n.t(:skill_any, locale: locale) if value.blank?
+
+        key = "skill_#{value.downcase.tr(" ", "_")}"
+        label = Telegram::I18n.t(key, locale: locale)
+        label == key ? value.titleize : label
+      end
+
+      def self.coach_mark(game, locale: Telegram::I18n::DEFAULT_LOCALE)
+        Telegram::I18n.t(:coach_with, locale: locale) if game.respond_to?(:with_coach?) && game.with_coach?
+      end
+
       def self.resolve_date(game)
         if game.respond_to?(:display_date_for_show)
           game.display_date_for_show
@@ -52,7 +64,6 @@ module Telegram
         end
       end
 
-      # Resolves time using: next_time > time
       def self.resolve_time(game)
         if game.respond_to?(:next_time)
           game.next_time

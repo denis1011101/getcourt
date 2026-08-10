@@ -18,6 +18,7 @@ module Telegram
                 [ { text: "Players", callback_data: "game:create:field:players_count:#{game_id}" } ],
                 [ { text: "Sport / Title", callback_data: "game:create:field:sport:#{game_id}" } ],
                 [ { text: "Court (prefilled)", callback_data: "game:create:field:court_id:#{game_id}" } ],
+                [ { text: "Comment", callback_data: "game:create:field:comment:#{game_id}" } ],
                 [ { text: "Preview / Confirm", callback_data: "game:create:confirm:#{game_id}" } ],
                 # include original message_id when present so cancel can restore previous view
                 [ { text: "Cancel (delete draft)", callback_data: "game:create:cancel:#{game_id}" + (message_id ? ":#{message_id}" : "") } ]
@@ -30,6 +31,7 @@ module Telegram
                 [ { text: "Players", callback_data: "game:edit:field:#{game_id}:players_count" } ],
                 [ { text: "Sport / Title", callback_data: "game:edit:field:#{game_id}:sport" } ],
                 [ { text: "Court", callback_data: "game:edit:field:#{game_id}:court_id" } ],
+                [ { text: "Comment", callback_data: "game:edit:field:#{game_id}:comment" } ],
                 [ { text: "Preview / Confirm", callback_data: "game:edit:confirm:#{game_id}" } ]
               ]
               cb = "game:edit:cancel:#{game_id}"
@@ -114,6 +116,7 @@ module Telegram
               when "players_count" then "players count (integer)"
               when "sport" then "sport"
               when "court_id" then "court id (integer)"
+              when "comment" then "comment (up to 500 characters)"
               else field
               end
 

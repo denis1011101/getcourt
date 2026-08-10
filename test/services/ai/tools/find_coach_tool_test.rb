@@ -6,7 +6,7 @@ class Ai::Tools::FindCoachToolTest < ActiveSupport::TestCase
     coach = User.new(id: 2, city_name: "Moscow", coach: true, telegram_username: "great_coach", about_me: "10 years experience")
     relation = FakeRelation.new([ coach ])
 
-    stub_singleton(User, :where, ->(*args) { relation }) do
+    stub_singleton(User, :not_merged, ->(*) { relation }) do
       result = Ai::Tools::FindCoachTool.new(requester).execute(city: "Moscow")
 
       assert_equal "Moscow", result[:city]
@@ -22,7 +22,7 @@ class Ai::Tools::FindCoachToolTest < ActiveSupport::TestCase
     coach = User.new(id: 3, city_name: "Moscow", coach: true, telegram_username: "silent_coach", about_me: nil)
     relation = FakeRelation.new([ coach ])
 
-    stub_singleton(User, :where, ->(*args) { relation }) do
+    stub_singleton(User, :not_merged, ->(*) { relation }) do
       result = Ai::Tools::FindCoachTool.new(requester).execute(city: "Moscow")
 
       assert_equal 1, result[:coaches].size
@@ -34,7 +34,7 @@ class Ai::Tools::FindCoachToolTest < ActiveSupport::TestCase
     requester = User.new(city_name: "Kazan")
     relation = FakeRelation.new([])
 
-    stub_singleton(User, :where, ->(*args) { relation }) do
+    stub_singleton(User, :not_merged, ->(*) { relation }) do
       result = Ai::Tools::FindCoachTool.new(requester).execute
 
       assert_equal "Kazan", result[:city]
