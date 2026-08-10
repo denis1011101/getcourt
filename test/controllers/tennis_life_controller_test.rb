@@ -13,10 +13,16 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     @previous_queue_adapter = ActiveJob::Base.queue_adapter
     ActiveJob::Base.queue_adapter = :test
     ActiveJob::Base.queue_adapter.enqueued_jobs.clear
+
+    # Most of these tests exercise the classic index, so pin the flag off
+    # instead of inheriting whatever the developer keeps in .env. The tests
+    # that want the feed opt in explicitly.
+    @previous_feed_flag = ENV.delete("TENNIS_LIFE_FEED")
   end
 
   teardown do
     ActiveJob::Base.queue_adapter = @previous_queue_adapter
+    ENV["TENNIS_LIFE_FEED"] = @previous_feed_flag
   end
 
   test "should get index" do
@@ -343,7 +349,6 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "feature flag switches index to the new feed and classic remains available" do
-    previous = ENV["TENNIS_LIFE_FEED"]
     ENV["TENNIS_LIFE_FEED"] = "1"
 
     get tennis_life_url
@@ -353,8 +358,6 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     get tennis_life_classic_url
     assert_response :success
     assert_select "[data-controller='infinite-feed']", count: 0
-  ensure
-    ENV["TENNIS_LIFE_FEED"] = previous
   end
 
   test "statistics shows full player rating and recent matches" do

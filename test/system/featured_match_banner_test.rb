@@ -68,6 +68,7 @@ class FeaturedMatchBannerTest < ApplicationSystemTestCase
 
   test "homepage banner is hidden when match is deactivated" do
     travel_to wallchart_banner_expired_at do
+      deactivate_featured_matches
       FeaturedMatch.create!(
         tournament_label: "Roland Garros Final",
         player_left_name: "M. Andreeva",
@@ -345,6 +346,8 @@ class FeaturedMatchBannerTest < ApplicationSystemTestCase
   end
 
   test "homepage without active match does not render banner or JSON-LD" do
+    deactivate_featured_matches
+
     visit root_path
 
     assert_selector "title", text: "GetCourt", visible: false
@@ -353,6 +356,13 @@ class FeaturedMatchBannerTest < ApplicationSystemTestCase
   end
 
   private
+
+  # The feed fixtures keep an active featured match around, and creating another
+  # active one deactivates it via FeaturedMatch#deactivate_other_matches. Tests
+  # that assert the banner is absent have to clear it themselves.
+  def deactivate_featured_matches
+    FeaturedMatch.update_all(active: false)
+  end
 
   def wallchart_banner_expired_at
     ApplicationHelper::WALLCHART_BANNER_UNTIL + 1.day
