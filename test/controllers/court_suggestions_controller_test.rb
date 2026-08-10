@@ -14,7 +14,7 @@ class CourtSuggestionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "guest must sign in to suggest a correction" do
-    get new_court_suggestion_url(@court)
+    get new_court_correction_url(@court)
 
     assert_redirected_to new_session_path
   end
@@ -22,7 +22,7 @@ class CourtSuggestionsControllerTest < ActionDispatch::IntegrationTest
   test "non-owner sees prefilled suggestion form" do
     sign_in_as(@author)
 
-    get new_court_suggestion_url(@court)
+    get new_court_correction_url(@court)
 
     assert_response :success
     assert_select "input[name='court_suggestion[name]'][value='Published Court']"
@@ -32,7 +32,7 @@ class CourtSuggestionsControllerTest < ActionDispatch::IntegrationTest
   test "owner is sent to the normal edit form" do
     sign_in_as(@owner)
 
-    get new_court_suggestion_url(@court)
+    get new_court_correction_url(@court)
 
     assert_redirected_to edit_court_path(@court)
   end
@@ -42,7 +42,7 @@ class CourtSuggestionsControllerTest < ActionDispatch::IntegrationTest
     notified = nil
 
     stub_singleton(Telegram::AdminNotifier, :notify_court_suggestion, ->(*args, **kwargs) { notified = [ args, kwargs ] }) do
-      post court_suggestions_url(@court), params: {
+      post court_corrections_url(@court), params: {
         court_suggestion: { name: @court.name, sport: "Padel", comment: "The lines were changed." }
       }
     end
@@ -58,7 +58,7 @@ class CourtSuggestionsControllerTest < ActionDispatch::IntegrationTest
   test "comment-only suggestion is accepted" do
     sign_in_as(@author)
 
-    post court_suggestions_url(@court), params: {
+    post court_corrections_url(@court), params: {
       court_suggestion: { name: @court.name, sport: @court.sport, comment: "Opening hours are wrong." }
     }
 
@@ -71,7 +71,7 @@ class CourtSuggestionsControllerTest < ActionDispatch::IntegrationTest
     @court.court_suggestions.create!(user: @author, payload: { "sport" => "Padel" })
     sign_in_as(@author)
 
-    post court_suggestions_url(@court), params: {
+    post court_corrections_url(@court), params: {
       court_suggestion: { name: "Another name" }
     }
 
@@ -82,11 +82,11 @@ class CourtSuggestionsControllerTest < ActionDispatch::IntegrationTest
   test "court page shows suggestion call to action only to non-manager" do
     sign_in_as(@author)
     get court_url(@court)
-    assert_select "a[href='#{new_court_suggestion_path(@court)}']"
+    assert_select "a[href='#{new_court_correction_path(@court)}']"
 
     sign_in_as(@owner)
     get court_url(@court)
-    assert_select "a[href='#{new_court_suggestion_path(@court)}']", count: 0
+    assert_select "a[href='#{new_court_correction_path(@court)}']", count: 0
   end
 
   test "admin can list and view suggestions" do
@@ -94,7 +94,7 @@ class CourtSuggestionsControllerTest < ActionDispatch::IntegrationTest
     @author.update_column(:admin, true)
     sign_in_as(@author)
 
-    get "/court_suggestions"
+    get court_suggestions_url
     assert_response :success
     assert_select "a[href='#{court_suggestion_path(suggestion)}']"
 
@@ -107,7 +107,7 @@ class CourtSuggestionsControllerTest < ActionDispatch::IntegrationTest
     suggestion = @court.court_suggestions.create!(user: @author, payload: { "sport" => "Padel" })
     sign_in_as(@owner)
 
-    get "/court_suggestions"
+    get court_suggestions_url
     assert_response :forbidden
 
     get court_suggestion_url(suggestion)

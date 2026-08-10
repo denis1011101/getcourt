@@ -12,7 +12,7 @@
 
   <%= form_with model: @proposed_court,
         scope: :court_suggestion,
-        url: court_suggestions_path(@court),
+        url: court_corrections_path(@court),
         method: :post,
         local: true do |form| %>
     <%= render "courts/fields", form: form, court: @proposed_court %>

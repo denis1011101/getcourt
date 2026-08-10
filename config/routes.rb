@@ -68,7 +68,9 @@ Rails.application.routes.draw do
       post :reject
     end
 
-    resources :suggestions, only: %i[new create], controller: "court_suggestions"
+    # Named `corrections` so the helpers stay distinct from the top-level
+    # court_suggestions index below, which owns court_suggestions_path.
+    resources :suggestions, only: %i[new create], controller: "court_suggestions", as: :corrections
   end
   resources :court_suggestions, only: %i[index show] do
     resource :approval, only: :create, controller: "court_suggestion_approvals"
