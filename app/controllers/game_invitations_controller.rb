@@ -53,36 +53,11 @@ class GameInvitationsController < ApplicationController
   end
 
   def deliver_invitation(user)
-    game_url = invitation_game_url(@game)
-    inviter_name = current_user.name.presence || current_user.email
-    notification = NotificationDelivery::Notification.new(
-      subject: ->(locale) { I18n.t("user_mailer.notification.game_invitation_subject", locale: locale, game_id: @game.id) },
-      body: lambda do |locale|
-        lines = [
-          Telegram::I18n.t(:invitation_title, locale: locale),
-          Telegram::Handlers::GamesHandler.game_label(@game, owner: current_user, locale: locale),
-          Telegram::I18n.t(:game_invitation_from, locale: locale, name: inviter_name)
-        ]
-        "#{lines.compact.join("\n")}\n\n#{game_url}"
-      end,
-      actions: lambda do |locale|
-        [
-          {
-            label: Telegram::I18n.t(:invitation_join, locale: locale, game_id: @game.id),
-            callback_data: "game:join_invited:#{@game.id}",
-            row: 0,
-            url: game_url
-          },
-          {
-            label: Telegram::I18n.t(:invitation_decline, locale: locale, game_id: @game.id),
-            callback_data: "game:invite_decline:#{@game.id}",
-            row: 0
-          }
-        ]
-      end
-    )
-
-    NotificationDelivery.deliver(user: user, notification: notification)
+    GameInvitationDelivery.new(
+      game: @game,
+      inviter: current_user,
+      game_url: invitation_game_url(@game)
+    ).deliver(user: user)
   end
 
   def invitation_game_url(game)

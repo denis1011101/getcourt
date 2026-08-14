@@ -322,7 +322,6 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
       score: "2-6 3-6",
       played_at: 30.days.ago
     )
-
     get games_account_url
 
     assert_response :success
@@ -407,5 +406,49 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   ensure
     user&.destroy
     court&.destroy
+  end
+  test "coach sees confirmed future dates in account games" do
+    coach = User.create!(email: "coach-schedule@example.com", coach: true)
+    game = Game.create!(
+      court: courts(:one),
+      user: users(:one),
+      coach: coach,
+      with_coach: true,
+      recurring: true,
+      date: Date.current
+    )
+    game.update!(coach_invitation_status: "accepted")
+    game.coach_prebookings.create!(coach: coach, date: game.next_date)
+    post session_url, params: { email: coach.email }
+
+    get games_account_url
+
+    assert_response :success
+    assert_includes response.body, "Coaching schedule"
+    assert_includes response.body, game.court.name
+  ensure
+    coach&.destroy
+  end
+
+  test "coach schedule includes accepted one-off games without a prebooking" do
+    coach = User.create!(email: "coach-one-off-schedule@example.com", coach: true)
+    game = Game.create!(
+      court: courts(:one),
+      user: users(:one),
+      coach: coach,
+      with_coach: true,
+      date: Date.tomorrow,
+      time: "17:00"
+    )
+    game.update!(coach_invitation_status: "accepted")
+    post session_url, params: { email: coach.email }
+
+    get games_account_url
+
+    assert_response :success
+    assert_includes response.body, game.court.name
+    assert_includes response.body, I18n.l(game.date, format: :long)
+  ensure
+    coach&.destroy
   end
 end

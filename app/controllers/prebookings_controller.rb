@@ -1,7 +1,14 @@
 class PrebookingsController < ApplicationController
-  before_action :authenticate_user!
+  before_action :authenticate_user!, except: :more
   before_action :set_game
   before_action :set_prebooking, only: %i[book cancel approve reject]
+
+  def more
+    @horizon = params[:horizon].to_i.clamp(3, Game::MAX_PREBOOKING_HORIZON)
+    dates = @game.prebooking_candidate_dates(@horizon)
+    @game.ensure_prebookings_for_dates(@game.prebooking_horizon_dates(@horizon)) if current_user.present?
+    render partial: "games/prebookings", locals: { game: @game, horizon: @horizon }
+  end
 
   def book
     return head :forbidden unless can_participate?(@game, @prebooking.date)

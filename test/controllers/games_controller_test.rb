@@ -664,4 +664,56 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", "mailto:#{owner.email}"
     assert_select "a[href=?]", "https://t.me/private_organizer"
   end
+  test "creating a game with a coach sends a role-specific invitation" do
+    coach = User.create!(
+      email: "invited-coach@example.com",
+      name: "Coach",
+      coach: true,
+      telegram_chat_id: 91_001,
+      notification_channel: "telegram"
+    )
+    post session_url, params: { email: "coach-game-owner@example.com" }
+
+    calls = []
+    stub_singleton(Telegram::Api, :send_with_buttons, ->(*args) { calls << args; { "ok" => true } }) do
+      post games_url, params: {
+        game: {
+          court_id: courts(:one).id,
+          date: Date.current + 1.day,
+          time: "18:00",
+          recurring: "1",
+          with_coach: "1",
+          coach_id: coach.id
+        }
+      }
+    end
+
+    game = Game.order(:id).last
+    assert_equal coach, game.coach
+    assert_equal "pending", game.coach_invitation_status
+    assert_equal "game:coach_accept:#{game.id}", calls.first.third.first.first[:callback_data]
+  ensure
+    coach&.destroy
+  end
+
+  test "selected coach can accept invitation on the game page" do
+    coach = User.create!(email: "accept-coach@example.com", coach: true)
+    game = Game.create!(
+      court: courts(:one),
+      user: users(:one),
+      coach: coach,
+      coach_invitation_status: "pending",
+      with_coach: true,
+      recurring: true,
+      date: Date.current
+    )
+    post session_url, params: { email: coach.email }
+
+    post accept_coach_invitation_game_url(game)
+
+    assert_redirected_to game_path(game)
+    assert game.reload.coach_accepted?
+  ensure
+    coach&.destroy
+  end
 end

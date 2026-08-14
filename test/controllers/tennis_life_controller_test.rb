@@ -232,6 +232,39 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "feed renders lazy telegram widget hook and translated fallback" do
+    TelegramPost.delete_all
+    TelegramChannel.delete_all
+    post = TelegramPost.create!(
+      telegram_channel: TelegramChannel.create!(username: "@widget_feed"),
+      message_id: 987,
+      text: "Оригинал",
+      text_en: "Translated fallback",
+      published_at: Time.current
+    )
+
+    path = tennis_life_feed_path(seed: 123)
+    pages = +""
+    20.times do
+      get path, as: :turbo_stream
+      assert_response :success
+      pages << response.body
+      break if pages.include?('data-telegram-post-post-value="widget_feed/987"')
+
+      link_tag = response.body[/<a\b(?=[^>]*data-infinite-feed-target="link")[^>]*>/]
+      encoded_path = link_tag&.[](/href="([^"]+)"/, 1)
+      path = encoded_path ? CGI.unescapeHTML(encoded_path) : nil
+      break unless path
+    end
+
+    assert_includes pages, 'data-controller="telegram-post"'
+    assert_includes pages, 'data-telegram-post-post-value="widget_feed/987"'
+    assert_includes pages, "Translated fallback"
+    assert_not_includes pages, "telegram-widget.js"
+  ensure
+    post&.destroy
+  end
+
   test "feed does not enqueue translation jobs for posts with cached english text" do
     TelegramPost.delete_all
     TelegramChannel.delete_all

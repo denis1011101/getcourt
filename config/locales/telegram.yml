@@ -55,6 +55,11 @@ ru:
     sport_table_tennis: Настольный теннис
     sport_squash: Сквош
     invitation_title: 'Вас приглашают присоединиться:'
+    coach_invitation_title: 'Вас приглашают тренером:'
+    coach_invitation_accept: 'Принять #%{game_id}'
+    coach_invitation_decline: 'Отказаться #%{game_id}'
+    coach_invitation_accepted: Приглашение тренером принято
+    coach_invitation_declined: Приглашение тренером отклонено
     invitation_join: 'Присоединиться #%{game_id}'
     invitation_decline: 'Отклонить #%{game_id}'
     invite_declined: Приглашение отклонено
@@ -596,6 +601,11 @@ en:
     sport_table_tennis: Table tennis
     sport_squash: Squash
     invitation_title: 'You are invited to join:'
+    coach_invitation_title: 'You are invited as a coach:'
+    coach_invitation_accept: 'Accept #%{game_id}'
+    coach_invitation_decline: 'Decline #%{game_id}'
+    coach_invitation_accepted: Coach invitation accepted
+    coach_invitation_declined: Coach invitation declined
     invitation_join: 'Join #%{game_id}'
     invitation_decline: 'Decline #%{game_id}'
     invite_declined: Invite declined
@@ -1094,6 +1104,11 @@ es:
     sport_table_tennis: Tenis de mesa
     sport_squash: Squash
     invitation_title: 'Te han invitado a unirte:'
+    coach_invitation_title: 'Te invitan como entrenador:'
+    coach_invitation_accept: 'Aceptar #%{game_id}'
+    coach_invitation_decline: 'Rechazar #%{game_id}'
+    coach_invitation_accepted: Invitación como entrenador aceptada
+    coach_invitation_declined: Invitación como entrenador rechazada
     invitation_join: 'Unirse #%{game_id}'
     invitation_decline: 'Rechazar #%{game_id}'
     invite_declined: Invitación rechazada

@@ -1,21 +1,28 @@
 class Game < ApplicationRecord
   after_commit :schedule_post_game_stats_reminder, on: %i[create update]
   after_commit :enqueue_urgent_player_search_notification, on: %i[create update]
+  after_update :remove_stale_coach_prebookings,
+               if: -> { saved_change_to_coach_id? || saved_change_to_date? || saved_change_to_recurring? }
 
   belongs_to :tournament, optional: true
   belongs_to :court
   belongs_to :user
+  belongs_to :coach, class_name: "User", optional: true
   has_many :participations, dependent: :destroy
   has_many :prebookings, dependent: :destroy
+  has_many :coach_prebookings, dependent: :destroy
   has_many :prebooking_cancellations, dependent: :destroy
   has_many :matches, dependent: :nullify
   has_many :player_statistic_entries, dependent: :nullify
 
   SURFACES = Court::SURFACES
   ENVIRONMENTS = %w[indoor outdoor].freeze
+  COACH_INVITATION_STATUSES = %w[pending accepted declined].freeze
+  MAX_PREBOOKING_HORIZON = 52
 
   # A tournament game follows the tournament schedule, so the standalone game options don't apply.
   before_validation :drop_options_managed_by_tournament, if: -> { tournament_id.present? }
+  before_validation :normalize_coach_assignment
 
   validates :date, presence: { message: "must be present" }
   validates :comment, length: { maximum: 500 }, allow_blank: true
@@ -23,10 +30,27 @@ class Game < ApplicationRecord
   validates :players_count, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   validates :surface, inclusion: { in: SURFACES }, allow_blank: true
   validates :environment, inclusion: { in: ENVIRONMENTS }, allow_blank: true
+  validates :coach_invitation_status, inclusion: { in: COACH_INVITATION_STATUSES }, allow_nil: true
+  validate :selected_coach_is_coach
   validate :prebooking_requires_recurring
   validate :surface_available_at_court
   validate :environment_available_at_court
   validate :within_tournament_dates_and_courts, if: -> { tournament.present? }
+
+  def coach_accepted?
+    coach_id.present? && coach_invitation_status == "accepted"
+  end
+
+  # Is this date one of the game's occurrences? A recurring game repeats weekly
+  # from its start date, a one-off game has exactly one.
+  def occurrence_date?(candidate)
+    return false if candidate.blank? || date.blank?
+
+    candidate = candidate.to_date
+    return candidate == date.to_date unless recurring?
+
+    candidate >= date && ((candidate - date.to_date).to_i % 7).zero?
+  end
 
   def tournament_game?
     tournament_id.present?
@@ -182,15 +206,22 @@ class Game < ApplicationRecord
 
     dates =
       if recurring?
-        prebooking_candidate_dates(n)
+        prebooking_horizon_dates(n)
       else
         [ date ].compact
       end
 
     Rails.logger.debug "[Game#ensure_prebookings_for_next_weeks] game_id=#{id} candidate_dates=#{dates.inspect} classes=#{dates.map(&:class).inspect} existing=#{prebookings.distinct.pluck(:date).map { |d| [ d, d.class ] }.inspect}"
 
+    ensure_prebookings_for_dates(dates)
+  end
+
+  def ensure_prebookings_for_dates(dates)
+    return unless prebooking_enabled?
+
     dates.each do |d|
       d = d.to_date
+      next if cancelled_on?(d)
       (1..prebooking_required_players).each do |slot|
         prebookings.find_or_create_by!(date: d, slot_index: slot)
       end
@@ -263,15 +294,27 @@ class Game < ApplicationRecord
     end
   end
 
-  # Возвращает массив дат-кандидатов для предварительной записи (Date), по умолчанию 3 даты
+  def prebooking_horizon_dates(count = 3)
+    return [] unless recurring?
+
+    count = count.to_i.clamp(3, MAX_PREBOOKING_HORIZON)
+    base = (next_date.presence || date).to_date
+    Array.new(count) { |i| base + i.weeks }
+  end
+
+  # Возвращает даты в заданном горизонте и даты с существующими бронями/отменами.
   def prebooking_candidate_dates(count = 3)
     return [] unless recurring?
-    display_date = (next_date.presence || date).to_date
-    candidates = []
-    candidates << next_date.to_date if next_date.present?
-    candidates << (display_date + 7)            # keep Date arithmetic
-    base = candidates.find { |d| d > display_date } || (display_date + 7)
-    Array.new(count) { |i| base + i * 7 }       # produce Date objects
+
+    horizon_dates = prebooking_horizon_dates(count)
+    # Only from the current occurrence onwards: a long-lived weekly game accumulates
+    # years of bookings and cancellations, and none of the past ones are bookable.
+    from = horizon_dates.first
+    booked_dates = prebookings.where.not(user_id: nil).where(date: from..).distinct.pluck(:date)
+    cancelled_dates = prebooking_cancellations.where(date: from..).distinct.pluck(:date)
+    coach_dates = coach_prebookings.where(date: from..).distinct.pluck(:date)
+
+    (horizon_dates + booked_dates + cancelled_dates + coach_dates).compact.map(&:to_date).uniq.sort
   end
 
   # Сколько слотов требуется на дату (по умолчанию 4)
@@ -355,6 +398,39 @@ class Game < ApplicationRecord
   end
 
   private
+
+  def normalize_coach_assignment
+    unless with_coach?
+      self.coach = nil
+      self.coach_invitation_status = nil
+      return
+    end
+
+    if coach_id.blank?
+      self.coach_invitation_status = nil
+    elsif will_save_change_to_coach_id?
+      self.coach_invitation_status = "pending"
+    end
+  end
+
+  def selected_coach_is_coach
+    errors.add(:coach, "must be a coach") if coach.present? && !coach.coach?
+  end
+
+  # Coach bookings hang off concrete occurrences, so they go stale when the coach
+  # changes, and also when the game moves to another date or stops repeating.
+  def remove_stale_coach_prebookings
+    coach_prebookings.where.not(coach_id: coach_id).delete_all
+    return unless saved_change_to_date? || saved_change_to_recurring?
+
+    unless recurring? && date.present?
+      coach_prebookings.delete_all
+      return
+    end
+
+    stale_ids = coach_prebookings.reject { |booking| occurrence_date?(booking.date) }.map(&:id)
+    coach_prebookings.where(id: stale_ids).delete_all if stale_ids.any?
+  end
 
   def enqueue_urgent_player_search_notification
     return unless urgent_player_search?

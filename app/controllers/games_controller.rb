@@ -2,8 +2,9 @@ class GamesController < ApplicationController
   include LocationFilters
 
   before_action :handle_mark_not_happened, only: [ :show ]
-  before_action :set_game, only: %i[show edit update destroy toggle_urgent_player_search]
+  before_action :set_game, only: %i[show edit update destroy toggle_urgent_player_search accept_coach_invitation decline_coach_invitation]
   before_action :authorize_manage_game!, only: %i[edit update destroy toggle_urgent_player_search]
+  before_action :prepare_coaches, only: %i[new create edit update]
   skip_before_action :authenticate_user!, only: %i[index show]
 
   helper_method :display_date, :display_time, :game_badges
@@ -104,6 +105,7 @@ class GamesController < ApplicationController
 
     if @game.save
       @game.ensure_prebookings_for_next_weeks if @game.prebooking_enabled?
+      deliver_coach_invitation if @game.coach_id.present?
       redirect_to @game, notice: "Game was successfully created."
     else
       Rails.logger.warn "Game save failed: #{ @game.errors.full_messages.join('; ') }"
@@ -115,9 +117,11 @@ class GamesController < ApplicationController
   end
 
   def update
+    previous_coach_id = @game.coach_id
     gp = sanitized_game_params
     if @game.update(gp)
       @game.ensure_prebookings_for_next_weeks if @game.prebooking_enabled?
+      deliver_coach_invitation if @game.coach_id.present? && @game.coach_id != previous_coach_id
       redirect_to @game, notice: "Game was successfully updated."
     else
       Rails.logger.warn "Game update failed: #{ @game.errors.full_messages.join('; ') }"
@@ -128,6 +132,20 @@ class GamesController < ApplicationController
   def destroy
     @game.destroy
     redirect_to games_url, notice: "Game was successfully destroyed."
+  end
+
+  def accept_coach_invitation
+    return head :forbidden unless @game.coach == current_user
+
+    @game.update!(coach_invitation_status: "accepted")
+    redirect_to @game, notice: t("games.show.coach_invitation_accepted")
+  end
+
+  def decline_coach_invitation
+    return head :forbidden unless @game.coach == current_user
+
+    @game.update!(coach_invitation_status: "declined")
+    redirect_to @game, notice: t("games.show.coach_invitation_declined")
   end
 
   def toggle_urgent_player_search
@@ -160,6 +178,20 @@ class GamesController < ApplicationController
   end
 
   private
+
+  def prepare_coaches
+    @coaches = User.not_merged.where(coach: true).order(:name)
+  end
+
+  def deliver_coach_invitation
+    GameInvitationDelivery.new(
+      game: @game,
+      inviter: current_user,
+      game_url: game_url(@game)
+    ).deliver(user: @game.coach, role: :coach)
+  rescue => error
+    Rails.logger.error("[GamesController] coach invitation failed: #{error.class}: #{error.message}")
+  end
 
   def authorize_manage_game!
     unless can_manage?(@game)
@@ -244,7 +276,7 @@ class GamesController < ApplicationController
   end
 
   def game_params
-    params.require(:game).permit(:court_id, :recurring, :occurrences_per_week, :with_coach, :date, :time, :players_count, :skill_level, :sport, :surface, :environment, :prebooking_enabled, :urgent_player_search, :duration_minutes, :comment)
+    params.require(:game).permit(:court_id, :recurring, :occurrences_per_week, :with_coach, :coach_id, :date, :time, :players_count, :skill_level, :sport, :surface, :environment, :prebooking_enabled, :urgent_player_search, :duration_minutes, :comment)
   end
 
   def display_date(game)

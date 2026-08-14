@@ -8,7 +8,7 @@ module Telegram
           # callback_query entry
           def handle_callback(callback)
             data = (callback["data"] || "").to_s
-            return false unless data.start_with?("game:invite_decline:")
+            return false unless data.match?(/\Agame:(?:invite_decline|coach_accept|coach_decline):/)
 
             cb_id = callback["id"]
             from = callback["from"] || {}
@@ -53,6 +53,30 @@ module Telegram
             #   poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Invite cancelled", show_alert: false }) rescue nil
             #   Telegram::Handlers::GamesHandler.show_game(chat_id, game_id, 1, message_id: message_id) rescue nil
             #   return true
+
+            when /\Agame:coach_accept:(\d+)\z/
+              game = Game.find_by(id: $1.to_i)
+              coach = User.find_by(telegram_chat_id: chat_id)
+              return false unless game && coach && game.coach_id == coach.id
+
+              game.update!(coach_invitation_status: "accepted")
+              poller.send_api(
+                "answerCallbackQuery",
+                { callback_query_id: cb_id, text: t.(:coach_invitation_accepted), show_alert: false }
+              ) rescue nil
+              return true
+
+            when /\Agame:coach_decline:(\d+)\z/
+              game = Game.find_by(id: $1.to_i)
+              coach = User.find_by(telegram_chat_id: chat_id)
+              return false unless game && coach && game.coach_id == coach.id
+
+              game.update!(coach_invitation_status: "declined")
+              poller.send_api(
+                "answerCallbackQuery",
+                { callback_query_id: cb_id, text: t.(:coach_invitation_declined), show_alert: false }
+              ) rescue nil
+              return true
 
             when /\Agame:invite_decline:(\d+)\z/
               game_id = $1.to_i

@@ -19,9 +19,48 @@ class GameReminderJob < ApplicationJob
         )
       end
     end
+
+    deliver_coach_reminders if day_offset.to_i.zero?
   end
 
   private
+
+  def deliver_coach_reminders
+    today = Time.current.in_time_zone("Asia/Yekaterinburg").to_date
+    candidate_dates = [ today, today + 1.day ]
+
+    Game.where(coach_invitation_status: "accepted").where("date IN (?) OR recurring = ?", candidate_dates, true).find_each do |game|
+      next unless game.coach
+
+      target_date = game_before_14_yekaterinburg?(game) ? today + 1.day : today
+      next unless occurrence_on?(game, target_date)
+      next if game.recurring? && !game.coach_prebookings.exists?(coach_id: game.coach_id, date: target_date)
+
+      participants = game.participations.includes(:user).map(&:user).compact.uniq
+      NotificationDelivery.deliver(
+        user: game.coach,
+        notification: notification_for(game, target_date, participants, target_date == today ? 0 : 1)
+      )
+    end
+  end
+
+  def occurrence_on?(game, target_date)
+    return game.date == target_date unless game.recurring?
+    return false if game.date.blank? || game.date > target_date
+
+    ((target_date - game.date).to_i % 7).zero? && !game.cancelled_on?(target_date)
+  end
+
+  def game_before_14_yekaterinburg?(game)
+    value = game.next_time || game.time
+    hour =
+      if value.respond_to?(:hour)
+        value.hour
+      else
+        value.to_s.split(":").first.to_i
+      end
+    hour < 14
+  end
 
   def recurring_occurrence_date(game)
     game.date && game.date >= Date.current ? game.date : game.next_date

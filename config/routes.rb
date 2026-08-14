@@ -85,6 +85,8 @@ Rails.application.routes.draw do
 
     member do
       post :toggle_urgent_player_search
+      post :accept_coach_invitation
+      post :decline_coach_invitation
     end
 
     collection do
@@ -103,6 +105,10 @@ Rails.application.routes.draw do
     end
 
     resources :prebookings, only: [] do
+      collection do
+        get :more
+      end
+
       member do
         post :book
         post :cancel
@@ -112,6 +118,7 @@ Rails.application.routes.draw do
     end
 
     resources :prebooking_cancellations, only: [ :create, :destroy ]
+    resources :coach_prebookings, only: [ :create, :destroy ]
   end
   get "/games(/:country_slug)(/:city_slug)", to: "games#index", as: :games_browse,
       constraints: { country_slug: /[a-z][a-z0-9-]*/, city_slug: /[a-z0-9-]+/ }

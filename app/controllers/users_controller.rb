@@ -97,6 +97,22 @@ class UsersController < ApplicationController
   end
 
   def games
+    @coach_schedule =
+      if current_user.coach?
+        recurring_dates = current_user.coach_prebookings
+          .joins(:game)
+          .where(date: Date.current.., games: { coach_id: current_user.id, coach_invitation_status: "accepted" })
+          .includes(game: [ :court, { participations: :user } ])
+          .map { |booking| { game: booking.game, date: booking.date } }
+        one_off_dates = current_user.coached_games
+          .where(recurring: false, coach_invitation_status: "accepted", date: Date.current..)
+          .includes(:court, participations: :user)
+          .map { |game| { game: game, date: game.date } }
+
+        (recurring_dates + one_off_dates).sort_by { |entry| [ entry[:date], entry[:game].time.to_s ] }
+      else
+        []
+      end
     order_sql =
       if Game.column_names.include?("next_date")
         "COALESCE(games.next_date, games.date) DESC NULLS LAST, games.time DESC"
