@@ -151,6 +151,7 @@ en:
       stats_subject: "Fill in your game statistics"
       prebooking_subject: "Prebooking request for Game #%{game_id}"
       participation_subject: "Game #%{game_id} participants updated"
+      game_change_subject: "Game #%{game_id} was updated"
       participation_approved_subject: "Your request to join Game #%{game_id} was approved"
       participation_rejected_subject: "Your request to join Game #%{game_id} was rejected"
       prebooking_approved_subject: "Your prebooking for Game #%{game_id} was approved"

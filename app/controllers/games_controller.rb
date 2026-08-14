@@ -122,6 +122,8 @@ class GamesController < ApplicationController
     if @game.update(gp)
       @game.ensure_prebookings_for_next_weeks if @game.prebooking_enabled?
       deliver_coach_invitation if @game.coach_id.present? && @game.coach_id != previous_coach_id
+      # The web form saves every field at once, so one message covers the whole edit.
+      GameChangeNotifier.notify(game: @game, actor: current_user, changes: @game.saved_changes)
       redirect_to @game, notice: "Game was successfully updated."
     else
       Rails.logger.warn "Game update failed: #{ @game.errors.full_messages.join('; ') }"
