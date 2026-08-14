@@ -8,7 +8,8 @@ module TennisLife
         end
 
         def ids
-          active_since = [ Season.current_start, snapshot_ts - TennisLifeController::ACTIVE_RATING_MONTHS.months ].max
+          # Same rule as the rating table: played at all in the last 90 days.
+          active_since = snapshot_ts - TennisLifeController::ACTIVE_RATING_DAYS.days
           user_ids = snapshotted(Match)
             .where(played_at: active_since..snapshot_ts)
             .where.not(user_id: @excluded_ids)

@@ -11,6 +11,16 @@ class User < ApplicationRecord
   # show up anywhere people are listed or picked.
   scope :not_merged, -> { where(merged_at: nil) }
 
+  # People we can offer in a picker: those with a name, plus those who came from
+  # the bot and have only a @nick.
+  scope :identifiable, -> { where.not(name: [ nil, "" ]).or(where.not(telegram_username: [ nil, "" ])) }
+
+  # Ordered by the label the picker shows (see ApplicationHelper#user_display_label),
+  # so the list reads in the order it looks.
+  scope :by_display_label, -> {
+    order(Arel.sql("LOWER(COALESCE(NULLIF(users.name, ''), users.telegram_username, users.email))"))
+  }
+
   SKILL_LEVELS = %w[beginner intermediate advanced pro].freeze
   SPORTS = SportCatalog::SPORTS
 

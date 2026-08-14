@@ -40,4 +40,23 @@ class UserTest < ActiveSupport::TestCase
     assert user.valid?
     assert_equal "email", user.notification_channel
   end
+
+  test "identifiable keeps players who only have a telegram handle" do
+    from_bot = User.create!(email: "pickable-bot@example.com", telegram_username: "pickable_nick")
+    nameless = User.create!(email: "not-pickable@example.com")
+
+    identifiable = User.identifiable
+
+    assert_includes identifiable, from_bot
+    assert_not_includes identifiable, nameless
+  end
+
+  test "by_display_label sorts by what the picker shows" do
+    zoe = User.create!(email: "zoe-sorted@example.com", name: "Zoe")
+    anna = User.create!(email: "anna-sorted@example.com", name: "anna")
+
+    ordered = User.where(id: [ zoe.id, anna.id ]).by_display_label
+
+    assert_equal [ anna, zoe ], ordered.to_a
+  end
 end

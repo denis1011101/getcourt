@@ -64,7 +64,7 @@
           <span class="font-normal text-gray-500 dark:text-slate-400">· <%= t("tennis_life.index.season_label", year: @season_label) %></span>
         </h3>
         <p class="mb-3 text-xs text-gray-500 dark:text-slate-400">
-          <%= t("tennis_life.statistics.active_window_note", months: TennisLifeController::ACTIVE_RATING_MONTHS) %>
+          <%= t("tennis_life.statistics.active_window_note", days: TennisLifeController::ACTIVE_RATING_DAYS) %>
         </p>
 
         <% if @rating_rows.any? %>

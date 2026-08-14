@@ -5,10 +5,12 @@ class TennisLifeController < ApplicationController
   before_action :set_secondary_page_meta, only: %i[classic feed]
 
   FEED_PAGE_SIZE = 20
-  PINNED_RATING_LIMIT = 3
+  PINNED_RATING_LIMIT = 5
   RATING_LIMIT = 10
   MATCHES_PER_PAGE = 20
-  ACTIVE_RATING_MONTHS = 6
+  # Plain 90 days, not "since the season started": in January the season window is
+  # days long, and everyone who played through the winter would drop out of the rating.
+  ACTIVE_RATING_DAYS = 90
 
   def index
     if tennis_life_feed_enabled?
@@ -207,7 +209,7 @@ class TennisLifeController < ApplicationController
   # A single win back in January shouldn't hold the top spot for the rest of the season.
   def recently_active_user_ids(snapshot_ts)
     Match
-      .where(created_at: ..snapshot_ts, played_at: (snapshot_ts - ACTIVE_RATING_MONTHS.months)..snapshot_ts)
+      .where(created_at: ..snapshot_ts, played_at: (snapshot_ts - ACTIVE_RATING_DAYS.days)..snapshot_ts)
       .distinct
       .pluck(:user_id)
       .to_set

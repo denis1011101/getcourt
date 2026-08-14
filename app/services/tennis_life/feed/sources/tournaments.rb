@@ -3,7 +3,8 @@ module TennisLife
     module Sources
       class Tournaments < Base
         def ids
-          snapshotted(Tournament).pluck(:id)
+          # By the tournament's own dates: a bracket that ended in spring is not news.
+          recent(snapshotted(Tournament), column: :start_date).pluck(:id)
         end
 
         def weight
