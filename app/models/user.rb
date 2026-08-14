@@ -118,6 +118,16 @@ class User < ApplicationRecord
     self.coach == true
   end
 
+  # The newcomer checklist on the homepage: kept server-side on purpose, so closing
+  # it on a laptop doesn't bring it back on a phone.
+  def onboarding_dismissed?
+    onboarding_dismissed_at.present?
+  end
+
+  def dismiss_onboarding!
+    update_column(:onboarding_dismissed_at, Time.current)
+  end
+
   # keep the latest invite lists handy, so the same group can be invited again in one click
   def remember_invite_handles(handles)
     handles = handles.map(&:to_s).uniq

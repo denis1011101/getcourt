@@ -238,6 +238,28 @@ en:
         many: "%{count} courts"
         other: "%{count} courts"
   users:
+    onboarding:
+      title: Set up your GetCourt
+      description: A few steps and the games you see will match where and how you play.
+      dismiss: Hide
+      progress: "%{done} of %{total} done"
+      items:
+        city:
+          title: Add your city
+          description: Games near you come first, and the time is shown in your zone.
+          action: Add city
+        telegram:
+          title: Connect Telegram
+          description: Invitations and reminders reach you in the bot instead of email.
+          action: Connect Telegram
+        sport:
+          title: Pick your sport and level
+          description: We suggest games that match what you play.
+          action: Fill profile
+        game:
+          title: Join a game or create your own
+          description: The whole point — get on court this week.
+          action: Create game
     edit:
       title: Account
       my_games: My games

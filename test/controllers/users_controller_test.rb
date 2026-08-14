@@ -451,4 +451,21 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   ensure
     coach&.destroy
   end
+  test "newcomer sees the checklist on the homepage and can close it for good" do
+    newcomer = User.create!(email: "checklist-newcomer@example.com")
+    post session_url, params: { email: newcomer.email }
+
+    get root_url
+    assert_response :success
+    assert_includes response.body, I18n.t("users.onboarding.title")
+
+    post dismiss_onboarding_account_url
+
+    get root_url
+    assert_response :success
+    assert_not_includes response.body, I18n.t("users.onboarding.title")
+    assert newcomer.reload.onboarding_dismissed?
+  ensure
+    newcomer&.destroy
+  end
 end
