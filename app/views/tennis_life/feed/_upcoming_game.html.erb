@@ -2,7 +2,7 @@
 <% participations = game.participations.loaded? ? game.participations.target : game.participations.to_a %>
 <% taken = participations.count(&:approved?) %>
 <% spots_left = [game.players_count.to_i - taken, 0].max %>
-<% display_date = game.recurring? ? (game.next_date || game.date) : game.date %>
+<% display_date = game.display_date_for_show || game.date %>
 <% title_key = local_assigns.fetch(:title_key, "tennis_life.feed.game.title") %>
 
 <div class="p-4">

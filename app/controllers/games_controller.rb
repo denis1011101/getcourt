@@ -237,11 +237,8 @@ class GamesController < ApplicationController
   end
 
   def game_sorting_date(game)
-    # Recurring games should be ordered by the next occurrence shown in cards,
-    # not by their original start date.
-    return game.next_date || game.date if game.recurring?
-
-    game.date
+    # Order by the same occurrence the card shows, not by the original start date.
+    game.display_date_for_show || game.date
   end
 
   def local_upcoming_sort_key(game, city_name)
@@ -280,7 +277,7 @@ class GamesController < ApplicationController
   end
 
   def display_date(game)
-    nd = game.recurring? ? (game.next_date || game.date) : (game.display_date_for_show || game.date)
+    nd = game.display_date_for_show || game.date
     nd ? nd.strftime("%Y-%m-%d") : (game.date.presence || "—")
   end
 

@@ -258,11 +258,11 @@ class Game < ApplicationRecord
 
     # if previous occurrence already passed but participations haven't been
     # reset yet, we're still in that occurrence's cycle (stats should stay unlocked)
-    if prev && prev < Date.today && should_reset_participations?
+    if prev && prev < Date.current && should_reset_participations?
       return prev
     end
 
-    return nd if nd >= Date.today
+    return nd if nd >= Date.current
 
     prev || nd
   end
@@ -274,7 +274,7 @@ class Game < ApplicationRecord
 
     if recurring?
       # advance to first occurrence >= today
-      d += 7 while d < Date.today
+      d += 7 while d < Date.current
 
       # skip cancelled occurrences
       max_iters = 520
@@ -345,7 +345,7 @@ class Game < ApplicationRecord
     prev
   end
 
-  def should_reset_participations?(as_of = Date.today)
+  def should_reset_participations?(as_of = Date.current)
     return false unless recurring?
     nd = next_date
     return false unless nd

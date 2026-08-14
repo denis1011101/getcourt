@@ -43,7 +43,7 @@
         <div class="mb-3 flex items-center justify-between">
           <div>
             <p class="text-sm text-gray-500">
-              <%= l((game.respond_to?(:next_date) ? (game.next_date || game.date) : game.date).to_date, format: :long) rescue "-" %>
+              <%= l((game.display_date_for_show || game.date).to_date, format: :long) rescue "-" %>
               · <%= game.time&.strftime("%H:%M") %>
             </p>
             <p class="text-lg font-medium">
