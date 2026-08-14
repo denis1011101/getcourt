@@ -147,6 +147,7 @@ en:
       view_game: "View game"
       game_reminder_subject: "Game reminder"
       game_invitation_subject: "Invitation to Game #%{game_id}"
+      coach_invitation_subject: "Coach invitation to Game #%{game_id}"
       stats_subject: "Fill in your game statistics"
       prebooking_subject: "Prebooking request for Game #%{game_id}"
       participation_subject: "Game #%{game_id} participants updated"

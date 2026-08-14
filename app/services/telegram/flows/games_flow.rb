@@ -7,7 +7,7 @@ module Telegram
           Rails.logger.debug "[Telegram::Flows::GamesFlow] enter handle_callback data=#{cb.data.inspect}"
           poller = Telegram::Poller.new
 
-          if cb.data.start_with?("game:invite_decline:")
+          if cb.data.match?(/\Agame:(?:invite_decline|coach_accept|coach_decline):/)
             return true if Telegram::Flows::Games::InviteFlow.handle_callback(callback) rescue false
           end
 

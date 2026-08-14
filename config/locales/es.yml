@@ -122,6 +122,7 @@ es:
       view_game: "Ver partido"
       game_reminder_subject: "Recordatorio del partido"
       game_invitation_subject: "Invitación al partido #%{game_id}"
+      coach_invitation_subject: "Invitación como entrenador al partido #%{game_id}"
       stats_subject: "Completa las estadísticas del partido"
       prebooking_subject: "Solicitud de reserva para el partido #%{game_id}"
       participation_subject: "Participantes actualizados en el partido #%{game_id}"

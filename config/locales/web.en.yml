@@ -93,6 +93,15 @@ en:
       match_block_title: Game %{number}
       remove_match: Remove game
       add_team_player: Add player
+      coach: Coach
+      coach_accept: Accept invitation
+      coach_decline: Decline
+      coach_invitation_accepted: Coach invitation accepted.
+      coach_invitation_declined: Coach invitation declined.
+      coach_status:
+        pending: Waiting for coach response
+        accepted: Accepted
+        declined: Declined
     form:
       errors:
         one: '1 error prohibited this game from being saved:'
@@ -108,6 +117,8 @@ en:
       prebooking_locked_hint: Check "Repeat weekly" to enable prebooking.
       with_coach: With coach
       with_coach_hint: If checked, this game will be held with a coach.
+      coach: Coach
+      coach_blank: "— select coach —"
       urgent_player_search: Players search
       urgent_player_search_hint: Show this game in "Games looking for player" and
         notify users with enabled nearby alerts.
@@ -157,6 +168,14 @@ en:
       book: Book
       request: Request
       sign_in_to_book: Sign in to book
+      show_more: Show more dates
+      coach_title: Coach availability
+      coach_confirmed: Confirmed
+      coach_not_booked: Not confirmed
+      coach_book: Confirm date
+      coach_cancel: Cancel
+      coach_booked: Coach date confirmed.
+      coach_cancelled: Coach date cancelled.
     ai_chat:
       title: Tennis Assistant
       subtitle: Powered by AI
@@ -268,6 +287,9 @@ en:
       empty: No games yet.
       open_game: Open game
       enter_stats: Enter score & stats
+      coach_schedule_title: Coaching schedule
+      coach_schedule_empty: No confirmed coaching dates yet.
+      coach_participants: Participants
       past_title: Past matches
       past_subtitle: Match history from before deleted or external entries. Not linked
         to active games.

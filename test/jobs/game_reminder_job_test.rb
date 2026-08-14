@@ -45,7 +45,77 @@ class GameReminderJobTest < ActiveJob::TestCase
     end
   end
 
+  test "reminds coach today at 14 for a later game" do
+    coach_text = coach_reminder_text(time: "18:00", booking_date: Date.current)
+
+    assert_includes coach_text, "game today"
+  end
+
+  test "reminds coach a day ahead at 14 for an early game" do
+    coach_text = coach_reminder_text(time: "10:00", booking_date: Date.tomorrow)
+
+    assert_includes coach_text, "game tomorrow"
+  end
+
+  test "reminds accepted coach for a one-off game without prebooking" do
+    coach = User.create!(
+      email: "coach-one-off-reminder@example.com",
+      coach: true,
+      telegram_chat_id: 93_001,
+      notification_channel: "telegram",
+      telegram_locale: "en"
+    )
+    game = Game.create!(
+      court: courts(:one),
+      user: users(:two),
+      coach: coach,
+      with_coach: true,
+      date: Date.current,
+      time: "18:00"
+    )
+    game.update!(coach_invitation_status: "accepted")
+    calls = []
+
+    stub_singleton(SendTelegramNotificationJob, :perform_later, ->(*args) { calls << args }) do
+      GameReminderJob.perform_now
+    end
+
+    assert_includes calls.find { |call| call.first == coach.telegram_chat_id }.second, "game today"
+  ensure
+    coach&.destroy
+  end
+
   private
+    def coach_reminder_text(time:, booking_date:)
+      coach = User.create!(
+        email: "coach-reminder-#{time.delete(":")}@example.com",
+        coach: true,
+        telegram_chat_id: 92_000 + time.to_i,
+        notification_channel: "telegram",
+        telegram_locale: "en"
+      )
+      game = Game.create!(
+        court: courts(:one),
+        user: users(:two),
+        coach: coach,
+        with_coach: true,
+        recurring: true,
+        date: booking_date,
+        time: time
+      )
+      game.update!(coach_invitation_status: "accepted")
+      game.coach_prebookings.create!(coach: coach, date: booking_date)
+      calls = []
+
+      stub_singleton(SendTelegramNotificationJob, :perform_later, ->(*args) { calls << args }) do
+        GameReminderJob.perform_now
+      end
+
+      calls.find { |call| call.first == coach.telegram_chat_id }.second
+    ensure
+      coach&.destroy
+    end
+
     def reminder_text(with_coach:, locale: "en")
       game = games(:one)
       recipient = users(:one)

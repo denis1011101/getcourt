@@ -161,6 +161,14 @@ es:
       book: Reservar
       request: Solicitar
       sign_in_to_book: Inicia sesión para reservar
+      show_more: Mostrar más fechas
+      coach_title: Disponibilidad del entrenador
+      coach_confirmed: Confirmada
+      coach_not_booked: Sin confirmar
+      coach_book: Confirmar fecha
+      coach_cancel: Cancelar
+      coach_booked: Fecha del entrenador confirmada.
+      coach_cancelled: Fecha del entrenador cancelada.
     ai_chat:
       title: Asistente de tenis
       subtitle: Con IA
@@ -271,6 +279,9 @@ es:
       empty: Todavía no hay partidos.
       open_game: Abrir partido
       enter_stats: Introducir marcador y estadísticas
+      coach_schedule_title: Horario del entrenador
+      coach_schedule_empty: Todavía no hay fechas confirmadas.
+      coach_participants: Participantes
       past_title: Partidos anteriores
       past_subtitle: Historial de partidos de entradas eliminadas o externas. No está
         vinculado a partidos activos.

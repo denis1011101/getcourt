@@ -93,6 +93,15 @@ ru:
       match_block_title: Игра %{number}
       remove_match: Удалить игру
       add_team_player: Добавить игрока
+      coach: Тренер
+      coach_accept: Принять приглашение
+      coach_decline: Отказаться
+      coach_invitation_accepted: Приглашение тренером принято.
+      coach_invitation_declined: Приглашение тренером отклонено.
+      coach_status:
+        pending: Ожидает ответа тренера
+        accepted: Принято
+        declined: Отклонено
     form:
       errors:
         one: "%{count} ошибка помешала сохранить игру:"
@@ -111,6 +120,8 @@ ru:
         запись.
       with_coach: С тренером
       with_coach_hint: Если отмечено, игра пройдёт с тренером.
+      coach: Тренер
+      coach_blank: "— выберите тренера —"
       urgent_player_search: Поиск игроков
       urgent_player_search_hint: Показывать эту игру в разделе «Игры, где ищут игроков»
         и уведомить пользователей с включёнными уведомлениями поблизости.
@@ -160,6 +171,14 @@ ru:
       book: Забронировать
       request: Запросить
       sign_in_to_book: Войдите, чтобы забронировать
+      show_more: Показать ещё даты
+      coach_title: Расписание тренера
+      coach_confirmed: Подтверждено
+      coach_not_booked: Не подтверждено
+      coach_book: Подтвердить дату
+      coach_cancel: Отменить
+      coach_booked: Дата тренера подтверждена.
+      coach_cancelled: Дата тренера отменена.
     ai_chat:
       title: Теннисный ассистент
       subtitle: На базе ИИ
@@ -270,6 +289,9 @@ ru:
       empty: Игр пока нет.
       open_game: Открыть игру
       enter_stats: Внести счёт и статистику
+      coach_schedule_title: Расписание тренера
+      coach_schedule_empty: Подтверждённых дат пока нет.
+      coach_participants: Участники
       past_title: Прошлые матчи
       past_subtitle: История матчей из удалённых или внешних записей. Не привязана
         к активным играм.

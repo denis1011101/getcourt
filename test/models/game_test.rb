@@ -132,4 +132,24 @@ class GameTest < ActiveSupport::TestCase
     assert_equal 7, (dates[1] - dates[0]).to_i
     assert_equal 7, (dates[2] - dates[1]).to_i
   end
+  test "prebooking_candidate_dates includes booked and cancelled dates outside horizon" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.current, recurring: true, prebooking_enabled: true)
+    booked_date = game.next_date + 8.weeks
+    cancelled_date = game.next_date + 9.weeks
+    booked_user = User.create!(email: "booked-outside-horizon@example.com")
+    game.prebookings.create!(date: booked_date, slot_index: 1, user: booked_user)
+    game.prebooking_cancellations.create!(date: cancelled_date, user: booked_user)
+
+    dates = game.prebooking_candidate_dates(3)
+
+    assert_includes dates, booked_date
+    assert_includes dates, cancelled_date
+  end
+
+  test "prebooking horizon is capped" do
+    game = Game.new(court: courts(:one), user: users(:one), date: Date.current, recurring: true)
+
+    assert_equal Game::MAX_PREBOOKING_HORIZON, game.prebooking_horizon_dates(10_000).size
+  end
+
 end

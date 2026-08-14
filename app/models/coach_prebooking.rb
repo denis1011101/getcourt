@@ -1,0 +1,23 @@
+class CoachPrebooking < ApplicationRecord
+  belongs_to :game
+  belongs_to :coach, class_name: "User"
+
+  validates :date, presence: true
+  validates :date, uniqueness: { scope: [ :game_id, :coach_id ] }
+  validate :coach_matches_game
+  validate :date_is_bookable_occurrence
+
+  private
+
+  def coach_matches_game
+    errors.add(:coach, "must be the accepted game coach") unless game&.coach_id == coach_id && game.coach_accepted?
+  end
+
+  def date_is_bookable_occurrence
+    return if date.blank? || game.blank?
+
+    valid = game.recurring? && game.date.present? && date >= Date.current &&
+      ((date - game.date).to_i % 7).zero? && !game.cancelled_on?(date)
+    errors.add(:date, "must be an upcoming game occurrence") unless valid
+  end
+end

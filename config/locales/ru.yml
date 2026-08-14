@@ -117,6 +117,7 @@ ru:
       view_game: "Открыть игру"
       game_reminder_subject: "Напоминание об игре"
       game_invitation_subject: "Приглашение в игру #%{game_id}"
+      coach_invitation_subject: "Приглашение тренером в игру #%{game_id}"
       stats_subject: "Заполните статистику игры"
       prebooking_subject: "Запрос на предбронирование игры #%{game_id}"
       participation_subject: "Изменился состав игры #%{game_id}"

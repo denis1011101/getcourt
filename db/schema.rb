@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_05_000100) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_12_000000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -98,6 +98,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_05_000100) do
     t.index ["timezone"], name: "index_cities_on_timezone"
   end
 
+  create_table "coach_prebookings", force: :cascade do |t|
+    t.integer "coach_id", null: false
+    t.datetime "created_at", null: false
+    t.date "date", null: false
+    t.integer "game_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["coach_id"], name: "index_coach_prebookings_on_coach_id"
+    t.index ["game_id", "coach_id", "date"], name: "index_coach_prebookings_on_game_id_and_coach_id_and_date", unique: true
+    t.index ["game_id"], name: "index_coach_prebookings_on_game_id"
+  end
+
   create_table "court_suggestions", force: :cascade do |t|
     t.text "comment"
     t.integer "court_id", null: false
@@ -172,6 +183,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_05_000100) do
   end
 
   create_table "games", force: :cascade do |t|
+    t.integer "coach_id"
+    t.string "coach_invitation_status"
     t.text "comment"
     t.integer "court_id", null: false
     t.datetime "created_at", null: false
@@ -197,6 +210,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_05_000100) do
     t.boolean "urgent_player_search", default: false, null: false
     t.integer "user_id", null: false
     t.boolean "with_coach", default: false, null: false
+    t.index ["coach_id"], name: "index_games_on_coach_id"
     t.index ["court_id"], name: "index_games_on_court_id"
     t.index ["prebooking_enabled"], name: "index_games_on_prebooking_enabled"
     t.index ["recurring"], name: "index_games_on_recurring"
@@ -455,6 +469,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_05_000100) do
     t.index ["telegram_username"], name: "index_users_on_telegram_username"
   end
 
+  add_foreign_key "coach_prebookings", "games"
+  add_foreign_key "coach_prebookings", "users", column: "coach_id"
   add_foreign_key "court_suggestions", "courts"
   add_foreign_key "court_suggestions", "users"
   add_foreign_key "court_suggestions", "users", column: "reviewed_by_id"
@@ -465,6 +481,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_05_000100) do
   add_foreign_key "games", "courts"
   add_foreign_key "games", "tournaments"
   add_foreign_key "games", "users"
+  add_foreign_key "games", "users", column: "coach_id"
   add_foreign_key "matches", "games"
   add_foreign_key "matches", "users"
   add_foreign_key "matches", "users", column: "opponent_id"
