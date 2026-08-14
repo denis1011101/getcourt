@@ -451,5 +451,4 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   ensure
     coach&.destroy
   end
-
 end

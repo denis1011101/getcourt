@@ -30,5 +30,4 @@ class PrebookingsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "turbo-frame#prebookings-#{game.id}"
   end
-
 end

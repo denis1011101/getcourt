@@ -9,21 +9,18 @@ class SitemapGeneratorTest < ActiveSupport::TestCase
     "xhtml" => "http://www.w3.org/1999/xhtml"
   }.freeze
 
+  # Own file per process: the suite runs in parallel, and sharing public/sitemap.xml
+  # made one worker delete the file another was still reading.
   setup do
-    @sitemap_file = Rails.root.join("public", "sitemap.xml")
-    @previous_sitemap = File.exist?(@sitemap_file) ? File.read(@sitemap_file) : nil
+    @sitemap_file = Rails.root.join("tmp", "sitemap-test-#{Process.pid}.xml")
   end
 
   teardown do
-    if @previous_sitemap
-      File.write(@sitemap_file, @previous_sitemap)
-    elsif File.exist?(@sitemap_file)
-      File.delete(@sitemap_file)
-    end
+    File.delete(@sitemap_file) if File.exist?(@sitemap_file)
   end
 
   test "generates multilingual sitemap with hreflang alternates" do
-    SitemapGenerator.generate!
+    SitemapGenerator.generate!(path: @sitemap_file)
     document = Nokogiri::XML(File.read(@sitemap_file))
 
     assert_empty document.errors
@@ -37,7 +34,7 @@ class SitemapGeneratorTest < ActiveSupport::TestCase
   end
 
   test "indexable tennis life pages are listed, paginated and legacy ones are not" do
-    SitemapGenerator.generate!
+    SitemapGenerator.generate!(path: @sitemap_file)
     document = Nokogiri::XML(File.read(@sitemap_file))
 
     assert_includes locs(document), "https://getcourt.co#{tennis_life_path}"
@@ -54,7 +51,7 @@ class SitemapGeneratorTest < ActiveSupport::TestCase
       starts_at: 1.day.from_now
     )
 
-    SitemapGenerator.generate!
+    SitemapGenerator.generate!(path: @sitemap_file)
     document = Nokogiri::XML(File.read(@sitemap_file))
 
     assert_dynamic_record(document, courts(:one), court_path(courts(:one)))

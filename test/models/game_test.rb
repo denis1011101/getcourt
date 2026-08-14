@@ -151,5 +151,4 @@ class GameTest < ActiveSupport::TestCase
 
     assert_equal Game::MAX_PREBOOKING_HORIZON, game.prebooking_horizon_dates(10_000).size
   end
-
 end

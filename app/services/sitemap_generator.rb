@@ -1,11 +1,17 @@
 class SitemapGenerator
   include Rails.application.routes.url_helpers
 
-  def self.generate!
-    new.generate!
+  def self.default_path
+    Rails.root.join("public", "sitemap.xml")
   end
 
-  def generate!
+  def self.generate!(path: default_path)
+    new.generate!(path: path)
+  end
+
+  # The path is injectable so tests can write to their own file: the suite runs in
+  # parallel processes, and a shared public/sitemap.xml races between them.
+  def generate!(path: self.class.default_path)
     xml = +"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
     xml << "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\" xmlns:xhtml=\"http://www.w3.org/1999/xhtml\">\n"
 
@@ -20,7 +26,8 @@ class SitemapGenerator
 
     xml << "</urlset>\n"
 
-    file = Rails.root.join("public", "sitemap.xml")
+    file = Pathname(path.to_s)
+    FileUtils.mkdir_p(file.dirname)
     File.write(file, xml)
     Rails.logger.info "Sitemap generated: #{file}"
     file.to_s

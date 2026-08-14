@@ -716,5 +716,4 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
   ensure
     coach&.destroy
   end
-
 end
