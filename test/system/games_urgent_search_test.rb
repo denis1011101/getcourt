@@ -14,9 +14,11 @@ class GamesUrgentSearchTest < ApplicationSystemTestCase
     fill_in "Email", with: owner.email
     click_on "Enter"
 
+    # While the search is off, the button lives in the onboarding fork next to the
+    # invite form; once it is on, the item is done and the manage block takes over.
     visit game_path(game)
-    assert_button "Announce players search"
-    click_on "Announce players search"
+    assert_button "Announce search"
+    click_on "Announce search"
 
     assert_current_path game_path(game)
     assert game.reload.urgent_player_search?
@@ -25,6 +27,6 @@ class GamesUrgentSearchTest < ApplicationSystemTestCase
     click_on "Cancel players search"
     assert_current_path game_path(game)
     assert_not game.reload.urgent_player_search?
-    assert_button "Announce players search"
+    assert_button "Announce search"
   end
 end
