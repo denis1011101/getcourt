@@ -1,7 +1,8 @@
 class Game < ApplicationRecord
   after_commit :schedule_post_game_stats_reminder, on: %i[create update]
   after_commit :enqueue_urgent_player_search_notification, on: %i[create update]
-  after_update :remove_stale_coach_prebookings, if: :saved_change_to_coach_id?
+  after_update :remove_stale_coach_prebookings,
+               if: -> { saved_change_to_coach_id? || saved_change_to_date? || saved_change_to_recurring? }
 
   belongs_to :tournament, optional: true
   belongs_to :court
@@ -38,6 +39,17 @@ class Game < ApplicationRecord
 
   def coach_accepted?
     coach_id.present? && coach_invitation_status == "accepted"
+  end
+
+  # Is this date one of the game's occurrences? A recurring game repeats weekly
+  # from its start date, a one-off game has exactly one.
+  def occurrence_date?(candidate)
+    return false if candidate.blank? || date.blank?
+
+    candidate = candidate.to_date
+    return candidate == date.to_date unless recurring?
+
+    candidate >= date && ((candidate - date.to_date).to_i % 7).zero?
   end
 
   def tournament_game?
@@ -295,9 +307,12 @@ class Game < ApplicationRecord
     return [] unless recurring?
 
     horizon_dates = prebooking_horizon_dates(count)
-    booked_dates = prebookings.where.not(user_id: nil).distinct.pluck(:date)
-    cancelled_dates = prebooking_cancellations.distinct.pluck(:date)
-    coach_dates = coach_prebookings.distinct.pluck(:date)
+    # Only from the current occurrence onwards: a long-lived weekly game accumulates
+    # years of bookings and cancellations, and none of the past ones are bookable.
+    from = horizon_dates.first
+    booked_dates = prebookings.where.not(user_id: nil).where(date: from..).distinct.pluck(:date)
+    cancelled_dates = prebooking_cancellations.where(date: from..).distinct.pluck(:date)
+    coach_dates = coach_prebookings.where(date: from..).distinct.pluck(:date)
 
     (horizon_dates + booked_dates + cancelled_dates + coach_dates).compact.map(&:to_date).uniq.sort
   end
@@ -402,8 +417,19 @@ class Game < ApplicationRecord
     errors.add(:coach, "must be a coach") if coach.present? && !coach.coach?
   end
 
+  # Coach bookings hang off concrete occurrences, so they go stale when the coach
+  # changes, and also when the game moves to another date or stops repeating.
   def remove_stale_coach_prebookings
     coach_prebookings.where.not(coach_id: coach_id).delete_all
+    return unless saved_change_to_date? || saved_change_to_recurring?
+
+    unless recurring? && date.present?
+      coach_prebookings.delete_all
+      return
+    end
+
+    stale_ids = coach_prebookings.reject { |booking| occurrence_date?(booking.date) }.map(&:id)
+    coach_prebookings.where(id: stale_ids).delete_all if stale_ids.any?
   end
 
   def enqueue_urgent_player_search_notification

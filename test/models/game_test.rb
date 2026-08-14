@@ -151,4 +151,43 @@ class GameTest < ActiveSupport::TestCase
 
     assert_equal Game::MAX_PREBOOKING_HORIZON, game.prebooking_horizon_dates(10_000).size
   end
+
+  test "prebooking_candidate_dates drops occurrences that already passed" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: 10.weeks.ago.to_date, recurring: true, prebooking_enabled: true)
+    past_date = game.next_date - 4.weeks
+    booked_user = User.create!(email: "booked-in-the-past@example.com")
+    game.prebookings.create!(date: past_date, slot_index: 1, user: booked_user)
+    game.prebooking_cancellations.create!(date: past_date - 1.week, user: booked_user)
+
+    dates = game.prebooking_candidate_dates(3)
+
+    assert_not_includes dates, past_date
+    assert_equal game.next_date, dates.first
+  end
+
+  test "coach bookings are dropped when the game moves to another day" do
+    coach = User.create!(email: "coach-moved-game@example.com", coach: true)
+    game = Game.create!(court: courts(:one), user: users(:one), coach: coach, with_coach: true, recurring: true, date: Date.current)
+    game.update!(coach_invitation_status: "accepted")
+    game.coach_prebookings.create!(coach: coach, date: game.next_date)
+
+    assert_difference -> { game.coach_prebookings.count }, -1 do
+      game.update!(date: game.date + 1.day)
+    end
+  ensure
+    coach&.destroy
+  end
+
+  test "coach bookings are dropped when the game stops repeating" do
+    coach = User.create!(email: "coach-one-off-again@example.com", coach: true)
+    game = Game.create!(court: courts(:one), user: users(:one), coach: coach, with_coach: true, recurring: true, date: Date.current)
+    game.update!(coach_invitation_status: "accepted")
+    game.coach_prebookings.create!(coach: coach, date: game.next_date)
+
+    game.update!(recurring: false)
+
+    assert_empty game.coach_prebookings.reload
+  ensure
+    coach&.destroy
+  end
 end

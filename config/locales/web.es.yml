@@ -94,6 +94,15 @@ es:
       match_block_title: Partido %{number}
       remove_match: Eliminar partido
       add_team_player: Añadir jugador
+      coach: Entrenador
+      coach_accept: Aceptar invitación
+      coach_decline: Rechazar
+      coach_invitation_accepted: Invitación de entrenador aceptada.
+      coach_invitation_declined: Invitación de entrenador rechazada.
+      coach_status:
+        pending: Esperando la respuesta del entrenador
+        accepted: Aceptada
+        declined: Rechazada
     form:
       errors:
         one: '1 error impidió guardar el partido:'
@@ -112,6 +121,8 @@ es:
         previa.
       with_coach: Con entrenador
       with_coach_hint: Si lo marcas, el partido se jugará con entrenador.
+      coach: Entrenador
+      coach_blank: "— elige entrenador —"
       urgent_player_search: Búsqueda de jugadores
       urgent_player_search_hint: Muestra este partido en «Partidos que buscan jugadores»
         y notifica a los usuarios con alertas cercanas activadas.

@@ -112,5 +112,7 @@
     </div>
   <% end %>
 
-  <% if horizon < Game::MAX_PREBOOKING_HORIZON %>\n    <%= link_to t("games.prebookings.show_more"), more_game_prebookings_path(game, horizon: [ horizon + 3, Game::MAX_PREBOOKING_HORIZON ].min), class: "mt-3 inline-flex text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400" %>\n  <% end %>
+  <% if horizon < Game::MAX_PREBOOKING_HORIZON %>
+    <%= link_to t("games.prebookings.show_more"), more_game_prebookings_path(game, horizon: [ horizon + 3, Game::MAX_PREBOOKING_HORIZON ].min), class: "mt-3 inline-flex text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400" %>
+  <% end %>
 <% end %>
