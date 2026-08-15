@@ -37,3 +37,20 @@ feed_fourth_player:
   created_at: <%= 1.day.ago %>
   updated_at: <%= 1.day.ago %>
 
+feed_fifth_player:
+  user: five
+  opponent: six
+  mode: singles
+  outcome: win
+  played_at: <%= 1.day.ago %>
+  created_at: <%= 1.day.ago %>
+  updated_at: <%= 1.day.ago %>
+
+feed_sixth_player:
+  user: six
+  opponent: five
+  mode: singles
+  outcome: loss
+  played_at: <%= 1.day.ago %>
+  created_at: <%= 1.day.ago %>
+  updated_at: <%= 1.day.ago %>

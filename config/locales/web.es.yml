@@ -242,6 +242,28 @@ es:
         many: "%{count} pistas"
         other: "%{count} pistas"
   users:
+    onboarding:
+      title: Configura tu GetCourt
+      description: Unos pasos y verás los partidos que te quedan cerca y a tu nivel.
+      dismiss: Ocultar
+      progress: "%{done} de %{total}"
+      items:
+        city:
+          title: Añade tu ciudad
+          description: Los partidos cercanos van primero y la hora sale en tu zona.
+          action: Añadir ciudad
+        telegram:
+          title: Conecta Telegram
+          description: Las invitaciones y los recordatorios llegan al bot, no al correo.
+          action: Conectar Telegram
+        sport:
+          title: Elige deporte y nivel
+          description: Te proponemos partidos acordes a lo que juegas.
+          action: Completar perfil
+        game:
+          title: Únete a un partido o crea el tuyo
+          description: "De esto se trata: pisar la pista esta semana."
+          action: Crear partido
     edit:
       title: Cuenta
       my_games: Mis partidos

@@ -98,6 +98,23 @@ ru:
     participation_request_rejected_user: 'Ваш запрос на участие в игре #%{game_id}
       отклонён.'
     participation_requested: запросил участие в вашей игре
+    game_changed_title: 'Игра изменилась:'
+    game_changed_line: "%{field}: %{from} → %{to}"
+    game_changed_series_note: Изменения касаются всех будущих дат этой еженедельной игры.
+    game_changed_blank: не указано
+    game_changed_yes: да
+    game_changed_no: нет
+    game_changed_minutes: "%{count} мин"
+    game_changed_field_date: Дата
+    game_changed_field_time: Время
+    game_changed_field_court_id: Корт
+    game_changed_field_sport: Вид спорта
+    game_changed_field_duration_minutes: Длительность
+    game_changed_field_players_count: Игроков
+    game_changed_field_with_coach: С тренером
+    game_changed_field_surface: Покрытие
+    game_changed_field_environment: Площадка
+    game_changed_field_comment: Комментарий
     participation_joined: присоединился к вашей игре
     participation_left: покинул вашу игру
     participation_removed: был удалён из вашей игры
@@ -644,6 +661,23 @@ en:
     participation_request_rejected_user: 'Your request to join Game #%{game_id} was
       rejected.'
     participation_requested: requested to join your game
+    game_changed_title: 'The game has changed:'
+    game_changed_line: "%{field}: %{from} → %{to}"
+    game_changed_series_note: The change applies to every upcoming date of this weekly game.
+    game_changed_blank: not set
+    game_changed_yes: 'yes'
+    game_changed_no: 'no'
+    game_changed_minutes: "%{count} min"
+    game_changed_field_date: Date
+    game_changed_field_time: Time
+    game_changed_field_court_id: Court
+    game_changed_field_sport: Sport
+    game_changed_field_duration_minutes: Duration
+    game_changed_field_players_count: Players
+    game_changed_field_with_coach: With coach
+    game_changed_field_surface: Surface
+    game_changed_field_environment: Setting
+    game_changed_field_comment: Comment
     participation_joined: joined your game
     participation_left: left your game
     participation_removed: was removed from your game
@@ -1147,6 +1181,23 @@ es:
     participation_request_rejected_user: 'Tu solicitud para unirte al partido #%{game_id}
       ha sido rechazada.'
     participation_requested: ha solicitado unirse a tu partido
+    game_changed_title: 'El partido ha cambiado:'
+    game_changed_line: "%{field}: %{from} → %{to}"
+    game_changed_series_note: El cambio afecta a todas las fechas futuras de este partido semanal.
+    game_changed_blank: sin definir
+    game_changed_yes: 'sí'
+    game_changed_no: 'no'
+    game_changed_minutes: "%{count} min"
+    game_changed_field_date: Fecha
+    game_changed_field_time: Hora
+    game_changed_field_court_id: Pista
+    game_changed_field_sport: Deporte
+    game_changed_field_duration_minutes: Duración
+    game_changed_field_players_count: Jugadores
+    game_changed_field_with_coach: Con entrenador
+    game_changed_field_surface: Superficie
+    game_changed_field_environment: Entorno
+    game_changed_field_comment: Comentario
     participation_joined: se ha unido a tu partido
     participation_left: ha salido de tu partido
     participation_removed: ha sido eliminado de tu partido

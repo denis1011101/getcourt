@@ -6,8 +6,8 @@ one:
   games_count: 3
   format: singles
   tournament_type: bracket
-  start_date: 2025-12-27
-  end_date: 2025-12-27
+  start_date: <%= 5.days.ago.to_date %>
+  end_date: <%= 4.days.ago.to_date %>
   user: one
 
 two:
@@ -15,6 +15,6 @@ two:
   players_count: 4
   format: doubles
   tournament_type: round_robin
-  start_date: 2025-12-27
-  end_date: 2025-12-27
+  start_date: <%= 5.days.ago.to_date %>
+  end_date: <%= 4.days.ago.to_date %>
   user: two

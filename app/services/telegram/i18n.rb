@@ -15,9 +15,21 @@ module Telegram
       translation_key = "telegram.#{key}"
       translation_locale = ::I18n.exists?(translation_key, locale) ? locale : "en"
 
-      return key.to_s unless ::I18n.exists?(translation_key, translation_locale)
+      unless ::I18n.exists?(translation_key, translation_locale)
+        Rails.logger.warn("[Telegram::I18n] missing key #{translation_key} (locale=#{locale})")
+        return key.to_s
+      end
 
-      ::I18n.t(translation_key, locale: translation_locale, **args)
+      begin
+        ::I18n.t(translation_key, locale: translation_locale, **args)
+      rescue ::I18n::MissingInterpolationArgument => e
+        # A missing argument in some rare branch must not take the poller down:
+        # log it and let the raw %{...} through, the way the old gsub did. Retrying
+        # without any values is what does that: I18n only interpolates when values
+        # are given, so the template comes back untouched.
+        Rails.logger.warn("[Telegram::I18n] #{translation_key} (locale=#{translation_locale}): #{e.message}")
+        ::I18n.t(translation_key, locale: translation_locale, default: key.to_s)
+      end
     end
 
     def self.for_user(user)

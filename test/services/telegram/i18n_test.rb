@@ -58,6 +58,13 @@ class Telegram::I18nTest < ActiveSupport::TestCase
     assert_equal "11:54 PM", Telegram::Helpers::GameFormatting.format_time_hhmm(registered_at, locale: "en")
   end
 
+  test "lets the raw template through when an interpolation argument is missing" do
+    I18n.backend.store_translations(:en, telegram: { i18n_test_plain: "hi %{who} and %{other}" })
+
+    assert_equal "hi %{who} and %{other}", Telegram::I18n.t(:i18n_test_plain, locale: "en", who: "a")
+    assert_equal "i18n_test_absent", Telegram::I18n.t(:i18n_test_absent, locale: "en", who: "a")
+  end
+
   test "keeps an unknown sport readable" do
     game = games(:one)
     game.update_columns(sport: "Badminton")

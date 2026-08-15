@@ -6,7 +6,7 @@ class ResetParticipationsJob < ApplicationJob
       nd = game.next_date
       next unless nd
 
-      if game.should_reset_participations?(Date.today)
+      if game.should_reset_participations?(Date.current)
         if game.prebooking_enabled?
           apply_prebookings_for_occurrence!(game, nd)
           game.mark_participations_reset!(nd)

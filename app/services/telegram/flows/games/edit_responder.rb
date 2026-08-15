@@ -84,6 +84,7 @@ module Telegram
                 attrs[:court_id] = court_id.to_i if court_id.present?
                 begin
                   game.update(attrs.compact)
+                  notify_participants(game, chat_id)
                   # delete user's final message and confirm saved values in bot message
                   begin
                     poller.send_api("deleteMessage", { chat_id: chat_id, message_id: message["message_id"] }) rescue nil
@@ -161,6 +162,7 @@ module Telegram
               end
               begin
                 game.update(attrs.compact)
+                notify_participants(game, chat_id)
                 poller.send_api("deleteMessage", { chat_id: chat_id, message_id: message["message_id"] }) rescue nil
                 msg_id = state[:msg_id]
                 Telegram::Flows::Games::EditPrompter.send_edit_prompts(chat_id, game.id, msg_id) rescue nil
@@ -170,6 +172,15 @@ module Telegram
                 Rails.cache.delete("telegram:edit:chat:#{chat_id}")
               end
             end
+          end
+
+          # The bot saves one field per click, so the notification is debounced into a
+          # single message instead of one per field.
+          def notify_participants(game, chat_id)
+            editor = User.find_by(telegram_chat_id: chat_id.to_s)
+            GameChangeNotificationJob.schedule(game, editor, game.saved_changes)
+          rescue => e
+            Rails.logger.error "[EditResponder] change notification failed: #{e.class}: #{e.message}"
           end
 
           def handle_cancel(callback)

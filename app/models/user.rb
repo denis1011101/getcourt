@@ -11,6 +11,16 @@ class User < ApplicationRecord
   # show up anywhere people are listed or picked.
   scope :not_merged, -> { where(merged_at: nil) }
 
+  # People we can offer in a picker: those with a name, plus those who came from
+  # the bot and have only a @nick.
+  scope :identifiable, -> { where.not(name: [ nil, "" ]).or(where.not(telegram_username: [ nil, "" ])) }
+
+  # Ordered by the label the picker shows (see ApplicationHelper#user_display_label),
+  # so the list reads in the order it looks.
+  scope :by_display_label, -> {
+    order(Arel.sql("LOWER(COALESCE(NULLIF(users.name, ''), users.telegram_username, users.email))"))
+  }
+
   SKILL_LEVELS = %w[beginner intermediate advanced pro].freeze
   SPORTS = SportCatalog::SPORTS
 
@@ -106,6 +116,16 @@ class User < ApplicationRecord
 
   def coach?
     self.coach == true
+  end
+
+  # The newcomer checklist on the homepage: kept server-side on purpose, so closing
+  # it on a laptop doesn't bring it back on a phone.
+  def onboarding_dismissed?
+    onboarding_dismissed_at.present?
+  end
+
+  def dismiss_onboarding!
+    update_column(:onboarding_dismissed_at, Time.current)
   end
 
   # keep the latest invite lists handy, so the same group can be invited again in one click

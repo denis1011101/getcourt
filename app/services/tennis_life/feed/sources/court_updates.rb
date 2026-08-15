@@ -3,8 +3,8 @@ module TennisLife
     module Sources
       class CourtUpdates < Base
         def ids
-          snapshotted(CourtSuggestion)
-            .where(status: "approved", reviewed_at: ..snapshot_ts)
+          recent(snapshotted(CourtSuggestion), column: :reviewed_at)
+            .where(status: "approved")
             .pluck(:id)
         end
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_12_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_15_000000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -445,6 +445,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_000000) do
     t.string "notification_channel"
     t.boolean "notify_nearby", default: false, null: false
     t.datetime "onboarded_at"
+    t.datetime "onboarding_dismissed_at"
     t.string "preferred_login_via"
     t.text "preferred_sports"
     t.json "recent_invite_handles", default: [], null: false
@@ -469,6 +470,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_000000) do
     t.index ["telegram_username"], name: "index_users_on_telegram_username"
   end
 
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "coach_prebookings", "games"
   add_foreign_key "coach_prebookings", "users", column: "coach_id"
   add_foreign_key "court_suggestions", "courts"

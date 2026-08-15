@@ -179,4 +179,26 @@ module ApplicationHelper
 
     candidate
   end
+
+  # The handle a person is actually known by: @nick for those who came from the
+  # bot, email for everyone else.
+  def user_primary_handle(user)
+    normalized = normalize_telegram_username(user.telegram_username)
+    return "@#{normalized}" if normalized
+
+    user.email.presence
+  end
+
+  # Label for a person wherever we list or pick players. Names repeat and are
+  # written every which way, so the handle in brackets is what tells two players
+  # apart: "Denis (@nick)", or the handle alone when there is no name.
+  def user_display_label(user)
+    return "" if user.blank?
+
+    handle = user_primary_handle(user)
+    name = user.name.presence
+    return name || "User ##{user.id}" if handle.blank?
+
+    name ? "#{name} (#{handle})" : handle
+  end
 end

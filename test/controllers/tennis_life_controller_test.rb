@@ -682,4 +682,26 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
   ensure
     Match.delete_all
   end
+  test "feed pins the top five as a table and does not repeat them below" do
+    get tennis_life_feed_url
+
+    assert_response :success
+    assert_equal 5, assigns(:pinned_rating_rows).size
+    pinned_ids = assigns(:pinned_rating_rows).map { |row| row[:user].id }
+    player_card_ids = assigns(:cards).select { |card| card.kind == "player" }.map { |card| card.record.id }
+
+    assert_empty pinned_ids & player_card_ids
+    assert_includes response.body, I18n.t("tennis_life.statistics.win_pct")
+  end
+
+  test "players who have not played in 90 days are out of the rating" do
+    dormant = User.create!(email: "dormant-rating@example.com", name: "Dormant")
+    Match.create!(user: dormant, opponent: users(:one), mode: "singles", outcome: "win",
+                  score: "6-0 6-0", played_at: 100.days.ago)
+
+    get tennis_life_statistics_url
+
+    assert_response :success
+    assert_not_includes assigns(:rating_rows).map { |row| row[:user].id }, dormant.id
+  end
 end

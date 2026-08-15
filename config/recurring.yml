@@ -16,6 +16,9 @@ production:
   game_reminders:
     class: GameReminderJob
     schedule: at 2pm every day
+  reset_participations:
+    class: ResetParticipationsJob
+    schedule: at 4am every day
   reset_inactive_player_statistics:
     class: ResetInactivePlayerStatisticsJob
-    schedule: at 4am every day
+    schedule: at 4:30am every day

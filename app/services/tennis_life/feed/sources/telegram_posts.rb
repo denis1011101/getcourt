@@ -3,7 +3,7 @@ module TennisLife
     module Sources
       class TelegramPosts < Base
         def ids
-          snapshotted(TelegramPost)
+          recent(snapshotted(TelegramPost), column: :published_at)
             .joins(:telegram_channel)
             .where.not(message_id: nil)
             .where.not(text: [ nil, "" ])

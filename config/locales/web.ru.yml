@@ -240,6 +240,28 @@ ru:
         many: "%{count} кортов"
         other: "%{count} корта"
   users:
+    onboarding:
+      title: Настройте GetCourt под себя
+      description: Несколько шагов — и игры будут показываться те, что рядом и по вам.
+      dismiss: Скрыть
+      progress: "%{done} из %{total}"
+      items:
+        city:
+          title: Укажите город
+          description: Игры рядом будут выше, а время — в вашем часовом поясе.
+          action: Указать город
+        telegram:
+          title: Привяжите Telegram
+          description: Приглашения и напоминания придут в бот, а не на почту.
+          action: Привязать Telegram
+        sport:
+          title: Выберите вид спорта и уровень
+          description: Будем показывать игры под то, во что вы играете.
+          action: Заполнить профиль
+        game:
+          title: Вступите в игру или создайте свою
+          description: Ради этого всё и затевалось — выйти на корт на этой неделе.
+          action: Создать игру
     edit:
       title: Кабинет
       my_games: Мои игры

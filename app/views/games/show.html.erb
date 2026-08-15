@@ -1,5 +1,5 @@
 <% approved_count = @game.participations.respond_to?(:approved) ? @game.participations.approved.count : @game.participations.count %>
-<% content_for :meta_title, t("games.show.meta_title", court: @game.court&.name, date: l((@game.next_date || @game.date).to_date, format: :long)) %>
+<% content_for :meta_title, t("games.show.meta_title", court: @game.court&.name, date: l((@game.display_date_for_show || @game.date).to_date, format: :long)) %>
 <% content_for :meta_description, t("games.show.meta_description", count: approved_count, court: @game.court&.name) %>
 <% content_for :head do %>
   <script type="application/ld+json">

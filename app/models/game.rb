@@ -258,11 +258,11 @@ class Game < ApplicationRecord
 
     # if previous occurrence already passed but participations haven't been
     # reset yet, we're still in that occurrence's cycle (stats should stay unlocked)
-    if prev && prev < Date.today && should_reset_participations?
+    if prev && prev < Date.current && should_reset_participations?
       return prev
     end
 
-    return nd if nd >= Date.today
+    return nd if nd >= Date.current
 
     prev || nd
   end
@@ -274,7 +274,7 @@ class Game < ApplicationRecord
 
     if recurring?
       # advance to first occurrence >= today
-      d += 7 while d < Date.today
+      d += 7 while d < Date.current
 
       # skip cancelled occurrences
       max_iters = 520
@@ -345,11 +345,19 @@ class Game < ApplicationRecord
     prev
   end
 
-  def should_reset_participations?(as_of = Date.today)
+  # Сброс участий имеет смысл только когда предыдущее вхождение уже отыграно.
+  # Без этой проверки серия, у которой первая игра ещё впереди, попадала под
+  # ResetParticipationsJob в первую же ночь: маркер nil, next_date в будущем,
+  # и состав вычищался за несколько дней до игры.
+  def should_reset_participations?(as_of = Date.current)
     return false unless recurring?
     nd = next_date
     return false unless nd
-    last_participations_reset_at.nil? || last_participations_reset_at < nd
+
+    prev = previous_occurrence_before_next_date
+    return false unless prev && prev < as_of
+
+    last_participations_reset_at.nil? || last_participations_reset_at.to_date < nd
   end
 
   def mark_participations_reset!(date = next_date)

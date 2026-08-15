@@ -52,7 +52,7 @@ module TennisLife
         end
 
         def ids
-          relation = snapshotted(Match).order(played_at: :desc, id: :desc)
+          relation = recent(snapshotted(Match), column: :played_at).order(played_at: :desc, id: :desc)
           self.class.representatives(relation).map(&:id)
         end
       end

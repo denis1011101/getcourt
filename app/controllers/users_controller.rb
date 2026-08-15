@@ -90,6 +90,11 @@ class UsersController < ApplicationController
     redirect_to notifications_account_path, notice: "Token regenerated"
   end
 
+  def dismiss_onboarding
+    current_user.dismiss_onboarding!
+    redirect_back fallback_location: root_path
+  end
+
   def clear_city
     @user = current_user
     @user.update(timezone: nil, city_name: nil)

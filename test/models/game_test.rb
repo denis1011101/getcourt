@@ -165,6 +165,28 @@ class GameTest < ActiveSupport::TestCase
     assert_equal game.next_date, dates.first
   end
 
+  test "recurring game shows the occurrence that just passed until participations are reset" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: 1.week.ago.to_date, recurring: true)
+    played = game.date
+
+    travel_to played + 1.day do
+      assert_equal played + 1.week, game.next_date
+      assert_equal played, game.display_date_for_show, "card must not jump to next week at midnight"
+
+      game.mark_participations_reset!(game.next_date)
+
+      assert_equal played + 1.week, game.display_date_for_show
+    end
+  end
+
+  test "stats cycle follows the shown occurrence" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: 1.week.ago.to_date, recurring: true)
+
+    travel_to game.date + 1.day do
+      assert_equal game.display_date_for_show.beginning_of_day, game.current_cycle_start
+    end
+  end
+
   test "coach bookings are dropped when the game moves to another day" do
     coach = User.create!(email: "coach-moved-game@example.com", coach: true)
     game = Game.create!(court: courts(:one), user: users(:one), coach: coach, with_coach: true, recurring: true, date: Date.current)

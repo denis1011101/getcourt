@@ -38,6 +38,7 @@ Rails.application.routes.draw do
     get :courts
     post :regenerate_token
     post :clear_city, to: "users#clear_city", as: :clear_city
+    post :dismiss_onboarding
   end
 
   resources :users, only: [ :index, :show ] do
