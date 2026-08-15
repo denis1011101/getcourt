@@ -20,6 +20,30 @@ class EventsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Final preview."
   end
 
+  test "show links to the game only while the game still describes the event" do
+    game = Game.create!(user: users(:one), court: courts(:one), date: Date.yesterday, recurring: false)
+    match = FeaturedMatch.create!(
+      tournament_label: "Yard Tournament",
+      player_left_name: "Andrey",
+      player_right_name: "Roman",
+      starts_at: Time.zone.yesterday.change(hour: 17),
+      game: game
+    )
+
+    get event_url(match)
+
+    assert_response :success
+    assert_select "a[href=?]", game_path(game)
+
+    # Пятничная чистка сносит прошедшую разовую игру — ссылке вести уже некуда.
+    game.destroy
+
+    get event_url(match)
+
+    assert_response :success
+    assert_select "a[href=?]", game_path(game), false
+  end
+
   test "show returns not found for unknown slug" do
     get event_url(id: "missing-event")
 

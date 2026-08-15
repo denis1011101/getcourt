@@ -694,6 +694,66 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, I18n.t("tennis_life.statistics.win_pct")
   end
 
+  test "pinned leaders match the classic view instead of the cursor snapshot" do
+    # Начальный курсор округляет снимок вниз до часа. Матч, записанный внутри
+    # текущего часа, в этот срез не попадает — но лидеры должны совпадать с
+    # классическим видом, а не отставать до следующего часа.
+    travel_to Time.current.beginning_of_hour + 30.minutes do
+      leader = User.create!(email: "fresh-leader@example.com", name: "Fresh Leader")
+      2.times do
+        Match.create!(user: leader, opponent: users(:two), mode: "singles", outcome: "win",
+                      score: "6-0 6-0", played_at: 1.hour.ago)
+      end
+
+      get tennis_life_feed_url
+      assert_response :success
+      pinned_ids = assigns(:pinned_rating_rows).map { |row| row[:user].id }
+
+      get tennis_life_classic_url
+      assert_response :success
+      classic_ids = assigns(:rating_rows).first(TennisLifeController::PINNED_RATING_LIMIT)
+                                         .map { |row| row[:user].id }
+
+      assert_includes pinned_ids, leader.id
+      assert_equal classic_ids, pinned_ids
+    end
+  end
+
+  test "pagination keeps its order when the live rating changes mid-scroll" do
+    channel = TelegramChannel.create!(username: "@mid_scroll_feed")
+    25.times do |index|
+      TelegramPost.create!(
+        telegram_channel: channel,
+        message_id: 994_000 + index,
+        text: "Mid scroll post #{index}",
+        text_en: "Mid scroll post #{index}",
+        published_at: Time.current
+      )
+    end
+
+    get tennis_life_feed_path(seed: 123), as: :turbo_stream
+    assert_response :success
+    seen = response.body.scan(/data-feed-card-id="([^"]+)"/).flatten
+    link_tag = response.body[/<a\b(?=[^>]*data-infinite-feed-target="link")[^>]*>/]
+    next_path = CGI.unescapeHTML(link_tag[/href="([^"]+)"/, 1])
+
+    # Живой рейтинг меняется прямо между запросами двух страниц одного курсора.
+    # Порядок ленты обязан зависеть только от курсора, иначе вторая страница
+    # построится по другому списку и карточки начнут теряться и повторяться.
+    leader = User.create!(email: "mid-scroll-leader@example.com", name: "Mid Scroll")
+    3.times do
+      Match.create!(user: leader, opponent: users(:two), mode: "singles", outcome: "win",
+                    score: "6-0 6-0", played_at: 1.hour.ago)
+    end
+
+    get next_path, as: :turbo_stream
+    assert_response :success
+    ids = response.body.scan(/data-feed-card-id="([^"]+)"/).flatten
+
+    assert_not_empty ids
+    assert_empty seen & ids, "вторая страница повторила карточки первой"
+  end
+
   test "players who have not played in 90 days are out of the rating" do
     dormant = User.create!(email: "dormant-rating@example.com", name: "Dormant")
     Match.create!(user: dormant, opponent: users(:one), mode: "singles", outcome: "win",

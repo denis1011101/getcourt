@@ -108,8 +108,18 @@ class TennisLifeController < ApplicationController
     @season_label = Season.current_label
     rating_rows = build_rating_rows(snapshot_ts: cursor.snapshot_ts)
     rating_rows.each_with_index { |row, index| row[:rank] = index + 1 }
-    @pinned_rating_rows = rating_rows.first(PINNED_RATING_LIMIT)
-    excluded_player_ids = @pinned_rating_rows.map { |row| row[:user].id }
+
+    # Исключения обязаны зависеть только от курсора: они входят в ключ кэша
+    # ordered_ids и в источник игроков, а страницы режутся по offset одного и
+    # того же порядка. Возьми их из живого рейтинга — и соседние страницы одного
+    # курсора построятся по разным спискам, теряя и повторяя карточки.
+    excluded_player_ids = rating_rows.first(PINNED_RATING_LIMIT).map { |row| row[:user].id }
+
+    # А сама пришпиленная пятёрка — шапка страницы, а не часть ленты, и снимок ей
+    # выходит боком: начальный курсор округляет время вниз до часа, и свежий матч
+    # попадал бы в таблицу только со следующего часа, расходясь с классическим
+    # видом. Поэтому её считаем на текущий момент, как делает prepare_classic.
+    @pinned_rating_rows = build_rating_rows.first(PINNED_RATING_LIMIT)
 
     order = TennisLife::Feed::Builder.new(
       seed: cursor.seed,

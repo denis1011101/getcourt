@@ -54,6 +54,7 @@ es:
     event:
       about: "Sobre este partido"
       result: "Resultado"
+      view_game: "Abrir el partido"
       photo_credit: "Foto"
       about_fallback: "%{title} está programado para %{date}. Sigue los detalles del partido y usa GetCourt para organizar tus propios partidos de tenis, pádel, squash o tenis de mesa cerca de ti."
       wallchart:

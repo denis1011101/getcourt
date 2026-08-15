@@ -11,4 +11,11 @@ class Match < ApplicationRecord
   validates :outcome, inclusion: { in: OUTCOMES }
   validates :surface, inclusion: { in: SURFACES }, allow_nil: true
   validates :played_at, presence: true
+
+  # Ссылку на карточку игры показываем, только пока карточка описывает именно
+  # этот матч (см. Game#covers_moment?). Удалённая игра сюда не доедет:
+  # dependent: :nullify обнуляет game_id, и остаётся просто карточка со счётом.
+  def game_page_relevant?
+    game.present? && game.covers_moment?(played_at)
+  end
 end
