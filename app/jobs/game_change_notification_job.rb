@@ -12,14 +12,27 @@ class GameChangeNotificationJob < ApplicationJob
       return if tracked.empty?
 
       key = cache_key(game.id, actor&.id)
-      pending = Rails.cache.read(key) || {}
-      Rails.cache.write(key, merge_changes(pending, tracked), expires_in: 1.hour)
+      pending = Rails.cache.read(key)
+      merged = merge_changes(pending&.fetch("changes", nil) || {}, tracked)
 
-      set(wait: DEBOUNCE).perform_later(game.id, actor&.id) if pending.empty?
+      # `touched_at` moves with every edit so the delivery trails the last one:
+      # an editing session longer than the debounce used to get a partial message
+      # now and the rest in a second one.
+      Rails.cache.write(key, { "changes" => merged, "touched_at" => Time.current }, expires_in: 1.hour)
+
+      set(wait: DEBOUNCE).perform_later(game.id, actor&.id) if pending.blank?
     end
 
     def cache_key(game_id, actor_id)
       "game:pending_changes:#{game_id}:#{actor_id}"
+    end
+
+    # How much of the debounce is left after the last edit. Zero means the editing
+    # has settled down and the collected changes can go out.
+    def remaining_debounce(touched_at)
+      return 0 if touched_at.blank?
+
+      [ DEBOUNCE.to_i - (Time.current - touched_at), 0.0 ].max
     end
 
     # Keep the value the participant last saw as "from" and the newest one as "to";
@@ -38,10 +51,20 @@ class GameChangeNotificationJob < ApplicationJob
     return unless game
 
     key = self.class.cache_key(game_id, actor_id)
-    changes = Rails.cache.read(key)
+    pending = Rails.cache.read(key)
+    return if pending.blank?
+
+    # Still editing: wait out the tail instead of sending half of the changes now.
+    remaining = self.class.remaining_debounce(pending["touched_at"])
+    if remaining.positive?
+      self.class.set(wait: remaining).perform_later(game_id, actor_id)
+      return
+    end
+
+    changes = pending["changes"]
+    Rails.cache.delete(key)
     return if changes.blank?
 
-    Rails.cache.delete(key)
     GameChangeNotifier.notify(game: game, actor: User.find_by(id: actor_id), changes: changes)
   end
 end

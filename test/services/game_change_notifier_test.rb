@@ -47,6 +47,19 @@ class GameChangeNotifierTest < ActiveSupport::TestCase
     assert_includes notification_body_for(@game.saved_changes), "Second court"
   end
 
+  test "tells participants the sport changed, localized" do
+    @game.update!(sport: "Tennis")
+    @game.update!(sport: "Table Tennis")
+
+    body = notification_body_for(@game.saved_changes)
+    assert_includes body, "Sport"
+    assert_includes body, "Table tennis"
+
+    es_body = GameChangeNotifier.new(game: @game, actor: @owner, changes: @game.saved_changes).send(:body_for, "es")
+    assert_includes es_body, "Deporte"
+    assert_includes es_body, "Tenis de mesa"
+  end
+
   test "says the change covers the whole series for a weekly game" do
     @game.update!(recurring: true, time: "21:00")
 

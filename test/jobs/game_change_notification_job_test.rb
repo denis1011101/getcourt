@@ -27,6 +27,30 @@ class GameChangeNotificationJobTest < ActiveJob::TestCase
       GameChangeNotificationJob.schedule(@game, @owner, @game.saved_changes)
     end
 
+    travel GameChangeNotificationJob::DEBOUNCE + 1.second do
+      assert_enqueued_emails 1 do
+        GameChangeNotificationJob.perform_now(@game.id, @owner.id)
+      end
+    end
+  end
+
+  test "an edit inside the debounce pushes delivery back instead of splitting it" do
+    @game.update!(time: "19:00")
+    GameChangeNotificationJob.schedule(@game, @owner, @game.saved_changes)
+
+    # The editing is still going on, so the job that wakes up now must re-arm
+    # itself rather than deliver the one field it can see.
+    travel 90.seconds
+    @game.update!(players_count: 2)
+    GameChangeNotificationJob.schedule(@game, @owner, @game.saved_changes)
+
+    assert_enqueued_jobs 1, only: GameChangeNotificationJob do
+      assert_no_enqueued_emails do
+        GameChangeNotificationJob.perform_now(@game.id, @owner.id)
+      end
+    end
+
+    travel GameChangeNotificationJob::DEBOUNCE + 1.second
     assert_enqueued_emails 1 do
       GameChangeNotificationJob.perform_now(@game.id, @owner.id)
     end

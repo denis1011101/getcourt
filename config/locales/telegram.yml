@@ -108,6 +108,7 @@ ru:
     game_changed_field_date: Дата
     game_changed_field_time: Время
     game_changed_field_court_id: Корт
+    game_changed_field_sport: Вид спорта
     game_changed_field_duration_minutes: Длительность
     game_changed_field_players_count: Игроков
     game_changed_field_with_coach: С тренером
@@ -670,6 +671,7 @@ en:
     game_changed_field_date: Date
     game_changed_field_time: Time
     game_changed_field_court_id: Court
+    game_changed_field_sport: Sport
     game_changed_field_duration_minutes: Duration
     game_changed_field_players_count: Players
     game_changed_field_with_coach: With coach
@@ -1189,6 +1191,7 @@ es:
     game_changed_field_date: Fecha
     game_changed_field_time: Hora
     game_changed_field_court_id: Pista
+    game_changed_field_sport: Deporte
     game_changed_field_duration_minutes: Duración
     game_changed_field_players_count: Jugadores
     game_changed_field_with_coach: Con entrenador

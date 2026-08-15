@@ -3,7 +3,7 @@ class GameChangeNotifier
   # columns (*_job_id, coach_invitation_status) are none of a participant's
   # business, so changing those wakes nobody.
   TRACKED_FIELDS = %w[
-    date time court_id duration_minutes players_count with_coach surface environment comment
+    date time court_id sport duration_minutes players_count with_coach surface environment comment
   ].freeze
 
   def self.notify(game:, actor:, changes:)
@@ -85,6 +85,8 @@ class GameChangeNotifier
       Telegram::Helpers::GameFormatting.format_time_hhmm(value, locale: locale) || value.to_s
     when "court_id"
       Court.find_by(id: value)&.name || "##{value}"
+    when "sport"
+      Telegram::Helpers::GameFormatting.sport_label(value, locale: locale) || value.to_s
     when "with_coach"
       Telegram::I18n.t(value ? :game_changed_yes : :game_changed_no, locale: locale)
     when "duration_minutes"
