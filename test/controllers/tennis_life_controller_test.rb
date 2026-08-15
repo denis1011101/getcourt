@@ -719,6 +719,41 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "pagination keeps its order when the live rating changes mid-scroll" do
+    channel = TelegramChannel.create!(username: "@mid_scroll_feed")
+    25.times do |index|
+      TelegramPost.create!(
+        telegram_channel: channel,
+        message_id: 994_000 + index,
+        text: "Mid scroll post #{index}",
+        text_en: "Mid scroll post #{index}",
+        published_at: Time.current
+      )
+    end
+
+    get tennis_life_feed_path(seed: 123), as: :turbo_stream
+    assert_response :success
+    seen = response.body.scan(/data-feed-card-id="([^"]+)"/).flatten
+    link_tag = response.body[/<a\b(?=[^>]*data-infinite-feed-target="link")[^>]*>/]
+    next_path = CGI.unescapeHTML(link_tag[/href="([^"]+)"/, 1])
+
+    # Живой рейтинг меняется прямо между запросами двух страниц одного курсора.
+    # Порядок ленты обязан зависеть только от курсора, иначе вторая страница
+    # построится по другому списку и карточки начнут теряться и повторяться.
+    leader = User.create!(email: "mid-scroll-leader@example.com", name: "Mid Scroll")
+    3.times do
+      Match.create!(user: leader, opponent: users(:two), mode: "singles", outcome: "win",
+                    score: "6-0 6-0", played_at: 1.hour.ago)
+    end
+
+    get next_path, as: :turbo_stream
+    assert_response :success
+    ids = response.body.scan(/data-feed-card-id="([^"]+)"/).flatten
+
+    assert_not_empty ids
+    assert_empty seen & ids, "вторая страница повторила карточки первой"
+  end
+
   test "players who have not played in 90 days are out of the rating" do
     dormant = User.create!(email: "dormant-rating@example.com", name: "Dormant")
     Match.create!(user: dormant, opponent: users(:one), mode: "singles", outcome: "win",
