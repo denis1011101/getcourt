@@ -13,4 +13,14 @@ class Rack::Attack
       request.ip
     end
   end
+
+  # Публичная JSON-выдача игр и MCP-эндпоинт: оба без сессии, оба бьют в базу.
+  # MCP-клиент за один вопрос делает несколько вызовов подряд, поэтому лимит выше.
+  throttle("api/ip", limit: 60, period: 1.minute) do |request|
+    request.ip if request.path.start_with?("/api/")
+  end
+
+  throttle("mcp/ip", limit: 120, period: 1.minute) do |request|
+    request.ip if request.path == "/mcp"
+  end
 end

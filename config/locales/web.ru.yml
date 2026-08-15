@@ -70,8 +70,22 @@ ru:
       title: Рейтинги
       singles: Одиночный рейтинг
       doubles: Парный рейтинг
+  game_media:
+    uploaded: Вложение загружено.
+    removed: Вложение удалено.
+    hidden: Вложение скрыто из ленты.
+    failed: Не удалось загрузить вложение.
+    not_allowed: Прикладывать фото и видео могут организатор и участники игры.
   games:
     show:
+      media:
+        title: Фото и видео
+        empty: С этой игры пока ничего нет.
+        upload: Загрузить
+        remove: Удалить
+        remove_confirm: Удалить это вложение?
+        alt: Фото с игры
+        limits: "До %{images} фото (по %{image_size} МБ) и %{videos} видео (%{video_size} МБ)."
       schema_name: Игра %{date}
       request_sent: Заявка отправлена
       cancel_request: Отменить заявку
@@ -464,6 +478,12 @@ ru:
         title: Обновление сообщества
         body: Сообщество уточнило информацию о корте «%{court}».
         view: Открыть корт
+      game_media:
+        title: С корта
+        body: "%{author} поделился моментом с игры на корте %{court}."
+        a_court: корт
+        alt: "Фото с игры на корте %{court}"
+        view_game: Открыть игру
       fact:
         title: Факт GetCourt
         total_hours:

@@ -13,6 +13,14 @@ Rails.application.routes.draw do
   post "/ai/chat", to: "ai_chat#chat", as: :ai_chat
   post "/score_recognitions", to: "score_recognitions#create", as: :score_recognitions
   get "tennis_life/index"
+
+  # Публичная JSON-выдача игр и MCP-сервер поверх неё (B-12).
+  namespace :api do
+    namespace :v1 do
+      resources :games, only: %i[index show], constraints: { id: /\d+/ }
+    end
+  end
+  post "/mcp", to: "mcp#create", as: :mcp
   # geocoding quota status and reset
   get  "/geocoding/status", to: "geocoding#status",  as: :geocoding_status
   get  "/geocoding/reset",  to: "geocoding#reset_form", as: :geocoding_reset_form
@@ -120,6 +128,7 @@ Rails.application.routes.draw do
 
     resources :prebooking_cancellations, only: [ :create, :destroy ]
     resources :coach_prebookings, only: [ :create, :destroy ]
+    resources :media, only: %i[create destroy], controller: "game_media"
   end
   get "/games(/:country_slug)(/:city_slug)", to: "games#index", as: :games_browse,
       constraints: { country_slug: /[a-z][a-z0-9-]*/, city_slug: /[a-z0-9-]+/ }

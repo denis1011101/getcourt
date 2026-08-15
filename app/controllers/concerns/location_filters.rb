@@ -147,10 +147,7 @@ module LocationFilters
   def prepare_location_filters(city_names)
     city_names = Array(city_names).map(&:to_s).reject(&:blank?).uniq.sort
 
-    @city_country_map = City.where(name: city_names)
-      .pluck(:name, :country_code, :population)
-      .group_by(&:first)
-      .transform_values { |rows| rows.max_by { |(_, _, population)| population.to_i }[1] }
+    @city_country_map = City.country_codes_for(city_names)
       .merge(CITY_COUNTRY_OVERRIDES.slice(*city_names))
 
     @country_names_by_code = @city_country_map.values.uniq.compact.sort.each_with_object({}) do |country_code, names|

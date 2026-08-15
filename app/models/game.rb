@@ -14,9 +14,11 @@ class Game < ApplicationRecord
   has_many :prebooking_cancellations, dependent: :destroy
   has_many :matches, dependent: :nullify
   has_many :player_statistic_entries, dependent: :nullify
+  has_many :game_media, class_name: "GameMedium", dependent: :destroy
 
   SURFACES = Court::SURFACES
   ENVIRONMENTS = %w[indoor outdoor].freeze
+  DEFAULT_PLAYERS = 4
   COACH_INVITATION_STATUSES = %w[pending accepted declined].freeze
   MAX_PREBOOKING_HORIZON = 52
 
@@ -317,9 +319,30 @@ class Game < ApplicationRecord
     (horizon_dates + booked_dates + cancelled_dates + coach_dates).compact.map(&:to_date).uniq.sort
   end
 
-  # Сколько слотов требуется на дату (по умолчанию 4)
-  def prebooking_required_players
-    players_count.to_i > 0 ? players_count.to_i : 4
+  # Сколько игроков нужно на игру (по умолчанию 4). Это же число — количество
+  # слотов на дату в пребукинге.
+  def required_players
+    players_count.to_i > 0 ? players_count.to_i : DEFAULT_PLAYERS
+  end
+  alias_method :prebooking_required_players, :required_players
+
+  # Занятые и свободные места. Считаем по уже загруженной ассоциации, если она
+  # есть: список игр грузит participations через includes, и запрос на каждую
+  # игру превратил бы страницу в N+1.
+  def spots_taken
+    if participations.loaded?
+      participations.target.count(&:approved?)
+    else
+      participations.approved.count
+    end
+  end
+
+  def spots_left
+    required_players - spots_taken
+  end
+
+  def spots_available?
+    spots_left.positive?
   end
 
   def next_time

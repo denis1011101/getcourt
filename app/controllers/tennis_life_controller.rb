@@ -99,6 +99,7 @@ class TennisLifeController < ApplicationController
   #   featured_match — the active promo match behind the homepage banner
   #   scoreboard     — the live scoreboard fetched from the gist
   #   court_update   — a court correction the community got approved
+  #   game_media     — a photo or clip someone attached to a game (tournament games excluded)
   #   fact           — a computed community stat (hours played, courts, players)
   #
   # Court cards were dropped deliberately: a bare court with "0 games organized here"

@@ -46,6 +46,12 @@ module TennisLife
           { "current" => [ TennisScoreboard::Fetcher.raw_text, {} ] }
         when "court_update"
           index_records(CourtSuggestion.includes(:court, :user).where(id: ids, status: "approved"))
+        when "game_media"
+          index_records(
+            GameMedium.visible
+              .includes({ game: :court }, :user, file_attachment: :blob)
+              .where(id: ids)
+          )
         when "fact"
           Sources::Facts.resolve(ids, snapshot_ts: @snapshot_ts).transform_values { |fact| [ fact, {} ] }
         else

@@ -246,6 +246,8 @@
            true
          end %>
 
+    <%= render "games/media", game: @game, can_contribute: can_fill_stats %>
+
     <div class="mt-6 border-t dark:border-white/10 pt-4">
       <% last_reset = @game.last_participations_reset_at %>
       <% stats_filled =

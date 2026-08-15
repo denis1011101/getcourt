@@ -70,8 +70,22 @@ en:
       title: Ratings
       singles: Singles rating
       doubles: Doubles rating
+  game_media:
+    uploaded: Attachment uploaded.
+    removed: Attachment removed.
+    hidden: Attachment hidden from the feed.
+    failed: Could not upload the attachment.
+    not_allowed: Only the organizer and the players of this game can attach media.
   games:
     show:
+      media:
+        title: Photos and clips
+        empty: Nothing from this game yet.
+        upload: Upload
+        remove: Remove
+        remove_confirm: Remove this attachment?
+        alt: Photo from the game
+        limits: "Up to %{images} photos (%{image_size} MB each) and %{videos} video (%{video_size} MB)."
       schema_name: Game %{date}
       request_sent: Request sent
       cancel_request: Cancel request
@@ -463,6 +477,12 @@ en:
         title: Community update
         body: The community updated information about %{court}.
         view: View court
+      game_media:
+        title: From the court
+        body: "%{author} shared a moment from a game at %{court}."
+        a_court: a court
+        alt: "Photo from a game at %{court}"
+        view_game: View game
       fact:
         title: GetCourt fact
         total_hours:
