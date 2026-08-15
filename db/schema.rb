@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_15_090143) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_16_000000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -163,6 +163,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_15_090143) do
     t.integer "court_id"
     t.datetime "created_at", null: false
     t.text "description"
+    t.integer "game_id"
     t.string "photo_credit"
     t.string "photo_credit_url"
     t.string "player_left_flag"
@@ -178,6 +179,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_15_090143) do
     t.datetime "updated_at", null: false
     t.index ["active"], name: "index_featured_matches_on_active", unique: true, where: "active = 1"
     t.index ["court_id"], name: "index_featured_matches_on_court_id"
+    t.index ["game_id"], name: "index_featured_matches_on_game_id"
     t.index ["slug"], name: "index_featured_matches_on_slug", unique: true
     t.index ["starts_at"], name: "index_featured_matches_on_starts_at"
   end
@@ -492,6 +494,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_15_090143) do
   add_foreign_key "favorite_courts", "courts"
   add_foreign_key "favorite_courts", "users"
   add_foreign_key "featured_matches", "courts"
+  add_foreign_key "featured_matches", "games"
   add_foreign_key "game_media", "games"
   add_foreign_key "game_media", "users"
   add_foreign_key "games", "courts"

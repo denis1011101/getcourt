@@ -79,6 +79,7 @@ en:
     event:
       about: "About this match"
       result: "Result"
+      view_game: "Open the game"
       photo_credit: "Photo"
       about_fallback: "%{title} is scheduled for %{date}. Follow the match details and use GetCourt to organize your own tennis, padel, squash or table tennis games nearby."
       wallchart:

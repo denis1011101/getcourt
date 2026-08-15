@@ -63,6 +63,39 @@ class FeaturedMatchTest < ActiveSupport::TestCase
     assert_equal match.slug, match.to_param
   end
 
+  test "keeps the game link while the game still describes the event" do
+    game = Game.create!(user: users(:one), court: courts(:one), date: Date.yesterday, recurring: false)
+    match = build_match(game: game, starts_at: Time.zone.yesterday.change(hour: 17))
+
+    assert match.game_page_relevant?
+  end
+
+  test "drops the game link once a recurring game rolls over to the next week" do
+    game = Game.create!(user: users(:one), court: courts(:one), date: 3.weeks.ago.to_date, recurring: true)
+    # Пятничный ResetParticipationsJob уже перевёл игру на ближайшее вхождение.
+    game.mark_participations_reset!(game.next_date)
+    starts_at = (game.next_date - 2.weeks).in_time_zone.change(hour: 17)
+
+    match = build_match(game: game.reload, starts_at: starts_at)
+
+    assert_not match.game_page_relevant?
+  end
+
+  test "drops the game link when the game is deleted" do
+    game = Game.create!(user: users(:one), court: courts(:one), date: Date.yesterday, recurring: false)
+    match = build_match(game: game, starts_at: Time.zone.yesterday.change(hour: 17))
+    match.save!
+
+    game.destroy
+
+    assert_nil match.reload.game_id
+    assert_not match.game_page_relevant?
+  end
+
+  test "an event without a game has no link at all" do
+    assert_not build_match(game: nil, starts_at: 1.day.from_now).game_page_relevant?
+  end
+
   test "validates slug format" do
     match = FeaturedMatch.new(valid_attributes(slug: "Bad Slug"))
 
@@ -118,5 +151,9 @@ class FeaturedMatchTest < ActiveSupport::TestCase
       status: "scheduled",
       active: false
     }.merge(overrides)
+  end
+
+  def build_match(game:, starts_at:)
+    FeaturedMatch.new(valid_attributes(game: game, starts_at: starts_at))
   end
 end

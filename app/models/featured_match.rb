@@ -7,6 +7,11 @@ class FeaturedMatch < ApplicationRecord
   }.freeze
 
   belongs_to :court, optional: true
+  # Карточка игры на сайте, если событие проводится через неё. Ссылку на игру
+  # держим связью, а не строкой в description: игру могут удалить или, если она
+  # повторяющаяся, перебросить на следующую неделю — тогда ссылку надо убрать,
+  # а текст описания сам себя не поправит.
+  belongs_to :game, optional: true
 
   has_many_attached :photos
 
@@ -26,6 +31,13 @@ class FeaturedMatch < ApplicationRecord
 
   def seo_title
     "#{player_left_name} vs #{player_right_name} · #{tournament_label}"
+  end
+
+  # Показывать ли на странице события ссылку на карточку игры (см.
+  # Game#covers_moment?). Удалённую игру отсекает belongs_to: пятничная чистка
+  # обнуляет game_id через has_many :featured_matches, dependent: :nullify.
+  def game_page_relevant?
+    game.present? && game.covers_moment?(starts_at)
   end
 
   def seo_description

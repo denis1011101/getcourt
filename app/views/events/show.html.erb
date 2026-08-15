@@ -82,6 +82,13 @@
         <% else %>
           <p><%= t("featured_match.event.about_fallback", title: @featured_match.seo_title, date: l(@featured_match.starts_at, format: :long)) %></p>
         <% end %>
+        <%# Ссылка живёт связью, а не текстом описания: игру могут удалить или
+            перебросить на следующую неделю, и тогда вести на неё уже некуда. %>
+        <% if @featured_match.game_page_relevant? %>
+          <p class="mt-3">
+            <%= link_to "#{t("featured_match.event.view_game")} →", game_path(@featured_match.game), class: "font-semibold text-sky-700 underline dark:text-sky-300" %>
+          </p>
+        <% end %>
       </div>
     </section>
   <% end %>

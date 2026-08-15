@@ -13,6 +13,8 @@ class Game < ApplicationRecord
   has_many :coach_prebookings, dependent: :destroy
   has_many :prebooking_cancellations, dependent: :destroy
   has_many :matches, dependent: :nullify
+  # Событие с главной переживает удаление игры — просто теряет ссылку на неё.
+  has_many :featured_matches, dependent: :nullify
   has_many :player_statistic_entries, dependent: :nullify
   has_many :game_media, class_name: "GameMedium", dependent: :destroy
 
@@ -392,6 +394,17 @@ class Game < ApplicationRecord
   # т.к. reset может сдвинуться раньше отображаемого вхождения.
   def current_cycle_start
     display_date_for_show&.beginning_of_day
+  end
+
+  # Описывает ли карточка игры то, что происходило в этот момент. У повторяющихся
+  # игр запись живёт дальше своего вхождения: ResetParticipationsJob перебрасывает
+  # её на следующую неделю и затирает состав, так что ссылки из прошлых циклов
+  # ведут уже на чужую игру. Отсюда правило для всех «открыть игру» на сайте.
+  def covers_moment?(timestamp)
+    return false if timestamp.blank?
+
+    cycle_start = current_cycle_start
+    cycle_start.blank? || timestamp >= cycle_start
   end
 
   # Таймзона создателя (или дефолт приложения)
