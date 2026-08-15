@@ -70,8 +70,22 @@ es:
       title: Ratings
       singles: Rating individual
       doubles: Rating de dobles
+  game_media:
+    uploaded: Archivo subido.
+    removed: Archivo eliminado.
+    hidden: Archivo oculto del feed.
+    failed: No se ha podido subir el archivo.
+    not_allowed: Solo el organizador y los jugadores del partido pueden adjuntar archivos.
   games:
     show:
+      media:
+        title: Fotos y vídeos
+        empty: Todavía no hay nada de este partido.
+        upload: Subir
+        remove: Eliminar
+        remove_confirm: "¿Eliminar este archivo?"
+        alt: Foto del partido
+        limits: "Hasta %{images} fotos (%{image_size} MB cada una) y %{videos} vídeo (%{video_size} MB)."
       schema_name: Partido %{date}
       request_sent: Solicitud enviada
       cancel_request: Cancelar solicitud
@@ -470,6 +484,12 @@ es:
         title: Actualización de la comunidad
         body: La comunidad actualizó la información de %{court}.
         view: Ver pista
+      game_media:
+        title: Desde la pista
+        body: "%{author} ha compartido un momento de un partido en %{court}."
+        a_court: una pista
+        alt: "Foto de un partido en %{court}"
+        view_game: Ver partido
       fact:
         title: Dato de GetCourt
         total_hours:

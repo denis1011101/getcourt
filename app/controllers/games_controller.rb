@@ -32,26 +32,19 @@ class GamesController < ApplicationController
       cities_in_country = cities_for_country(params[:country])
     end
 
-    today = Date.current
-    quoted_today = ActiveRecord::Base.connection.quote(today)
-    scoped_games = Game.includes(:court, :tournament, :participations, :prebooking_cancellations).order(
-      Arel.sql(
-        "CASE WHEN games.recurring = true OR games.date IS NULL OR games.date >= #{quoted_today} THEN 0 ELSE 1 END, " \
-        "CASE WHEN games.recurring = true OR games.date IS NULL THEN #{quoted_today} WHEN games.date >= #{quoted_today} THEN games.date END ASC NULLS LAST, " \
-        "CASE WHEN games.recurring = false AND games.date IS NOT NULL AND games.date < #{quoted_today} THEN games.date END DESC NULLS LAST, " \
-        "games.time ASC"
-      )
-    )
-    scoped_games = scoped_games.where(sport: params[:sport]) if params[:sport].present?
-    scoped_games = scoped_games.where(skill_level: params[:skill_level]) if params[:skill_level].present?
-
-    if params[:country].present? && params[:city].blank?
-      scoped_games = scoped_games.joins(:court).where(courts: { city_name: cities_in_country }) if cities_in_country.any?
-    end
+    search = Games::Search.new
+      .sport(params[:sport])
+      .skill_level(params[:skill_level])
+      .urgent_only(params[:looking_for_players])
+      .tournament_only(params[:tournament_games])
 
     if params[:city].present?
-      scoped_games = scoped_games.joins(:court).where(courts: { city_name: params[:city] })
+      search.in_cities(params[:city])
+    elsif params[:country].present? && cities_in_country.to_a.any?
+      search.in_cities(cities_in_country)
     end
+
+    scoped_games = search.ordered
 
     if params[:my_games].present? && current_user
       scoped_games = scoped_games.where(
@@ -60,31 +53,9 @@ class GamesController < ApplicationController
       )
     end
 
-    if params[:looking_for_players].present?
-      scoped_games = scoped_games.where(urgent_player_search: true)
-    end
-
-    if params[:tournament_games].present?
-      scoped_games = scoped_games.where.not(tournament_id: nil)
-    end
-
     if params[:with_spots].present? || current_user&.city_name.present?
       games = scoped_games.to_a
-
-      if params[:with_spots].present?
-        games = games.select do |game|
-          required = game.players_count.to_i > 0 ? game.players_count.to_i : 4
-          approved_count =
-            if game.participations.loaded?
-              game.participations.target.count(&:approved?)
-            else
-              game.participations.approved.count
-            end
-
-          approved_count < required
-        end
-      end
-
+      games = Games::Search.with_spots(games) if params[:with_spots].present?
       games = sort_games_for_user(games)
       @pagy, @games = pagy_array(games)
     else
@@ -335,10 +306,9 @@ class GamesController < ApplicationController
     end
 
     if game.respond_to?(:participations)
-      required = (game.respond_to?(:players_count) && game.players_count.to_i > 0) ? game.players_count.to_i : 4
-      approved_participations = game.participations.respond_to?(:approved) ? game.participations.approved : game.participations
-      taken = approved_participations.size
-      spots_left = required - taken
+      required = game.required_players
+      taken = game.spots_taken
+      spots_left = game.spots_left
       badges << {
         text: I18n.t("games.badges.spots_left", count: spots_left, taken: taken, required: required),
         classes: "inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 mr-2"

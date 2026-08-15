@@ -13,6 +13,7 @@ module TennisLife
         Sources::FeaturedMatch,
         Sources::Scoreboard,
         Sources::CourtUpdates,
+        Sources::GameMedia,
         Sources::Facts
       ].freeze
 
