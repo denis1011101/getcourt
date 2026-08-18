@@ -78,6 +78,23 @@ es:
     not_allowed: Solo el organizador y los jugadores del partido pueden adjuntar archivos.
   games:
     show:
+      win_chances:
+        title: Probabilidades de victoria
+        mode:
+          singles: según el Elo individual
+          doubles: según el Elo de dobles
+        splits_title: Formaciones
+        most_even: La formación más pareja
+        versus: contra
+        duels_title: Tus probabilidades
+        record: "cara a cara %{wins}–%{losses}"
+        no_record: todavía no han jugado
+        form_title: Forma
+        form_summary: "%{wins} de los últimos %{count}"
+        no_form: todavía sin partidos
+        unrated:
+          one: "%{names} todavía no tiene rating — lo contamos como %{rating}."
+          other: "%{names} todavía no tienen rating — los contamos como %{rating}."
       media:
         title: Fotos y vídeos
         empty: Todavía no hay nada de este partido.

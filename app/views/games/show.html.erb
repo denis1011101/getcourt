@@ -108,6 +108,8 @@
     <%= render "participations/list", game: @game %>
     <%= render "participations/controls", game: @game %>
 
+    <%= render "games/win_chances", game: @game %>
+
     <% if @game.with_coach? && @game.coach.present? %>
       <section class="mt-4 rounded-md border border-violet-200 bg-violet-50/70 p-3 dark:border-violet-400/20 dark:bg-violet-500/10">
         <p class="text-sm font-semibold text-gray-800 dark:text-slate-100">
