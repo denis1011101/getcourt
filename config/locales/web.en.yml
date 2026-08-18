@@ -465,14 +465,10 @@ en:
       match:
         title: Match result
         versus: "%{player} vs %{opponent}"
+        guest: "%{name} (guest)"
         score: Score
-        outcome: Outcome
         surface: Surface
         view_game: View game
-        outcomes:
-          win: Win
-          loss: Loss
-          draw: Draw
       player:
         title: Player
         singles_elo: "Singles ELO: %{value}"
