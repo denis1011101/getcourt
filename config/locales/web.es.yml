@@ -464,14 +464,10 @@ es:
       match:
         title: Resultado del partido
         versus: "%{player} contra %{opponent}"
+        guest: "%{name} (invitado)"
         score: Marcador
-        outcome: Resultado
         surface: Superficie
         view_game: Ver partido
-        outcomes:
-          win: Victoria
-          loss: Derrota
-          draw: Empate
       player:
         title: Jugador
         singles_elo: "ELO individual: %{value}"

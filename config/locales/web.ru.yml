@@ -460,14 +460,10 @@ ru:
       match:
         title: Результат матча
         versus: "%{player} против %{opponent}"
+        guest: "%{name} (гость)"
         score: Счёт
-        outcome: Результат
         surface: Покрытие
         view_game: Открыть игру
-        outcomes:
-          win: Победа
-          loss: Поражение
-          draw: Ничья
       player:
         title: Игрок
         singles_elo: "ELO одиночный: %{value}"

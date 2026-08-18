@@ -1,6 +1,6 @@
 <% match = card.record %>
-<% player_name = match.user&.name.presence || t("tennis_life.user_fallback", id: match.user_id) %>
-<% opponent_name = match.opponent&.name.presence || (match.opponent_id ? t("tennis_life.user_fallback", id: match.opponent_id) : t("tennis_life.anonymous_player")) %>
+<% names_by_id = match_names_by_id(match_related_user_ids(match)) %>
+<% player_name, opponent_name = match_feed_sides(match, names_by_id: names_by_id) %>
 
 <div class="p-4">
   <div class="flex items-center justify-between gap-3">
@@ -9,8 +9,8 @@
   </div>
   <p class="mt-2 font-medium text-gray-900 dark:text-slate-100"><%= t("tennis_life.feed.match.versus", player: player_name, opponent: opponent_name) %></p>
   <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600 dark:text-slate-300">
+    <%# The score is written from the named side's perspective, so spelling the outcome out again adds nothing. %>
     <span><%= t("tennis_life.feed.match.score") %>: <%= match.score.presence || "—" %></span>
-    <span><%= t("tennis_life.feed.match.outcome") %>: <%= t("tennis_life.feed.match.outcomes.#{match.outcome}") %></span>
     <% if match.surface.present? %>
       <span><%= t("tennis_life.feed.match.surface") %>: <%= t("courts.surfaces.#{match.surface}", default: match.surface) %></span>
     <% end %>
