@@ -78,6 +78,23 @@ en:
     not_allowed: Only the organizer and the players of this game can attach media.
   games:
     show:
+      win_chances:
+        title: Win chances
+        mode:
+          singles: by singles Elo
+          doubles: by doubles Elo
+        splits_title: Line-ups
+        most_even: Most even line-up
+        versus: vs
+        duels_title: Your chances
+        record: "head-to-head %{wins}–%{losses}"
+        no_record: no meetings yet
+        form_title: Form
+        form_summary: "%{wins} of last %{count}"
+        no_form: no matches yet
+        unrated:
+          one: "%{names} has no rating yet — counted as %{rating}."
+          other: "%{names} have no rating yet — counted as %{rating}."
       media:
         title: Photos and clips
         empty: Nothing from this game yet.

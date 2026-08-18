@@ -64,6 +64,35 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "show renders win chances once two players carry a rating" do
+    owner = User.create!(email: "chances_owner@example.com", name: "Chances Owner")
+    rival = User.create!(email: "chances_rival@example.com", name: "Chances Rival")
+    owner.create_player_statistic!(singles_rating: 1600.0)
+    rival.create_player_statistic!(singles_rating: 1400.0)
+
+    game = Game.create!(court: courts(:one), user: owner, date: Date.yesterday, time: "10:00")
+    [ owner, rival ].each { |user| Participation.create!(game: game, user: user, status: "approved") }
+
+    get game_url(game)
+
+    assert_response :success
+    assert_select "[data-testid=?]", "game-win-chances"
+    assert_includes @response.body, "Chances Owner"
+  end
+
+  test "show hides win chances when nobody has a rating" do
+    owner = User.create!(email: "no_chances_owner@example.com", name: "No Chances Owner")
+    rival = User.create!(email: "no_chances_rival@example.com", name: "No Chances Rival")
+
+    game = Game.create!(court: courts(:one), user: owner, date: Date.yesterday, time: "10:00")
+    [ owner, rival ].each { |user| Participation.create!(game: game, user: user, status: "approved") }
+
+    get game_url(game)
+
+    assert_response :success
+    assert_select "[data-testid=?]", "game-win-chances", count: 0
+  end
+
   test "create requires authentication" do
     assert_no_difference("Game.count") do
       post games_url, params: { game: { court_id: courts(:one).id, date: Date.current + 1.day, time: "18:00" } }

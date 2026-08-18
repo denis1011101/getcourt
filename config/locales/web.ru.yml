@@ -78,6 +78,25 @@ ru:
     not_allowed: Прикладывать фото и видео могут организатор и участники игры.
   games:
     show:
+      win_chances:
+        title: Шансы на победу
+        mode:
+          singles: по одиночному Elo
+          doubles: по парному Elo
+        splits_title: Расклады
+        most_even: Самый ровный расклад
+        versus: против
+        duels_title: Ваши шансы
+        record: "личные встречи %{wins}–%{losses}"
+        no_record: ещё не играли
+        form_title: Форма
+        form_summary: "%{wins} из %{count} последних"
+        no_form: матчей пока нет
+        unrated:
+          one: "У %{names} ещё нет рейтинга — считаем по %{rating}."
+          few: "У %{names} ещё нет рейтинга — считаем по %{rating}."
+          many: "У %{names} ещё нет рейтинга — считаем по %{rating}."
+          other: "У %{names} ещё нет рейтинга — считаем по %{rating}."
       media:
         title: Фото и видео
         empty: С этой игры пока ничего нет.
