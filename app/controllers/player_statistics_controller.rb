@@ -67,6 +67,7 @@ class PlayerStatisticsController < ApplicationController
       end
 
       matches_input = matches_params
+      unbalanced_matches = 0
       matches_input.each do |m|
         team_a_ids = sanitize_team_ids(m[:team_a_user_ids], game)
         team_b_ids = sanitize_team_ids(m[:team_b_user_ids], game)
@@ -80,6 +81,16 @@ class PlayerStatisticsController < ApplicationController
         next unless (team_a_ids + team_b_ids).any?
         next unless %w[a b draw].include?(winner)
 
+        # A match is one against one or two against two — anything else means a
+        # player was left out of the form, and saving it would bury that in the
+        # statistics as a lopsided game nobody played.
+        team_a_size = team_a_ids.size + team_a_guests.size
+        team_b_size = team_b_ids.size + team_b_guests.size
+        unless team_a_size == team_b_size && [ 1, 2 ].include?(team_a_size)
+          unbalanced_matches += 1
+          next
+        end
+
         group_id = m[:group_id].to_s.presence
         if group_id && sync_match_group(game, group_id, team_a_ids, team_b_ids, team_a_guests, team_b_guests, score, winner)
           saved_any = true
@@ -89,7 +100,11 @@ class PlayerStatisticsController < ApplicationController
         end
       end
 
-      if saved_any
+      if unbalanced_matches.positive?
+        redirect_to game_path(game),
+          notice: (saved_any ? "Statistics saved." : nil),
+          alert: "A match is 1 vs 1 or 2 vs 2 — #{unbalanced_matches} match(es) were not saved."
+      elsif saved_any
         redirect_to game_path(game), notice: "Statistics saved."
       else
         redirect_to game_path(game), alert: "No data to save."

@@ -193,11 +193,13 @@ class PlayerStatisticsControllerTest < ActionDispatch::IntegrationTest
       with_coach: false
     )
 
+    partner = User.create!(email: "stats_guest_checkbox_partner@example.com", name: "Guest Block Partner")
+
     post game_player_statistics_url(game), params: {
       matches: {
         "0" => {
           score: "6-4 6-4",
-          team_a_user_ids: [ owner.id ],
+          team_a_user_ids: [ owner.id, partner.id ],
           team_b_guest_names: [ "Saved Guest" ],
           team_b_guests: "Typed Guest",
           winner_team: "a"
@@ -209,6 +211,31 @@ class PlayerStatisticsControllerTest < ActionDispatch::IntegrationTest
     match = Match.find_by!(game: game, user: owner)
     assert_equal [ "Typed Guest", "Saved Guest" ], match.stats["team_b_guest_names"]
     assert_nil owner.player_statistic.reload.singles_rating
+  end
+
+  test "score upsert refuses a lopsided match instead of recording it" do
+    post session_url, params: { email: "stats_lopsided_owner@example.com" }
+    owner = User.find_by!(email: "stats_lopsided_owner@example.com")
+    partner = User.create!(email: "stats_lopsided_partner@example.com", name: "Lopsided Partner")
+    rival = User.create!(email: "stats_lopsided_rival@example.com", name: "Lopsided Rival")
+
+    game = Game.create!(court: courts(:one), user: owner, date: Date.yesterday, time: "10:00", with_coach: false)
+
+    assert_no_difference("Match.count") do
+      post game_player_statistics_url(game), params: {
+        matches: {
+          "0" => {
+            score: "6-4 6-4",
+            team_a_user_ids: [ owner.id, partner.id ],
+            team_b_user_ids: [ rival.id ],
+            winner_team: "a"
+          }
+        }
+      }
+    end
+
+    assert_redirected_to game_path(game)
+    assert_match(/1 vs 1 or 2 vs 2/, flash[:alert])
   end
 
   test "score upsert records match for registered non-participant" do
