@@ -1,11 +1,13 @@
 <% chances = Games::WinChances.for_game(game, viewer: current_user) %>
-<% if chances %>
-  <section class="mt-4 rounded-md border border-sky-200 bg-sky-50/70 p-3 dark:border-sky-400/20 dark:bg-sky-500/10" data-testid="game-win-chances">
-    <div class="flex flex-wrap items-baseline justify-between gap-2">
-      <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("games.show.win_chances.title") %></h2>
+<section class="mt-4 rounded-md border border-sky-200 bg-sky-50/70 p-3 dark:border-sky-400/20 dark:bg-sky-500/10" data-testid="game-win-chances">
+  <div class="flex flex-wrap items-baseline justify-between gap-2">
+    <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("games.show.win_chances.title") %></h2>
+    <% if chances.available? %>
       <p class="text-xs text-gray-500 dark:text-slate-400"><%= t("games.show.win_chances.mode.#{chances.mode}") %></p>
-    </div>
+    <% end %>
+  </div>
 
+  <% if chances.available? %>
     <% if chances.splits.any? %>
       <h3 class="mt-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400"><%= t("games.show.win_chances.splits_title") %></h3>
       <ul class="mt-2 space-y-3">
@@ -79,5 +81,19 @@
         <%= t("games.show.win_chances.unrated", names: chances.unrated.map(&:name).to_sentence, count: chances.unrated.size, rating: Games::WinChances::BASE_RATING.round) %>
       </p>
     <% end %>
-  </section>
-<% end %>
+  <% else %>
+    <p class="mt-2 text-sm text-gray-600 dark:text-slate-300" data-testid="game-win-chances-pending">
+      <%= t("games.show.win_chances.pending.#{chances.unavailable_reason}") %>
+    </p>
+
+    <h3 class="mt-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400"><%= t("games.show.win_chances.preview_title") %></h3>
+    <ul class="mt-2 space-y-1.5 text-xs text-gray-500 dark:text-slate-400">
+      <% %w[splits duels form].each do |item| %>
+        <li class="flex gap-2">
+          <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-400 dark:bg-sky-500" role="presentation"></span>
+          <span><%= t("games.show.win_chances.preview.#{item}") %></span>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+</section>

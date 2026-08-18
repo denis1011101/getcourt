@@ -95,6 +95,14 @@ en:
         unrated:
           one: "%{names} has no rating yet — counted as %{rating}."
           other: "%{names} have no rating yet — counted as %{rating}."
+        pending:
+          not_enough_players: Not enough players have joined yet — the estimate needs at least two.
+          not_enough_ratings: The estimate needs at least two players with a rating, and a rating shows up after the first counted match.
+        preview_title: What will show up here
+        preview:
+          splits: Every way the players can be split into teams, with the win chance of each side and the most even line-up on top.
+          duels: Your own chance against each of the others, blending Elo with your head-to-head record.
+          form: The last five results of every player and their current rating.
       media:
         title: Photos and clips
         empty: Nothing from this game yet.

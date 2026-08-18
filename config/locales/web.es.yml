@@ -95,6 +95,14 @@ es:
         unrated:
           one: "%{names} todavía no tiene rating — lo contamos como %{rating}."
           other: "%{names} todavía no tienen rating — los contamos como %{rating}."
+        pending:
+          not_enough_players: Todavía hay pocos jugadores apuntados — el cálculo necesita al menos dos.
+          not_enough_ratings: El cálculo necesita al menos dos jugadores con rating, y el rating aparece tras el primer partido contado.
+        preview_title: Qué aparecerá aquí
+        preview:
+          splits: Todas las formas de repartir a los jugadores en equipos, con las probabilidades de cada lado y la formación más pareja arriba.
+          duels: Tus probabilidades contra cada rival, combinando el Elo con vuestro cara a cara.
+          form: Los últimos cinco resultados de cada jugador y su rating actual.
       media:
         title: Fotos y vídeos
         empty: Todavía no hay nada de este partido.

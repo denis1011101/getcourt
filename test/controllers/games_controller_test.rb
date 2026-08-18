@@ -80,7 +80,7 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_includes @response.body, "Chances Owner"
   end
 
-  test "show hides win chances when nobody has a rating" do
+  test "show explains the win chances when nobody has a rating" do
     owner = User.create!(email: "no_chances_owner@example.com", name: "No Chances Owner")
     rival = User.create!(email: "no_chances_rival@example.com", name: "No Chances Rival")
 
@@ -90,7 +90,11 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     get game_url(game)
 
     assert_response :success
-    assert_select "[data-testid=?]", "game-win-chances", count: 0
+    assert_select "[data-testid=?]", "game-win-chances"
+    assert_select "[data-testid=?]", "game-win-chances-pending" do |elements|
+      assert_includes elements.first.text, I18n.t("games.show.win_chances.pending.not_enough_ratings")
+    end
+    assert_includes @response.body, I18n.t("games.show.win_chances.preview.splits")
   end
 
   test "create requires authentication" do
