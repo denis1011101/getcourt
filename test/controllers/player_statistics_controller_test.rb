@@ -42,6 +42,32 @@ class PlayerStatisticsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "(guest)"
   end
 
+  test "game show prefills saved hours in stats form" do
+    post session_url, params: { email: "stats_hours_owner@example.com" }
+    owner = User.find_by!(email: "stats_hours_owner@example.com")
+    participant = User.create!(email: "stats_hours_participant@example.com")
+
+    game = Game.create!(
+      court: courts(:one),
+      user: owner,
+      date: Date.yesterday,
+      time: "10:00",
+      with_coach: false
+    )
+    Participation.create!(game: game, user: participant, status: "approved")
+
+    get game_url(game)
+    assert_select "input[name=?]", "statistics[hours]" do |inputs|
+      assert_nil inputs.first["value"]
+    end
+
+    post game_player_statistics_url(game), params: { statistics: { hours: "1.5" } }
+    assert_redirected_to game_path(game)
+
+    get game_url(game)
+    assert_select "input[name=?][value=?]", "statistics[hours]", "1.5"
+  end
+
   test "score upsert increments games even when stats entry already exists for normal game" do
     post session_url, params: { email: "stats_owner@example.com" }
     owner = User.find_by!(email: "stats_owner@example.com")
