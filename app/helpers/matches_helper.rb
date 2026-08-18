@@ -30,11 +30,11 @@ module MatchesHelper
   # doubles team is named in full, and the guests who have no account stand
   # next to the registered players instead of turning the side anonymous.
   def match_feed_sides(match, names_by_id:)
-    own, other = match_side_parts(match)
+    first, second = match_side_parts(match)
 
     [
-      match_side_label(own, names_by_id, fallback: names_by_id[match.user_id] || t("tennis_life.user_fallback", id: match.user_id)),
-      match_side_label(other, names_by_id, fallback: t("tennis_life.anonymous_player"))
+      match_side_label(first, names_by_id, fallback: names_by_id[match.user_id] || t("tennis_life.user_fallback", id: match.user_id)),
+      match_side_label(second, names_by_id, fallback: t("tennis_life.anonymous_player"))
     ]
   end
 
@@ -68,25 +68,26 @@ module MatchesHelper
 
   private
 
-  # Which team the match belongs to decides the order: the row's own player is
-  # always named first, so the score that follows reads from the same side.
+  # One score string is written onto every row of a match and it always counts
+  # team A first, so the names have to follow the same order — naming the row's
+  # own player first would leave "6-3" standing next to the side that lost it.
   def match_side_parts(match)
     stats = match.stats.to_h
-    team_a = match_user_ids(stats["team_a_ids"])
-    team_b = match_user_ids(stats["team_b_ids"])
+    team_a = [ match_user_ids(stats["team_a_ids"]), stats["team_a_guest_names"] ]
+    team_b = [ match_user_ids(stats["team_b_ids"]), stats["team_b_guest_names"] ]
 
-    if team_a.include?(match.user_id)
-      [ [ team_a, stats["team_a_guest_names"] ], [ team_b, stats["team_b_guest_names"] ] ]
-    elsif team_b.include?(match.user_id)
-      [ [ team_b, stats["team_b_guest_names"] ], [ team_a, stats["team_a_guest_names"] ] ]
-    else
-      # Rows recorded before the teams were kept carry only a partner and the
-      # opponents.
-      [
-        [ match_user_ids([ match.user_id, stats["partner_id"] ]), stats["team_a_guest_names"] ],
-        [ match_user_ids([ match.opponent_id, *Array(stats["opponent_ids"]) ]), stats["team_b_guest_names"] ]
-      ]
-    end
+    return [ team_a, team_b ] if match_side_filled?(team_a) && match_side_filled?(team_b)
+
+    # Rows recorded before the teams were kept carry only a partner and the
+    # opponents, and there the score follows the row's own player.
+    [
+      [ match_user_ids([ match.user_id, stats["partner_id"] ]), stats["team_a_guest_names"] ],
+      [ match_user_ids([ match.opponent_id, *Array(stats["opponent_ids"]) ]), stats["team_b_guest_names"] ]
+    ]
+  end
+
+  def match_side_filled?((ids, guest_names))
+    ids.any? || match_feed_guest_names(guest_names).any?
   end
 
   def match_side_label((ids, guest_names), names_by_id, fallback:)

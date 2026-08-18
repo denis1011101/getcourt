@@ -26,20 +26,21 @@ class MatchesHelperTest < ActionView::TestCase
       match_feed_sides(match, names_by_id: names)
   end
 
-  test "keeps the row's own side first when it sits in the second team" do
+  test "keeps the score's team first whichever row the card was built from" do
     denis = build_user("Denis")
-    irina = build_user("Irina")
+    maxim = build_user("Максим")
 
-    match = Match.new(
-      user: irina,
-      user_id: irina.id,
-      mode: "singles",
-      outcome: "win",
-      stats: { "team_a_ids" => [ denis.id ], "team_b_ids" => [ irina.id ] }
-    )
+    # One score string is stored on every row of the match and counts team A
+    # first: Максим won it 6-3, so his name has to stay in front of it even on
+    # the row that belongs to Denis.
+    stats = { "team_a_ids" => [ maxim.id ], "team_b_ids" => [ denis.id ] }
+    maxims_row = Match.new(user: maxim, user_id: maxim.id, mode: "singles", outcome: "win", score: "6-3", stats: stats)
+    denis_row = Match.new(user: denis, user_id: denis.id, mode: "singles", outcome: "loss", score: "6-3", stats: stats)
 
-    assert_equal [ "Irina", "Denis" ],
-      match_feed_sides(match, names_by_id: match_names_by_id(match_related_user_ids(match)))
+    assert_equal [ "Максим", "Denis" ],
+      match_feed_sides(maxims_row, names_by_id: match_names_by_id(match_related_user_ids(maxims_row)))
+    assert_equal [ "Максим", "Denis" ],
+      match_feed_sides(denis_row, names_by_id: match_names_by_id(match_related_user_ids(denis_row)))
   end
 
   test "names a guest opponent instead of calling the side anonymous" do
