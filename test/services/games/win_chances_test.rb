@@ -57,6 +57,27 @@ module Games
       assert_in_delta 0.714, duel.probability, 0.001
     end
 
+    test "ignores the head-to-head from the other mode" do
+      viewer = build_player(singles_rating: 1500.0, doubles_rating: 1500.0)
+      rival = build_player(singles_rating: 1500.0, doubles_rating: 1500.0)
+
+      3.times do |index|
+        Match.create!(
+          user: viewer,
+          opponent: rival,
+          mode: "doubles",
+          outcome: "win",
+          played_at: (index + 1).days.ago
+        )
+      end
+
+      game = build_game([ viewer, rival ])
+      duel = Games::WinChances.for_game(game, viewer: viewer).duels.sole
+
+      assert_equal [ 0, 0 ], [ duel.wins, duel.losses ]
+      assert_in_delta 0.5, duel.probability, 0.0001
+    end
+
     test "reads the head-to-head record out of doubles team ids" do
       viewer = build_player(doubles_rating: 1500.0)
       partner = build_player(doubles_rating: 1500.0)

@@ -99,14 +99,16 @@ module Games
       mode == :doubles ? statistic.doubles_rating : statistic.singles_rating
     end
 
+    # One bounded query per player rather than one unbounded query for all of
+    # them: a game has a handful of participants, and index_matches_on_user_id_
+    # and_played_at makes each of these a short indexed read.
     def recent_forms(user_ids)
-      return {} if user_ids.empty?
-
-      Match.where(user_id: user_ids)
-        .order(played_at: :desc, id: :desc)
-        .pluck(:user_id, :outcome)
-        .group_by(&:first)
-        .transform_values { |rows| rows.first(FORM_LIMIT).map(&:last) }
+      user_ids.index_with do |user_id|
+        Match.where(user_id: user_id)
+          .order(played_at: :desc, id: :desc)
+          .limit(FORM_LIMIT)
+          .pluck(:outcome)
+      end
     end
 
     # Teams are only settled once people are on the court, so instead of guessing
@@ -186,36 +188,48 @@ module Games
       ((elo_probability * PRIOR_MATCHES) + wins) / (PRIOR_MATCHES + played)
     end
 
+    # Only the mode being estimated counts: the probability starts from that
+    # mode's Elo, so letting a singles result move a doubles estimate (or the
+    # other way round) would blend two different ratings.
     def head_to_head(user_id, opponent_ids)
       return {} if opponent_ids.empty?
 
       counts = {}
 
-      Match.where(user_id: user_id).where.not(outcome: "draw").find_each do |match|
-        faced = opponents_in(match, user_id) & opponent_ids
-        next if faced.empty?
+      Match.where(user_id: user_id, mode: mode.to_s).where.not(outcome: "draw")
+        .pluck(:outcome, :opponent_id, :stats).each do |outcome, match_opponent_id, stats|
+          faced = opponents_in(stats, match_opponent_id, user_id) & opponent_ids
+          next if faced.empty?
 
-        index = match.outcome == "win" ? 0 : 1
-        faced.each do |id|
-          counts[id] ||= [ 0, 0 ]
-          counts[id][index] += 1
+          index = outcome == "win" ? 0 : 1
+          faced.each do |id|
+            counts[id] ||= [ 0, 0 ]
+            counts[id][index] += 1
+          end
         end
-      end
 
       counts
     end
 
     # A match row belongs to one player, so the other side is either the team the
     # player is not on (doubles) or the recorded opponent (singles).
-    def opponents_in(match, user_id)
-      stats = match.stats.to_h
+    def opponents_in(stats, match_opponent_id, user_id)
+      stats = stats_hash(stats)
       team_a = normalize_ids(stats["team_a_ids"])
       team_b = normalize_ids(stats["team_b_ids"])
 
       return team_b if team_a.include?(user_id)
       return team_a if team_b.include?(user_id)
 
-      (normalize_ids(stats["opponent_ids"]) + [ match.opponent_id ]).compact.uniq
+      (normalize_ids(stats["opponent_ids"]) + [ match_opponent_id ]).compact.uniq
+    end
+
+    def stats_hash(value)
+      case value
+      when Hash then value
+      when String then JSON.parse(value) rescue {}
+      else {}
+      end
     end
 
     def normalize_ids(value)
