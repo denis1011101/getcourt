@@ -229,12 +229,24 @@ if echo "$CHANGED_FILES" | grep -qE "^(app/assets/|app/views/|app/javascript/|co
 fi
 
 # ---- Bundle install ----------------------------------------------------------
+# A changed Gemfile is not the only way the gems fall behind: a deploy that dies
+# after the pull leaves the new Gemfile.lock in the tree while vendor/bundle
+# still holds the old gems, and every later run would compare against the new
+# HEAD, see an unchanged Gemfile and never install them. Puma then crash-loops
+# on "Could not find <gem> in locally installed gems". Ask bundler instead.
+if [[ "$NEED_BUNDLE" != true ]] && ! run_as_app "bundle check" >/dev/null 2>&1; then
+  log "Gemfile unchanged but the installed gems do not satisfy Gemfile.lock."
+  NEED_BUNDLE=true
+fi
+
 if [[ "$NEED_BUNDLE" == true ]]; then
-  log "Gemfile changed. Running bundle install..."
-  run_as_app "bundle install --deployment --without development test"
+  log "Running bundle install..."
+  # Deployment mode and the skipped groups live in the app's .bundle/config —
+  # passing them as flags fails outright since bundler 4 dropped --deployment.
+  run_as_app "bundle install"
   log "Bundle install done."
 else
-  log "Gemfile unchanged. Skipping bundle install."
+  log "Gems already satisfy Gemfile.lock. Skipping bundle install."
 fi
 
 # ---- Database migrations -----------------------------------------------------
