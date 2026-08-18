@@ -1,6 +1,6 @@
 module PlayerStatistics
   # Hours entered in the stats form land on every participant's entry, so any
-  # entry from the game's current cycle carries the value the form shows back.
+  # entry from the game's current cycle can carry the value the form shows back.
   module SavedHours
     module_function
 
@@ -19,7 +19,11 @@ module PlayerStatistics
       cycle_start = game.respond_to?(:current_cycle_start) ? game.current_cycle_start : nil
       scope = scope.where("recorded_at >= ?", cycle_start) if cycle_start.present?
 
+      # Entries are unique per (user, game, source), so the same game can hold a
+      # web entry with hours next to a newer telegram one without them. Ignore
+      # the entries that carry no hours instead of picking the newest blindly.
       entries = scope.order(recorded_at: :desc, id: :desc).to_a
+      entries.select! { |entry| hours_from(entry.data, game).present? }
       (user && entries.find { |entry| entry.user_id == user.id }) || entries.first
     end
 
