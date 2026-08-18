@@ -2,13 +2,27 @@ require "test_helper"
 
 module Games
   class WinChancesTest < ActiveSupport::TestCase
-    test "stays hidden until two players carry a rating" do
+    test "reports why it cannot estimate until two players carry a rating" do
       rated = build_player(singles_rating: 1500.0)
       unrated = build_player
 
       game = build_game([ rated, unrated ])
+      chances = Games::WinChances.for_game(game, viewer: rated)
 
-      assert_nil Games::WinChances.for_game(game, viewer: rated)
+      assert_not chances.available?
+      assert_equal :not_enough_ratings, chances.unavailable_reason
+      assert_empty chances.splits
+      assert_empty chances.duels
+    end
+
+    test "reports the missing players before the missing ratings" do
+      alone = build_player(singles_rating: 1500.0)
+
+      game = build_game([ alone ])
+      chances = Games::WinChances.for_game(game, viewer: alone)
+
+      assert_not chances.available?
+      assert_equal :not_enough_players, chances.unavailable_reason
     end
 
     test "counts a player without a rating as the base one" do
@@ -32,6 +46,7 @@ module Games
       game = build_game([ strongest, middle_one, middle_two, weakest ])
       chances = Games::WinChances.for_game(game, viewer: strongest)
 
+      assert chances.available?
       assert_equal :doubles, chances.mode
       assert_equal 3, chances.splits.size
 

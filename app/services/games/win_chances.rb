@@ -30,7 +30,13 @@ module Games
       end
     end
 
-    Result = Struct.new(:mode, :players, :splits, :duels, :viewer, :unrated, keyword_init: true)
+    Result = Struct.new(:mode, :players, :splits, :duels, :viewer, :unrated, :unavailable_reason, keyword_init: true) do
+      # The block is rendered either way — an empty estimate still tells people
+      # the feature is there and what will fill it in.
+      def available?
+        unavailable_reason.nil?
+      end
+    end
 
     def self.for_game(game, viewer: nil)
       new(game, viewer: viewer).call
@@ -42,20 +48,29 @@ module Games
     end
 
     def call
-      return nil if players.size < MIN_PLAYERS
-      return nil if players.count(&:rated?) < MIN_RATED_PLAYERS
+      reason = unavailable_reason
 
       Result.new(
         mode: mode,
         players: players,
-        splits: splits,
-        duels: duels,
+        splits: reason ? [] : splits,
+        duels: reason ? [] : duels,
         viewer: viewer_player,
-        unrated: players.reject(&:rated?)
+        unrated: players.reject(&:rated?),
+        unavailable_reason: reason
       )
     end
 
     private
+
+    # Why there is nothing to estimate yet, so the view can say it out loud
+    # instead of leaving the reader with a blank space.
+    def unavailable_reason
+      return :not_enough_players if players.size < MIN_PLAYERS
+      return :not_enough_ratings if players.count(&:rated?) < MIN_RATED_PLAYERS
+
+      nil
+    end
 
     # The block sits under the participants list, so it counts the same people:
     # approved participations. Guests carry no statistics and drop out with the
