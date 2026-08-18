@@ -5,7 +5,9 @@ class Match < ApplicationRecord
 
   MODES = %w[singles doubles].freeze
   OUTCOMES = %w[win loss draw].freeze
-  SURFACES = %w[hard clay grass carpet indoor_hard other].freeze
+  # The first four are what a court can offer (see Court::SURFACES) and travel
+  # here from the game; the rest only ever arrive from manually entered matches.
+  SURFACES = %w[hard clay grass artificial_grass carpet indoor_hard other].freeze
 
   validates :mode, inclusion: { in: MODES }
   validates :outcome, inclusion: { in: OUTCOMES }

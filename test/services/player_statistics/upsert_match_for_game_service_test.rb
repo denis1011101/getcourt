@@ -2,6 +2,39 @@ require "test_helper"
 
 module PlayerStatistics
   class UpsertMatchForGameServiceTest < ActiveSupport::TestCase
+    test "takes the surface from the game the match was played in" do
+      court = Court.create!(name: "Surface Court", coordinates: "55.75, 37.61", surfaces: [ "artificial_grass", "hard" ])
+      game = Game.create!(court: court, user: users(:two), date: Date.yesterday, time: "10:00", surface: "artificial_grass")
+
+      match = PlayerStatistics::UpsertMatchForGameService.new(
+        user: users(:one), game: game, actor: users(:two), mode: :singles, outcome: "win", played_at: game.date.to_time
+      ).call
+
+      assert_equal "artificial_grass", match.reload.surface
+    end
+
+    test "falls back to the court's surface when the game did not pick one" do
+      court = Court.create!(name: "Single Surface Court", coordinates: "55.75, 37.61", surfaces: [ "clay" ])
+      game = Game.create!(court: court, user: users(:two), date: Date.yesterday, time: "10:00")
+
+      match = PlayerStatistics::UpsertMatchForGameService.new(
+        user: users(:one), game: game, actor: users(:two), mode: :singles, outcome: "loss", played_at: game.date.to_time
+      ).call
+
+      assert_equal "clay", match.reload.surface
+    end
+
+    test "leaves the surface unknown when the court offers several and the game picked none" do
+      court = Court.create!(name: "Mixed Court", coordinates: "55.75, 37.61", surfaces: [ "hard", "clay" ])
+      game = Game.create!(court: court, user: users(:two), date: Date.yesterday, time: "10:00")
+
+      match = PlayerStatistics::UpsertMatchForGameService.new(
+        user: users(:one), game: game, actor: users(:two), mode: :singles, outcome: "draw", played_at: game.date.to_time
+      ).call
+
+      assert_nil match.reload.surface
+    end
+
     test "increments games for normal game even when stats entry already exists" do
       user = users(:one)
       actor = users(:two)

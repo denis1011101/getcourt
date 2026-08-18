@@ -72,4 +72,21 @@ namespace :player_statistics do
 
     puts "Removed #{removed_count} duplicate matches from #{duplicate_groups.size} duplicate groups."
   end
+
+  desc "Fill Match#surface from the game each match was played in"
+  task backfill_match_surfaces: :environment do
+    filled = 0
+
+    Match.where(surface: nil).where.not(game_id: nil).includes(game: :court).find_each do |match|
+      game = match.game
+      court_surfaces = Array(game&.court&.surfaces)
+      surface = game&.surface.presence || (court_surfaces.first if court_surfaces.size == 1)
+      next if surface.blank? || !Match::SURFACES.include?(surface)
+
+      match.update_columns(surface: surface)
+      filled += 1
+    end
+
+    puts "Matches given a surface: #{filled}"
+  end
 end
