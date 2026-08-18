@@ -448,7 +448,6 @@ es:
       singles_elo: ELO individual
       doubles_elo: ELO dobles
       score: Marcador
-      outcome: Resultado
       surface: Superficie
     feed:
       title: Vida del tenis

@@ -62,6 +62,17 @@ module MatchesHelper
     ]
   end
 
+  # The badge printed 2v2 for every doubles row, so a two-against-one looked
+  # like a card that had lost a player. Count what the row actually holds.
+  def match_format_label(match)
+    stats = match.stats.to_h
+    a = match_user_ids(stats["team_a_ids"]).size + match_feed_guest_names(stats["team_a_guest_names"]).size
+    b = match_user_ids(stats["team_b_ids"]).size + match_feed_guest_names(stats["team_b_guest_names"]).size
+    return "#{a}v#{b}" if a.positive? && b.positive?
+
+    match.mode == "doubles" ? "2v2" : "1v1"
+  end
+
   def match_guest_names(value)
     Array(value).map(&:to_s).map(&:strip).reject(&:blank?).map { |name| "#{name} (guest)" }
   end

@@ -90,6 +90,22 @@ class MatchesHelperTest < ActionView::TestCase
       match_feed_sides(match, names_by_id: match_names_by_id(match_related_user_ids(match)))
   end
 
+  test "the format badge counts the players actually on each side" do
+    denis = build_user("Denis")
+    katerina = build_user("Катерина")
+    maxim = build_user("Максим")
+
+    two_on_one = Match.new(user: denis, user_id: denis.id, mode: "doubles", outcome: "loss",
+      stats: { "team_a_ids" => [ denis.id, katerina.id ], "team_b_ids" => [ maxim.id ] })
+    with_guest = Match.new(user: denis, user_id: denis.id, mode: "doubles", outcome: "loss",
+      stats: { "team_a_ids" => [ denis.id, katerina.id ], "team_b_ids" => [ maxim.id ], "team_b_guest_names" => [ "Саня Б" ] })
+    legacy = Match.new(user: denis, user_id: denis.id, mode: "singles", outcome: "win", stats: {})
+
+    assert_equal "2v1", match_format_label(two_on_one)
+    assert_equal "2v2", match_format_label(with_guest)
+    assert_equal "1v1", match_format_label(legacy)
+  end
+
   private
 
   def build_user(name)

@@ -36,6 +36,7 @@ module PlayerStatistics
         match.outcome = @outcome
         match.score = @score.to_s.presence
         match.played_at = played_at
+        match.surface = surface_for(match)
         match.stats = (match.stats || {}).to_h.merge(@stats.to_h).tap do |stats|
           stats["hours"] = @hours if @hours.present?
         end
@@ -100,6 +101,26 @@ module PlayerStatistics
         end
 
       existing || Match.new(user: @user, game: nil, mode: @mode)
+    end
+
+    # The game already knows where it is played, so the match row takes the
+    # surface from it instead of leaving the statistics page with a dash.
+    def surface_for(match)
+      surface = @game&.surface.presence || sole_court_surface
+      return match.surface if surface.blank?
+      # A court could start offering a surface a match cannot store; keeping the
+      # old value beats failing the whole stats save on a validation error.
+      return match.surface unless Match::SURFACES.include?(surface)
+
+      surface
+    end
+
+    # A court with a single surface leaves nothing to guess even when the game
+    # itself was created without picking one.
+    def sole_court_surface
+      surfaces = Array(@game&.court&.surfaces)
+
+      surfaces.first if surfaces.size == 1
     end
 
     def default_played_at

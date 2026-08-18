@@ -98,14 +98,13 @@
             <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400">
               <p><%= match.played_at&.strftime("%Y-%m-%d %H:%M") || "-" %></p>
               <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 font-medium text-gray-600 dark:bg-slate-700/60 dark:text-slate-300">
-                <%= match.mode == "doubles" ? "2v2" : "1v1" %>
+                <%= match_format_label(match) %>
               </span>
             </div>
             <p class="mt-1 text-sm font-medium text-gray-900 dark:text-slate-100"><%= match_title %></p>
             <p class="mt-1 text-sm text-gray-600 dark:text-slate-300">
               <%= t("tennis_life.statistics.score") %>: <%= match.score.presence || "-" %>
-              · <%= t("tennis_life.statistics.outcome") %>: <%= match.outcome.to_s.presence&.titleize || "-" %>
-              · <%= t("tennis_life.statistics.surface") %>: <%= match.surface.presence || "-" %>
+              · <%= t("tennis_life.statistics.surface") %>: <%= match.surface.present? ? t("courts.surfaces.#{match.surface}", default: match.surface) : "-" %>
             </p>
           </article>
         <% end %>
