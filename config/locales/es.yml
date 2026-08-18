@@ -243,6 +243,8 @@ es:
             title: "Anuncia que buscas jugadores"
             description: "Avisa a los jugadores cercanos de que tu partido tiene plazas libres, o invita a quienes conozcas por su usuario de Telegram."
             action: "Anunciar búsqueda"
+            announce_title: "Anuncia la búsqueda en tu ciudad"
+            announce_hint: "El partido recibe la etiqueta «buscando jugadores» y los miembros de GetCourt en el chat de Telegram de tu ciudad reciben una notificación."
             invite_toggle: "O invita a jugadores por su usuario de Telegram"
       invite:
         title: "Invitar jugadores"
