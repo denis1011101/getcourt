@@ -1,7 +1,15 @@
 namespace :telegram do
-  desc "Send daily telegram reminders (tomorrow and today)"
+  desc "Send daily telegram reminders manually (needs FORCE=1; the schedule lives in config/recurring.yml)"
   task send_daily: :environment do
-    # Для cron в production выполняем синхронно, чтобы не зависеть от очереди.
+    # Расписание переехало в Solid Queue (config/recurring.yml). Легаси-строка
+    # telegram:send_daily может ещё жить в /etc/cron.d/getcourt, поэтому без FORCE
+    # задача молчит — иначе напоминание уходит дважды.
+    unless ENV["FORCE"].to_s.present?
+      puts "telegram:send_daily is scheduled by Solid Queue (config/recurring.yml). Re-run with FORCE=1 to send now."
+      next
+    end
+
+    # Догоняем пропущенное синхронно, чтобы не зависеть от очереди.
     GameReminderJob.perform_now(1) # tomorrow
     GameReminderJob.perform_now(0) # today
   end
