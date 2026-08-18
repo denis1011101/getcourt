@@ -600,6 +600,9 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_select '[data-testid="onboarding-city"] a[href=?]', profile_account_path
     assert_select '[data-testid="onboarding-telegram"] a[href=?]', notifications_account_path
     assert_select '[data-testid="onboarding-player_search"] form[action=?][method="post"]', toggle_urgent_player_search_game_path(game)
+    # The announce card carries its own heading and explanation instead of a lone button.
+    assert_includes @response.body, ERB::Util.html_escape(I18n.t("games.show.onboarding.items.player_search.announce_title"))
+    assert_includes @response.body, ERB::Util.html_escape(I18n.t("games.show.onboarding.items.player_search.announce_hint"))
   end
 
   test "player search onboarding item also offers inviting players by telegram username" do

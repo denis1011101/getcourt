@@ -162,8 +162,13 @@
               <%# Announcing the search is one way to fill the spots — inviting players you already know is the other. %>
               <% if item.key == :player_search && !item.completed %>
                 <div class="mt-3 grid gap-3 border-t border-gray-100 pt-3 sm:grid-cols-2 dark:border-white/10" data-testid="onboarding-invite">
-                  <div class="rounded-md border border-gray-200 p-3 dark:border-white/10">
-                    <%= button_to t("games.show.onboarding.items.player_search.action"), toggle_urgent_player_search_game_path(@game), method: :post, class: action_classes %>
+                  <div class="flex flex-col rounded-md border border-gray-200 p-3 dark:border-white/10">
+                    <p class="text-sm font-medium text-indigo-700 dark:text-indigo-300"><%= t("games.show.onboarding.items.player_search.announce_title") %></p>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.show.onboarding.items.player_search.announce_hint") %></p>
+                    <%# mt-auto keeps the button on the card's floor, level with whatever the invite card ends on. %>
+                    <div class="mt-auto pt-3">
+                      <%= button_to t("games.show.onboarding.items.player_search.action"), toggle_urgent_player_search_game_path(@game), method: :post, class: action_classes %>
+                    </div>
                   </div>
                   <div class="rounded-md border border-gray-200 p-3 dark:border-white/10">
                     <p class="text-sm font-medium text-indigo-700 dark:text-indigo-300"><%= t("games.show.onboarding.items.player_search.invite_toggle") %></p>
