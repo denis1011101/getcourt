@@ -2,6 +2,7 @@ require "test_helper"
 
 class GameMediaControllerTest < ActionDispatch::IntegrationTest
   SAMPLE_PNG = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=".freeze
+  SAMPLE_MP4 = "\x00\x00\x00\x18ftypmp42\x00\x00\x00\x00mp42isom".b.freeze
 
   setup do
     @game = games(:feed_upcoming)
@@ -29,6 +30,39 @@ class GameMediaControllerTest < ActionDispatch::IntegrationTest
     assert_difference -> { @game.game_media.count }, 1 do
       post game_media_path(@game), params: { file: upload }
     end
+  end
+
+  test "the organizer can queue an uploaded video for the players" do
+    sign_in_as @owner
+
+    assert_enqueued_jobs 1, only: SendTrainingVideoJob do
+      post game_media_path(@game), params: { file: video_upload, notify_participants: "1" }
+    end
+
+    assert_redirected_to game_path(@game)
+  end
+
+  test "a player cannot queue an uploaded video for everyone" do
+    sign_in_as @participant
+
+    assert_no_enqueued_jobs only: SendTrainingVideoJob do
+      post game_media_path(@game), params: { file: video_upload, notify_participants: "1" }
+    end
+  end
+
+  test "an accepted coach can queue an uploaded video for the players" do
+    coach = User.create!(name: "Media Coach", email: "media-coach@example.com", coach: true)
+    @game.update!(with_coach: true, recurring: true, coach: coach)
+    @game.update!(coach_invitation_status: "accepted")
+    sign_in_as coach
+
+    assert_enqueued_jobs 1, only: SendTrainingVideoJob do
+      assert_difference -> { @game.game_media.count }, 1 do
+        post game_media_path(@game), params: { file: video_upload, notify_participants: "1" }
+      end
+    end
+
+    assert_redirected_to game_path(@game)
   end
 
   test "someone with no part in the game cannot" do
@@ -103,6 +137,10 @@ class GameMediaControllerTest < ActionDispatch::IntegrationTest
 
   def upload(content_type: "image/png", filename: "shot.png")
     Rack::Test::UploadedFile.new(StringIO.new(Base64.decode64(SAMPLE_PNG)), content_type, original_filename: filename)
+  end
+
+  def video_upload
+    Rack::Test::UploadedFile.new(StringIO.new(SAMPLE_MP4), "video/mp4", original_filename: "lesson.mp4")
   end
 
   def sign_in_as(user)

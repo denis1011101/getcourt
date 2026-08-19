@@ -72,10 +72,15 @@ es:
       doubles: Rating de dobles
   game_media:
     uploaded: Archivo subido.
+    uploaded_and_queued: El vídeo se ha subido y está en cola para enviarlo a los jugadores.
     removed: Archivo eliminado.
     hidden: Archivo oculto del feed.
     failed: No se ha podido subir el archivo.
     not_allowed: Solo el organizador y los jugadores del partido pueden adjuntar archivos.
+    training_video:
+      subject: Vídeo de entrenamiento para tu partido
+      body: El organizador ha compartido un vídeo de entrenamiento con los jugadores de tu partido.
+      action: Ver vídeo
   games:
     show:
       win_chances:
@@ -107,6 +112,8 @@ es:
         title: Fotos y vídeos
         empty: Todavía no hay nada de este partido.
         upload: Subir
+        notify_participants: Enviar este vídeo a los jugadores
+        notify_participants_hint: Cada jugador recibirá el vídeo por el canal de notificaciones que haya elegido.
         remove: Eliminar
         remove_confirm: "¿Eliminar este archivo?"
         alt: Foto del partido

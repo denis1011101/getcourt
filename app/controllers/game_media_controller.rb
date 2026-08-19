@@ -1,5 +1,6 @@
 class GameMediaController < ApplicationController
   before_action :set_game
+  helper_method :can_send_training_video?
 
   # Прикладывать может организатор, админ и любой записавшийся участник:
   # снимает обычно не тот, кто игру создал.
@@ -11,7 +12,12 @@ class GameMediaController < ApplicationController
     end
 
     if medium.save
-      redirect_to @game, notice: t("game_media.uploaded")
+      if notify_participants?(medium)
+        SendTrainingVideoJob.perform_later(medium.id)
+        redirect_to @game, notice: t("game_media.uploaded_and_queued")
+      else
+        redirect_to @game, notice: t("game_media.uploaded")
+      end
     else
       redirect_to @game, alert: medium.errors.full_messages.to_sentence.presence || t("game_media.failed"),
                   status: :see_other
@@ -41,8 +47,16 @@ class GameMediaController < ApplicationController
   end
 
   def contributor?
-    return true if can_manage?(@game)
+    return true if can_send_training_video?(@game)
 
     @game.participations.approved.exists?(user_id: current_user.id)
+  end
+
+  def notify_participants?(medium)
+    medium.video? && can_send_training_video?(@game) && ActiveModel::Type::Boolean.new.cast(params[:notify_participants])
+  end
+
+  def can_send_training_video?(game)
+    can_manage?(game) || (game.coach == current_user && game.coach_accepted?)
   end
 end
