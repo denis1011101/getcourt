@@ -8,7 +8,8 @@ class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
   before_action :authenticate_user!
 
-  helper_method :current_user, :user_signed_in?, :sign_in, :sign_out, :geocoding_exceeded?, :can_manage?, :can_remove_participant?
+  helper_method :current_user, :user_signed_in?, :sign_in, :sign_out, :geocoding_exceeded?, :can_manage?, :can_remove_participant?,
+                :can_send_training_video?
 
   private
 
@@ -52,6 +53,15 @@ class ApplicationController < ActionController::Base
 
   def can_remove_participant?(game, participation_user)
     AccessControl.can_remove_participant?(current_user, game, participation_user)
+  end
+
+  # Рассылку ролика инициирует тот, кто ведёт игру: организатор, админ или
+  # принятый тренер. Живёт здесь, а не в GameMediaController, потому что
+  # галочку рисует games/_media, а его отдаёт GamesController.
+  def can_send_training_video?(game)
+    return false unless current_user
+
+    can_manage?(game) || (game.coach_id == current_user.id && game.coach_accepted?)
   end
 
   def current_user

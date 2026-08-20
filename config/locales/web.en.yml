@@ -72,10 +72,17 @@ en:
       doubles: Doubles rating
   game_media:
     uploaded: Attachment uploaded.
+    uploaded_and_queued: Video uploaded and queued for delivery to the players.
+    uploaded_videos_only: Photo uploaded. Only videos can be sent to the players, so nothing was delivered.
     removed: Attachment removed.
     hidden: Attachment hidden from the feed.
     failed: Could not upload the attachment.
     not_allowed: Only the organizer and the players of this game can attach media.
+    training_video:
+      subject: Training video for your game
+      body: A training video has been shared with the players of your game.
+      body_by: "%{author} shared a training video with the players of your game."
+      action: Watch video
   games:
     show:
       win_chances:
@@ -107,6 +114,8 @@ en:
         title: Photos and clips
         empty: Nothing from this game yet.
         upload: Upload
+        notify_participants: Send this video to the players
+        notify_participants_hint: The video will be delivered through each player's selected notification channel.
         remove: Remove
         remove_confirm: Remove this attachment?
         alt: Photo from the game

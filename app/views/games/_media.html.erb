@@ -37,6 +37,15 @@
       <%= f.file_field :file, required: true,
             accept: GameMedium::CONTENT_TYPES.join(","),
             class: "text-sm text-gray-700 file:mr-2 file:rounded file:border-0 file:bg-indigo-50 file:px-3 file:py-1 file:text-indigo-700 dark:text-slate-300" %>
+      <% if can_send_training_video?(game) %>
+        <label class="flex basis-full items-start gap-2 text-sm text-gray-700 dark:text-slate-300">
+          <%= check_box_tag :notify_participants, "1", false, class: "mt-0.5 rounded border-gray-300 text-indigo-600" %>
+          <span>
+            <%= t("games.show.media.notify_participants") %>
+            <span class="block text-xs text-gray-500 dark:text-slate-400"><%= t("games.show.media.notify_participants_hint") %></span>
+          </span>
+        </label>
+      <% end %>
       <%= f.submit t("games.show.media.upload"), class: "rounded bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700" %>
     <% end %>
     <p class="mt-2 text-xs text-gray-500 dark:text-slate-400">
