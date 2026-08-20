@@ -61,7 +61,7 @@ class ApplicationController < ActionController::Base
   def can_send_training_video?(game)
     return false unless current_user
 
-    can_manage?(game) || (game.coach_id == current_user.id && game.coach_accepted?)
+    can_manage?(game) || game.accepted_coach?(current_user)
   end
 
   def current_user

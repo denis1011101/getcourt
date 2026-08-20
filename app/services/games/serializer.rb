@@ -28,6 +28,7 @@ module Games
         skill_level: game.skill_level,
         surface: game.surface,
         environment: game.environment,
+        kind: game.kind,
         with_coach: game.with_coach?,
         urgent_player_search: game.urgent_player_search?,
         comment: game.comment.presence,

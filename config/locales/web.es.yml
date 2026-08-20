@@ -167,10 +167,17 @@ es:
         (semanales).
       prebooking_locked_hint: Marca «Repetir cada semana» para activar la reserva
         previa.
+      kind: Tipo
+      kind_game: Partido
+      kind_training: Entrenamiento
+      kind_hint: El entrenamiento lo dirige un entrenador; el partido se juega sin él.
       with_coach: Con entrenador
       with_coach_hint: Si lo marcas, el partido se jugará con entrenador.
       coach: Entrenador
       coach_blank: "— elige entrenador —"
+      second_coach: Segundo entrenador (opcional)
+      second_coach_blank: "— sin segundo entrenador —"
+      second_coach_hint: Un entrenamiento puede dirigirse por dos entrenadores.
       urgent_player_search: Búsqueda de jugadores
       urgent_player_search_hint: Muestra este partido en «Partidos que buscan jugadores»
         y notifica a los usuarios con alertas cercanas activadas.
@@ -199,6 +206,7 @@ es:
       subtitle: Actualiza los detalles y los participantes del partido.
     badges:
       coach: Entrenador
+      training: Entrenamiento
       player_search: Buscando jugadores
     card:
       spots_left:

@@ -88,6 +88,7 @@ class User < ApplicationRecord
 
   has_many :games
   has_many :coached_games, class_name: "Game", foreign_key: :coach_id, dependent: :nullify, inverse_of: :coach
+  has_many :second_coached_games, class_name: "Game", foreign_key: :second_coach_id, dependent: :nullify, inverse_of: :second_coach
   has_many :coach_prebookings, foreign_key: :coach_id, dependent: :destroy, inverse_of: :coach
   has_many :participations
   has_many :favorite_court_links, class_name: "FavoriteCourt", dependent: :destroy

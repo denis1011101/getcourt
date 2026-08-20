@@ -212,4 +212,114 @@ class GameTest < ActiveSupport::TestCase
   ensure
     coach&.destroy
   end
+
+  test "a game with a coach is a training" do
+    coach = User.create!(email: "kind-training-coach@example.com", coach: true)
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.current, with_coach: true, coach: coach)
+
+    assert game.training?
+    assert_equal "pending", game.coach_invitation_status
+  ensure
+    coach&.destroy
+  end
+
+  test "a game without a coach keeps its kind and drops the selected coaches" do
+    coach = User.create!(email: "kind-plain-coach@example.com", coach: true)
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.current, with_coach: true, coach: coach)
+
+    game.update!(kind: "game", with_coach: false)
+
+    assert_equal "game", game.kind
+    assert_nil game.coach_id
+    assert_nil game.coach_invitation_status
+  ensure
+    coach&.destroy
+  end
+
+  test "a training invites both coaches" do
+    first = User.create!(email: "first-training-coach@example.com", coach: true)
+    second = User.create!(email: "second-training-coach@example.com", coach: true)
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.current,
+                        kind: "training", with_coach: true, coach: first, second_coach: second)
+
+    assert_equal [ first, second ], game.coaches
+    assert_equal "pending", game.second_coach_invitation_status
+    assert_equal :second_coach, game.coach_slot_for(second)
+  ensure
+    first&.destroy
+    second&.destroy
+  end
+
+  test "the same person cannot take both coach slots" do
+    coach = User.create!(email: "twice-picked-coach@example.com", coach: true)
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.current,
+                        kind: "training", with_coach: true, coach: coach, second_coach: coach)
+
+    assert_equal [ coach ], game.coaches
+    assert_nil game.second_coach_id
+  ensure
+    coach&.destroy
+  end
+
+  test "a second coach picked alone becomes the only coach" do
+    coach = User.create!(email: "lonely-second-coach@example.com", coach: true)
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.current,
+                        kind: "training", with_coach: true, second_coach: coach)
+
+    assert_equal coach, game.coach
+    assert_nil game.second_coach_id
+    assert_equal "pending", game.coach_invitation_status
+  ensure
+    coach&.destroy
+  end
+
+  test "each coach answers their own invitation" do
+    first = User.create!(email: "answering-first-coach@example.com", coach: true)
+    second = User.create!(email: "answering-second-coach@example.com", coach: true)
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.current,
+                        kind: "training", with_coach: true, coach: first, second_coach: second)
+
+    game.answer_coach_invitation!(second, "accepted")
+
+    assert_equal [ second ], game.accepted_coaches
+    assert game.accepted_coach?(second)
+    assert_not game.accepted_coach?(first)
+    assert_not game.answer_coach_invitation!(users(:one), "accepted")
+  ensure
+    first&.destroy
+    second&.destroy
+  end
+
+  test "bookings of a dropped second coach are removed" do
+    first = User.create!(email: "kept-coach@example.com", coach: true)
+    second = User.create!(email: "dropped-second-coach@example.com", coach: true)
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.current, recurring: true,
+                        kind: "training", with_coach: true, coach: first, second_coach: second)
+    game.update!(coach_invitation_status: "accepted", second_coach_invitation_status: "accepted")
+    game.coach_prebookings.create!(coach: first, date: game.next_date)
+    game.coach_prebookings.create!(coach: second, date: game.next_date)
+
+    assert_difference -> { game.coach_prebookings.count }, -1 do
+      game.update!(second_coach: nil)
+    end
+
+    assert_equal [ first.id ], game.coach_prebookings.reload.map(&:coach_id)
+  ensure
+    first&.destroy
+    second&.destroy
+  end
+
+  test "a tournament game is never a training" do
+    coach = User.create!(email: "tournament-coach@example.com", coach: true)
+    tournament = Tournament.create!(name: "Kind cup", user: users(:one),
+                                    start_date: Date.current, end_date: Date.current + 1.day)
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.current, tournament: tournament,
+                        kind: "training", with_coach: true, coach: coach)
+
+    assert_equal "game", game.kind
+    assert_not game.with_coach?
+    assert_nil game.coach_id
+  ensure
+    coach&.destroy
+  end
 end

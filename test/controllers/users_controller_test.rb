@@ -468,4 +468,35 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   ensure
     newcomer&.destroy
   end
+
+  test "account games lists trainings where the user is the second coach" do
+    coach_email = "second_coach_schedule_#{SecureRandom.hex(4)}@example.com"
+    court = Court.create!(name: "Second Coach Court")
+    first = User.create!(email: "schedule_first_coach_#{SecureRandom.hex(4)}@example.com", coach: true)
+    post session_url, params: { email: coach_email }
+    coach = User.find_by!(email: coach_email)
+    coach.update!(coach: true)
+    game = Game.create!(
+      court: court,
+      user: users(:one),
+      date: Date.current + 2.days,
+      time: "19:00",
+      kind: "training",
+      with_coach: true,
+      coach: first,
+      second_coach: coach
+    )
+    game.update!(second_coach_invitation_status: "accepted")
+
+    get games_account_url
+
+    assert_response :success
+    assert_not_includes response.body, I18n.t("users.games.coach_schedule_empty")
+    assert_includes response.body, court.name
+  ensure
+    game&.destroy
+    first&.destroy
+    coach&.destroy
+    court&.destroy
+  end
 end
