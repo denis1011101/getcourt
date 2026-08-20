@@ -76,7 +76,7 @@ class GamesController < ApplicationController
 
     if @game.save
       @game.ensure_prebookings_for_next_weeks if @game.prebooking_enabled?
-      @game.coaches.each { |coach| deliver_coach_invitation(coach) }
+      coaches_awaiting_invitation.each { |coach| deliver_coach_invitation(coach) }
       redirect_to @game, notice: "Game was successfully created."
     else
       Rails.logger.warn "Game save failed: #{ @game.errors.full_messages.join('; ') }"
@@ -88,12 +88,10 @@ class GamesController < ApplicationController
   end
 
   def update
-    previous_coach_ids = @game.assigned_coach_ids
     gp = sanitized_game_params
     if @game.update(gp)
       @game.ensure_prebookings_for_next_weeks if @game.prebooking_enabled?
-      invited_coaches = @game.coaches.reject { |coach| previous_coach_ids.include?(coach.id) }
-      invited_coaches.each { |coach| deliver_coach_invitation(coach) }
+      coaches_awaiting_invitation.each { |coach| deliver_coach_invitation(coach) }
       # The web form saves every field at once, so one message covers the whole edit.
       GameChangeNotifier.notify(game: @game, actor: current_user, changes: @game.saved_changes)
       redirect_to @game, notice: "Game was successfully updated."
@@ -153,6 +151,15 @@ class GamesController < ApplicationController
 
   def prepare_coaches
     @coaches = User.not_merged.where(coach: true).order(:name)
+  end
+
+  # Приглашение уходит на смену слота, а не набора тренеров: если тренеров
+  # поменять местами, модель сбросит оба статуса в pending, и по одному только
+  # набору id никто бы приглашения не получил.
+  def coaches_awaiting_invitation
+    %i[coach second_coach].filter_map do |slot|
+      @game.public_send(slot) if @game.saved_change_to_attribute?("#{slot}_id")
+    end
   end
 
   def deliver_coach_invitation(coach)

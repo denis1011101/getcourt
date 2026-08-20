@@ -11,7 +11,9 @@ class CoachPrebookingsController < ApplicationController
   end
 
   def destroy
-    @game.coach_prebookings.find(params[:id]).destroy!
+    # Тренеров у тренировки двое, и чужой id брони приходит тем же маршрутом —
+    # поэтому отменить можно только собственное подтверждение.
+    @game.coach_prebookings.where(coach: current_user).find(params[:id]).destroy!
     redirect_back fallback_location: game_path(@game), notice: t("games.prebookings.coach_cancelled")
   end
 

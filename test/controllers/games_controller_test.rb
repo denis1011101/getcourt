@@ -856,4 +856,95 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_select "select[name='game[coach_id]']"
     assert_select "select[name='game[second_coach_id]']"
   end
+
+  test "swapping coaches between slots invites them anew" do
+    owner = User.create!(email: "swap-coaches-owner@example.com")
+    first = User.create!(email: "swap-first-coach@example.com", name: "First", coach: true,
+                         telegram_chat_id: 91_004, notification_channel: "telegram")
+    second = User.create!(email: "swap-second-coach@example.com", name: "Second", coach: true,
+                          telegram_chat_id: 91_005, notification_channel: "telegram")
+    game = Game.create!(
+      court: courts(:one),
+      user: owner,
+      kind: "training",
+      with_coach: true,
+      coach: first,
+      second_coach: second,
+      date: Date.current + 1.day,
+      time: "18:00"
+    )
+    game.update!(coach_invitation_status: "accepted", second_coach_invitation_status: "accepted")
+    post session_url, params: { email: owner.email }
+
+    calls = []
+    stub_singleton(Telegram::Api, :send_with_buttons, ->(*args) { calls << args; { "ok" => true } }) do
+      patch game_url(game), params: {
+        game: {
+          court_id: courts(:one).id,
+          date: game.date,
+          time: "18:00",
+          kind: "training",
+          with_coach: "1",
+          coach_id: second.id,
+          second_coach_id: first.id
+        }
+      }
+    end
+
+    assert_redirected_to game_path(game)
+    game.reload
+    assert_equal [ second, first ], game.coaches
+    assert_equal "pending", game.coach_invitation_status
+    assert_equal "pending", game.second_coach_invitation_status
+    assert_equal [ second.telegram_chat_id, first.telegram_chat_id ], calls.map(&:first)
+  ensure
+    game&.destroy
+    first&.destroy
+    second&.destroy
+    owner&.destroy
+  end
+
+  test "promoting the second coach invites them again" do
+    owner = User.create!(email: "promote-coach-owner@example.com")
+    first = User.create!(email: "promoted-away-coach@example.com", coach: true)
+    second = User.create!(email: "promoted-coach@example.com", name: "Second", coach: true,
+                          telegram_chat_id: 91_006, notification_channel: "telegram")
+    game = Game.create!(
+      court: courts(:one),
+      user: owner,
+      kind: "training",
+      with_coach: true,
+      coach: first,
+      second_coach: second,
+      date: Date.current + 1.day,
+      time: "18:00"
+    )
+    game.update!(coach_invitation_status: "accepted", second_coach_invitation_status: "accepted")
+    post session_url, params: { email: owner.email }
+
+    calls = []
+    stub_singleton(Telegram::Api, :send_with_buttons, ->(*args) { calls << args; { "ok" => true } }) do
+      patch game_url(game), params: {
+        game: {
+          court_id: courts(:one).id,
+          date: game.date,
+          time: "18:00",
+          kind: "training",
+          with_coach: "1",
+          coach_id: "",
+          second_coach_id: second.id
+        }
+      }
+    end
+
+    game.reload
+    assert_equal [ second ], game.coaches
+    assert_equal "pending", game.coach_invitation_status
+    assert_equal [ second.telegram_chat_id ], calls.map(&:first)
+  ensure
+    game&.destroy
+    first&.destroy
+    second&.destroy
+    owner&.destroy
+  end
 end
