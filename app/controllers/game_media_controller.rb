@@ -1,6 +1,5 @@
 class GameMediaController < ApplicationController
   before_action :set_game
-  helper_method :can_send_training_video?
 
   # Прикладывать может организатор, админ и любой записавшийся участник:
   # снимает обычно не тот, кто игру создал.
@@ -12,12 +11,7 @@ class GameMediaController < ApplicationController
     end
 
     if medium.save
-      if notify_participants?(medium)
-        SendTrainingVideoJob.perform_later(medium.id)
-        redirect_to @game, notice: t("game_media.uploaded_and_queued")
-      else
-        redirect_to @game, notice: t("game_media.uploaded")
-      end
+      redirect_to @game, notice: upload_notice(medium)
     else
       redirect_to @game, alert: medium.errors.full_messages.to_sentence.presence || t("game_media.failed"),
                   status: :see_other
@@ -52,11 +46,25 @@ class GameMediaController < ApplicationController
     @game.participations.approved.exists?(user_id: current_user.id)
   end
 
-  def notify_participants?(medium)
-    medium.video? && can_send_training_video?(@game) && ActiveModel::Type::Boolean.new.cast(params[:notify_participants])
+  # Один и тот же file input принимает и фото, и видео, а рассылать мы умеем
+  # только ролики. Поэтому галочка на фотографии не проглатывается молча:
+  # файл сохраняем, но честно говорим, что рассылки не будет.
+  def upload_notice(medium)
+    if notify_participants?(medium)
+      SendTrainingVideoJob.perform_later(medium.id)
+      t("game_media.uploaded_and_queued")
+    elsif notify_requested? && can_send_training_video?(@game)
+      t("game_media.uploaded_videos_only")
+    else
+      t("game_media.uploaded")
+    end
   end
 
-  def can_send_training_video?(game)
-    can_manage?(game) || (game.coach == current_user && game.coach_accepted?)
+  def notify_participants?(medium)
+    medium.video? && can_send_training_video?(@game) && notify_requested?
+  end
+
+  def notify_requested?
+    ActiveModel::Type::Boolean.new.cast(params[:notify_participants])
   end
 end

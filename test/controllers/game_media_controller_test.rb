@@ -42,6 +42,18 @@ class GameMediaControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to game_path(@game)
   end
 
+  test "a photo with the box ticked is uploaded but says nothing was sent" do
+    sign_in_as @owner
+
+    assert_no_enqueued_jobs only: SendTrainingVideoJob do
+      assert_difference -> { @game.game_media.count }, 1 do
+        post game_media_path(@game), params: { file: upload, notify_participants: "1" }
+      end
+    end
+
+    assert_equal I18n.t("game_media.uploaded_videos_only"), flash[:notice]
+  end
+
   test "a player cannot queue an uploaded video for everyone" do
     sign_in_as @participant
 
