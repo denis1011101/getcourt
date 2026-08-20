@@ -10,7 +10,7 @@ class CoachPrebooking < ApplicationRecord
   private
 
   def coach_matches_game
-    errors.add(:coach, "must be the accepted game coach") unless game&.coach_id == coach_id && game.coach_accepted?
+    errors.add(:coach, "must be the accepted game coach") unless game&.accepted_coach?(coach_id)
   end
 
   def date_is_bookable_occurrence

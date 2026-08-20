@@ -76,7 +76,7 @@ class GamesController < ApplicationController
 
     if @game.save
       @game.ensure_prebookings_for_next_weeks if @game.prebooking_enabled?
-      deliver_coach_invitation if @game.coach_id.present?
+      @game.coaches.each { |coach| deliver_coach_invitation(coach) }
       redirect_to @game, notice: "Game was successfully created."
     else
       Rails.logger.warn "Game save failed: #{ @game.errors.full_messages.join('; ') }"
@@ -88,11 +88,12 @@ class GamesController < ApplicationController
   end
 
   def update
-    previous_coach_id = @game.coach_id
+    previous_coach_ids = @game.assigned_coach_ids
     gp = sanitized_game_params
     if @game.update(gp)
       @game.ensure_prebookings_for_next_weeks if @game.prebooking_enabled?
-      deliver_coach_invitation if @game.coach_id.present? && @game.coach_id != previous_coach_id
+      invited_coaches = @game.coaches.reject { |coach| previous_coach_ids.include?(coach.id) }
+      invited_coaches.each { |coach| deliver_coach_invitation(coach) }
       # The web form saves every field at once, so one message covers the whole edit.
       GameChangeNotifier.notify(game: @game, actor: current_user, changes: @game.saved_changes)
       redirect_to @game, notice: "Game was successfully updated."
@@ -108,16 +109,14 @@ class GamesController < ApplicationController
   end
 
   def accept_coach_invitation
-    return head :forbidden unless @game.coach == current_user
+    return head :forbidden unless @game.answer_coach_invitation!(current_user, "accepted")
 
-    @game.update!(coach_invitation_status: "accepted")
     redirect_to @game, notice: t("games.show.coach_invitation_accepted")
   end
 
   def decline_coach_invitation
-    return head :forbidden unless @game.coach == current_user
+    return head :forbidden unless @game.answer_coach_invitation!(current_user, "declined")
 
-    @game.update!(coach_invitation_status: "declined")
     redirect_to @game, notice: t("games.show.coach_invitation_declined")
   end
 
@@ -156,12 +155,12 @@ class GamesController < ApplicationController
     @coaches = User.not_merged.where(coach: true).order(:name)
   end
 
-  def deliver_coach_invitation
+  def deliver_coach_invitation(coach)
     GameInvitationDelivery.new(
       game: @game,
       inviter: current_user,
       game_url: game_url(@game)
-    ).deliver(user: @game.coach, role: :coach)
+    ).deliver(user: coach, role: :coach)
   rescue => error
     Rails.logger.error("[GamesController] coach invitation failed: #{error.class}: #{error.message}")
   end
@@ -246,7 +245,7 @@ class GamesController < ApplicationController
   end
 
   def game_params
-    params.require(:game).permit(:court_id, :recurring, :occurrences_per_week, :with_coach, :coach_id, :date, :time, :players_count, :skill_level, :sport, :surface, :environment, :prebooking_enabled, :urgent_player_search, :duration_minutes, :comment)
+    params.require(:game).permit(:court_id, :kind, :recurring, :occurrences_per_week, :with_coach, :coach_id, :second_coach_id, :date, :time, :players_count, :skill_level, :sport, :surface, :environment, :prebooking_enabled, :urgent_player_search, :duration_minutes, :comment)
   end
 
   def display_date(game)
@@ -267,6 +266,11 @@ class GamesController < ApplicationController
 
   def game_badges(game)
     badges = []
+
+    if game.respond_to?(:training?) && game.training?
+      badges << { text: I18n.t("games.badges.training"),
+                  classes: "inline-flex items-center rounded-full bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-700 mr-2" }
+    end
 
     # sport badge (if game.sport present)
     if game.respond_to?(:sport) && game.sport.present?
@@ -329,6 +333,7 @@ class GamesController < ApplicationController
     gp["date"] = gp["date"].presence
     gp["time"] = gp["time"].presence
     gp["recurring"] = ActiveModel::Type::Boolean.new.cast(gp["recurring"]) if gp.key?("recurring")
+    gp["kind"] = gp["kind"].presence || "game" if gp.key?("kind")
     gp["with_coach"] = ActiveModel::Type::Boolean.new.cast(gp["with_coach"]) if gp.key?("with_coach")
     gp["urgent_player_search"] = ActiveModel::Type::Boolean.new.cast(gp["urgent_player_search"]) if gp.key?("urgent_player_search")
     gp["occurrences_per_week"] = gp["occurrences_per_week"].to_i if gp.key?("occurrences_per_week")

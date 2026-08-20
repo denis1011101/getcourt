@@ -22,6 +22,6 @@ class CoachPrebookingsController < ApplicationController
   end
 
   def authorize_coach!
-    head :forbidden unless @game.coach_accepted? && @game.coach == current_user
+    head :forbidden unless @game.accepted_coach?(current_user)
   end
 end

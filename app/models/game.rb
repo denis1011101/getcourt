@@ -2,12 +2,14 @@ class Game < ApplicationRecord
   after_commit :schedule_post_game_stats_reminder, on: %i[create update]
   after_commit :enqueue_urgent_player_search_notification, on: %i[create update]
   after_update :remove_stale_coach_prebookings,
-               if: -> { saved_change_to_coach_id? || saved_change_to_date? || saved_change_to_recurring? }
+               if: -> { saved_change_to_coach_id? || saved_change_to_second_coach_id? || saved_change_to_date? || saved_change_to_recurring? }
 
   belongs_to :tournament, optional: true
   belongs_to :court
   belongs_to :user
   belongs_to :coach, class_name: "User", optional: true
+  # У тренировки может быть второй тренер, у обычной игры тренеров нет вовсе.
+  belongs_to :second_coach, class_name: "User", optional: true
   has_many :participations, dependent: :destroy
   has_many :prebookings, dependent: :destroy
   has_many :coach_prebookings, dependent: :destroy
@@ -19,6 +21,7 @@ class Game < ApplicationRecord
   has_many :game_media, class_name: "GameMedium", dependent: :destroy
 
   SURFACES = Court::SURFACES
+  KINDS = %w[game training].freeze
   ENVIRONMENTS = %w[indoor outdoor].freeze
   DEFAULT_PLAYERS = 4
   COACH_INVITATION_STATUSES = %w[pending accepted declined].freeze
@@ -34,15 +37,63 @@ class Game < ApplicationRecord
   validates :players_count, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   validates :surface, inclusion: { in: SURFACES }, allow_blank: true
   validates :environment, inclusion: { in: ENVIRONMENTS }, allow_blank: true
+  validates :kind, inclusion: { in: KINDS }
   validates :coach_invitation_status, inclusion: { in: COACH_INVITATION_STATUSES }, allow_nil: true
-  validate :selected_coach_is_coach
+  validates :second_coach_invitation_status, inclusion: { in: COACH_INVITATION_STATUSES }, allow_nil: true
+  validate :selected_coaches_are_coaches
   validate :prebooking_requires_recurring
   validate :surface_available_at_court
   validate :environment_available_at_court
   validate :within_tournament_dates_and_courts, if: -> { tournament.present? }
 
+  def training?
+    kind == "training"
+  end
+
+  def coaches
+    [ coach, second_coach ].compact
+  end
+
+  def assigned_coach_ids
+    [ coach_id, second_coach_id ].compact
+  end
+
+  # Каждый тренер отвечает на своё приглашение, поэтому статус ищем по слоту.
+  def coach_slot_for(candidate)
+    candidate_id = candidate.respond_to?(:id) ? candidate.id : candidate
+    return nil if candidate_id.blank?
+
+    if coach_id == candidate_id
+      :coach
+    elsif second_coach_id == candidate_id
+      :second_coach
+    end
+  end
+
+  def invitation_status_for(candidate)
+    case coach_slot_for(candidate)
+    when :coach then coach_invitation_status
+    when :second_coach then second_coach_invitation_status
+    end
+  end
+
+  def accepted_coach?(candidate)
+    invitation_status_for(candidate) == "accepted"
+  end
+
+  def accepted_coaches
+    coaches.select { |candidate| accepted_coach?(candidate) }
+  end
+
   def coach_accepted?
-    coach_id.present? && coach_invitation_status == "accepted"
+    accepted_coaches.any?
+  end
+
+  def answer_coach_invitation!(candidate, status)
+    slot = coach_slot_for(candidate)
+    return false unless slot
+
+    update!("#{slot}_invitation_status" => status)
   end
 
   # Is this date one of the game's occurrences? A recurring game repeats weekly
@@ -187,6 +238,7 @@ class Game < ApplicationRecord
   end
 
   def drop_options_managed_by_tournament
+    self.kind = "game"
     self.recurring = false
     self.prebooking_enabled = false
     self.with_coach = false
@@ -444,27 +496,43 @@ class Game < ApplicationRecord
   private
 
   def normalize_coach_assignment
+    # Тренер бывает только у тренировки, так что игра с тренером ею и становится.
+    self.kind = "training" if with_coach?
+
     unless with_coach?
       self.coach = nil
+      self.second_coach = nil
       self.coach_invitation_status = nil
+      self.second_coach_invitation_status = nil
       return
     end
 
-    if coach_id.blank?
-      self.coach_invitation_status = nil
-    elsif will_save_change_to_coach_id?
-      self.coach_invitation_status = "pending"
+    # Второй тренер без первого — это просто один тренер.
+    self.coach, self.second_coach = second_coach, nil if coach_id.blank?
+    self.second_coach = nil if second_coach_id.present? && second_coach_id == coach_id
+
+    normalize_invitation_status :coach
+    normalize_invitation_status :second_coach
+  end
+
+  def normalize_invitation_status(slot)
+    if public_send("#{slot}_id").blank?
+      public_send("#{slot}_invitation_status=", nil)
+    elsif public_send("will_save_change_to_#{slot}_id?")
+      public_send("#{slot}_invitation_status=", "pending")
     end
   end
 
-  def selected_coach_is_coach
-    errors.add(:coach, "must be a coach") if coach.present? && !coach.coach?
+  def selected_coaches_are_coaches
+    coaches.each do |candidate|
+      errors.add(:coach, "must be a coach") unless candidate.coach?
+    end
   end
 
   # Coach bookings hang off concrete occurrences, so they go stale when the coach
   # changes, and also when the game moves to another date or stops repeating.
   def remove_stale_coach_prebookings
-    coach_prebookings.where.not(coach_id: coach_id).delete_all
+    coach_prebookings.where.not(coach_id: assigned_coach_ids).delete_all
     return unless saved_change_to_date? || saved_change_to_recurring?
 
     unless recurring? && date.present?

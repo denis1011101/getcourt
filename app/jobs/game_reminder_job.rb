@@ -29,18 +29,24 @@ class GameReminderJob < ApplicationJob
     today = Time.current.in_time_zone("Asia/Yekaterinburg").to_date
     candidate_dates = [ today, today + 1.day ]
 
-    Game.where(coach_invitation_status: "accepted").where("date IN (?) OR recurring = ?", candidate_dates, true).find_each do |game|
-      next unless game.coach
+    accepted = Game.where(coach_invitation_status: "accepted")
+      .or(Game.where(second_coach_invitation_status: "accepted"))
+      .where("date IN (?) OR recurring = ?", candidate_dates, true)
 
+    accepted.find_each do |game|
       target_date = game_before_14_yekaterinburg?(game) ? today + 1.day : today
       next unless occurrence_on?(game, target_date)
-      next if game.recurring? && !game.coach_prebookings.exists?(coach_id: game.coach_id, date: target_date)
 
       participants = game.participations.includes(:user).map(&:user).compact.uniq
-      NotificationDelivery.deliver(
-        user: game.coach,
-        notification: notification_for(game, target_date, participants, target_date == today ? 0 : 1)
-      )
+
+      game.accepted_coaches.each do |coach|
+        next if game.recurring? && !game.coach_prebookings.exists?(coach_id: coach.id, date: target_date)
+
+        NotificationDelivery.deliver(
+          user: coach,
+          notification: notification_for(game, target_date, participants, target_date == today ? 0 : 1)
+        )
+      end
     end
   end
 

@@ -57,9 +57,8 @@ module Telegram
             when /\Agame:coach_accept:(\d+)\z/
               game = Game.find_by(id: $1.to_i)
               coach = User.find_by(telegram_chat_id: chat_id)
-              return false unless game && coach && game.coach_id == coach.id
+              return false unless game && coach && game.answer_coach_invitation!(coach, "accepted")
 
-              game.update!(coach_invitation_status: "accepted")
               poller.send_api(
                 "answerCallbackQuery",
                 { callback_query_id: cb_id, text: t.(:coach_invitation_accepted), show_alert: false }
@@ -69,9 +68,8 @@ module Telegram
             when /\Agame:coach_decline:(\d+)\z/
               game = Game.find_by(id: $1.to_i)
               coach = User.find_by(telegram_chat_id: chat_id)
-              return false unless game && coach && game.coach_id == coach.id
+              return false unless game && coach && game.answer_coach_invitation!(coach, "declined")
 
-              game.update!(coach_invitation_status: "declined")
               poller.send_api(
                 "answerCallbackQuery",
                 { callback_query_id: cb_id, text: t.(:coach_invitation_declined), show_alert: false }

@@ -81,6 +81,12 @@
         </span>
       <% end %>
 
+      <% if game.respond_to?(:training?) && game.training? %>
+        <span class="inline-flex items-center rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-medium text-violet-700 dark:bg-violet-500/15 dark:text-violet-200">
+          <%= t("games.badges.training") %>
+        </span>
+      <% end %>
+
       <% if game.respond_to?(:with_coach) && game.with_coach? %>
         <span class="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-500/15 dark:text-blue-200">
           <%= t("games.badges.coach") %>

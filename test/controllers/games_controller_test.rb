@@ -752,4 +752,108 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
   ensure
     coach&.destroy
   end
+
+  test "creating a training invites both selected coaches" do
+    first = User.create!(email: "training-first-coach@example.com", name: "First", coach: true,
+                         telegram_chat_id: 91_002, notification_channel: "telegram")
+    second = User.create!(email: "training-second-coach@example.com", name: "Second", coach: true,
+                          telegram_chat_id: 91_003, notification_channel: "telegram")
+    post session_url, params: { email: "training-owner@example.com" }
+
+    calls = []
+    stub_singleton(Telegram::Api, :send_with_buttons, ->(*args) { calls << args; { "ok" => true } }) do
+      post games_url, params: {
+        game: {
+          court_id: courts(:one).id,
+          date: Date.current + 1.day,
+          time: "18:00",
+          kind: "training",
+          with_coach: "1",
+          coach_id: first.id,
+          second_coach_id: second.id
+        }
+      }
+    end
+
+    game = Game.order(:id).last
+    assert_equal "training", game.kind
+    assert_equal [ first, second ], game.coaches
+    assert_equal "pending", game.second_coach_invitation_status
+    assert_equal [ first.telegram_chat_id, second.telegram_chat_id ], calls.map(&:first)
+  ensure
+    first&.destroy
+    second&.destroy
+  end
+
+  test "the second coach can accept their own invitation on the game page" do
+    first = User.create!(email: "accept-first-coach@example.com", coach: true)
+    second = User.create!(email: "accept-second-coach@example.com", coach: true)
+    game = Game.create!(
+      court: courts(:one),
+      user: users(:one),
+      kind: "training",
+      with_coach: true,
+      coach: first,
+      second_coach: second,
+      recurring: true,
+      date: Date.current
+    )
+    post session_url, params: { email: second.email }
+
+    get game_url(game)
+    assert_response :success
+    assert_includes response.body, first.email
+    assert_includes response.body, second.email
+
+    post accept_coach_invitation_game_url(game)
+
+    assert_redirected_to game_path(game)
+    game.reload
+    assert_equal "accepted", game.second_coach_invitation_status
+    assert_equal "pending", game.coach_invitation_status
+  ensure
+    first&.destroy
+    second&.destroy
+  end
+
+  test "switching a training back to a game drops its coaches" do
+    owner = User.create!(email: "kind-switch-owner@example.com")
+    coach = User.create!(email: "kind-switch-coach@example.com", coach: true)
+    game = Game.create!(
+      court: courts(:one),
+      user: owner,
+      kind: "training",
+      with_coach: true,
+      coach: coach,
+      date: Date.current + 1.day,
+      time: "18:00"
+    )
+    post session_url, params: { email: owner.email }
+
+    patch game_url(game), params: {
+      game: { court_id: courts(:one).id, date: game.date, time: "18:00", kind: "game", with_coach: "0" }
+    }
+
+    assert_redirected_to game_path(game)
+    game.reload
+    assert_equal "game", game.kind
+    assert_nil game.coach_id
+    assert_not game.with_coach?
+  ensure
+    game&.destroy
+    coach&.destroy
+    owner&.destroy
+  end
+
+  test "the game form offers the training kind with two coach slots" do
+    post session_url, params: { email: "kind-form-user@example.com" }
+
+    get new_game_url
+
+    assert_response :success
+    assert_select "input[type=radio][name='game[kind]'][value=game][checked=checked]"
+    assert_select "input[type=radio][name='game[kind]'][value=training]"
+    assert_select "select[name='game[coach_id]']"
+    assert_select "select[name='game[second_coach_id]']"
+  end
 end

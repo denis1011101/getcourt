@@ -163,10 +163,17 @@ en:
       prebooking_note: 'Note: prebooking slots will be created after saving the game.'
       prebooking_locked: Prebooking can be enabled only for repeating (weekly) games.
       prebooking_locked_hint: Check "Repeat weekly" to enable prebooking.
+      kind: Type
+      kind_game: Game
+      kind_training: Training
+      kind_hint: A training is run by a coach; a game is played without one.
       with_coach: With coach
       with_coach_hint: If checked, this game will be held with a coach.
       coach: Coach
       coach_blank: "— select coach —"
+      second_coach: Second coach (optional)
+      second_coach_blank: "— no second coach —"
+      second_coach_hint: A training can be run by two coaches.
       urgent_player_search: Players search
       urgent_player_search_hint: Show this game in "Games looking for player" and
         notify users with enabled nearby alerts.
@@ -195,6 +202,7 @@ en:
       subtitle: Update game details and participants.
     badges:
       coach: Coach
+      training: Training
       player_search: Players search
     card:
       spots_left:

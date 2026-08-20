@@ -111,6 +111,9 @@ ru:
     game_changed_field_sport: Вид спорта
     game_changed_field_duration_minutes: Длительность
     game_changed_field_players_count: Игроков
+    game_changed_field_kind: Тип
+    game_changed_kind_game: игра
+    game_changed_kind_training: тренировка
     game_changed_field_with_coach: С тренером
     game_changed_field_surface: Покрытие
     game_changed_field_environment: Площадка
@@ -674,6 +677,9 @@ en:
     game_changed_field_sport: Sport
     game_changed_field_duration_minutes: Duration
     game_changed_field_players_count: Players
+    game_changed_field_kind: Type
+    game_changed_kind_game: game
+    game_changed_kind_training: training
     game_changed_field_with_coach: With coach
     game_changed_field_surface: Surface
     game_changed_field_environment: Setting
@@ -1194,6 +1200,9 @@ es:
     game_changed_field_sport: Deporte
     game_changed_field_duration_minutes: Duración
     game_changed_field_players_count: Jugadores
+    game_changed_field_kind: Tipo
+    game_changed_kind_game: partido
+    game_changed_kind_training: entrenamiento
     game_changed_field_with_coach: Con entrenador
     game_changed_field_surface: Superficie
     game_changed_field_environment: Entorno

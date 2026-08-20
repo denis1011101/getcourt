@@ -104,13 +104,16 @@ class UsersController < ApplicationController
   def games
     @coach_schedule =
       if current_user.coach?
+        # Тренер может стоять и вторым — расписание собираем по обоим слотам.
+        accepted_games = Game.where(coach_id: current_user.id, coach_invitation_status: "accepted")
+          .or(Game.where(second_coach_id: current_user.id, second_coach_invitation_status: "accepted"))
+
         recurring_dates = current_user.coach_prebookings
-          .joins(:game)
-          .where(date: Date.current.., games: { coach_id: current_user.id, coach_invitation_status: "accepted" })
+          .where(date: Date.current.., game: accepted_games)
           .includes(game: [ :court, { participations: :user } ])
           .map { |booking| { game: booking.game, date: booking.date } }
-        one_off_dates = current_user.coached_games
-          .where(recurring: false, coach_invitation_status: "accepted", date: Date.current..)
+        one_off_dates = accepted_games
+          .where(recurring: false, date: Date.current..)
           .includes(:court, participations: :user)
           .map { |game| { game: game, date: game.date } }
 
