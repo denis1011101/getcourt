@@ -1,6 +1,7 @@
 class Game < ApplicationRecord
   after_commit :schedule_post_game_stats_reminder, on: %i[create update]
   after_commit :enqueue_urgent_player_search_notification, on: %i[create update]
+  after_update :drop_training_plan_from_plain_game, if: -> { saved_change_to_kind? && !training? }
   after_update :remove_stale_coach_prebookings,
                if: -> { saved_change_to_coach_id? || saved_change_to_second_coach_id? || saved_change_to_date? || saved_change_to_recurring? }
 
@@ -19,6 +20,9 @@ class Game < ApplicationRecord
   has_many :featured_matches, dependent: :nullify
   has_many :player_statistic_entries, dependent: :nullify
   has_many :game_media, class_name: "GameMedium", dependent: :destroy
+  # План тренировки — блоки из библиотеки тренера в выбранном порядке.
+  has_many :game_training_blocks, -> { ordered }, dependent: :destroy, inverse_of: :game
+  has_many :training_blocks, through: :game_training_blocks
 
   SURFACES = Court::SURFACES
   KINDS = %w[game training].freeze
@@ -52,6 +56,23 @@ class Game < ApplicationRecord
 
   def coaches
     [ coach, second_coach ].compact
+  end
+
+  # Порядок блоков задаёт сам список: он и есть план занятия.
+  def replace_training_plan!(block_ids)
+    block_ids = Array(block_ids).map(&:to_i).uniq.reject(&:zero?)
+
+    transaction do
+      game_training_blocks.where.not(training_block_id: block_ids).destroy_all
+      block_ids.each_with_index do |block_id, index|
+        entry = game_training_blocks.find_or_initialize_by(training_block_id: block_id)
+        entry.position = index
+        entry.save!
+      end
+    end
+
+    game_training_blocks.reset
+    training_blocks.reset
   end
 
   def assigned_coach_ids
@@ -521,6 +542,11 @@ class Game < ApplicationRecord
     elsif public_send("will_save_change_to_#{slot}_id?")
       public_send("#{slot}_invitation_status=", "pending")
     end
+  end
+
+  def drop_training_plan_from_plain_game
+    # У обычной игры плана занятия не бывает, поэтому он уходит вместе с типом.
+    game_training_blocks.destroy_all
   end
 
   def selected_coaches_are_coaches

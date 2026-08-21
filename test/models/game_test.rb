@@ -322,4 +322,54 @@ class GameTest < ActiveSupport::TestCase
   ensure
     coach&.destroy
   end
+
+  test "the training plan keeps the order the blocks were picked in" do
+    coach = User.create!(email: "plan-order-coach@example.com", coach: true)
+    warmup = coach.training_blocks.create!(title: "Разминка")
+    serve = coach.training_blocks.create!(title: "Подача")
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.current,
+                        kind: "training", with_coach: true, coach: coach)
+
+    game.replace_training_plan!([ serve.id, warmup.id ])
+
+    assert_equal [ serve, warmup ], game.training_blocks.to_a
+    assert_equal [ 0, 1 ], game.game_training_blocks.map(&:position)
+  ensure
+    game&.destroy
+    coach&.destroy
+  end
+
+  test "replacing the plan drops the blocks left out of it" do
+    coach = User.create!(email: "plan-replace-coach@example.com", coach: true)
+    warmup = coach.training_blocks.create!(title: "Разминка")
+    serve = coach.training_blocks.create!(title: "Подача")
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.current,
+                        kind: "training", with_coach: true, coach: coach)
+    game.replace_training_plan!([ warmup.id, serve.id ])
+
+    game.replace_training_plan!([ serve.id ])
+
+    assert_equal [ serve ], game.training_blocks.to_a
+    # Блок остаётся в библиотеке тренера, из плана уходит только связь.
+    assert_equal 2, coach.training_blocks.count
+  ensure
+    game&.destroy
+    coach&.destroy
+  end
+
+  test "turning a training back into a game drops its plan" do
+    coach = User.create!(email: "plan-dropped-coach@example.com", coach: true)
+    block = coach.training_blocks.create!(title: "Разминка")
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.current,
+                        kind: "training", with_coach: true, coach: coach)
+    game.replace_training_plan!([ block.id ])
+
+    game.update!(kind: "game", with_coach: false)
+
+    assert_empty game.training_blocks.reload
+    assert_equal 1, coach.training_blocks.count
+  ensure
+    game&.destroy
+    coach&.destroy
+  end
 end

@@ -1,0 +1,67 @@
+<% content_for :meta_title, t("training_blocks.title") %>
+
+<div class="mx-auto max-w-3xl space-y-4 px-4 py-6">
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold"><%= t("training_blocks.title") %></h1>
+    <%= link_to t("training_blocks.back_to_games"), games_account_path, class: "text-sm text-indigo-600 hover:underline dark:text-indigo-400" %>
+  </div>
+
+  <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("training_blocks.hint") %></p>
+
+  <section class="rounded-lg border bg-white p-4 dark:border-white/10 dark:bg-slate-800/80">
+    <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("training_blocks.new_title") %></h2>
+
+    <%= form_with model: @training_block, url: training_blocks_path, method: :post, class: "mt-3 space-y-3" do |form| %>
+      <% if @training_block.errors.any? %>
+        <p class="text-sm text-red-600 dark:text-red-300"><%= @training_block.errors.full_messages.to_sentence %></p>
+      <% end %>
+
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <%= form.text_field :title, placeholder: t("training_blocks.fields.title"),
+              class: "rounded-md border border-gray-300 px-3 py-2 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+        <%= form.number_field :duration_minutes, min: 1, placeholder: t("training_blocks.fields.duration_minutes"),
+              class: "rounded-md border border-gray-300 px-3 py-2 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+        <%= form.text_field :description, placeholder: t("training_blocks.fields.description"),
+              class: "rounded-md border border-gray-300 px-3 py-2 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+      </div>
+
+      <%= form.submit t("training_blocks.create"), class: "inline-flex items-center rounded bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700" %>
+    <% end %>
+  </section>
+
+  <% if @training_blocks.empty? %>
+    <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("training_blocks.empty") %></p>
+  <% else %>
+    <% @training_blocks.each do |block| %>
+      <section class="rounded-lg border bg-white p-4 dark:border-white/10 dark:bg-slate-800/80">
+        <details>
+          <summary class="cursor-pointer">
+            <span class="font-medium"><%= block.label %></span>
+            <% if block.description.present? %>
+              <span class="mt-1 block text-sm text-gray-500 dark:text-slate-400"><%= block.description %></span>
+            <% end %>
+          </summary>
+
+          <%= form_with model: block, url: training_block_path(block), method: :patch, class: "mt-3 space-y-3" do |form| %>
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <%= form.text_field :title,
+                    class: "rounded-md border border-gray-300 px-3 py-2 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+              <%= form.number_field :duration_minutes, min: 1,
+                    class: "rounded-md border border-gray-300 px-3 py-2 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+              <%= form.text_field :description,
+                    class: "rounded-md border border-gray-300 px-3 py-2 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <%= form.submit t("training_blocks.save"), class: "inline-flex items-center rounded bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700" %>
+            </div>
+          <% end %>
+
+          <%= button_to t("training_blocks.destroy"), training_block_path(block), method: :delete,
+                form: { data: { turbo_confirm: t("training_blocks.destroy_confirm") } },
+                class: "mt-3 text-sm text-red-600 hover:underline dark:text-red-300" %>
+        </details>
+      </section>
+    <% end %>
+  <% end %>
+</div>

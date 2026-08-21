@@ -5,6 +5,7 @@ class GamesController < ApplicationController
   before_action :set_game, only: %i[show edit update destroy toggle_urgent_player_search accept_coach_invitation decline_coach_invitation]
   before_action :authorize_manage_game!, only: %i[edit update destroy toggle_urgent_player_search]
   before_action :prepare_coaches, only: %i[new create edit update]
+  before_action :prepare_training_blocks, only: %i[new create edit update]
   skip_before_action :authenticate_user!, only: %i[index show]
 
   helper_method :display_date, :display_time, :game_badges
@@ -76,6 +77,7 @@ class GamesController < ApplicationController
 
     if @game.save
       @game.ensure_prebookings_for_next_weeks if @game.prebooking_enabled?
+      apply_training_plan
       coaches_awaiting_invitation.each { |coach| deliver_coach_invitation(coach) }
       redirect_to @game, notice: "Game was successfully created."
     else
@@ -91,6 +93,7 @@ class GamesController < ApplicationController
     gp = sanitized_game_params
     if @game.update(gp)
       @game.ensure_prebookings_for_next_weeks if @game.prebooking_enabled?
+      apply_training_plan
       coaches_awaiting_invitation.each { |coach| deliver_coach_invitation(coach) }
       # The web form saves every field at once, so one message covers the whole edit.
       GameChangeNotifier.notify(game: @game, actor: current_user, changes: @game.saved_changes)
@@ -151,6 +154,45 @@ class GamesController < ApplicationController
 
   def prepare_coaches
     @coaches = User.not_merged.where(coach: true).order(:name)
+  end
+
+  # В форме показываем свою библиотеку и библиотеки тренеров этой тренировки:
+  # чужие блоки организатору ни к чему.
+  def prepare_training_blocks
+    owner_ids = ([ current_user&.id ] + Array(@game&.assigned_coach_ids)).compact.uniq
+    @training_blocks = TrainingBlock.where(user_id: owner_ids).includes(:user).ordered
+  end
+
+  def apply_training_plan
+    # План приходит только из формы игры, поэтому пустой запрос его не стирает.
+    return unless params[:game].respond_to?(:key?) && params[:game].key?(:training_block_ids)
+    return unless @game.training?
+
+    plan = training_plan_params
+    ids = plan[:ids] + create_training_blocks(plan[:new_blocks])
+    # Блок из чужой библиотеки в план не попадает, даже если его id прислали в форме.
+    allowed_ids = TrainingBlock.where(id: ids, user_id: training_plan_owner_ids).pluck(:id)
+
+    @game.replace_training_plan!(ids.uniq.select { |id| allowed_ids.include?(id) })
+  end
+
+  def training_plan_params
+    raw = params.fetch(:game, ActionController::Parameters.new)
+    submitted = raw[:new_training_blocks]
+    submitted = submitted.values if submitted.respond_to?(:values)
+
+    {
+      ids: Array(raw[:training_block_ids]).map(&:to_i),
+      new_blocks: Array(submitted).filter_map { |block| block.permit(:title, :description, :duration_minutes) if block.respond_to?(:permit) }
+    }
+  end
+
+  def create_training_blocks(new_blocks)
+    new_blocks.filter_map { |attrs| TrainingBlock.upsert_for(current_user, attrs)&.id }
+  end
+
+  def training_plan_owner_ids
+    ([ current_user.id ] + @game.assigned_coach_ids).uniq
   end
 
   # Приглашение уходит на смену слота, а не набора тренеров: если тренеров

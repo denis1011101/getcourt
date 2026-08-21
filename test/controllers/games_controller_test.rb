@@ -947,4 +947,122 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     second&.destroy
     owner&.destroy
   end
+
+  test "creating a training saves the picked blocks and adds the new one to the library" do
+    post session_url, params: { email: "plan-owner@example.com" }
+    owner = User.find_by!(email: "plan-owner@example.com")
+    owner.update!(coach: true)
+    warmup = owner.training_blocks.create!(title: "Разминка")
+
+    post games_url, params: {
+      game: {
+        court_id: courts(:one).id,
+        date: Date.current + 1.day,
+        time: "18:00",
+        kind: "training",
+        training_block_ids: [ "", warmup.id.to_s ],
+        new_training_blocks: { "0" => { title: "Подача", duration_minutes: "20", description: "Из-за головы" } }
+      }
+    }
+
+    game = Game.order(:id).last
+
+    assert_redirected_to game_path(game)
+    assert_equal [ "Разминка", "Подача" ], game.training_blocks.map(&:title)
+    assert_equal [ "Подача", "Разминка" ], owner.training_blocks.ordered.map(&:title)
+    assert_equal 20, owner.training_blocks.find_by(title: "Подача").duration_minutes
+  ensure
+    game&.destroy
+    owner&.destroy
+  end
+
+  test "a block from someone else's library never lands in the plan" do
+    post session_url, params: { email: "plan-stranger-owner@example.com" }
+    owner = User.find_by!(email: "plan-stranger-owner@example.com")
+    stranger = User.create!(email: "plan-stranger@example.com", coach: true)
+    foreign_block = stranger.training_blocks.create!(title: "Чужой блок")
+
+    post games_url, params: {
+      game: {
+        court_id: courts(:one).id,
+        date: Date.current + 1.day,
+        time: "18:00",
+        kind: "training",
+        training_block_ids: [ foreign_block.id.to_s ]
+      }
+    }
+
+    game = Game.order(:id).last
+
+    assert_redirected_to game_path(game)
+    assert_empty game.training_blocks
+  ensure
+    game&.destroy
+    stranger&.destroy
+    owner&.destroy
+  end
+
+  test "the training constructor lists the blocks of the assigned coach" do
+    post session_url, params: { email: "plan-form-owner@example.com" }
+    owner = User.find_by!(email: "plan-form-owner@example.com")
+    coach = User.create!(email: "plan-form-coach@example.com", name: "Coach", coach: true)
+    block = coach.training_blocks.create!(title: "Работа у сетки")
+    game = Game.create!(court: courts(:one), user: owner, date: Date.current + 1.day, time: "18:00",
+                        kind: "training", with_coach: true, coach: coach)
+
+    get edit_game_url(game)
+
+    assert_response :success
+    assert_select "input[type=checkbox][name='game[training_block_ids][]'][value=?]", block.id.to_s
+    assert_includes response.body, "Работа у сетки"
+  ensure
+    game&.destroy
+    coach&.destroy
+    owner&.destroy
+  end
+
+  test "switching a training back to a game clears its plan" do
+    post session_url, params: { email: "plan-switch-owner@example.com" }
+    owner = User.find_by!(email: "plan-switch-owner@example.com")
+    owner.update!(coach: true)
+    block = owner.training_blocks.create!(title: "Разминка")
+    game = Game.create!(court: courts(:one), user: owner, date: Date.current + 1.day, time: "18:00", kind: "training")
+    game.replace_training_plan!([ block.id ])
+
+    patch game_url(game), params: {
+      game: {
+        court_id: courts(:one).id,
+        date: game.date,
+        time: "18:00",
+        kind: "game",
+        training_block_ids: [ "" ]
+      }
+    }
+
+    assert_redirected_to game_path(game)
+    assert_empty game.reload.training_blocks
+    assert_equal 1, owner.training_blocks.count
+  ensure
+    game&.destroy
+    owner&.destroy
+  end
+
+  test "the game page lists the training plan in the picked order" do
+    post session_url, params: { email: "plan-show-owner@example.com" }
+    owner = User.find_by!(email: "plan-show-owner@example.com")
+    owner.update!(coach: true)
+    warmup = owner.training_blocks.create!(title: "Разминка", duration_minutes: 10)
+    serve = owner.training_blocks.create!(title: "Подача")
+    game = Game.create!(court: courts(:one), user: owner, date: Date.current + 1.day, time: "18:00", kind: "training")
+    game.replace_training_plan!([ serve.id, warmup.id ])
+
+    get game_url(game)
+
+    assert_response :success
+    assert_select "[data-testid=training-plan] li", 2
+    assert_match(/Подача.*Разминка/m, response.body)
+  ensure
+    game&.destroy
+    owner&.destroy
+  end
 end

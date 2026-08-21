@@ -137,6 +137,8 @@ en:
       urgent_announce: Announce players search
       urgent_cancel: Cancel players search
       stats_submit: Save statistics
+      training_plan: "Training plan"
+      training_stats_hint: "This is a training: only hours are recorded, no score."
       additional_stats: Additional match statistics
       match_block_title: Game %{number}
       remove_match: Remove game
@@ -167,6 +169,15 @@ en:
       kind_game: Game
       kind_training: Training
       kind_hint: A training is run by a coach; a game is played without one.
+      kind_stats_hint: "A training records hours only — no score is kept."
+      training_plan: "Training constructor"
+      training_plan_hint: "Pick the blocks for this session. A new block is saved to your library and stays available next time."
+      training_plan_empty: "Your library is empty — add the first block."
+      training_plan_add: "Add block"
+      training_plan_title: "Block title"
+      training_plan_duration: "Minutes"
+      training_plan_description: "Description (optional)"
+      training_plan_remove: "Remove block"
       with_coach: With coach
       with_coach_hint: If checked, this game will be held with a coach.
       coach: Coach
@@ -745,3 +756,22 @@ en:
           net partner practices aggressive volleying. Receiver practices returning
           wide.'
         d5_meta: 4 players · full court
+  training_blocks:
+    title: "Training constructor"
+    hint: "Session blocks live in your library: fill one in once and just tick it in the next training."
+    manage: "Open"
+    back_to_games: "Back to my games"
+    new_title: "New block"
+    create: "Add"
+    save: "Save"
+    destroy: "Delete block"
+    destroy_confirm: "Delete this block from the library?"
+    empty: "No blocks yet."
+    created: "Block added"
+    updated: "Block updated"
+    destroyed: "Block deleted"
+    minutes_short: "min"
+    fields:
+      title: "Title"
+      duration_minutes: "Minutes"
+      description: "Description"
