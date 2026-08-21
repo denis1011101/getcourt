@@ -74,13 +74,16 @@ class GamesController < ApplicationController
   def create
     gp = sanitized_game_params
     @game = Game.new(gp.merge(user: current_user))
+    @new_training_blocks = build_inline_training_blocks
 
-    if @game.save
+    if inline_training_blocks_valid? && @game.save
+      save_inline_training_blocks
       @game.ensure_prebookings_for_next_weeks if @game.prebooking_enabled?
       apply_training_plan
       coaches_awaiting_invitation.each { |coach| deliver_coach_invitation(coach) }
       redirect_to @game, notice: "Game was successfully created."
     else
+      @game.validate
       Rails.logger.warn "Game save failed: #{ @game.errors.full_messages.join('; ') }"
       render :new, status: :unprocessable_entity
     end
@@ -90,8 +93,11 @@ class GamesController < ApplicationController
   end
 
   def update
-    gp = sanitized_game_params
-    if @game.update(gp)
+    @game.assign_attributes(sanitized_game_params)
+    @new_training_blocks = build_inline_training_blocks
+
+    if inline_training_blocks_valid? && @game.save
+      save_inline_training_blocks
       @game.ensure_prebookings_for_next_weeks if @game.prebooking_enabled?
       apply_training_plan
       coaches_awaiting_invitation.each { |coach| deliver_coach_invitation(coach) }
@@ -99,6 +105,7 @@ class GamesController < ApplicationController
       GameChangeNotifier.notify(game: @game, actor: current_user, changes: @game.saved_changes)
       redirect_to @game, notice: "Game was successfully updated."
     else
+      @game.validate
       Rails.logger.warn "Game update failed: #{ @game.errors.full_messages.join('; ') }"
       render :edit, status: :unprocessable_entity
     end
@@ -131,6 +138,18 @@ class GamesController < ApplicationController
     redirect_to @game, notice: "Players search #{state}."
   end
 
+  # GET /games/training_plan_fragment
+  # Библиотека зависит от выбранных тренеров, а выбирают их прямо в форме,
+  # поэтому список блоков перезагружаем без перезагрузки страницы.
+  def training_plan_fragment
+    owner_ids = ([ current_user.id ] + Array(params[:coach_ids]).map(&:to_i)).reject(&:zero?).uniq
+
+    render partial: "games/training_plan_library", locals: {
+      blocks: TrainingBlock.where(user_id: owner_ids).ordered,
+      selected_ids: Array(params[:training_block_ids]).map(&:to_i)
+    }
+  end
+
   # GET /games/prebooking_fragment
   def prebooking_fragment
     if params[:game_id].present?
@@ -159,8 +178,15 @@ class GamesController < ApplicationController
   # В форме показываем свою библиотеку и библиотеки тренеров этой тренировки:
   # чужие блоки организатору ни к чему.
   def prepare_training_blocks
-    owner_ids = ([ current_user&.id ] + Array(@game&.assigned_coach_ids)).compact.uniq
-    @training_blocks = TrainingBlock.where(user_id: owner_ids).includes(:user).ordered
+    @training_blocks = TrainingBlock.where(user_id: training_library_owner_ids).ordered
+  end
+
+  # Тренеров берём и из формы: на создании игры @game ещё нет, а библиотека
+  # выбранного тренера нужна уже там.
+  def training_library_owner_ids
+    submitted = [ params.dig(:game, :coach_id), params.dig(:game, :second_coach_id) ]
+
+    ([ current_user&.id ] + Array(@game&.assigned_coach_ids) + submitted).map(&:to_i).reject(&:zero?).uniq
   end
 
   def apply_training_plan
@@ -168,8 +194,7 @@ class GamesController < ApplicationController
     return unless params[:game].respond_to?(:key?) && params[:game].key?(:training_block_ids)
     return unless @game.training?
 
-    plan = training_plan_params
-    ids = plan[:ids] + create_training_blocks(plan[:new_blocks])
+    ids = training_plan_params[:ids] + @new_training_blocks.map(&:id)
     # Блок из чужой библиотеки в план не попадает, даже если его id прислали в форме.
     allowed_ids = TrainingBlock.where(id: ids, user_id: training_plan_owner_ids).pluck(:id)
 
@@ -181,14 +206,29 @@ class GamesController < ApplicationController
     submitted = raw[:new_training_blocks]
     submitted = submitted.values if submitted.respond_to?(:values)
 
-    {
+    @training_plan_params ||= {
       ids: Array(raw[:training_block_ids]).map(&:to_i),
       new_blocks: Array(submitted).filter_map { |block| block.permit(:title, :description, :duration_minutes) if block.respond_to?(:permit) }
     }
   end
 
-  def create_training_blocks(new_blocks)
-    new_blocks.filter_map { |attrs| TrainingBlock.upsert_for(current_user, attrs)&.id }
+  # Блоки собираем до сохранения игры: иначе игра сохранится, а блок с опечаткой
+  # молча потеряется вместе со своим местом в плане.
+  def build_inline_training_blocks
+    return [] unless @game.training? || @game.with_coach?
+
+    training_plan_params[:new_blocks]
+      .reject { |attrs| attrs.values.all?(&:blank?) }
+      .uniq { |attrs| attrs[:title].to_s.strip.downcase }
+      .map { |attrs| TrainingBlock.build_for(current_user, attrs) }
+  end
+
+  def inline_training_blocks_valid?
+    @new_training_blocks.map(&:valid?).all?
+  end
+
+  def save_inline_training_blocks
+    @new_training_blocks.each(&:save!)
   end
 
   def training_plan_owner_ids

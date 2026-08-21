@@ -1065,4 +1065,121 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     game&.destroy
     owner&.destroy
   end
+
+  test "an invalid inline block stops the save and comes back filled in" do
+    post session_url, params: { email: "plan-invalid-owner@example.com" }
+    owner = User.find_by!(email: "plan-invalid-owner@example.com")
+
+    assert_no_difference [ -> { Game.count }, -> { TrainingBlock.count } ] do
+      post games_url, params: {
+        game: {
+          court_id: courts(:one).id,
+          date: Date.current + 1.day,
+          time: "18:00",
+          kind: "training",
+          training_block_ids: [ "" ],
+          new_training_blocks: { "0" => { title: "Подача", duration_minutes: "900", description: "" } }
+        }
+      }
+    end
+
+    assert_response :unprocessable_entity
+    assert_select "input[name=?][value=?]", "game[new_training_blocks][0][title]", "Подача"
+    assert_select "input[name=?][value=?]", "game[new_training_blocks][0][duration_minutes]", "900"
+    assert_includes response.body, "Duration minutes"
+  ensure
+    owner&.destroy
+  end
+
+  test "an empty inline row is not treated as a block" do
+    post session_url, params: { email: "plan-empty-row-owner@example.com" }
+    owner = User.find_by!(email: "plan-empty-row-owner@example.com")
+
+    post games_url, params: {
+      game: {
+        court_id: courts(:one).id,
+        date: Date.current + 1.day,
+        time: "18:00",
+        kind: "training",
+        training_block_ids: [ "" ],
+        new_training_blocks: { "0" => { title: "", duration_minutes: "", description: "" } }
+      }
+    }
+
+    game = Game.order(:id).last
+
+    assert_redirected_to game_path(game)
+    assert_equal 0, owner.training_blocks.count
+  ensure
+    game&.destroy
+    owner&.destroy
+  end
+
+  test "two inline rows with one title become a single block" do
+    post session_url, params: { email: "plan-dup-owner@example.com" }
+    owner = User.find_by!(email: "plan-dup-owner@example.com")
+
+    post games_url, params: {
+      game: {
+        court_id: courts(:one).id,
+        date: Date.current + 1.day,
+        time: "18:00",
+        kind: "training",
+        training_block_ids: [ "" ],
+        new_training_blocks: {
+          "0" => { title: "Подача", duration_minutes: "20" },
+          "1" => { title: "подача", duration_minutes: "30" }
+        }
+      }
+    }
+
+    game = Game.order(:id).last
+
+    assert_redirected_to game_path(game)
+    assert_equal 1, owner.training_blocks.count
+    assert_equal [ "Подача" ], game.training_blocks.map(&:title)
+  ensure
+    game&.destroy
+    owner&.destroy
+  end
+
+  test "the library fragment answers with the blocks of the picked coaches" do
+    post session_url, params: { email: "fragment-owner@example.com" }
+    owner = User.find_by!(email: "fragment-owner@example.com")
+    coach = User.create!(email: "fragment-coach@example.com", coach: true)
+    stranger = User.create!(email: "fragment-stranger@example.com", coach: true)
+    coach.training_blocks.create!(title: "Работа у сетки")
+    stranger.training_blocks.create!(title: "Чужой блок")
+
+    get training_plan_fragment_games_url, params: { coach_ids: [ coach.id ] }
+
+    assert_response :success
+    assert_includes response.body, "Работа у сетки"
+    assert_not_includes response.body, "Чужой блок"
+  ensure
+    coach&.destroy
+    stranger&.destroy
+    owner&.destroy
+  end
+
+  test "the library lists the blocks of the plan first and in its order" do
+    post session_url, params: { email: "plan-order-form-owner@example.com" }
+    owner = User.find_by!(email: "plan-order-form-owner@example.com")
+    owner.update!(coach: true)
+    # По алфавиту это «Заминка, Подача, Разминка» — план должен победить.
+    cooldown = owner.training_blocks.create!(title: "Заминка")
+    serve = owner.training_blocks.create!(title: "Подача")
+    warmup = owner.training_blocks.create!(title: "Разминка")
+    game = Game.create!(court: courts(:one), user: owner, date: Date.current + 1.day, time: "18:00", kind: "training")
+    game.replace_training_plan!([ warmup.id, serve.id ])
+
+    get edit_game_url(game)
+
+    assert_response :success
+    checkbox_ids = css_select("input[name='game[training_block_ids][]'][type=checkbox]").map { |input| input["value"].to_i }
+    assert_equal [ warmup.id, serve.id, cooldown.id ], checkbox_ids
+  ensure
+    game&.destroy
+    owner&.destroy
+  end
 end

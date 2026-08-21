@@ -21,7 +21,12 @@
         </p>
       </div>
     <% else %>
-      <div class="mb-4" data-controller="game-kind">
+      <%# После неудачного сохранения отметки берём из формы, иначе из плана игры. %>
+      <% submitted_block_ids = params.dig(:game, :training_block_ids) %>
+      <% selected_block_ids = submitted_block_ids ? Array(submitted_block_ids).map(&:to_i) : (game.persisted? ? game.training_block_ids : []) %>
+      <div class="mb-4" data-controller="game-kind training-plan"
+           data-training-plan-next-index-value="<%= Array(@new_training_blocks).size %>"
+           data-training-plan-library-url-value="<%= training_plan_fragment_games_path %>">
         <span class="block text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("games.form.kind") %></span>
         <div class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
           <% Game::KINDS.each do |kind| %>
@@ -50,49 +55,33 @@
               <%= form.label :coach_id, t("games.form.coach"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
               <%= form.collection_select :coach_id, @coaches, :id, :name, { include_blank: t("games.form.coach_blank") },
                     class: "mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100",
-                    data: { game_kind_target: "coachSelect" } %>
+                    data: { game_kind_target: "coachSelect", training_plan_target: "coachSelect", action: "change->training-plan#reloadLibrary" } %>
             </div>
             <div>
               <%= form.label :second_coach_id, t("games.form.second_coach"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
               <%= form.collection_select :second_coach_id, @coaches, :id, :name, { include_blank: t("games.form.second_coach_blank") },
                     class: "mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100",
-                    data: { game_kind_target: "coachSelect" } %>
+                    data: { game_kind_target: "coachSelect", training_plan_target: "coachSelect", action: "change->training-plan#reloadLibrary" } %>
               <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.second_coach_hint") %></p>
             </div>
           </div>
 
-          <div class="mt-4 rounded-md border border-gray-200 p-3 dark:border-white/10"
-               data-controller="training-plan"
-               data-training-plan-next-index-value="0">
+          <div class="mt-4 rounded-md border border-gray-200 p-3 dark:border-white/10">
             <span class="block text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("games.form.training_plan") %></span>
             <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.training_plan_hint") %></p>
 
             <%# Пустое значение гарантирует, что снятые галочки долетят до сервера как пустой план. %>
             <%= hidden_field_tag "game[training_block_ids][]", "" %>
 
-            <% if @training_blocks.any? %>
-              <%# После неудачного сохранения отметки берём из формы, иначе из плана игры. %>
-              <% submitted_block_ids = params.dig(:game, :training_block_ids) %>
-              <% selected_block_ids = submitted_block_ids ? Array(submitted_block_ids).map(&:to_i) : (game.persisted? ? game.training_block_ids : []) %>
-              <div class="mt-3 space-y-2">
-                <% @training_blocks.each do |block| %>
-                  <label class="flex cursor-pointer items-start gap-2 rounded-md border border-gray-300 px-3 py-2 hover:bg-gray-50 dark:border-white/15 dark:hover:bg-white/5">
-                    <%= check_box_tag "game[training_block_ids][]", block.id, selected_block_ids.include?(block.id),
-                          id: "game_training_block_#{block.id}", class: "mt-1 h-4 w-4 text-indigo-600" %>
-                    <span>
-                      <span class="block text-sm text-gray-700 dark:text-slate-300"><%= block.label %></span>
-                      <% if block.description.present? %>
-                        <span class="block text-xs text-gray-500 dark:text-slate-400"><%= block.description %></span>
-                      <% end %>
-                    </span>
-                  </label>
-                <% end %>
-              </div>
-            <% else %>
-              <p class="mt-3 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.training_plan_empty") %></p>
-            <% end %>
+            <div class="mt-3" data-training-plan-target="library">
+              <%= render "games/training_plan_library", blocks: @training_blocks, selected_ids: selected_block_ids %>
+            </div>
 
-            <div class="mt-3 space-y-3" data-training-plan-target="container"></div>
+            <div class="mt-3 space-y-3" data-training-plan-target="container">
+              <% Array(@new_training_blocks).each_with_index do |new_block, new_block_index| %>
+                <%= render "games/training_plan_row", index: new_block_index, block: new_block %>
+              <% end %>
+            </div>
 
             <button type="button"
                     data-action="click->training-plan#add"
@@ -101,24 +90,7 @@
             </button>
 
             <template data-training-plan-target="template">
-              <div class="rounded-md border border-dashed border-gray-300 p-3 dark:border-white/15" data-training-plan-row>
-                <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                  <%= text_field_tag "game[new_training_blocks][__INDEX__][title]", nil,
-                        placeholder: t("games.form.training_plan_title"),
-                        class: "rounded-md border border-gray-300 px-3 py-2 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
-                  <%= number_field_tag "game[new_training_blocks][__INDEX__][duration_minutes]", nil, min: 1,
-                        placeholder: t("games.form.training_plan_duration"),
-                        class: "rounded-md border border-gray-300 px-3 py-2 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
-                  <%= text_field_tag "game[new_training_blocks][__INDEX__][description]", nil,
-                        placeholder: t("games.form.training_plan_description"),
-                        class: "rounded-md border border-gray-300 px-3 py-2 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
-                </div>
-                <button type="button"
-                        data-action="click->training-plan#remove"
-                        class="mt-2 text-xs text-red-600 hover:underline dark:text-red-300">
-                  <%= t("games.form.training_plan_remove") %>
-                </button>
-              </div>
+              <%= render "games/training_plan_row", index: "__INDEX__", block: nil %>
             </template>
           </div>
         </div>

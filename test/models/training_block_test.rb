@@ -24,11 +24,12 @@ class TrainingBlockTest < ActiveSupport::TestCase
     coach&.destroy
   end
 
-  test "upsert_for updates the existing block instead of failing on its title" do
+  test "build_for updates the existing block instead of failing on its title" do
     coach = User.create!(email: "block-upsert@example.com", coach: true)
     existing = coach.training_blocks.create!(title: "Подача", duration_minutes: 20)
 
-    block = TrainingBlock.upsert_for(coach, title: "подача", description: "Из-за головы", duration_minutes: 30)
+    block = TrainingBlock.build_for(coach, title: "подача", description: "Из-за головы", duration_minutes: 30)
+    block.save!
 
     assert_equal existing, block
     assert_equal 1, coach.training_blocks.count
@@ -38,10 +39,13 @@ class TrainingBlockTest < ActiveSupport::TestCase
     coach&.destroy
   end
 
-  test "upsert_for skips a blank title" do
+  test "build_for returns an invalid block instead of swallowing it" do
     coach = User.create!(email: "block-blank@example.com", coach: true)
 
-    assert_nil TrainingBlock.upsert_for(coach, title: "   ")
+    block = TrainingBlock.build_for(coach, title: "   ", duration_minutes: "5")
+
+    assert_not block.valid?
+    assert_includes block.errors.attribute_names, :title
     assert_equal 0, coach.training_blocks.count
   ensure
     coach&.destroy

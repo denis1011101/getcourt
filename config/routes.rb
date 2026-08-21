@@ -103,6 +103,7 @@ Rails.application.routes.draw do
 
     collection do
       get :prebooking_fragment
+      get :training_plan_fragment
     end
 
     resources :participations, only: [ :create, :destroy ] do

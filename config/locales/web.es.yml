@@ -182,6 +182,8 @@ es:
       training_plan_duration: "Minutos"
       training_plan_description: "Descripción (opcional)"
       training_plan_remove: "Quitar bloque"
+      training_plan_move_up: "Subir en el plan"
+      training_plan_move_down: "Bajar en el plan"
       with_coach: Con entrenador
       with_coach_hint: Si lo marcas, el partido se jugará con entrenador.
       coach: Entrenador

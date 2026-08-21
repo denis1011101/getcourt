@@ -372,4 +372,36 @@ class GameTest < ActiveSupport::TestCase
     game&.destroy
     coach&.destroy
   end
+
+  test "a game with recorded scores cannot become a training" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.current, time: "10:00")
+    Match.create!(user: users(:one), game: game, mode: "singles", outcome: "win", played_at: Time.current, score: "6:4")
+
+    game.kind = "training"
+
+    assert_not game.valid?
+    assert_includes game.errors.full_messages.join, "recorded scores"
+  ensure
+    game&.destroy
+  end
+
+  test "checking with_coach on a scored game is refused too" do
+    coach = User.create!(email: "scored-game-coach@example.com", coach: true)
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.current, time: "10:00")
+    Match.create!(user: users(:one), game: game, mode: "singles", outcome: "win", played_at: Time.current, score: "6:4")
+
+    assert_not game.update(with_coach: true, coach: coach)
+    assert_equal "game", game.reload.kind
+  ensure
+    game&.destroy
+    coach&.destroy
+  end
+
+  test "a training without scores still accepts new blocks" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.current, time: "10:00")
+
+    assert game.update(kind: "training")
+  ensure
+    game&.destroy
+  end
 end

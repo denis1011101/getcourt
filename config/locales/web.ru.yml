@@ -183,6 +183,8 @@ ru:
       training_plan_duration: "Минут"
       training_plan_description: "Описание (необязательно)"
       training_plan_remove: "Убрать блок"
+      training_plan_move_up: "Выше в плане"
+      training_plan_move_down: "Ниже в плане"
       with_coach: С тренером
       with_coach_hint: Если отмечено, игра пройдёт с тренером.
       coach: Тренер

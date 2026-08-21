@@ -45,6 +45,7 @@ class Game < ApplicationRecord
   validates :coach_invitation_status, inclusion: { in: COACH_INVITATION_STATUSES }, allow_nil: true
   validates :second_coach_invitation_status, inclusion: { in: COACH_INVITATION_STATUSES }, allow_nil: true
   validate :selected_coaches_are_coaches
+  validate :training_cannot_hide_recorded_scores, if: -> { persisted? && training? && kind_changed? }
   validate :prebooking_requires_recurring
   validate :surface_available_at_court
   validate :environment_available_at_court
@@ -547,6 +548,12 @@ class Game < ApplicationRecord
   def drop_training_plan_from_plain_game
     # У обычной игры плана занятия не бывает, поэтому он уходит вместе с типом.
     game_training_blocks.destroy_all
+  end
+
+  # Счёт у тренировки не показать и не исправить, поэтому игру с уже записанными
+  # матчами в тренировку не превращаем — иначе счёт остался бы висеть в статистике.
+  def training_cannot_hide_recorded_scores
+    errors.add(:kind, "cannot switch to training while the game has recorded scores") if matches.exists?
   end
 
   def selected_coaches_are_coaches

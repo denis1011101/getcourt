@@ -1,0 +1,39 @@
+<%# Отмеченные блоки идут первыми в порядке плана: этот порядок и уходит на сервер. %>
+<% chosen = selected_ids.filter_map { |id| blocks.find { |block| block.id == id } } %>
+<% ordered = chosen + blocks.reject { |block| chosen.include?(block) } %>
+
+<% if ordered.any? %>
+  <div class="space-y-2">
+    <% ordered.each do |block| %>
+      <div class="flex items-start gap-2 rounded-md border border-gray-300 px-3 py-2 dark:border-white/15"
+           data-training-plan-target="row" data-training-plan-block-row>
+        <label class="flex flex-1 cursor-pointer items-start gap-2">
+          <%= check_box_tag "game[training_block_ids][]", block.id, selected_ids.include?(block.id),
+                id: "game_training_block_#{block.id}", class: "mt-1 h-4 w-4 text-indigo-600",
+                data: { training_plan_target: "checkbox", action: "training-plan#reorder" } %>
+          <span>
+            <span class="block text-sm text-gray-700 dark:text-slate-300">
+              <span class="font-semibold" data-training-plan-target="position"></span>
+              <%= block.label %>
+            </span>
+            <% if block.description.present? %>
+              <span class="block text-xs text-gray-500 dark:text-slate-400"><%= block.description %></span>
+            <% end %>
+          </span>
+        </label>
+        <span class="flex shrink-0 items-center gap-1" data-training-plan-target="moveControls">
+          <button type="button" data-action="training-plan#moveUp"
+                  title="<%= t("games.form.training_plan_move_up") %>"
+                  aria-label="<%= t("games.form.training_plan_move_up") %>"
+                  class="rounded border border-gray-300 px-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-white/15 dark:text-slate-300 dark:hover:bg-white/5">↑</button>
+          <button type="button" data-action="training-plan#moveDown"
+                  title="<%= t("games.form.training_plan_move_down") %>"
+                  aria-label="<%= t("games.form.training_plan_move_down") %>"
+                  class="rounded border border-gray-300 px-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-white/15 dark:text-slate-300 dark:hover:bg-white/5">↓</button>
+        </span>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <p class="text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.training_plan_empty") %></p>
+<% end %>

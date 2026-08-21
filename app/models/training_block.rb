@@ -19,14 +19,12 @@ class TrainingBlock < ApplicationRecord
 
   # Повторное добавление блока с тем же названием должно попадать в уже
   # существующий, иначе уникальный индекс уронил бы сохранение игры.
-  def self.upsert_for(user, attributes)
+  def self.build_for(user, attributes)
     title = attributes[:title].to_s.strip
-    return nil if title.blank?
-
     block = named(user, title) || new(user: user, title: title)
     block.description = attributes[:description].to_s.strip.presence
     block.duration_minutes = attributes[:duration_minutes].presence
-    block.save ? block : nil
+    block
   end
 
   # SQLite не умеет приводить кириллицу к нижнему регистру, поэтому названия

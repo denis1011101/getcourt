@@ -178,6 +178,8 @@ en:
       training_plan_duration: "Minutes"
       training_plan_description: "Description (optional)"
       training_plan_remove: "Remove block"
+      training_plan_move_up: "Move up in the plan"
+      training_plan_move_down: "Move down in the plan"
       with_coach: With coach
       with_coach_hint: If checked, this game will be held with a coach.
       coach: Coach
