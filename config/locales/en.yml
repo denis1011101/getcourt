@@ -297,6 +297,10 @@ en:
         one: "👥 %{count} spot left"
         other: "👥 %{count} spots left"
     form:
+      court_country: "Country"
+      court_country_any: "— any country —"
+      court_city: "City"
+      court_city_any: "— any city —"
       surface: "Surface"
       surface_any: "— any surface —"
       surface_hint: "Choose from surfaces available at the selected court."

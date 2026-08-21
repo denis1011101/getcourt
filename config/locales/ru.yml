@@ -269,6 +269,10 @@ ru:
         many: "👥 нужно %{count} игроков"
         other: "👥 %{count} игроков"
     form:
+      court_country: "Страна"
+      court_country_any: "— любая страна —"
+      court_city: "Город"
+      court_city_any: "— любой город —"
       surface: "Покрытие"
       surface_any: "— любое покрытие —"
       surface_hint: "Выберите из покрытий выбранного корта."
