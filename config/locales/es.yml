@@ -272,6 +272,10 @@ es:
         one: "👥 falta %{count} jugador"
         other: "👥 faltan %{count} jugadores"
     form:
+      court_country: "País"
+      court_country_any: "— cualquier país —"
+      court_city: "Ciudad"
+      court_city_any: "— cualquier ciudad —"
       surface: "Superficie"
       surface_any: "— cualquier superficie —"
       surface_hint: "Elige entre las superficies disponibles en la pista seleccionada."

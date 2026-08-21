@@ -30,7 +30,8 @@ class Court < ApplicationRecord
   scope :indoor_only, -> { where(indoor: true) }
 
   def self.sorted_for_user(user)
-    courts = all.to_a
+    # По id корты идут вперемешку, поэтому раскладываем их по городу и названию.
+    courts = all.to_a.sort_by { |court| [ court.city_name.to_s, court.name.to_s ] }
     user_city = user&.city_name.to_s.strip.downcase.presence
     return courts unless user_city
 

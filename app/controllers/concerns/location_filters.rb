@@ -130,8 +130,23 @@ module LocationFilters
     "ZW" => "Zimbabwe"
   }.freeze
 
+  # Геокодер иногда отдаёт район города или название, которого нет в справочнике
+  # City, — тогда страну для фильтров подставляем вручную.
   CITY_COUNTRY_OVERRIDES = {
-    "Koto" => "JP"
+    "Acapulco" => "MX",
+    "Chaoyang District" => "CN",
+    "Futian District" => "CN",
+    "Greater London" => "GB",
+    "Hua Hin City Municipality" => "TH",
+    "Jiang'an District" => "CN",
+    "Klagenfurt" => "AT",
+    "Koto" => "JP",
+    "Montreal" => "CA",
+    "New York" => "US",
+    "Pak Kret City Municipality" => "TH",
+    "Palilula Urban Municipality" => "RS",
+    "Pudong" => "CN",
+    "Yuexiu District" => "CN"
   }.freeze
 
   CITY_ALIASES = {
@@ -139,7 +154,8 @@ module LocationFilters
   }.freeze
 
   included do
-    helper_method :country_name_for, :location_filter_labels, :country_cities_map_for_select
+    helper_method :country_name_for, :location_filter_labels, :country_cities_map_for_select,
+                  :city_country_map_for, :normalized_city
   end
 
   private
@@ -147,14 +163,22 @@ module LocationFilters
   def prepare_location_filters(city_names)
     city_names = Array(city_names).map(&:to_s).reject(&:blank?).uniq.sort
 
-    @city_country_map = City.country_codes_for(city_names)
-      .merge(CITY_COUNTRY_OVERRIDES.slice(*city_names))
+    @city_country_map = city_country_map_for(city_names)
 
     @country_names_by_code = @city_country_map.values.uniq.compact.sort.each_with_object({}) do |country_code, names|
       names[country_code] = country_name_for(country_code)
     end
     @countries = @country_names_by_code.map { |country_code, country_name| [ country_name, country_code ] }.sort_by(&:first)
     @cities = params[:country].present? ? cities_for_country(params[:country]) : city_names
+  end
+
+  # Города-тёзки живут в разных странах, поэтому берём самый населённый (City),
+  # а районы и альтернативные написания добираем из CITY_COUNTRY_OVERRIDES.
+  def city_country_map_for(city_names)
+    city_names = Array(city_names).map(&:to_s).reject(&:blank?).uniq
+    return {} if city_names.empty?
+
+    City.country_codes_for(city_names).merge(CITY_COUNTRY_OVERRIDES.slice(*city_names))
   end
 
   def cities_for_country(country_code)

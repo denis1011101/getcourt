@@ -531,6 +531,76 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes @response.body, "<b>entrance from the yard</b>"
   end
 
+  # ---- court picker -------------------------------------------------------
+
+  test "game form narrows the court list down with country and city selects" do
+    london = Court.create!(name: "Queen's Club", city_name: "Greater London", moderation_status: "approved")
+    new_york = Court.create!(name: "Milstein Center", city_name: "New York", moderation_status: "approved")
+    post session_url, params: { email: "court-picker-user@example.com" }
+
+    get new_game_url
+
+    assert_response :success
+    assert_select "#court_country option[value=GB]", text: "United Kingdom"
+    assert_select "#court_country option[value=US]", text: "United States"
+    assert_select "#court_city option[value=?]", "Greater London"
+    assert_select "#court_city option[value=?]", "New York"
+    # Фильтры живут только в браузере, поэтому в параметры игры попадать не должны.
+    assert_select "#court_country[name]", 0
+    assert_select "#court_city[name]", 0
+  ensure
+    london&.destroy
+    new_york&.destroy
+  end
+
+  test "game form starts from the city of the player even when it is spelled differently" do
+    local = Court.create!(name: "Ural Tennis", city_name: "Yekaterinburg", moderation_status: "approved")
+    far = Court.create!(name: "Milstein Center", city_name: "New York", moderation_status: "approved")
+    post session_url, params: { email: "court-picker-local@example.com" }
+    User.find_by(email: "court-picker-local@example.com").update!(city_name: "Ekaterinburg")
+
+    get new_game_url
+
+    assert_response :success
+    assert_select "#court_city option[value=?][selected=selected]", "Yekaterinburg"
+  ensure
+    local&.destroy
+    far&.destroy
+  end
+
+  test "editing a game starts from the country and city of its court" do
+    owner = User.create!(email: "court-picker-edit@example.com")
+    london = Court.create!(name: "Queen's Club", city_name: "Greater London", moderation_status: "approved")
+    far = Court.create!(name: "Milstein Center", city_name: "New York", moderation_status: "approved")
+    game = Game.create!(court: london, user: owner, date: Date.current + 1.day, time: "10:00")
+    post session_url, params: { email: owner.email }
+
+    get edit_game_url(game)
+
+    assert_response :success
+    assert_select "#court_country option[value=GB][selected=selected]"
+    assert_select "#court_city option[value=?][selected=selected]", "Greater London"
+  ensure
+    game&.destroy
+    london&.destroy
+    far&.destroy
+    owner&.destroy
+  end
+
+  test "game form skips the location selects when every court sits in one city" do
+    only = Court.create!(name: "Queen's Club", city_name: "Greater London", moderation_status: "approved")
+    Court.where.not(id: only.id).update_all(city_name: "Greater London")
+    post session_url, params: { email: "court-picker-single-city@example.com" }
+
+    get new_game_url
+
+    assert_response :success
+    assert_select "#court_country", 0
+    assert_select "#court_city", 0
+  ensure
+    only&.destroy
+  end
+
   test "game form offers the comment field" do
     post session_url, params: { email: "comment_form_user@example.com" }
 
