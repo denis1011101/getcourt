@@ -1,12 +1,18 @@
-<% match_groups = PlayerStatistics::MatchGroups.for_game(game) %>
+<% match_groups = game.training? ? [] : PlayerStatistics::MatchGroups.for_game(game) %>
 <% saved_hours = PlayerStatistics::SavedHours.for_game(game, user: current_user) %>
 <%= form_with url: game_player_statistics_path(game), method: :post, data: { turbo: false }, class: "space-y-4" do %>
-  <div data-controller="stats-matches" data-stats-matches-next-index-value="<%= [ match_groups.size, 1 ].max %>" class="space-y-4">
+  <div class="space-y-4">
     <div>
       <label class="mb-1 block text-sm text-gray-600 dark:text-slate-400"><%= t("games.show.hours") %></label>
       <%= number_field_tag "statistics[hours]", saved_hours, step: 0.1, min: 0, class: "w-32 rounded border-gray-300 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
     </div>
+  </div>
 
+  <%# У тренировки нет счёта — там считают только часы, поэтому матчи не показываем. %>
+  <% if game.training? %>
+    <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("games.show.training_stats_hint") %></p>
+  <% else %>
+  <div data-controller="stats-matches" data-stats-matches-next-index-value="<%= [ match_groups.size, 1 ].max %>" class="space-y-4">
     <div data-stats-matches-target="container" class="space-y-4">
       <% if match_groups.any? %>
         <% match_groups.each_with_index do |group, i| %>
@@ -27,6 +33,7 @@
       <%= render "games/stats_match_block", game: game, index: "__INDEX__", removable: true %>
     </template>
   </div>
+  <% end %>
 
   <% if false %>
   <details class="rounded border bg-gray-50 p-3 dark:bg-slate-700/50">

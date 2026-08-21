@@ -49,6 +49,9 @@ Rails.application.routes.draw do
     post :dismiss_onboarding
   end
 
+  # Библиотека блоков тренировок живёт в личном кабинете рядом с расписанием.
+  resources :training_blocks, only: %i[index create update destroy], path: "account/training_blocks"
+
   resources :users, only: [ :index, :show ] do
     resource :player_statistic, only: [ :show ]
   end
@@ -100,6 +103,7 @@ Rails.application.routes.draw do
 
     collection do
       get :prebooking_fragment
+      get :training_plan_fragment
     end
 
     resources :participations, only: [ :create, :destroy ] do

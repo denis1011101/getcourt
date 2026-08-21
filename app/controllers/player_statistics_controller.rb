@@ -66,7 +66,8 @@ class PlayerStatisticsController < ApplicationController
         saved_any = true
       end
 
-      matches_input = matches_params
+      # На тренировке счёт не ведут, поэтому матчи из формы туда не попадают.
+      matches_input = game.training? ? [] : matches_params
       unbalanced_matches = 0
       matches_input.each do |m|
         team_a_ids = sanitize_team_ids(m[:team_a_user_ids], game)

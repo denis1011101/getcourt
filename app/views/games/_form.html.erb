@@ -21,7 +21,12 @@
         </p>
       </div>
     <% else %>
-      <div class="mb-4" data-controller="game-kind">
+      <%# После неудачного сохранения отметки берём из формы, иначе из плана игры. %>
+      <% submitted_block_ids = params.dig(:game, :training_block_ids) %>
+      <% selected_block_ids = submitted_block_ids ? Array(submitted_block_ids).map(&:to_i) : (game.persisted? ? game.training_block_ids : []) %>
+      <div class="mb-4" data-controller="game-kind training-plan"
+           data-training-plan-next-index-value="<%= Array(@new_training_blocks).size %>"
+           data-training-plan-library-url-value="<%= training_plan_fragment_games_path %>">
         <span class="block text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("games.form.kind") %></span>
         <div class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
           <% Game::KINDS.each do |kind| %>
@@ -35,6 +40,7 @@
           <% end %>
         </div>
         <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.kind_hint") %></p>
+        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.kind_stats_hint") %></p>
 
         <div class="mt-3" data-game-kind-target="trainingFields">
           <label class="inline-flex items-center gap-2">
@@ -49,15 +55,43 @@
               <%= form.label :coach_id, t("games.form.coach"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
               <%= form.collection_select :coach_id, @coaches, :id, :name, { include_blank: t("games.form.coach_blank") },
                     class: "mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100",
-                    data: { game_kind_target: "coachSelect" } %>
+                    data: { game_kind_target: "coachSelect", training_plan_target: "coachSelect", action: "change->training-plan#reloadLibrary" } %>
             </div>
             <div>
               <%= form.label :second_coach_id, t("games.form.second_coach"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
               <%= form.collection_select :second_coach_id, @coaches, :id, :name, { include_blank: t("games.form.second_coach_blank") },
                     class: "mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100",
-                    data: { game_kind_target: "coachSelect" } %>
+                    data: { game_kind_target: "coachSelect", training_plan_target: "coachSelect", action: "change->training-plan#reloadLibrary" } %>
               <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.second_coach_hint") %></p>
             </div>
+          </div>
+
+          <div class="mt-4 rounded-md border border-gray-200 p-3 dark:border-white/10">
+            <span class="block text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("games.form.training_plan") %></span>
+            <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.training_plan_hint") %></p>
+
+            <%# Пустое значение гарантирует, что снятые галочки долетят до сервера как пустой план. %>
+            <%= hidden_field_tag "game[training_block_ids][]", "" %>
+
+            <div class="mt-3" data-training-plan-target="library">
+              <%= render "games/training_plan_library", blocks: @training_blocks, selected_ids: selected_block_ids %>
+            </div>
+
+            <div class="mt-3 space-y-3" data-training-plan-target="container">
+              <% Array(@new_training_blocks).each_with_index do |new_block, new_block_index| %>
+                <%= render "games/training_plan_row", index: new_block_index, block: new_block %>
+              <% end %>
+            </div>
+
+            <button type="button"
+                    data-action="click->training-plan#add"
+                    class="mt-3 inline-flex items-center gap-1 rounded-md border border-indigo-300 px-3 py-2 text-sm text-indigo-700 hover:bg-indigo-50 dark:border-white/15 dark:text-slate-100 dark:hover:bg-slate-700/60">
+              + <%= t("games.form.training_plan_add") %>
+            </button>
+
+            <template data-training-plan-target="template">
+              <%= render "games/training_plan_row", index: "__INDEX__", block: nil %>
+            </template>
           </div>
         </div>
       </div>
