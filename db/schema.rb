@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_20_194454) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_22_163931) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -139,6 +139,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_20_194454) do
     t.string "name"
     t.boolean "outdoor", default: false, null: false
     t.string "sport"
+    t.string "street"
     t.text "surfaces"
     t.datetime "updated_at", null: false
     t.integer "user_id"

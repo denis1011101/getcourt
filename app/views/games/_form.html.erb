@@ -177,8 +177,9 @@
          data-court-picker-default-lng-value="60.597465"
          data-court-picker-courts-value="<%= json_escape(sorted_courts.map { |c|
            lat, lng = c.coordinates.to_s.split(',').map(&:to_f)
-           { id: c.id, name: c.name, lat: lat, lng: lng, surfaces: c.surfaces, environments: c.environments,
-             city: c.city_name.to_s, country: locations[:city_country][c.city_name].to_s }
+           { id: c.id, name: c.name, street: c.street.to_s, lat: lat, lng: lng, surfaces: c.surfaces,
+             environments: c.environments, city: c.city_name.to_s,
+             country: locations[:city_country][c.city_name].to_s }
          }.to_json) %>"
          data-court-picker-country-cities-value="<%= json_escape(locations[:cities_by_country].to_json) %>"
          data-court-picker-city-placeholder-value="<%= t("games.form.court_city_any") %>"

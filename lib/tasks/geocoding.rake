@@ -18,4 +18,18 @@ namespace :geocoding do
 
     puts "Done. All jobs enqueued."
   end
+
+  desc "Backfill street for courts that have coordinates but no street"
+  task backfill_court_streets: :environment do
+    courts = Court.where(street: [ nil, "" ]).where.not(coordinates: [ nil, "" ])
+    total = courts.count
+    puts "Courts to backfill: #{total}"
+
+    courts.find_each.with_index do |court, i|
+      Geocoding::FetchCourtAddressJob.perform_later(court.id)
+      puts "  [#{i + 1}/#{total}] Enqueued Court##{court.id}"
+    end
+
+    puts "Done. All jobs enqueued."
+  end
 end

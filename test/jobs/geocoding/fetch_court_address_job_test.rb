@@ -19,6 +19,28 @@ class Geocoding::FetchCourtAddressJobTest < ActiveSupport::TestCase
     end
   end
 
+  test "stores the street so the court list can tell namesakes apart" do
+    with_memory_cache do
+      with_stubbed_resolver({ address: "Tverskaya St 1, Moscow, Russia", city_name: "Moscow", street: "Tverskaya St 1" }) do
+        Geocoding::FetchCourtAddressJob.new.perform(@court.id)
+
+        assert_equal "Tverskaya St 1", @court.reload.street
+      end
+    end
+  end
+
+  test "keeps the stored street when the resolver has none" do
+    @court.update_columns(street: "Tverskaya St 1")
+
+    with_memory_cache do
+      with_stubbed_resolver({ address: "Somewhere, Moscow, Russia", city_name: "Moscow", street: nil }) do
+        Geocoding::FetchCourtAddressJob.new.perform(@court.id)
+
+        assert_equal "Tverskaya St 1", @court.reload.street
+      end
+    end
+  end
+
   test "does not write cache when resolver returns nil" do
     with_memory_cache do
       with_stubbed_resolver(nil) do

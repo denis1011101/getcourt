@@ -80,7 +80,8 @@ export default class extends Controller {
     this.selectTarget.innerHTML = ""
     groups.forEach(([cityName, cityCourts]) => {
       const parent = grouped && cityName ? this._appendGroup(cityName) : this.selectTarget
-      cityCourts.forEach(c => parent.appendChild(this._buildOption(String(c.id), c.name)))
+      const ambiguous = this._ambiguousNames(cityCourts)
+      cityCourts.forEach(c => parent.appendChild(this._buildOption(String(c.id), this._optionLabel(c, ambiguous))))
     })
 
     // Порядок опций задают группы, поэтому запасной вариант берём из самого списка.
@@ -137,6 +138,20 @@ export default class extends Controller {
     return [...groups.entries()]
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([cityName, cityCourts]) => [cityName, cityCourts.sort((a, b) => a.name.localeCompare(b.name))])
+  }
+
+  // Одноимённые площадки города различаем улицей: у остальных скобки — лишний шум.
+  _ambiguousNames(courts) {
+    const seen = new Set()
+    const duplicates = new Set()
+    courts.forEach(c => (seen.has(c.name) ? duplicates.add(c.name) : seen.add(c.name)))
+    return duplicates
+  }
+
+  _optionLabel(court, ambiguousNames) {
+    if (!court.street || !ambiguousNames.has(court.name)) return court.name
+
+    return `${court.name} (${court.street})`
   }
 
   _appendGroup(label) {
