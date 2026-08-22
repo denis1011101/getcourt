@@ -41,9 +41,9 @@ module ApplicationHelper
   # that kicks off within the promo season. The start-date bound keeps the promo
   # copy off unrelated matches featured after the tournament.
   def wallchart_final?(featured_match)
-    featured_match.active? &&
-      featured_match.status != "finished" &&
-      featured_match.starts_at.to_date <= WALLCHART_BANNER_UNTIL
+    featured_match.active?
+      && featured_match.status != "finished"
+      && featured_match.starts_at.to_date <= WALLCHART_BANNER_UNTIL
   end
 
   # Accessible label for the banner countdown region, matching what's shown:

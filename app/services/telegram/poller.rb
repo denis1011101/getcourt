@@ -11,6 +11,10 @@ module Telegram
       raise "TELEGRAM_BOT_TOKEN not set" if @token.empty?
     end
 
+    # Поллер попадает в логи и в сообщения об ошибках целиком, поэтому в inspect
+    # оставляем только позицию в очереди обновлений — токен бота светить нельзя.
+    private def instance_variables_to_inspect = [ :@offset ]
+
     # Single poll iteration: fetch updates and dispatch to UpdateService
     def run_once(poll_interval: 0.5)
       updates = fetch_updates(@offset)
