@@ -15,7 +15,7 @@ GetCourt is a Ruby on Rails app for organizing local racket-sport games:
 - **Tournaments** and **matches** (stats/extensible JSON)
 
 Main technologies (from README):
-- Ruby 3.4 / Rails 8.0
+- Ruby 4.0 / Rails 8.1
 - Hotwire (Turbo + Stimulus)
 - Tailwind CSS
 - SQLite (dev + production)

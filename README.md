@@ -22,7 +22,7 @@ Main features
 - Mobile-friendly UI with map integration and simple search
 
 Main technologies
-- Ruby 3.4 / Ruby on Rails 8.1
+- Ruby 4.0 / Ruby on Rails 8.1
 - Hotwire (Turbo + Stimulus) for interactivity
 - Tailwind CSS for styling
 - SQLite for development and production
