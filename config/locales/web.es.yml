@@ -138,6 +138,8 @@ es:
       urgent_announce: Anunciar búsqueda de jugadores
       urgent_cancel: Cancelar búsqueda de jugadores
       stats_submit: Guardar estadísticas
+      training_plan: "Plan del entrenamiento"
+      training_stats_hint: "Es un entrenamiento: solo se anotan las horas, sin marcador."
       additional_stats: Estadísticas adicionales del partido
       match_block_title: Partido %{number}
       remove_match: Eliminar partido
@@ -171,6 +173,17 @@ es:
       kind_game: Partido
       kind_training: Entrenamiento
       kind_hint: El entrenamiento lo dirige un entrenador; el partido se juega sin él.
+      kind_stats_hint: "En un entrenamiento solo se anotan las horas: no se lleva el marcador."
+      training_plan: "Constructor de entrenamiento"
+      training_plan_hint: "Elige los bloques de la sesión. Un bloque nuevo se guarda en tu biblioteca y queda disponible la próxima vez."
+      training_plan_empty: "Tu biblioteca está vacía: añade el primer bloque."
+      training_plan_add: "Añadir bloque"
+      training_plan_title: "Título del bloque"
+      training_plan_duration: "Minutos"
+      training_plan_description: "Descripción (opcional)"
+      training_plan_remove: "Quitar bloque"
+      training_plan_move_up: "Subir en el plan"
+      training_plan_move_down: "Bajar en el plan"
       with_coach: Con entrenador
       with_coach_hint: Si lo marcas, el partido se jugará con entrenador.
       coach: Entrenador
@@ -756,3 +769,22 @@ es:
           el saque a la T y el compañero, la volea agresiva. El restador practica
           el resto abierto.'
         d5_meta: 4 jugadores · pista completa
+  training_blocks:
+    title: "Constructor de entrenamientos"
+    hint: "Los bloques de la sesión viven en tu biblioteca: los rellenas una vez y luego solo los marcas en el entrenamiento."
+    manage: "Abrir"
+    back_to_games: "Volver a mis partidos"
+    new_title: "Bloque nuevo"
+    create: "Añadir"
+    save: "Guardar"
+    destroy: "Eliminar bloque"
+    destroy_confirm: "¿Eliminar el bloque de la biblioteca?"
+    empty: "Todavía no hay bloques."
+    created: "Bloque añadido"
+    updated: "Bloque actualizado"
+    destroyed: "Bloque eliminado"
+    minutes_short: "min"
+    fields:
+      title: "Título"
+      duration_minutes: "Minutos"
+      description: "Descripción"

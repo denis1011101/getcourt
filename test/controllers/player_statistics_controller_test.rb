@@ -497,4 +497,33 @@ class PlayerStatisticsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 0, owner_stats.singles_wins
     assert_equal 1, owner_stats.singles_losses
   end
+
+  test "a training form asks for hours only" do
+    post session_url, params: { email: "training-stats-owner@example.com" }
+    owner = User.find_by!(email: "training-stats-owner@example.com")
+    game = Game.create!(court: courts(:one), user: owner, date: Date.yesterday, time: "10:00", kind: "training")
+
+    get game_url(game)
+
+    assert_response :success
+    assert_select "input[name=?]", "statistics[hours]"
+    assert_select "input[name^=?]", "matches[", count: 0
+  end
+
+  test "a training saves hours and ignores a submitted score" do
+    post session_url, params: { email: "training-score-owner@example.com" }
+    owner = User.find_by!(email: "training-score-owner@example.com")
+    opponent = User.create!(email: "training-score-opponent@example.com")
+    game = Game.create!(court: courts(:one), user: owner, date: Date.yesterday, time: "10:00", kind: "training")
+    Participation.create!(game: game, user: opponent, status: "approved")
+
+    post game_player_statistics_url(game), params: {
+      statistics: { hours: "1.5" },
+      matches: { "0" => { score: "6:4", winner_team: "a", team_a_user_ids: [ owner.id ], team_b_user_ids: [ opponent.id ] } }
+    }
+
+    assert_redirected_to game_path(game)
+    assert_empty Match.where(game_id: game.id)
+    assert_equal 1.5, opponent.reload.player_statistic.total_hours
+  end
 end

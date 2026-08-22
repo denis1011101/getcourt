@@ -1,0 +1,24 @@
+<%# Строка нового блока: и в шаблоне для Stimulus, и при повторном рендере с ошибками. %>
+<div class="rounded-md border border-dashed border-gray-300 p-3 dark:border-white/15" data-training-plan-row>
+  <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
+    <%= text_field_tag "game[new_training_blocks][#{index}][title]", block&.title,
+          placeholder: t("games.form.training_plan_title"), id: nil,
+          class: "rounded-md border border-gray-300 px-3 py-2 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+    <%= number_field_tag "game[new_training_blocks][#{index}][duration_minutes]", block&.duration_minutes, min: 1,
+          placeholder: t("games.form.training_plan_duration"), id: nil,
+          class: "rounded-md border border-gray-300 px-3 py-2 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+    <%= text_field_tag "game[new_training_blocks][#{index}][description]", block&.description,
+          placeholder: t("games.form.training_plan_description"), id: nil,
+          class: "rounded-md border border-gray-300 px-3 py-2 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+  </div>
+
+  <% if block&.errors&.any? %>
+    <p class="mt-2 text-xs text-red-600 dark:text-red-300"><%= block.errors.full_messages.to_sentence %></p>
+  <% end %>
+
+  <button type="button"
+          data-action="click->training-plan#remove"
+          class="mt-2 text-xs text-red-600 hover:underline dark:text-red-300">
+    <%= t("games.form.training_plan_remove") %>
+  </button>
+</div>

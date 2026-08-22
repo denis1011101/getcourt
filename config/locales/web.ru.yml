@@ -139,6 +139,8 @@ ru:
       urgent_announce: Объявить поиск игроков
       urgent_cancel: Отменить поиск игроков
       stats_submit: Сохранить статистику
+      training_plan: "План тренировки"
+      training_stats_hint: "Это тренировка: фиксируем только часы, счёт не ведём."
       additional_stats: Дополнительная статистика матча
       match_block_title: Игра %{number}
       remove_match: Удалить игру
@@ -172,6 +174,17 @@ ru:
       kind_game: Игра
       kind_training: Тренировка
       kind_hint: Тренировку ведёт тренер, игра проходит без него.
+      kind_stats_hint: "В тренировке отмечают только часы — счёт там не ведётся."
+      training_plan: "Конструктор тренировки"
+      training_plan_hint: "Отметьте блоки занятия. Новый блок сохранится в вашей библиотеке и будет доступен в следующий раз."
+      training_plan_empty: "Библиотека пока пуста — добавьте первый блок."
+      training_plan_add: "Добавить блок"
+      training_plan_title: "Название блока"
+      training_plan_duration: "Минут"
+      training_plan_description: "Описание (необязательно)"
+      training_plan_remove: "Убрать блок"
+      training_plan_move_up: "Выше в плане"
+      training_plan_move_down: "Ниже в плане"
       with_coach: С тренером
       with_coach_hint: Если отмечено, игра пройдёт с тренером.
       coach: Тренер
@@ -754,3 +767,22 @@ ru:
           подачу в «Т», партнёр — агрессивную игру с лёта. Принимающий отрабатывает
           приём по широкой.'
         d5_meta: 4 игрока · весь корт
+  training_blocks:
+    title: "Конструктор тренировок"
+    hint: "Блоки занятия сохраняются в вашей библиотеке: заполнили один раз — дальше просто отмечаете их в тренировке."
+    manage: "Открыть"
+    back_to_games: "К моим играм"
+    new_title: "Новый блок"
+    create: "Добавить"
+    save: "Сохранить"
+    destroy: "Удалить блок"
+    destroy_confirm: "Удалить блок из библиотеки?"
+    empty: "Блоков пока нет."
+    created: "Блок добавлен"
+    updated: "Блок обновлён"
+    destroyed: "Блок удалён"
+    minutes_short: "мин"
+    fields:
+      title: "Название"
+      duration_minutes: "Минут"
+      description: "Описание"

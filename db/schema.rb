@@ -196,6 +196,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_22_163931) do
     t.index ["user_id"], name: "index_game_media_on_user_id"
   end
 
+  create_table "game_training_blocks", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "game_id", null: false
+    t.integer "position", default: 0, null: false
+    t.integer "training_block_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["game_id", "training_block_id"], name: "index_game_training_blocks_on_game_id_and_training_block_id", unique: true
+    t.index ["game_id"], name: "index_game_training_blocks_on_game_id"
+    t.index ["training_block_id"], name: "index_game_training_blocks_on_training_block_id"
+  end
+
   create_table "games", force: :cascade do |t|
     t.integer "coach_id"
     t.string "coach_invitation_status"
@@ -438,6 +449,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_22_163931) do
     t.index ["user_id"], name: "index_tournaments_on_user_id"
   end
 
+  create_table "training_blocks", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.integer "duration_minutes"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["user_id", "title"], name: "index_training_blocks_on_user_id_and_title", unique: true
+    t.index ["user_id"], name: "index_training_blocks_on_user_id"
+  end
+
   create_table "translation_caches", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "text_en", null: false
@@ -503,6 +525,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_22_163931) do
   add_foreign_key "featured_matches", "games"
   add_foreign_key "game_media", "games"
   add_foreign_key "game_media", "users"
+  add_foreign_key "game_training_blocks", "games"
+  add_foreign_key "game_training_blocks", "training_blocks"
   add_foreign_key "games", "courts"
   add_foreign_key "games", "tournaments"
   add_foreign_key "games", "users"
@@ -533,5 +557,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_22_163931) do
   add_foreign_key "tournament_participants", "tournaments"
   add_foreign_key "tournament_participants", "users"
   add_foreign_key "tournaments", "users"
+  add_foreign_key "training_blocks", "users"
   add_foreign_key "users", "users", column: "merged_into_id"
 end
