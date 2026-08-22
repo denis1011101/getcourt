@@ -7,24 +7,28 @@ This file provides guidance to AI coding agents working with this repository.
 Website: https://getcourt.co/
 
 GetCourt is a Ruby on Rails app for organizing local racket-sport games:
-- Create and manage **courts**
-- Create **games** (one-off or recurring)
+- Create and manage **courts** (moderated, with **court suggestions** from players)
+- Create **games** and **trainings** (one-off or recurring), optionally with **coaches**
 - Join/leave games via **participations**
 - Optional **prebooking** slots for upcoming occurrences
 - **Telegram bot** for reminders + filling post-game stats via chat flows
-- **Tournaments** and **matches** (stats/extensible JSON)
+- **Tournaments** and **matches** (stats/extensible JSON), **player statistics** and ratings
+- **Tennis Life** feed, **featured matches** and game **photos/clips**
+- **AI** assistant, opponent matching and score recognition on top of RubyLLM (Gemini)
+- Public games JSON API (`/api/v1/games`) and an **MCP** endpoint (`/mcp`) over it
 
-Main technologies (from README):
+Main technologies:
 - Ruby 4.0 / Rails 8.1
-- Hotwire (Turbo + Stimulus)
+- Hotwire (Turbo + Stimulus), Propshaft + importmap
 - Tailwind CSS
-- SQLite (dev + production)
-- Background jobs (ActiveJob / queue adapter)
-- Geocoding (Google / Nominatim)
+- SQLite (dev + production), Solid Queue / Solid Cache / Solid Cable
+- Active Storage with libvips for media
+- Geocoding (Google / Nominatim), Google Maps in the browser
 
 Project entry points:
 - Web UI: controllers/views in `app/`
-- Telegram bot: `app/services/telegram/**`
+- Telegram bot: `app/services/telegram/**` (webhook in production, polling in dev)
+- Domain services: `app/services/**`
 - Jobs: `app/jobs/**`
 
 ## Goal
@@ -56,10 +60,16 @@ bin/dev
 
 Default dev URL (unless `PORT` is set): `http://localhost:3000`
 
-### Lint / Security (matches CI)
+### Tests / Lint / Security (what CI runs)
 ```bash
-bin/rails zeitwerk:check
+bin/rails db:test:prepare test test:system
+bin/rubocop
+bin/brakeman --no-pager
+bin/importmap audit
 ```
+
+Every CI job installs Ruby from [.ruby-version](.ruby-version), so that file — not
+this document — is the source of truth for the runtime.
 
 CI config lives in [.github/workflows/ci.yml](.github/workflows/ci.yml).
 
@@ -69,10 +79,8 @@ bin/rails db:prepare
 bin/rails db:migrate
 bin/rails db:reset
 bin/rails db:fixtures:load
-```
-
-# Migrations
 bin/rails g migration MigrationName
+```
 
 SQLite configuration: [config/database.yml](config/database.yml)
 
@@ -102,6 +110,8 @@ Production uses Solid Queue (DB-backed):
 ### Caching differences
 - Development uses memory cache store (see [config/environments/development.rb](config/environments/development.rb))
 - Test uses null store (see [config/environments/test.rb](config/environments/test.rb))
+- Production uses Solid Cache (see [config/environments/production.rb](config/environments/production.rb)),
+  which also holds data no table owns — geocoded court addresses, Telegram conversation state
 
 ## Working Agreements (token-saving defaults)
 - Assume “smallest diff” unless explicitly told to refactor.
