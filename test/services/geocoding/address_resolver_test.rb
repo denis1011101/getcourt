@@ -38,6 +38,7 @@ class Geocoding::AddressResolverTest < ActiveSupport::TestCase
         result = resolver.resolve(55.75, 37.62)
         assert_equal "Tverskaya St 1, Moscow, Russia", result[:address]
         assert_equal "Moscow", result[:city_name]
+        assert_equal "Tverskaya St 1", result[:street]
       end
     end
   end
@@ -49,7 +50,7 @@ class Geocoding::AddressResolverTest < ActiveSupport::TestCase
   test "resolve falls back to Nominatim when Google key is absent" do
     nominatim_payload = {
       "display_name" => "Tverskaya St, Moscow, Russia",
-      "address" => { "city" => "Moscow" }
+      "address" => { "city" => "Moscow", "road" => "Tverskaya St", "house_number" => "1" }
     }
 
     with_env("GOOGLE_GEOCODING_API_KEY" => "") do
@@ -57,6 +58,7 @@ class Geocoding::AddressResolverTest < ActiveSupport::TestCase
         result = resolver.resolve(55.75, 37.62)
         assert_equal "Tverskaya St, Moscow, Russia", result[:address]
         assert_equal "Moscow", result[:city_name]
+        assert_equal "Tverskaya St 1", result[:street]
       end
     end
   end

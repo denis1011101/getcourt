@@ -13,7 +13,7 @@ module Geocoding
     end
     self.nominatim_last_request_at = -Float::INFINITY
 
-    # Resolves lat/lng to { address: String, city_name: String | nil } or nil.
+    # Resolves lat/lng to { address: String, city_name: String | nil, street: String | nil } or nil.
     # Tries Google first, falls back to Nominatim.
     def resolve(lat, lng)
       geocode_google_full(lat, lng) || geocode_nominatim_structured(lat, lng)
@@ -55,7 +55,7 @@ module Geocoding
       street_line = [ street, number ].compact.join(" ").presence
       address = [ street_line, city, country ].compact.join(", ").presence
 
-      { address: address, city_name: city }
+      { address: address, city_name: city, street: street_line }
     rescue => e
       Rails.logger.warn("Google geocoding error: #{e.message}")
       nil
@@ -113,7 +113,8 @@ module Geocoding
 
       addr      = data["address"]
       city_name = addr && (addr["city"] || addr["town"] || addr["village"] || addr["municipality"])
-      { address: data["display_name"], city_name: city_name }
+      street    = addr && [ addr["road"], addr["house_number"] ].compact.join(" ").presence
+      { address: data["display_name"], city_name: city_name, street: street }
     rescue => e
       Rails.logger.warn("Nominatim error: #{e.message}")
       nil

@@ -14,7 +14,10 @@ class Geocoding::FetchCourtAddressJob < ApplicationJob
     if result.is_a?(Hash) && result[:address].present?
       Rails.cache.write(cache_key, result[:address], expires_in: 1.day)
       court.update_column(:city_name, result[:city_name]) if result[:city_name].present?
-      Rails.logger.info "[Geocoding] cached address for Court##{court.id} -> #{result[:address]} (city: #{result[:city_name]})"
+      # Улицу храним в базе: адрес живёт только в кэше, а список кортов должен
+      # различать одноимённые площадки и без похода в геокодер.
+      court.update_column(:street, result[:street]) if result[:street].present?
+      Rails.logger.info "[Geocoding] cached address for Court##{court.id} -> #{result[:address]} (city: #{result[:city_name]}, street: #{result[:street]})"
     else
       Rails.logger.warn "[Geocoding] no address resolved for Court##{court.id}"
     end

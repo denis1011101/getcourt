@@ -601,6 +601,24 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     only&.destroy
   end
 
+  test "game form carries the street of every court so the picker can tell namesakes apart" do
+    greenwich = Court.create!(name: "Squash Territory", city_name: "Yekaterinburg", street: "8 Marta St 46",
+                              moderation_status: "approved")
+    elmash = Court.create!(name: "Squash Territory", city_name: "Yekaterinburg", street: "Kosmonavtov Ave 108",
+                           moderation_status: "approved")
+    post session_url, params: { email: "court-picker-street@example.com" }
+
+    get new_game_url
+
+    assert_response :success
+    courts = JSON.parse(css_select("[data-court-picker-courts-value]").first["data-court-picker-courts-value"])
+    streets = courts.select { |court| court["name"] == "Squash Territory" }.map { |court| court["street"] }
+    assert_equal [ "8 Marta St 46", "Kosmonavtov Ave 108" ], streets.sort
+  ensure
+    greenwich&.destroy
+    elmash&.destroy
+  end
+
   test "game form offers the comment field" do
     post session_url, params: { email: "comment_form_user@example.com" }
 
