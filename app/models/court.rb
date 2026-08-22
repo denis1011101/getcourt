@@ -179,7 +179,7 @@ class Court < ApplicationRecord
         if normalized_value.match?(/\Ahttps?:\/\//)
           normalized_value
         else
-          username = normalized_value.sub(/\A@/, "")
+          username = normalized_value.lstrip("@")
           username.present? ? "https://t.me/#{username}" : nil
         end
       when "whatsapp"

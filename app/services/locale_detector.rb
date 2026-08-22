@@ -14,11 +14,11 @@ class LocaleDetector
   end
 
   def call
-    subdomain_locale ||
-      cookie_locale ||
-      country_locale ||
-      accept_language_locale ||
-      default_locale
+    subdomain_locale
+      || cookie_locale
+      || country_locale
+      || accept_language_locale
+      || default_locale
   end
 
   private

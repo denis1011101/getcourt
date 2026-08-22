@@ -13,26 +13,32 @@ GetCourt is a simple app to bring together the community of people who play tenn
 Create and join court games, manage courts, invite players, and receive Telegram reminders and notifications.
 
 Main features
-- Create and manage recurring or one-off games
-- Discover and open new local courts
-- Collect match statistics and calculate overall player ratings
+- Create and manage recurring or one-off games and trainings, with or without a coach
+- Discover and open new local courts, suggest edits to the ones already listed
+- Book slots ahead of an upcoming game and cancel them
+- Run tournaments and collect match statistics that feed overall player ratings
 - Search for coaches and launch player searches
-- Find suitable opponents with AI-based matching
+- Find suitable opponents with AI-based matching, read scores off a photo of the scoreboard
+- Share photos and clips from a game and follow the Tennis Life feed
 - Telegram bot integration for notifications and registration tokens
 - Mobile-friendly UI with map integration and simple search
 
 Main technologies
-- Ruby 3.4 / Ruby on Rails 8.1
-- Hotwire (Turbo + Stimulus) for interactivity
+- Ruby 4.0 / Ruby on Rails 8.1
+- Hotwire (Turbo + Stimulus) for interactivity, Propshaft + importmap for assets
 - Tailwind CSS for styling
 - SQLite for development and production
-- Background jobs for notifications (ActiveJob / queue adapter)
-- Google / Nominatim geocoding for addresses
+- Solid Queue / Solid Cache / Solid Cable for jobs, caching and websockets
+- Active Storage with libvips for photos and clips
+- RubyLLM (Gemini) for the AI features
+- Google / Nominatim geocoding for addresses, Google Maps for the pickers
 
 ## Tests and coverage
 
 ```bash
-bundle exec rails test
+bin/rails test          # unit, model and controller tests
+bin/rails test:system   # system tests, needs Chrome
+bin/rubocop             # style, same as CI
 ```
 
 Coverage is generated during Minitest runs and saved to `coverage/summary.txt`.

@@ -84,10 +84,10 @@ module PlayerStatistics
 
           scope.to_a.find do |match|
             stats = match.stats.to_h
-            normalize_ids(stats["team_a_ids"]) == team_a_ids &&
-              normalize_ids(stats["team_b_ids"]) == team_b_ids &&
-              normalize_guest_names(stats["team_a_guest_names"]) == normalize_guest_names(@stats["team_a_guest_names"]) &&
-              normalize_guest_names(stats["team_b_guest_names"]) == normalize_guest_names(@stats["team_b_guest_names"])
+            normalize_ids(stats["team_a_ids"]) == team_a_ids
+              && normalize_ids(stats["team_b_ids"]) == team_b_ids
+              && normalize_guest_names(stats["team_a_guest_names"]) == normalize_guest_names(@stats["team_a_guest_names"])
+              && normalize_guest_names(stats["team_b_guest_names"]) == normalize_guest_names(@stats["team_b_guest_names"])
           end
         else
           opponent_id = @opponent&.id || normalize_ids(@stats["opponent_ids"]).first
@@ -95,8 +95,8 @@ module PlayerStatistics
 
           scope.to_a.find do |match|
             stats = match.stats.to_h
-            (opponent_id.present? && (match.opponent_id == opponent_id || normalize_ids(stats["opponent_ids"]).first == opponent_id)) ||
-              (opponent_guest_names.any? && normalize_guest_names(opponent_guest_names_for_stats(stats)) == opponent_guest_names)
+            (opponent_id.present? && (match.opponent_id == opponent_id || normalize_ids(stats["opponent_ids"]).first == opponent_id))
+              || (opponent_guest_names.any? && normalize_guest_names(opponent_guest_names_for_stats(stats)) == opponent_guest_names)
           end
         end
 
