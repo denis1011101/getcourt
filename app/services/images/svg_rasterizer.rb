@@ -4,12 +4,12 @@ require "open3"
 
 module Images
   # Растеризует наш собственный SVG в PNG. Работу делает отдельный процесс
-  # (`lib/images/svg_to_png.rb`): в приложении загрузчик SVG закрыт Active Storage,
+  # (`script/svg_to_png.rb`): в приложении загрузчик SVG закрыт Active Storage,
   # и открывать его в веб-процессе, который рядом обрабатывает чужие загрузки, нельзя.
   module SvgRasterizer
     class Error < StandardError; end
 
-    SCRIPT = Rails.root.join("lib/images/svg_to_png.rb").to_s
+    SCRIPT = Rails.root.join("script/svg_to_png.rb").to_s
 
     def self.render_png(svg, dpi:)
       out, err, status = Open3.capture3(child_env, RbConfig.ruby, SCRIPT, dpi.to_s, stdin_data: svg, binmode: true)
