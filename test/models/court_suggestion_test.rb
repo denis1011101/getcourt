@@ -1,16 +1,27 @@
 require "test_helper"
 
 class CourtSuggestionTest < ActiveSupport::TestCase
-  test "requires a changed field or comment" do
+  test "requires a changed field" do
     suggestion = CourtSuggestion.new(court: courts(:one), user: users(:one), payload: {})
+
+    assert_not suggestion.valid?
+    assert_includes suggestion.errors[:base], I18n.t("errors.messages.blank_suggestion")
+  end
+
+  test "a comment alone no longer makes a suggestion" do
+    suggestion = CourtSuggestion.new(court: courts(:one), user: users(:one), payload: {}, comment: "The opening hours are outdated")
 
     assert_not suggestion.valid?
   end
 
-  test "allows comment-only suggestion" do
-    suggestion = CourtSuggestion.new(court: courts(:one), user: users(:one), payload: {}, comment: "The opening hours are outdated")
+  test "a comment-only suggestion saved before the field went away can still be reviewed" do
+    admin = users(:one)
+    admin.update_column(:admin, true)
+    suggestion = CourtSuggestion.new(court: courts(:two), user: users(:two), payload: {}, comment: "The opening hours are outdated")
+    suggestion.save!(validate: false)
 
-    assert suggestion.valid?
+    assert suggestion.reject_by!(admin)
+    assert_equal "rejected", suggestion.reload.status
   end
 
   test "allows only one pending suggestion per user and court" do

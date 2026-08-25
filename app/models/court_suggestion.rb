@@ -12,7 +12,7 @@ class CourtSuggestion < ApplicationRecord
     conditions: -> { where(status: "pending") },
     message: :pending_exists
   }
-  validate :payload_or_comment_present
+  validate :payload_present, on: :create
   validate :payload_fields_are_editable
 
   scope :pending, -> { where(status: "pending") }
@@ -52,8 +52,11 @@ class CourtSuggestion < ApplicationRecord
 
   private
 
-  def payload_or_comment_present
-    errors.add(:base, :blank_suggestion) if payload.blank? && comment.blank?
+  # Комментарий остался только у записей, созданных до того, как поле убрали из формы,
+  # поэтому новое предложение обязано менять хотя бы одно поле. Проверяем на создании:
+  # иначе модератор не смог бы одобрить или отклонить давнее предложение без правок.
+  def payload_present
+    errors.add(:base, :blank_suggestion) if payload.blank?
   end
 
   def payload_fields_are_editable

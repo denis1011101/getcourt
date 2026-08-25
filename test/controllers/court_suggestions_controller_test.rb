@@ -26,7 +26,7 @@ class CourtSuggestionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "input[name='court_suggestion[name]'][value='Published Court']"
-    assert_select "textarea[name='court_suggestion[comment]']"
+    assert_select "textarea[name='court_suggestion[comment]']", count: 0
   end
 
   test "owner is sent to the normal edit form" do
@@ -49,22 +49,21 @@ class CourtSuggestionsControllerTest < ActionDispatch::IntegrationTest
 
     suggestion = @court.court_suggestions.find_by!(user: @author)
     assert_equal({ "sport" => "Padel" }, suggestion.payload)
-    assert_equal "The lines were changed.", suggestion.comment
+    assert_nil suggestion.comment
     assert_equal @court.name, @court.reload.name
     assert_redirected_to @court
     assert_equal suggestion, notified.first.first
   end
 
-  test "comment-only suggestion is accepted" do
+  test "suggestion without a single changed field is rejected" do
     sign_in_as(@author)
 
     post court_corrections_url(@court), params: {
       court_suggestion: { name: @court.name, sport: @court.sport, comment: "Opening hours are wrong." }
     }
 
-    suggestion = @court.court_suggestions.find_by!(user: @author)
-    assert_empty suggestion.payload
-    assert_redirected_to @court
+    assert_response :unprocessable_entity
+    assert_nil @court.court_suggestions.find_by(user: @author)
   end
 
   test "second pending suggestion is rejected" do
