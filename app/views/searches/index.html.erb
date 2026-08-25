@@ -9,7 +9,6 @@
   <%= form_with url: searches_path, method: :get, local: true,
       data: {
         controller: "geolocation",
-        action: "submit->geolocation#onFormSubmit",
         geolocation_unsupported_value: t("searches.index.geolocation.unsupported"),
         geolocation_permission_denied_value: t("searches.index.geolocation.permission_denied"),
         geolocation_unavailable_value: t("searches.index.geolocation.unavailable"),
