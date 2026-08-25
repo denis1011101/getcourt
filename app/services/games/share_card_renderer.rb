@@ -72,7 +72,7 @@ module Games
 
     class << self
       def render_data(game, locale: I18n.locale)
-        render_image(svg_markup(game, locale: locale)).write_to_buffer(".png")
+        Images::SvgRasterizer.render_png(svg_markup(game, locale: locale), dpi: RENDER_DPI)
       end
 
       private
@@ -82,6 +82,9 @@ module Games
       end
 
       def build_svg(game)
+        # Замеры ширины живут ровно один рендер: на долгих потоках Puma общий кэш
+        # копил бы каждое название корта и каждый обрывок комментария.
+        Thread.current[:share_card_text_widths] = {}
         body = []
         x = CARD_MARGIN + CARD_PADDING
         y = CARD_MARGIN + ACCENT_HEIGHT + CARD_PADDING
@@ -110,6 +113,8 @@ module Games
             <text x="#{CANVAS_WIDTH / 2}" y="#{height - 10}" fill="#{BRAND_COLOR}" font-size="12" font-family="#{FONT_FAMILY}" text-anchor="middle">getcourt.co</text>
           </svg>
         SVG
+      ensure
+        Thread.current[:share_card_text_widths] = nil
       end
 
       # --- Блоки карточки -------------------------------------------------
@@ -387,12 +392,24 @@ module Games
         lines.map { |line| truncate_to(line, max_width, size: size, weight: weight) }
       end
 
+      # Режем бинарным поиском: посимвольный перебор на длинном слове без пробелов
+      # обошёлся бы в сотни замеров подряд.
       def truncate_to(value, max_width, size:, weight: 400)
         value = value.to_s
         return value if text_width(value, size: size, weight: weight) <= max_width
 
-        value = value[0..-2] while value.length > 1 && text_width("#{value}…", size: size, weight: weight) > max_width
-        "#{value}…"
+        low = 0
+        high = value.length - 1
+        while low < high
+          mid = (low + high + 1) / 2
+          if text_width("#{value[0, mid]}…", size: size, weight: weight) <= max_width
+            low = mid
+          else
+            high = mid - 1
+          end
+        end
+
+        "#{value[0, low]}…"
       end
 
       # Ширину меряем самим libvips: pill'ы обязаны сходиться с текстом, а на глаз
@@ -403,21 +420,13 @@ module Games
         key = [ value, size, weight ]
         cache = (Thread.current[:share_card_text_widths] ||= {})
         cache[key] ||= begin
-          load_vips!
+          require "vips" unless defined?(Vips::Image)
           font = weight.to_i >= 600 ? "#{MEASURE_FONT} Bold #{size}" : "#{MEASURE_FONT} #{size}"
           Vips::Image.text(value.to_s, font: font, dpi: 72).width
         rescue => e
           Rails.logger.warn("[ShareCard] text measure failed: #{e.class} #{e.message}")
           (value.to_s.length * size * 0.55).round
         end
-      end
-
-      def render_image(svg)
-        Images::SvgRasterizer.render(svg, dpi: RENDER_DPI)
-      end
-
-      def load_vips!
-        require "vips" unless defined?(Vips::Image)
       end
     end
   end

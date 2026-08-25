@@ -3,16 +3,19 @@ require "test_helper"
 class Images::SvgRasterizerTest < ActiveSupport::TestCase
   SVG = %(<svg width="10" height="4" xmlns="http://www.w3.org/2000/svg"><rect width="10" height="4" fill="#000000"/></svg>).freeze
 
-  test "renders svg that Active Storage blocks by default" do
-    image = Images::SvgRasterizer.render(SVG, dpi: 72)
+  test "renders svg that this process is not allowed to load itself" do
+    data = Images::SvgRasterizer.render_png(SVG, dpi: 72)
 
-    assert_equal 10, image.width
-    assert_equal 4, image.height
+    assert_equal "\x89PNG\r\n\x1A\n".b, data[0, 8].b
   end
 
-  test "closes the svg loader back after the render" do
-    Images::SvgRasterizer.render(SVG, dpi: 72)
+  test "leaves the svg loader blocked in the app process" do
+    Images::SvgRasterizer.render_png(SVG, dpi: 72)
 
     assert_raises(Vips::Error) { Vips::Image.svgload_buffer(SVG) }
+  end
+
+  test "raises when the child cannot render" do
+    assert_raises(Images::SvgRasterizer::Error) { Images::SvgRasterizer.render_png("not an svg at all", dpi: 72) }
   end
 end

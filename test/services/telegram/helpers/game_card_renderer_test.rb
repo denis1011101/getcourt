@@ -20,12 +20,7 @@ class Telegram::Helpers::GameCardRendererTest < ActiveSupport::TestCase
     stub_singleton(Telegram::Helpers::GameFormatting, :game_title, "Tennis") do
       stub_singleton(Telegram::Helpers::GameFormatting, :game_datetime, "2026-04-09 22:00") do
         stub_singleton(User, :find_by, user) do
-          fake_image = Object.new
-          fake_image.define_singleton_method(:write_to_file) do |output_path|
-            File.binwrite(output_path, "\x89PNG\r\n\x1A\nfake".b)
-          end
-
-          stub_singleton(Telegram::Helpers::GameCardRenderer, :render_image, fake_image) do
+          stub_singleton(Images::SvgRasterizer, :render_png, "\x89PNG\r\n\x1A\nfake".b) do
             path = Telegram::Helpers::GameCardRenderer.render(game, locale: :en)
           end
         end
