@@ -31,7 +31,7 @@ en:
   errors:
     messages:
       pending_exists: "already has a pending suggestion for this court"
-      blank_suggestion: "Change at least one field or add a comment"
+      blank_suggestion: "Change at least one field"
       invalid_fields: "contains fields that cannot be changed"
   score_recognitions:
     errors:
@@ -498,7 +498,6 @@ en:
       new_title: "Suggest a correction for %{court}"
       new_help: "Change only the details that are inaccurate. The current court stays published until a moderator reviews your suggestion."
       comment: "Comment"
-      comment_placeholder: "Looking for one more player, any level. Balls are on me, we play 1.5 hours"
       submit: "Send suggestion"
       cancel: "Cancel"
       created: "Thank you. Your suggestion was sent for moderator review."

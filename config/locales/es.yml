@@ -2,7 +2,7 @@ es:
   errors:
     messages:
       pending_exists: "ya tiene una propuesta pendiente para esta pista"
-      blank_suggestion: "Cambia al menos un campo o añade un comentario"
+      blank_suggestion: "Cambia al menos un campo"
       invalid_fields: "contiene campos que no se pueden cambiar"
   score_recognitions:
     errors:
@@ -473,7 +473,6 @@ es:
       new_title: "Proponer una corrección para %{court}"
       new_help: "Cambia solo los datos incorrectos. La pista actual seguirá publicada hasta que un moderador revise la propuesta."
       comment: "Comentario"
-      comment_placeholder: "Buscamos a un jugador más, cualquier nivel. Llevo las pelotas, jugamos 1,5 horas"
       submit: "Enviar propuesta"
       cancel: "Cancelar"
       created: "Gracias. Tu propuesta se ha enviado para revisión."

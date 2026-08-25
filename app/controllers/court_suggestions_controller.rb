@@ -26,8 +26,7 @@ class CourtSuggestionsController < ApplicationController
     @proposed_court.assign_attributes(editable_params)
     @suggestion = @court.court_suggestions.build(
       user: current_user,
-      payload: changed_payload,
-      comment: params.dig(:court_suggestion, :comment)
+      payload: changed_payload
     )
 
     if @suggestion.save

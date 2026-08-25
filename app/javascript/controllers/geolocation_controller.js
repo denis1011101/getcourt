@@ -21,7 +21,7 @@ export default class extends Controller {
     this.isSearching = false
     this.searchTimeout = null
     this.clearResultsTimeout = null
-    this.lastSearchResults = []
+    this.selectableResults = []
 
     // Добавляем слушатели один раз
     if (this.hasInputTarget) {
@@ -164,27 +164,35 @@ export default class extends Controller {
     if (!items?.length) {
       this.resultsTarget.innerHTML = ""
       this.resultsTarget.classList.add("hidden")
+      this.selectableResults = []
       return
     }
 
+    // Служебные строки («Ищу…», «Ничего не найдено») рисуем, но выбирать их нельзя:
+    // data-idx считаем по выбираемым элементам, их же и запоминаем.
+    const selectable = []
+
     this.resultsTarget.innerHTML = items
-      .map((item, idx) =>
-        item.class === "muted"
-          ? `<div class="p-3 text-sm text-gray-500 text-center">${escapeHtml(item.label)}</div>`
-          : `<button type="button" data-action="click->geolocation#selectResult" data-idx="${idx}" class="w-full text-left p-3 hover:bg-gray-100 text-sm border-b last:border-b-0 transition">
+      .map((item) => {
+        if (!isSelectableResult(item)) {
+          return `<div class="p-3 text-sm text-gray-500 text-center">${escapeHtml(item.label)}</div>`
+        }
+
+        const idx = selectable.push(item) - 1
+        return `<button type="button" data-action="click->geolocation#selectResult" data-idx="${idx}" class="w-full text-left p-3 hover:bg-gray-100 text-sm border-b last:border-b-0 transition">
               <div class="font-medium text-gray-800">${escapeHtml(item.label)}</div>
             </button>`
-      )
+      })
       .join("")
 
     this.resultsTarget.classList.remove("hidden")
-    this.lastSearchResults = items
+    this.selectableResults = selectable
   }
 
   selectResult(e) {
     e.preventDefault()
     const idx = parseInt(e.currentTarget.dataset.idx, 10)
-    const item = this.lastSearchResults?.[idx]
+    const item = this.selectableResults?.[idx]
 
     if (!item || !this.hasInputTarget) return
 
@@ -194,7 +202,7 @@ export default class extends Controller {
   }
 
   selectResultByIndex(idx) {
-    const item = this.lastSearchResults[idx]
+    const item = this.selectableResults[idx]
     if (item) {
       this.setCoordinates(item.lat, item.lon)
       this.clearResults()
@@ -207,21 +215,11 @@ export default class extends Controller {
     if (!val || this.isCoordinates(val)) return
 
     e.preventDefault()
-    if (this.lastSearchResults.length > 0) {
+    if (this.selectableResults.length > 0) {
       this.selectResultByIndex(0)
     } else {
       this.searchCity(val)
     }
-  }
-
-  onFormSubmit(e) {
-    if (!this.hasInputTarget) return
-    const input = this.inputTarget.value.trim()
-
-    if (!input || this.isCoordinates(input)) return
-
-    e.preventDefault()
-    this.lastSearchResults.length > 0 ? null : this.searchCity(input)
   }
 
   clearResults() {
@@ -230,8 +228,12 @@ export default class extends Controller {
       this.resultsTarget.innerHTML = ""
       this.resultsTarget.classList.add("hidden")
     }
-    this.lastSearchResults = []
+    this.selectableResults = []
   }
+}
+
+function isSelectableResult(item) {
+  return item?.class !== "muted" && Number.isFinite(item?.lat) && Number.isFinite(item?.lon)
 }
 
 function escapeHtml(unsafe) {
