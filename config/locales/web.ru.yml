@@ -182,6 +182,7 @@ ru:
       training_plan_title: "Название блока"
       training_plan_duration: "Минут"
       training_plan_description: "Описание (необязательно)"
+      training_plan_shared: "Отправить в общие тренировки GetCourt"
       training_plan_remove: "Убрать блок"
       training_plan_move_up: "Выше в плане"
       training_plan_move_down: "Ниже в плане"
@@ -782,7 +783,10 @@ ru:
     updated: "Блок обновлён"
     destroyed: "Блок удалён"
     minutes_short: "мин"
+    shared_badge: "GetCourt"
+    shared_hint: "Общие блоки GetCourt видны всем: их можно добавить в тренировку, даже если тренер не выбран."
     fields:
       title: "Название"
       duration_minutes: "Минут"
       description: "Описание"
+      shared: "В общие тренировки GetCourt"

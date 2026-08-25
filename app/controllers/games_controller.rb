@@ -145,7 +145,7 @@ class GamesController < ApplicationController
     owner_ids = ([ current_user.id ] + Array(params[:coach_ids]).map(&:to_i)).reject(&:zero?).uniq
 
     render partial: "games/training_plan_library", locals: {
-      blocks: TrainingBlock.where(user_id: owner_ids).ordered,
+      blocks: TrainingBlock.available_for(owner_ids).ordered,
       selected_ids: Array(params[:training_block_ids]).map(&:to_i)
     }
   end
@@ -175,10 +175,16 @@ class GamesController < ApplicationController
     @coaches = User.not_merged.where(coach: true).order(:name)
   end
 
-  # В форме показываем свою библиотеку и библиотеки тренеров этой тренировки:
-  # чужие блоки организатору ни к чему.
+  # В форме показываем свою библиотеку, библиотеки тренеров этой тренировки и
+  # общие блоки GetCourt: остальные чужие блоки организатору ни к чему.
   def prepare_training_blocks
-    @training_blocks = TrainingBlock.where(user_id: training_library_owner_ids).ordered
+    @training_blocks = TrainingBlock.available_for(training_library_owner_ids, planned_training_block_ids).ordered
+  end
+
+  # На создании игры плана ещё нет, а у сохранённой игры блоки плана должны
+  # оставаться в списке, даже если тренер убрал их из общих.
+  def planned_training_block_ids
+    @game&.persisted? ? @game.training_block_ids : []
   end
 
   # Тренеров берём и из формы: на создании игры @game ещё нет, а библиотека
@@ -196,7 +202,7 @@ class GamesController < ApplicationController
 
     ids = training_plan_params[:ids] + @new_training_blocks.map(&:id)
     # Блок из чужой библиотеки в план не попадает, даже если его id прислали в форме.
-    allowed_ids = TrainingBlock.where(id: ids, user_id: training_plan_owner_ids).pluck(:id)
+    allowed_ids = TrainingBlock.available_for(training_plan_owner_ids, @game.training_block_ids).where(id: ids).pluck(:id)
 
     @game.replace_training_plan!(ids.uniq.select { |id| allowed_ids.include?(id) })
   end
@@ -208,7 +214,7 @@ class GamesController < ApplicationController
 
     @training_plan_params ||= {
       ids: Array(raw[:training_block_ids]).map(&:to_i),
-      new_blocks: Array(submitted).filter_map { |block| block.permit(:title, :description, :duration_minutes) if block.respond_to?(:permit) }
+      new_blocks: Array(submitted).filter_map { |block| block.permit(:title, :description, :duration_minutes, :shared) if block.respond_to?(:permit) }
     }
   end
 

@@ -181,6 +181,7 @@ es:
       training_plan_title: "Título del bloque"
       training_plan_duration: "Minutos"
       training_plan_description: "Descripción (opcional)"
+      training_plan_shared: "Enviar a los entrenamientos comunes de GetCourt"
       training_plan_remove: "Quitar bloque"
       training_plan_move_up: "Subir en el plan"
       training_plan_move_down: "Bajar en el plan"
@@ -784,7 +785,10 @@ es:
     updated: "Bloque actualizado"
     destroyed: "Bloque eliminado"
     minutes_short: "min"
+    shared_badge: "GetCourt"
+    shared_hint: "Los bloques comunes de GetCourt los ve todo el mundo: se pueden añadir a un entrenamiento aunque no haya entrenador elegido."
     fields:
       title: "Título"
       duration_minutes: "Minutos"
       description: "Descripción"
+      shared: "A los entrenamientos comunes de GetCourt"

@@ -177,6 +177,7 @@ en:
       training_plan_title: "Block title"
       training_plan_duration: "Minutes"
       training_plan_description: "Description (optional)"
+      training_plan_shared: "Send to shared GetCourt trainings"
       training_plan_remove: "Remove block"
       training_plan_move_up: "Move up in the plan"
       training_plan_move_down: "Move down in the plan"
@@ -773,7 +774,10 @@ en:
     updated: "Block updated"
     destroyed: "Block deleted"
     minutes_short: "min"
+    shared_badge: "GetCourt"
+    shared_hint: "Shared GetCourt blocks are visible to everyone: they can be added to a training even with no coach picked."
     fields:
       title: "Title"
       duration_minutes: "Minutes"
       description: "Description"
+      shared: "Share with GetCourt trainings"
