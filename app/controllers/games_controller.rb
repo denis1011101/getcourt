@@ -143,9 +143,13 @@ class GamesController < ApplicationController
   # поэтому список блоков перезагружаем без перезагрузки страницы.
   def training_plan_fragment
     owner_ids = ([ current_user.id ] + Array(params[:coach_ids]).map(&:to_i)).reject(&:zero?).uniq
+    # Блоки собранного плана остаются в списке и после смены тренера, но берём
+    # мы их из самой игры: присланным id верить нельзя.
+    game = Game.find_by(id: params[:game_id])
+    planned_ids = game && can_manage?(game) ? game.training_block_ids : []
 
     render partial: "games/training_plan_library", locals: {
-      blocks: TrainingBlock.available_for(owner_ids).ordered,
+      blocks: TrainingBlock.available_for(owner_ids, planned_ids).ordered,
       selected_ids: Array(params[:training_block_ids]).map(&:to_i)
     }
   end

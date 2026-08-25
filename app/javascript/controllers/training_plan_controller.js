@@ -5,7 +5,7 @@ import { Controller } from "@hotwired/stimulus"
 // и попадают в библиотеку вместе с сохранением игры.
 export default class extends Controller {
   static targets = ["container", "template", "library", "row", "checkbox", "position", "moveControls", "coachSelect"]
-  static values = { nextIndex: Number, libraryUrl: String }
+  static values = { nextIndex: Number, libraryUrl: String, gameId: String }
 
   connect() {
     this.renumber()
@@ -44,6 +44,7 @@ export default class extends Controller {
     if (!this.hasLibraryTarget || !this.libraryUrlValue) return
 
     const params = new URLSearchParams()
+    if (this.gameIdValue) params.append("game_id", this.gameIdValue)
     this.coachSelectTargets.forEach((select) => { if (select.value) params.append("coach_ids[]", select.value) })
     this.checkedRows().forEach((row) => params.append("training_block_ids[]", this.checkboxIn(row).value))
 

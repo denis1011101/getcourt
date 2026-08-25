@@ -1102,6 +1102,8 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "input[type=checkbox][name='game[training_block_ids][]'][value=?]", block.id.to_s
+    # По этому id перезагрузка библиотеки узнаёт, чей план не надо терять.
+    assert_select "[data-training-plan-game-id-value=?]", game.id.to_s
     assert_includes response.body, "Работа у сетки"
   ensure
     game&.destroy
@@ -1353,5 +1355,43 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     game&.destroy
     stranger&.destroy
     owner&.destroy
+  end
+
+  test "the library fragment keeps the blocks of the edited plan when the coach changes" do
+    post session_url, params: { email: "fragment-plan-owner@example.com" }
+    owner = User.find_by!(email: "fragment-plan-owner@example.com")
+    coach = User.create!(email: "fragment-plan-coach@example.com", name: "Coach", coach: true)
+    block = coach.training_blocks.create!(title: "Работа у сетки")
+    game = Game.create!(court: courts(:one), user: owner, date: Date.current + 1.day, time: "18:00",
+                        kind: "training", with_coach: true, coach: coach)
+    game.replace_training_plan!([ block.id ])
+
+    # Тренера в запросе нет — так выглядит библиотека сразу после смены тренера.
+    get training_plan_fragment_games_url, params: { game_id: game.id, training_block_ids: [ block.id ] }
+
+    assert_response :success
+    assert_includes response.body, "Работа у сетки"
+  ensure
+    game&.destroy
+    coach&.destroy
+    owner&.destroy
+  end
+
+  test "the library fragment ignores the plan of someone else's game" do
+    post session_url, params: { email: "fragment-thief@example.com" }
+    thief = User.find_by!(email: "fragment-thief@example.com")
+    stranger = User.create!(email: "fragment-victim@example.com", coach: true)
+    block = stranger.training_blocks.create!(title: "Чужой блок")
+    game = Game.create!(court: courts(:one), user: stranger, date: Date.current + 1.day, time: "18:00", kind: "training")
+    game.replace_training_plan!([ block.id ])
+
+    get training_plan_fragment_games_url, params: { game_id: game.id, training_block_ids: [ block.id ] }
+
+    assert_response :success
+    assert_not_includes response.body, "Чужой блок"
+  ensure
+    game&.destroy
+    stranger&.destroy
+    thief&.destroy
   end
 end

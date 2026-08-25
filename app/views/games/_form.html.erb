@@ -26,7 +26,8 @@
       <% selected_block_ids = submitted_block_ids ? Array(submitted_block_ids).map(&:to_i) : (game.persisted? ? game.training_block_ids : []) %>
       <div class="mb-4" data-controller="game-kind training-plan"
            data-training-plan-next-index-value="<%= Array(@new_training_blocks).size %>"
-           data-training-plan-library-url-value="<%= training_plan_fragment_games_path %>">
+           data-training-plan-library-url-value="<%= training_plan_fragment_games_path %>"
+           data-training-plan-game-id-value="<%= game.id %>">
         <span class="block text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("games.form.kind") %></span>
         <div class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
           <% Game::KINDS.each do |kind| %>
