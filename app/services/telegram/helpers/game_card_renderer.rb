@@ -132,12 +132,7 @@ module Telegram
         end
 
         def render_image(svg)
-          load_vips!
-          Vips::Image.svgload_buffer(svg, dpi: 72)
-        end
-
-        def load_vips!
-          require "vips" unless defined?(Vips::Image)
+          Images::SvgRasterizer.render(svg, dpi: 72)
         end
       end
     end

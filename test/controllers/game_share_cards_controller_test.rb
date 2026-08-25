@@ -4,7 +4,7 @@ class GameShareCardsControllerTest < ActionDispatch::IntegrationTest
   test "renders generated game share card image" do
     png_header = "\x89PNG\r\n\x1A\n".b
 
-    stub_singleton(Telegram::Helpers::GameCardRenderer, :render_data, ->(*) { png_header }) do
+    stub_singleton(Games::ShareCardRenderer, :render_data, ->(*) { png_header }) do
       get game_share_card_path(games(:one))
     end
 
