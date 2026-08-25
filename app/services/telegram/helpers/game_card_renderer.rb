@@ -12,12 +12,12 @@ module Telegram
           png = Tempfile.new([ "game-share-card-", ".png" ], Rails.root.join("tmp"))
           png.close
 
-          render_image(svg_markup(game, locale: locale)).write_to_file(png.path)
+          File.binwrite(png.path, render_data(game, locale: locale))
           png.path
         end
 
         def render_data(game, locale: Telegram::I18n::DEFAULT_LOCALE)
-          render_image(svg_markup(game, locale: locale)).write_to_buffer(".png")
+          Images::SvgRasterizer.render_png(svg_markup(game, locale: locale), dpi: 72)
         end
 
         private
@@ -129,15 +129,6 @@ module Telegram
 
         def esc(value)
           CGI.escapeHTML(value.to_s)
-        end
-
-        def render_image(svg)
-          load_vips!
-          Vips::Image.svgload_buffer(svg, dpi: 72)
-        end
-
-        def load_vips!
-          require "vips" unless defined?(Vips::Image)
         end
       end
     end
