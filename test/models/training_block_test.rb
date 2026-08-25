@@ -59,4 +59,41 @@ class TrainingBlockTest < ActiveSupport::TestCase
   ensure
     coach&.destroy
   end
+
+  test "available_for shows the shared blocks of other coaches" do
+    coach = User.create!(email: "block-shared-owner@example.com", coach: true)
+    stranger = User.create!(email: "block-shared-stranger@example.com", coach: true)
+    shared = coach.training_blocks.create!(title: "Общая разминка", shared: true)
+    personal = coach.training_blocks.create!(title: "Личный блок")
+
+    visible = TrainingBlock.available_for([ stranger.id ])
+
+    assert_includes visible, shared
+    assert_not_includes visible, personal
+  ensure
+    coach&.destroy
+    stranger&.destroy
+  end
+
+  test "available_for keeps a block that is already in the plan" do
+    coach = User.create!(email: "block-shared-planned@example.com", coach: true)
+    stranger = User.create!(email: "block-shared-planner@example.com", coach: true)
+    personal = coach.training_blocks.create!(title: "Личный блок")
+
+    assert_includes TrainingBlock.available_for([ stranger.id ], [ personal.id ]), personal
+  ensure
+    coach&.destroy
+    stranger&.destroy
+  end
+
+  test "build_for shares a block and never unshares it from the game form" do
+    coach = User.create!(email: "block-shared-toggle@example.com", coach: true)
+    block = TrainingBlock.build_for(coach, title: "Подача", shared: "1")
+    block.save!
+
+    assert_predicate block, :shared?
+    assert_predicate TrainingBlock.build_for(coach, title: "подача", description: "Из-за головы"), :shared?
+  ensure
+    coach&.destroy
+  end
 end

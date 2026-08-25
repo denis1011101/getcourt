@@ -1102,6 +1102,8 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "input[type=checkbox][name='game[training_block_ids][]'][value=?]", block.id.to_s
+    # По этому id перезагрузка библиотеки узнаёт, чей план не надо терять.
+    assert_select "[data-training-plan-game-id-value=?]", game.id.to_s
     assert_includes response.body, "Работа у сетки"
   ensure
     game&.destroy
@@ -1269,5 +1271,127 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
   ensure
     game&.destroy
     owner&.destroy
+  end
+
+  test "a shared block joins the plan even when no coach is picked" do
+    post session_url, params: { email: "plan-shared-owner@example.com" }
+    owner = User.find_by!(email: "plan-shared-owner@example.com")
+    stranger = User.create!(email: "plan-shared-author@example.com", coach: true)
+    shared_block = stranger.training_blocks.create!(title: "Общая разминка", shared: true)
+
+    get new_game_url
+
+    assert_response :success
+    assert_select "input[type=checkbox][name='game[training_block_ids][]'][value=?]", shared_block.id.to_s
+
+    post games_url, params: {
+      game: {
+        court_id: courts(:one).id,
+        date: Date.current + 1.day,
+        time: "18:00",
+        kind: "training",
+        training_block_ids: [ shared_block.id.to_s ]
+      }
+    }
+
+    game = Game.order(:id).last
+
+    assert_redirected_to game_path(game)
+    assert_equal [ shared_block ], game.training_blocks.to_a
+  ensure
+    game&.destroy
+    stranger&.destroy
+    owner&.destroy
+  end
+
+  test "a new block from the game form can be sent to the shared library" do
+    post session_url, params: { email: "plan-share-new@example.com" }
+    owner = User.find_by!(email: "plan-share-new@example.com")
+    owner.update!(coach: true)
+
+    post games_url, params: {
+      game: {
+        court_id: courts(:one).id,
+        date: Date.current + 1.day,
+        time: "18:00",
+        kind: "training",
+        training_block_ids: [ "" ],
+        new_training_blocks: { "0" => { title: "Общая подача", shared: "1" } }
+      }
+    }
+
+    game = Game.order(:id).last
+
+    assert_redirected_to game_path(game)
+    assert_predicate owner.training_blocks.sole, :shared?
+    assert_equal [ "Общая подача" ], game.training_blocks.map(&:title)
+  ensure
+    game&.destroy
+    owner&.destroy
+  end
+
+  test "a block that stopped being shared stays in the plan it is already in" do
+    post session_url, params: { email: "plan-unshared-owner@example.com" }
+    owner = User.find_by!(email: "plan-unshared-owner@example.com")
+    stranger = User.create!(email: "plan-unshared-author@example.com", coach: true)
+    shared_block = stranger.training_blocks.create!(title: "Общая разминка", shared: true)
+    game = Game.create!(court: courts(:one), user: owner, date: Date.current + 1.day, time: "18:00", kind: "training")
+    game.replace_training_plan!([ shared_block.id ])
+    shared_block.update!(shared: false)
+
+    patch game_url(game), params: {
+      game: {
+        court_id: courts(:one).id,
+        date: game.date,
+        time: "18:00",
+        kind: "training",
+        training_block_ids: [ shared_block.id.to_s ]
+      }
+    }
+
+    assert_redirected_to game_path(game)
+    assert_equal [ shared_block ], game.reload.training_blocks.to_a
+  ensure
+    game&.destroy
+    stranger&.destroy
+    owner&.destroy
+  end
+
+  test "the library fragment keeps the blocks of the edited plan when the coach changes" do
+    post session_url, params: { email: "fragment-plan-owner@example.com" }
+    owner = User.find_by!(email: "fragment-plan-owner@example.com")
+    coach = User.create!(email: "fragment-plan-coach@example.com", name: "Coach", coach: true)
+    block = coach.training_blocks.create!(title: "Работа у сетки")
+    game = Game.create!(court: courts(:one), user: owner, date: Date.current + 1.day, time: "18:00",
+                        kind: "training", with_coach: true, coach: coach)
+    game.replace_training_plan!([ block.id ])
+
+    # Тренера в запросе нет — так выглядит библиотека сразу после смены тренера.
+    get training_plan_fragment_games_url, params: { game_id: game.id, training_block_ids: [ block.id ] }
+
+    assert_response :success
+    assert_includes response.body, "Работа у сетки"
+  ensure
+    game&.destroy
+    coach&.destroy
+    owner&.destroy
+  end
+
+  test "the library fragment ignores the plan of someone else's game" do
+    post session_url, params: { email: "fragment-thief@example.com" }
+    thief = User.find_by!(email: "fragment-thief@example.com")
+    stranger = User.create!(email: "fragment-victim@example.com", coach: true)
+    block = stranger.training_blocks.create!(title: "Чужой блок")
+    game = Game.create!(court: courts(:one), user: stranger, date: Date.current + 1.day, time: "18:00", kind: "training")
+    game.replace_training_plan!([ block.id ])
+
+    get training_plan_fragment_games_url, params: { game_id: game.id, training_block_ids: [ block.id ] }
+
+    assert_response :success
+    assert_not_includes response.body, "Чужой блок"
+  ensure
+    game&.destroy
+    stranger&.destroy
+    thief&.destroy
   end
 end

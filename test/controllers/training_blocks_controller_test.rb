@@ -78,4 +78,21 @@ class TrainingBlocksControllerTest < ActionDispatch::IntegrationTest
     stranger&.destroy
     thief&.destroy
   end
+
+  test "a block is sent to the shared library and taken back" do
+    post session_url, params: { email: "library-shared@example.com" }
+    coach = User.find_by!(email: "library-shared@example.com")
+    coach.update!(coach: true)
+
+    post training_blocks_url, params: { training_block: { title: "Общая разминка", shared: "1" } }
+
+    block = coach.training_blocks.sole
+    assert_predicate block, :shared?
+
+    patch training_block_url(block), params: { training_block: { title: "Общая разминка", shared: "0" } }
+
+    assert_not_predicate block.reload, :shared?
+  ensure
+    coach&.destroy
+  end
 end

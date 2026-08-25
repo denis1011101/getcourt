@@ -7,6 +7,7 @@
   </div>
 
   <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("training_blocks.hint") %></p>
+  <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("training_blocks.shared_hint") %></p>
 
   <section class="rounded-lg border bg-white p-4 dark:border-white/10 dark:bg-slate-800/80">
     <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("training_blocks.new_title") %></h2>
@@ -25,6 +26,11 @@
               class: "rounded-md border border-gray-300 px-3 py-2 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
       </div>
 
+      <label class="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-300">
+        <%= form.check_box :shared, class: "h-4 w-4 text-indigo-600" %>
+        <%= t("training_blocks.fields.shared") %>
+      </label>
+
       <%= form.submit t("training_blocks.create"), class: "inline-flex items-center rounded bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700" %>
     <% end %>
   </section>
@@ -37,6 +43,9 @@
         <details>
           <summary class="cursor-pointer">
             <span class="font-medium"><%= block.label %></span>
+            <% if block.shared? %>
+              <span class="ml-1 rounded bg-indigo-50 px-1.5 py-0.5 text-xs text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300"><%= t("training_blocks.shared_badge") %></span>
+            <% end %>
             <% if block.description.present? %>
               <span class="mt-1 block text-sm text-gray-500 dark:text-slate-400"><%= block.description %></span>
             <% end %>
@@ -51,6 +60,11 @@
               <%= form.text_field :description,
                     class: "rounded-md border border-gray-300 px-3 py-2 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
             </div>
+
+            <label class="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-300">
+              <%= form.check_box :shared, class: "h-4 w-4 text-indigo-600" %>
+              <%= t("training_blocks.fields.shared") %>
+            </label>
 
             <div class="flex items-center gap-3">
               <%= form.submit t("training_blocks.save"), class: "inline-flex items-center rounded bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700" %>
