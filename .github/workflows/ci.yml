@@ -84,6 +84,11 @@ jobs:
           ruby-version: .ruby-version
           bundler-cache: true
 
+      - name: Check that every autoloaded file eager loads
+        env:
+          RAILS_ENV: test
+        run: bin/rails zeitwerk:check
+
       - name: Run tests
         env:
           RAILS_ENV: test
