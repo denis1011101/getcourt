@@ -130,7 +130,7 @@ ru:
     reminder_head: 'Напоминание: у вас игра %{when} (%{date}) в %{time} на корте %{court}'
     reminder_head_training: 'Напоминание: у вас тренировка %{when} (%{date}) в %{time}
       на корте %{court}'
-    reminder_program: 'Программа: %{items}'
+    program_label: 'Программа: %{items}'
     participants_label: 'Участники:'
     prebooking_request: 'Запрос на предбронирование игры #%{game_id} от %{name}'
     dates_label: 'Даты: %{dates}'
@@ -560,6 +560,7 @@ ru:
     court_not_found_short: Корт не найден
     user_not_found: Пользователь не найден
     game_invitation_from: "%{name} приглашает вас присоединиться к игре."
+    training_invitation_from: "%{name} приглашает вас присоединиться к тренировке."
     sport_any: Любой
     skill_any: Любой
     skill_beginner: Начинающий
@@ -701,7 +702,7 @@ en:
     reminder_head: 'Reminder: you have a game %{when} (%{date}) at %{time} on %{court}'
     reminder_head_training: 'Reminder: you have a training %{when} (%{date}) at %{time}
       on %{court}'
-    reminder_program: 'Programme: %{items}'
+    program_label: 'Programme: %{items}'
     participants_label: 'Participants:'
     prebooking_request: 'Prebooking request for Game #%{game_id} from %{name}'
     dates_label: 'Dates: %{dates}'
@@ -1118,6 +1119,7 @@ en:
     court_not_found_short: Court not found
     user_not_found: User not found
     game_invitation_from: "%{name} invited you to join a game."
+    training_invitation_from: "%{name} invited you to join a training."
     sport_any: Any
     skill_any: Any
     skill_beginner: Beginner
@@ -1230,7 +1232,7 @@ es:
       en %{court}'
     reminder_head_training: 'Recordatorio: tienes un entrenamiento %{when} (%{date})
       a las %{time} en %{court}'
-    reminder_program: 'Programa: %{items}'
+    program_label: 'Programa: %{items}'
     participants_label: 'Participantes:'
     prebooking_request: 'Solicitud de reserva previa para el partido #%{game_id} de
       %{name}'
@@ -1262,6 +1264,7 @@ es:
     back_to_game: Volver al partido
     unknown_action: Acción desconocida.
     game_invitation_from: "%{name} te ha invitado a unirte a un partido."
+    training_invitation_from: "%{name} te ha invitado a unirte a un entrenamiento."
     sport_any: Cualquiera
     skill_any: Cualquiera
     skill_beginner: Principiante

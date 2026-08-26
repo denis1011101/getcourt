@@ -24,7 +24,7 @@ module Telegram
 
         # Return label used in games lists (shared formatter used everywhere)
         # locale: pass the active locale so spots-left text is correctly localised
-        def game_label(g, owner: nil, locale: Telegram::I18n::DEFAULT_LOCALE)
+        def game_label(g, owner: nil, locale: Telegram::I18n::DEFAULT_LOCALE, coach_names: false, channel: :telegram)
           date = Telegram::Helpers::GameFormatting.game_datetime(g, locale: locale)
           title = Telegram::Helpers::GameFormatting.game_title(g, locale: locale)
 
@@ -39,7 +39,7 @@ module Telegram
           spots_left = required - taken
           spots_left = 0 if spots_left.negative?
           spots_text = Telegram::I18n.spots_left_text(spots_left, locale: locale)
-          coach = Telegram::Helpers::GameFormatting.coach_mark(g, locale: locale)
+          coach = Telegram::Helpers::GameFormatting.coach_mark(g, locale: locale, with_names: coach_names, channel: channel)
 
           title_with_id = "#{title || (g.respond_to?(:title) && g.title.to_s.presence) || 'Game'} ##{g.id}"
           [ title_with_id, date, spots_text, coach ].compact.join(" — ")
