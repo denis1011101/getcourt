@@ -25,13 +25,11 @@ class GameInvitationDelivery
         I18n.t("user_mailer.notification.#{key}", locale: locale, game_id: game.id)
       end,
       body: lambda do |locale, channel|
-        title_key = coach_invitation ? :coach_invitation_title : :invitation_title
-        from_key = game.training? ? :training_invitation_from : :game_invitation_from
         lines = [
-          Telegram::I18n.t(title_key, locale: locale),
+          Telegram::I18n.t(title_key(coach_invitation), locale: locale),
           Telegram::Handlers::GamesHandler.game_label(game, owner: inviter, locale: locale, coach_names: true, channel: channel),
           program_line(locale),
-          Telegram::I18n.t(from_key, locale: locale, name: inviter_name(locale, channel))
+          Telegram::I18n.t(:game_invitation_from, locale: locale, name: inviter_name(locale, channel))
         ]
         "#{lines.compact.join("\n")}\n\n#{game_url}"
       end,
@@ -43,6 +41,17 @@ class GameInvitationDelivery
         end
       end
     )
+  end
+
+  # Шапка сразу говорит, куда зовут: в игру, на тренировку или тренером на неё.
+  def title_key(coach_invitation)
+    if coach_invitation
+      :coach_invitation_title
+    elsif game.training?
+      :training_invitation_title
+    else
+      :invitation_title
+    end
   end
 
   # План занятия — самое важное в приглашении на тренировку после времени и корта.

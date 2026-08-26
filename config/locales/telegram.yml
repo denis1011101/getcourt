@@ -56,7 +56,8 @@ ru:
     sport_padel: Падел
     sport_table_tennis: Настольный теннис
     sport_squash: Сквош
-    invitation_title: 'Вас приглашают присоединиться:'
+    invitation_title: 'Вас приглашают в игру:'
+    training_invitation_title: 'Вас приглашают на тренировку:'
     coach_invitation_title: 'Вас приглашают тренером:'
     coach_invitation_accept: 'Принять #%{game_id}'
     coach_invitation_decline: 'Отказаться #%{game_id}'
@@ -559,8 +560,7 @@ ru:
     no_permission: Нет прав для редактирования
     court_not_found_short: Корт не найден
     user_not_found: Пользователь не найден
-    game_invitation_from: "%{name} приглашает вас присоединиться к игре."
-    training_invitation_from: "%{name} приглашает вас присоединиться к тренировке."
+    game_invitation_from: "Приглашает %{name}."
     sport_any: Любой
     skill_any: Любой
     skill_beginner: Начинающий
@@ -628,7 +628,8 @@ en:
     sport_padel: Padel
     sport_table_tennis: Table tennis
     sport_squash: Squash
-    invitation_title: 'You are invited to join:'
+    invitation_title: 'You are invited to a game:'
+    training_invitation_title: 'You are invited to a training:'
     coach_invitation_title: 'You are invited as a coach:'
     coach_invitation_accept: 'Accept #%{game_id}'
     coach_invitation_decline: 'Decline #%{game_id}'
@@ -1118,8 +1119,7 @@ en:
     no_permission: No permission to edit
     court_not_found_short: Court not found
     user_not_found: User not found
-    game_invitation_from: "%{name} invited you to join a game."
-    training_invitation_from: "%{name} invited you to join a training."
+    game_invitation_from: "Invited by %{name}."
     sport_any: Any
     skill_any: Any
     skill_beginner: Beginner
@@ -1157,7 +1157,8 @@ es:
     sport_padel: Pádel
     sport_table_tennis: Tenis de mesa
     sport_squash: Squash
-    invitation_title: 'Te han invitado a unirte:'
+    invitation_title: 'Te invitan a un partido:'
+    training_invitation_title: 'Te invitan a un entrenamiento:'
     coach_invitation_title: 'Te invitan como entrenador:'
     coach_invitation_accept: 'Aceptar #%{game_id}'
     coach_invitation_decline: 'Rechazar #%{game_id}'
@@ -1263,8 +1264,7 @@ es:
     guest_badge: invitado
     back_to_game: Volver al partido
     unknown_action: Acción desconocida.
-    game_invitation_from: "%{name} te ha invitado a unirte a un partido."
-    training_invitation_from: "%{name} te ha invitado a unirte a un entrenamiento."
+    game_invitation_from: "Te invita %{name}."
     sport_any: Cualquiera
     skill_any: Cualquiera
     skill_beginner: Principiante

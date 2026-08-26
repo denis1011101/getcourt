@@ -6,13 +6,14 @@ class GameInvitationDeliveryTest < ActiveSupport::TestCase
 
     assert_includes text, "С тренером Иван Петров"
     assert_includes text, "Программа: Разминка, Подача"
-    assert_includes text, "приглашает вас присоединиться к тренировке."
+    assert_includes text, "Вас приглашают на тренировку:"
+    assert_includes text, "Приглашает Пётр Организатор."
   end
 
   test "invites to a game without a programme" do
     text = invitation_text(training: false)
 
-    assert_includes text, "приглашает вас присоединиться к игре."
+    assert_includes text, "Вас приглашают в игру:"
     assert_not_includes text, "Программа:"
   end
 
