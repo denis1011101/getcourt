@@ -23,6 +23,8 @@ ru:
     weather_label: 'Погода: %{value}'
     court_label: 'Корт: %{name}'
     coach_with: С тренером
+    coach_with_name: С тренером %{names}
+    coach_with_names: С тренерами %{names}
     coach_need: Нужен тренер
     coach_no: Без тренера
     join: Присоединиться
@@ -126,6 +128,9 @@ ru:
     today: сегодня
     tomorrow: завтра
     reminder_head: 'Напоминание: у вас игра %{when} (%{date}) в %{time} на корте %{court}'
+    reminder_head_training: 'Напоминание: у вас тренировка %{when} (%{date}) в %{time}
+      на корте %{court}'
+    reminder_program: 'Программа: %{items}'
     participants_label: 'Участники:'
     prebooking_request: 'Запрос на предбронирование игры #%{game_id} от %{name}'
     dates_label: 'Даты: %{dates}'
@@ -589,6 +594,8 @@ en:
     weather_label: 'Weather: %{value}'
     court_label: 'Court: %{name}'
     coach_with: With coach
+    coach_with_name: With coach %{names}
+    coach_with_names: With coaches %{names}
     coach_need: Need coach
     coach_no: No coach
     join: Join
@@ -692,6 +699,9 @@ en:
     today: today
     tomorrow: tomorrow
     reminder_head: 'Reminder: you have a game %{when} (%{date}) at %{time} on %{court}'
+    reminder_head_training: 'Reminder: you have a training %{when} (%{date}) at %{time}
+      on %{court}'
+    reminder_program: 'Programme: %{items}'
     participants_label: 'Participants:'
     prebooking_request: 'Prebooking request for Game #%{game_id} from %{name}'
     dates_label: 'Dates: %{dates}'
@@ -1128,6 +1138,8 @@ es:
     weather_label: 'Tiempo: %{value}'
     court_label: 'Pista: %{name}'
     coach_with: Con entrenador
+    coach_with_name: Con el entrenador %{names}
+    coach_with_names: Con los entrenadores %{names}
     coach_need: Se necesita entrenador
     coach_no: Sin entrenador
     coach_label: 'Entrenador: %{value}'
@@ -1216,6 +1228,9 @@ es:
     tomorrow: mañana
     reminder_head: 'Recordatorio: tienes un partido %{when} (%{date}) a las %{time}
       en %{court}'
+    reminder_head_training: 'Recordatorio: tienes un entrenamiento %{when} (%{date})
+      a las %{time} en %{court}'
+    reminder_program: 'Programa: %{items}'
     participants_label: 'Participantes:'
     prebooking_request: 'Solicitud de reserva previa para el partido #%{game_id} de
       %{name}'
