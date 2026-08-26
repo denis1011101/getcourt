@@ -23,6 +23,8 @@ ru:
     weather_label: 'Погода: %{value}'
     court_label: 'Корт: %{name}'
     coach_with: С тренером
+    coach_with_name: С тренером %{names}
+    coach_with_names: С тренерами %{names}
     coach_need: Нужен тренер
     coach_no: Без тренера
     join: Присоединиться
@@ -54,7 +56,8 @@ ru:
     sport_padel: Падел
     sport_table_tennis: Настольный теннис
     sport_squash: Сквош
-    invitation_title: 'Вас приглашают присоединиться:'
+    invitation_title: 'Вас приглашают в игру:'
+    training_invitation_title: 'Вас приглашают на тренировку:'
     coach_invitation_title: 'Вас приглашают тренером:'
     coach_invitation_accept: 'Принять #%{game_id}'
     coach_invitation_decline: 'Отказаться #%{game_id}'
@@ -126,6 +129,9 @@ ru:
     today: сегодня
     tomorrow: завтра
     reminder_head: 'Напоминание: у вас игра %{when} (%{date}) в %{time} на корте %{court}'
+    reminder_head_training: 'Напоминание: у вас тренировка %{when} (%{date}) в %{time}
+      на корте %{court}'
+    program_label: 'Программа: %{items}'
     participants_label: 'Участники:'
     prebooking_request: 'Запрос на предбронирование игры #%{game_id} от %{name}'
     dates_label: 'Даты: %{dates}'
@@ -554,7 +560,7 @@ ru:
     no_permission: Нет прав для редактирования
     court_not_found_short: Корт не найден
     user_not_found: Пользователь не найден
-    game_invitation_from: "%{name} приглашает вас присоединиться к игре."
+    game_invitation_from: "Приглашает %{name}."
     sport_any: Любой
     skill_any: Любой
     skill_beginner: Начинающий
@@ -589,6 +595,8 @@ en:
     weather_label: 'Weather: %{value}'
     court_label: 'Court: %{name}'
     coach_with: With coach
+    coach_with_name: With coach %{names}
+    coach_with_names: With coaches %{names}
     coach_need: Need coach
     coach_no: No coach
     join: Join
@@ -620,7 +628,8 @@ en:
     sport_padel: Padel
     sport_table_tennis: Table tennis
     sport_squash: Squash
-    invitation_title: 'You are invited to join:'
+    invitation_title: 'You are invited to a game:'
+    training_invitation_title: 'You are invited to a training:'
     coach_invitation_title: 'You are invited as a coach:'
     coach_invitation_accept: 'Accept #%{game_id}'
     coach_invitation_decline: 'Decline #%{game_id}'
@@ -692,6 +701,9 @@ en:
     today: today
     tomorrow: tomorrow
     reminder_head: 'Reminder: you have a game %{when} (%{date}) at %{time} on %{court}'
+    reminder_head_training: 'Reminder: you have a training %{when} (%{date}) at %{time}
+      on %{court}'
+    program_label: 'Programme: %{items}'
     participants_label: 'Participants:'
     prebooking_request: 'Prebooking request for Game #%{game_id} from %{name}'
     dates_label: 'Dates: %{dates}'
@@ -1107,7 +1119,7 @@ en:
     no_permission: No permission to edit
     court_not_found_short: Court not found
     user_not_found: User not found
-    game_invitation_from: "%{name} invited you to join a game."
+    game_invitation_from: "Invited by %{name}."
     sport_any: Any
     skill_any: Any
     skill_beginner: Beginner
@@ -1128,6 +1140,8 @@ es:
     weather_label: 'Tiempo: %{value}'
     court_label: 'Pista: %{name}'
     coach_with: Con entrenador
+    coach_with_name: Con el entrenador %{names}
+    coach_with_names: Con los entrenadores %{names}
     coach_need: Se necesita entrenador
     coach_no: Sin entrenador
     coach_label: 'Entrenador: %{value}'
@@ -1143,7 +1157,8 @@ es:
     sport_padel: Pádel
     sport_table_tennis: Tenis de mesa
     sport_squash: Squash
-    invitation_title: 'Te han invitado a unirte:'
+    invitation_title: 'Te invitan a un partido:'
+    training_invitation_title: 'Te invitan a un entrenamiento:'
     coach_invitation_title: 'Te invitan como entrenador:'
     coach_invitation_accept: 'Aceptar #%{game_id}'
     coach_invitation_decline: 'Rechazar #%{game_id}'
@@ -1216,6 +1231,9 @@ es:
     tomorrow: mañana
     reminder_head: 'Recordatorio: tienes un partido %{when} (%{date}) a las %{time}
       en %{court}'
+    reminder_head_training: 'Recordatorio: tienes un entrenamiento %{when} (%{date})
+      a las %{time} en %{court}'
+    program_label: 'Programa: %{items}'
     participants_label: 'Participantes:'
     prebooking_request: 'Solicitud de reserva previa para el partido #%{game_id} de
       %{name}'
@@ -1246,7 +1264,7 @@ es:
     guest_badge: invitado
     back_to_game: Volver al partido
     unknown_action: Acción desconocida.
-    game_invitation_from: "%{name} te ha invitado a unirte a un partido."
+    game_invitation_from: "Te invita %{name}."
     sport_any: Cualquiera
     skill_any: Cualquiera
     skill_beginner: Principiante

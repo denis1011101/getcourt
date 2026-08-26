@@ -50,8 +50,35 @@ module Telegram
         label == key ? value.titleize : label
       end
 
-      def self.coach_mark(game, locale: Telegram::I18n::DEFAULT_LOCALE)
-        Telegram::I18n.t(:coach_with, locale: locale) if game.respond_to?(:with_coach?) && game.with_coach?
+      def self.coach_mark(game, locale: Telegram::I18n::DEFAULT_LOCALE, with_names: false, channel: :telegram)
+        return nil unless game.respond_to?(:with_coach?) && game.with_coach?
+
+        names = with_names ? coach_names(game, locale: locale, channel: channel) : []
+        if names.empty?
+          Telegram::I18n.t(:coach_with, locale: locale)
+        else
+          key = names.one? ? :coach_with_name : :coach_with_names
+          Telegram::I18n.t(key, locale: locale, names: names.join(", "))
+        end
+      end
+
+      # Тренера зовут так же, как игрока в списке участников, а отказавшийся
+      # тренер на корт не придёт — его имени в напоминании нет.
+      def self.coach_names(game, locale: Telegram::I18n::DEFAULT_LOCALE, channel: :telegram)
+        return [] unless game.respond_to?(:coaches)
+
+        coaches = game.coaches.reject { |coach| game.invitation_status_for(coach) == "declined" }
+        coaches.map do |coach|
+          UserLookup.display_name(coach, fallback: Telegram::I18n.t(:user_fallback, locale: locale), channel: channel)
+        end
+      end
+
+      # План занятия в одну строку: названия блоков без описаний и минут.
+      def self.training_program(game, limit: 160)
+        return nil unless game.respond_to?(:game_training_blocks)
+
+        titles = game.game_training_blocks.filter_map { |entry| entry.training_block&.title&.strip.presence }
+        titles.join(", ").presence&.truncate(limit)
       end
 
       def self.resolve_date(game)

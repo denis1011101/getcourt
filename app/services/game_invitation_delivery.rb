@@ -24,12 +24,12 @@ class GameInvitationDelivery
         key = coach_invitation ? "coach_invitation_subject" : "game_invitation_subject"
         I18n.t("user_mailer.notification.#{key}", locale: locale, game_id: game.id)
       end,
-      body: lambda do |locale|
-        title_key = coach_invitation ? :coach_invitation_title : :invitation_title
+      body: lambda do |locale, channel|
         lines = [
-          Telegram::I18n.t(title_key, locale: locale),
-          Telegram::Handlers::GamesHandler.game_label(game, owner: inviter, locale: locale),
-          Telegram::I18n.t(:game_invitation_from, locale: locale, name: inviter.name.presence || inviter.email)
+          Telegram::I18n.t(title_key(coach_invitation), locale: locale),
+          Telegram::Handlers::GamesHandler.game_label(game, owner: inviter, locale: locale, coach_names: true, channel: channel),
+          program_line(locale),
+          Telegram::I18n.t(:game_invitation_from, locale: locale, name: inviter_name(locale, channel))
         ]
         "#{lines.compact.join("\n")}\n\n#{game_url}"
       end,
@@ -40,6 +40,32 @@ class GameInvitationDelivery
           player_actions(locale)
         end
       end
+    )
+  end
+
+  # Шапка сразу говорит, куда зовут: в игру, на тренировку или тренером на неё.
+  def title_key(coach_invitation)
+    if coach_invitation
+      :coach_invitation_title
+    elsif game.training?
+      :training_invitation_title
+    else
+      :invitation_title
+    end
+  end
+
+  # План занятия — самое важное в приглашении на тренировку после времени и корта.
+  def program_line(locale)
+    program = Telegram::Helpers::GameFormatting.training_program(game)
+
+    Telegram::I18n.t(:program_label, locale: locale, items: program) if program.present?
+  end
+
+  def inviter_name(locale, channel)
+    Telegram::Helpers::UserLookup.display_name(
+      inviter,
+      fallback: Telegram::I18n.t(:user_fallback, locale: locale),
+      channel: channel
     )
   end
 

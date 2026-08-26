@@ -23,7 +23,7 @@ class GameInvitationsControllerTest < ActionDispatch::IntegrationTest
     chat_id, text, buttons = calls.first
     assert_equal target.telegram_chat_id, chat_id
     assert_includes text, game_path(game)
-    assert_includes text, "You are invited to join:"
+    assert_includes text, "You are invited to a training:"
     assert_includes text, " — With coach\n"
     assert_equal "Join ##{game.id}", buttons.first.first[:text]
     assert_equal "game:join_invited:#{game.id}", buttons.first.first[:callback_data]
@@ -32,7 +32,7 @@ class GameInvitationsControllerTest < ActionDispatch::IntegrationTest
   test "invitation is localized in Russian" do
     payload = invitation_payload_for("ru", chat_id: 90_007)
 
-    assert_includes payload[:text], "Вас приглашают присоединиться:"
+    assert_includes payload[:text], "Вас приглашают на тренировку:"
     assert_includes payload[:text], "Теннис ##{games(:one).id}"
     assert_equal "Присоединиться ##{games(:one).id}", payload[:reply_markup][:inline_keyboard].first.first[:text]
   end
@@ -40,7 +40,7 @@ class GameInvitationsControllerTest < ActionDispatch::IntegrationTest
   test "invitation is localized in Spanish" do
     payload = invitation_payload_for("es", chat_id: 90_008)
 
-    assert_includes payload[:text], "Te han invitado a unirte:"
+    assert_includes payload[:text], "Te invitan a un entrenamiento:"
     assert_includes payload[:text], "Tenis ##{games(:one).id}"
     assert_equal "Unirse ##{games(:one).id}", payload[:reply_markup][:inline_keyboard].first.first[:text]
   end

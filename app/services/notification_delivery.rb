@@ -6,30 +6,34 @@ class NotificationDelivery
       @actions = actions
     end
 
-    def subject(locale)
-      resolve(@subject, locale)
+    def subject(locale, channel = nil)
+      resolve(@subject, locale, channel)
     end
 
-    def body(locale)
-      resolve(@body, locale)
+    def body(locale, channel = nil)
+      resolve(@body, locale, channel)
     end
 
-    def actions(locale)
-      Array(resolve(@actions, locale))
+    def actions(locale, channel = nil)
+      Array(resolve(@actions, locale, channel))
     end
 
     private
 
-    def resolve(value, locale)
-      value.respond_to?(:call) ? value.call(locale) : value
+    # Текст иногда зависит от канала — например, звать человека по @нику стоит
+    # только в телеграме. Старые лямбды об этом не знают и берут одну локаль.
+    def resolve(value, locale, channel)
+      return value unless value.respond_to?(:call)
+
+      value.arity == 1 ? value.call(locale) : value.call(locale, channel)
     end
   end
 
   class TelegramAdapter
     def self.deliver(user, notification)
       locale = Telegram::I18n.locale_for(user)
-      text = notification.body(locale)
-      buttons = notification.actions(locale).each_with_index.filter_map do |action, index|
+      text = notification.body(locale, "telegram")
+      buttons = notification.actions(locale, "telegram").each_with_index.filter_map do |action, index|
         next if action[:telegram] == false
 
         target = action[:callback_data] ? { callback_data: action[:callback_data] } : { url: action[:url] }
@@ -50,13 +54,13 @@ class NotificationDelivery
       return false if user.telegram_generated_email?
 
       locale = NotificationDelivery.email_locale(user)
-      actions = notification.actions(locale).filter_map do |action|
+      actions = notification.actions(locale, "email").filter_map do |action|
         { label: action[:label], url: action[:url] } if action[:url].present?
       end
       UserMailer.notification(
         user,
-        subject: notification.subject(locale),
-        body: notification.body(locale),
+        subject: notification.subject(locale, "email"),
+        body: notification.body(locale, "email"),
         actions: actions
       ).deliver_later
     end

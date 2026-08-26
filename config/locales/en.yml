@@ -147,6 +147,7 @@ en:
       manage: "Manage notifications"
       view_game: "View game"
       game_reminder_subject: "Game reminder"
+      training_reminder_subject: "Training reminder"
       game_invitation_subject: "Invitation to Game #%{game_id}"
       coach_invitation_subject: "Coach invitation to Game #%{game_id}"
       stats_subject: "Fill in your game statistics"

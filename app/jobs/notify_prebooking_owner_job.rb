@@ -20,7 +20,7 @@ class NotifyPrebookingOwnerJob < ApplicationJob
       subject: lambda do |locale|
         I18n.t("user_mailer.notification.prebooking_subject", locale: locale, game_id: game.id)
       end,
-      body: ->(locale) { notification_text(game, requester, pending, locale, game_url) },
+      body: ->(locale, channel) { notification_text(game, requester, pending, locale, channel, game_url) },
       actions: ->(locale) { notification_actions(game, requester, locale, game_url) }
     )
 
@@ -29,9 +29,9 @@ class NotifyPrebookingOwnerJob < ApplicationJob
 
   private
 
-  def notification_text(game, requester, pending, locale, game_url)
+  def notification_text(game, requester, pending, locale, channel, game_url)
     fallback = Telegram::I18n.t(:user_fallback, locale: locale)
-    name = Telegram::Helpers::UserLookup.display_name(requester, fallback: fallback)
+    name = Telegram::Helpers::UserLookup.display_name(requester, fallback: fallback, channel: channel)
     dates = pending.map(&:date).sort.map { |date| I18n.l(date, format: :telegram, locale: locale) }.join(", ")
     request = Telegram::I18n.t(:prebooking_request, locale: locale, game_id: game.id, name: name)
     dates_line = Telegram::I18n.t(:dates_label, locale: locale, dates: dates)

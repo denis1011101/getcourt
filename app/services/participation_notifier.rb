@@ -8,7 +8,7 @@ class ParticipationNotifier
       subject: lambda do |locale|
         I18n.t("user_mailer.notification.participation_subject", locale: locale, game_id: game.id)
       end,
-      body: ->(locale) { notification_text(game, actor, action, locale, game_url) },
+      body: ->(locale, channel) { notification_text(game, actor, action, locale, channel, game_url) },
       actions: lambda do |locale|
         [ { label: I18n.t("user_mailer.notification.view_game", locale: locale), url: game_url, telegram: false } ]
       end
@@ -17,8 +17,8 @@ class ParticipationNotifier
     NotificationDelivery.deliver(user: owner, notification: notification)
   end
 
-  def self.notification_text(game, actor, action, locale, game_url)
-    name = actor_name(actor, locale)
+  def self.notification_text(game, actor, action, locale, channel, game_url)
+    name = actor_name(actor, locale, channel)
     date = game.respond_to?(:next_date) ? (game.next_date || game.date) : game.date
     time = game.respond_to?(:next_time) ? (game.next_time || game.time) : game.time
     date_text = date ? I18n.l(date, format: :telegram, locale: locale) : "—"
@@ -36,14 +36,14 @@ class ParticipationNotifier
   end
   private_class_method :notification_text
 
-  def self.actor_name(actor, locale)
+  def self.actor_name(actor, locale, channel)
     if actor.respond_to?(:guest?) && actor.guest?
       "#{actor.guest_name} (#{Telegram::I18n.t(:guest_badge, locale: locale)})"
     elsif actor.is_a?(String)
       actor
     else
       fallback = "#{Telegram::I18n.t(:user_fallback, locale: locale)} ##{actor&.id}"
-      Telegram::Helpers::UserLookup.display_name(actor, fallback: fallback)
+      Telegram::Helpers::UserLookup.display_name(actor, fallback: fallback, channel: channel)
     end
   end
   private_class_method :actor_name

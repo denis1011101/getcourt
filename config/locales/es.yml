@@ -122,6 +122,7 @@ es:
       manage: "Gestionar notificaciones"
       view_game: "Ver partido"
       game_reminder_subject: "Recordatorio del partido"
+      training_reminder_subject: "Recordatorio del entrenamiento"
       game_invitation_subject: "Invitación al partido #%{game_id}"
       coach_invitation_subject: "Invitación como entrenador al partido #%{game_id}"
       stats_subject: "Completa las estadísticas del partido"
