@@ -78,21 +78,21 @@ class GameReminderJob < ApplicationJob
 
     NotificationDelivery::Notification.new(
       subject: ->(locale) { I18n.t("user_mailer.notification.#{subject_key}", locale: locale) },
-      body: ->(locale) { reminder_text(game, target_date, recipients, day_offset, locale, game_url) },
+      body: ->(locale, channel) { reminder_text(game, target_date, recipients, day_offset, locale, channel, game_url) },
       actions: lambda do |locale|
         [ { label: I18n.t("user_mailer.notification.view_game", locale: locale), url: game_url, telegram: false } ]
       end
     )
   end
 
-  def reminder_text(game, target_date, recipients, day_offset, locale, game_url)
+  def reminder_text(game, target_date, recipients, day_offset, locale, channel, game_url)
     t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
     time = game.next_time || game.time
     time_text = Telegram::Helpers::GameFormatting.format_time_hhmm(time, locale: locale) || "—:--"
     when_text = day_offset == 1 ? t.call(:tomorrow) : t.call(:today)
     court_name = game.court&.name || t.call(:unknown_court)
     participant_names = recipients.filter_map do |user|
-      Telegram::Helpers::UserLookup.display_name(user, fallback: t.call(:user_fallback))
+      Telegram::Helpers::UserLookup.display_name(user, fallback: t.call(:user_fallback), channel: channel)
     end.join("\n")
     head = t.call(
       game.training? ? :reminder_head_training : :reminder_head,
@@ -101,7 +101,7 @@ class GameReminderJob < ApplicationJob
       time: time_text,
       court: court_name
     )
-    coach = Telegram::Helpers::GameFormatting.coach_mark(game, locale: locale, with_names: true)
+    coach = Telegram::Helpers::GameFormatting.coach_mark(game, locale: locale, with_names: true, channel: channel)
     title = coach ? "#{head} — #{coach}" : "#{head}."
     program = Telegram::Helpers::GameFormatting.training_program(game)
     program_line = t.call(:reminder_program, items: program) if program.present?

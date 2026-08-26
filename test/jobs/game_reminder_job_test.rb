@@ -69,6 +69,31 @@ class GameReminderJobTest < ActiveJob::TestCase
     second&.destroy
   end
 
+  test "names people by name in an email reminder" do
+    coach = create_coach("email-coach-reminder@example.com", 93_014, name: "Иван Петров")
+    coach.update!(telegram_username: "coach_ivan")
+    game = training_with(coaches: [ coach ])
+    recipient = users(:one)
+    recipient.update!(
+      email: "email-reminder@example.com",
+      name: "Пётр Игрок",
+      telegram_username: "player_petr",
+      notification_channel: "email",
+      locale: "ru"
+    )
+    game.participations.create!(user: recipient)
+
+    perform_enqueued_jobs(only: ActionMailer::MailDeliveryJob) { GameReminderJob.perform_now }
+    body = mail_text(ActionMailer::Base.deliveries.find { |mail| mail.to.include?(recipient.email) })
+
+    assert_includes body, "С тренером Иван Петров"
+    assert_includes body, "Пётр Игрок"
+    assert_not_includes body, "@coach_ivan"
+    assert_not_includes body, "@player_petr"
+  ensure
+    coach&.destroy
+  end
+
   test "sends game reminder by email when email is selected" do
     game = games(:one)
     recipient = users(:one)
@@ -121,6 +146,10 @@ class GameReminderJobTest < ActiveJob::TestCase
   end
 
   private
+    def mail_text(mail)
+      mail.multipart? ? mail.parts.map { |part| part.body.decoded }.join("\n") : mail.body.decoded
+    end
+
     def create_coach(email, chat_id, name:)
       User.create!(
         email: email,
