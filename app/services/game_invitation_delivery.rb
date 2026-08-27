@@ -65,7 +65,7 @@ class GameInvitationDelivery
 
   # План занятия — самое важное в приглашении на тренировку после времени и корта.
   def program_line(locale)
-    program = Telegram::Helpers::GameFormatting.training_program(game)
+    program = Telegram::Helpers::GameFormatting.training_program(game, locale: locale)
 
     Telegram::I18n.t(:program_label, locale: locale, items: program) if program.present?
   end

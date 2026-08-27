@@ -23,8 +23,16 @@ class GameInvitationDeliveryTest < ActiveSupport::TestCase
     assert_includes text, "Корт: #{courts(:one).name}"
   end
 
+  test "keeps whole blocks in a long programme instead of cutting a word" do
+    text = invitation_text(training: true, blocks: (1..40).map { |i| "Блок номер #{i} на технику" })
+
+    assert_not_includes text, "..."
+    assert_includes text, "Блок номер 1 на технику"
+    assert_match(/\+ ещё \d+/, text)
+  end
+
   private
-    def invitation_text(training:)
+    def invitation_text(training:, blocks: [ "Разминка", "Подача" ])
       coach = User.create!(
         email: "invite-coach@example.com",
         name: "Иван Петров",
@@ -48,7 +56,7 @@ class GameInvitationDeliveryTest < ActiveSupport::TestCase
         coach: (coach if training)
       )
       if training
-        block_ids = [ "Разминка", "Подача" ].map { |title| TrainingBlock.create!(user: coach, title: title).id }
+        block_ids = blocks.map { |title| TrainingBlock.create!(user: coach, title: title).id }
         game.replace_training_plan!(block_ids)
       end
       calls = []

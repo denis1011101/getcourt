@@ -103,7 +103,7 @@ class GameReminderJob < ApplicationJob
     )
     coach = Telegram::Helpers::GameFormatting.coach_mark(game, locale: locale, with_names: true, channel: channel)
     title = coach ? "#{head} — #{coach}" : "#{head}."
-    program = Telegram::Helpers::GameFormatting.training_program(game)
+    program = Telegram::Helpers::GameFormatting.training_program(game, locale: locale)
     program_line = t.call(:program_label, items: program) if program.present?
 
     [ title, program_line, "#{t.call(:participants_label)}\n#{participant_names}", game_url ].compact.join("\n\n")
