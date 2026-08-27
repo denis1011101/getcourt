@@ -37,6 +37,11 @@ LOCK_FILE="/tmp/getcourt-deploy.lock"
 CI_FAIL_FILE="/tmp/getcourt-last-ci-fail"
 RAILS_ENV="${RAILS_ENV:-production}"
 HEALTHCHECK_URL="${HEALTHCHECK_URL:-https://getcourt.co/up}"
+GITHUB_TOKEN="${GITHUB_TOKEN:-}"
+# Ask for CI runs specifically: the generic runs endpoint also returns
+# dependabot runs, and a green one on the same commit would wave a red CI
+# through.
+CI_WORKFLOW="${CI_WORKFLOW:-ci.yml}"
 TELEGRAM_BOT_TOKEN_DEPLOY="${TELEGRAM_BOT_DEPLOY_TOKEN:-}"
 TELEGRAM_CHAT_ID_DEPLOY="${TELEGRAM_CHAT_ID_DEPLOY:-}"
 # -----------------------------------------------------------------------------
@@ -48,6 +53,50 @@ fi
 
 log() {
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
+}
+
+# GitHub allows 60 unauthenticated requests per hour per IP — as many as cron
+# has deploy runs. Without a token the CI check eats that quota by itself and
+# then fails with 403 forever. A token raises the limit to 5000/hour.
+#
+# The HTTP code is captured along with the body (curl -f hides it) so the log
+# can name the real reason instead of blaming the network for everything.
+GH_API_CODE=""
+GH_API_BODY=""
+gh_api() {
+  local url="$1"
+  local curl_args=(-sS --max-time 10 -w '\n%{http_code}'
+    -H "Accept: application/vnd.github.v3+json")
+
+  if [[ -n "$GITHUB_TOKEN" ]]; then
+    curl_args+=(-H "Authorization: Bearer $GITHUB_TOKEN")
+  fi
+
+  local response
+  if ! response=$(curl "${curl_args[@]}" "$url" 2>/dev/null); then
+    GH_API_CODE=""
+    GH_API_BODY=""
+    return 1
+  fi
+
+  GH_API_CODE="${response##*$'\n'}"
+  GH_API_BODY="${response%$'\n'*}"
+  [[ "$GH_API_CODE" == "200" ]]
+}
+
+# Turns the last gh_api failure into a line a human can act on.
+gh_api_error() {
+  if [[ -z "$GH_API_CODE" ]]; then
+    echo "GitHub API unreachable (network error)."
+  elif [[ "$GH_API_CODE" == "403" || "$GH_API_CODE" == "429" ]] && [[ "$GH_API_BODY" == *"rate limit"* ]]; then
+    if [[ -n "$GITHUB_TOKEN" ]]; then
+      echo "GitHub API rate limit exceeded even with GITHUB_TOKEN (HTTP $GH_API_CODE)."
+    else
+      echo "GitHub API rate limit exceeded (HTTP $GH_API_CODE): unauthenticated requests are capped at 60/hour per IP. Set GITHUB_TOKEN in .env."
+    fi
+  else
+    echo "GitHub API returned HTTP $GH_API_CODE."
+  fi
 }
 
 # Telegram is optional. If token/chat_id are not set, notifications are skipped.
@@ -137,11 +186,11 @@ DEPLOY_NEW_HEAD="$REMOTE_HEAD"
 if [[ "$FORCE" == false ]]; then
   log "Checking GitHub Actions CI status..."
 
-  if ! CI_JSON=$(curl -sf --max-time 10 -H "Accept: application/vnd.github.v3+json" \
-    "https://api.github.com/repos/$GITHUB_REPO/actions/runs?branch=$BRANCH&per_page=1&status=completed"); then
-    log "GitHub API unreachable. Skipping deploy (will retry next run)."
+  if ! gh_api "https://api.github.com/repos/$GITHUB_REPO/actions/workflows/$CI_WORKFLOW/runs?branch=$BRANCH&per_page=1&status=completed"; then
+    log "$(gh_api_error) Skipping deploy (will retry next run)."
     exit 0
   fi
+  CI_JSON="$GH_API_BODY"
 
   CI_STATUS=$(echo "$CI_JSON" | python3 -c "import sys,json; runs=json.load(sys.stdin).get('workflow_runs',[]); print(runs[0]['conclusion'] if runs else 'none')" 2>/dev/null || echo "error")
   CI_HEAD_SHA=$(echo "$CI_JSON" | python3 -c "import sys,json; runs=json.load(sys.stdin).get('workflow_runs',[]); print(runs[0]['head_sha'] if runs else '')" 2>/dev/null || echo "")
@@ -153,8 +202,10 @@ if [[ "$FORCE" == false ]]; then
     # Fetch failed job names and error messages
     CI_ERRORS=""
     if [[ -n "$CI_RUN_ID" ]]; then
-      JOBS_JSON=$(curl -sf --max-time 10 -H "Accept: application/vnd.github.v3+json" \
-        "https://api.github.com/repos/$GITHUB_REPO/actions/runs/$CI_RUN_ID/jobs" 2>/dev/null || echo "")
+      JOBS_JSON=""
+      if gh_api "https://api.github.com/repos/$GITHUB_REPO/actions/runs/$CI_RUN_ID/jobs"; then
+        JOBS_JSON="$GH_API_BODY"
+      fi
       if [[ -n "$JOBS_JSON" ]]; then
         CI_ERRORS=$(echo "$JOBS_JSON" | python3 -c "
 import sys, json
