@@ -95,9 +95,17 @@ module Telegram
 
         text = kept.join(", ")
         dropped = titles.size - kept.size
-        return text if dropped.zero?
+        text = "#{text} #{Telegram::I18n.t(:program_more, locale: locale, count: dropped)}" if dropped.positive?
+        text = "#{text} #{Telegram::I18n.t(:program_details_hint, locale: locale)}" if details?(game)
 
-        "#{text} #{Telegram::I18n.t(:program_more, locale: locale, count: dropped)}"
+        text
+      end
+
+      # Подробное описание блока в сообщение не тянем — оно бывает на 500
+      # символов. Но человек должен знать, что оно есть и где искать: ссылка на
+      # игру идёт следом.
+      def self.details?(game)
+        game.game_training_blocks.any? { |entry| entry.training_block&.description.to_s.strip.present? }
       end
 
       def self.resolve_date(game)

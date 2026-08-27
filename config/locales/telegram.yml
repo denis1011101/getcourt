@@ -133,6 +133,7 @@ ru:
       на корте %{court}'
     program_label: 'Программа: %{items}'
     program_more: '+ ещё %{count}'
+    program_details_hint: '(подробное описание — на странице игры)'
     participants_label: 'Участники:'
     prebooking_request: 'Запрос на предбронирование игры #%{game_id} от %{name}'
     dates_label: 'Даты: %{dates}'
@@ -706,6 +707,7 @@ en:
       on %{court}'
     program_label: 'Programme: %{items}'
     program_more: '+ %{count} more'
+    program_details_hint: '(full description on the game page)'
     participants_label: 'Participants:'
     prebooking_request: 'Prebooking request for Game #%{game_id} from %{name}'
     dates_label: 'Dates: %{dates}'
@@ -1237,6 +1239,7 @@ es:
       a las %{time} en %{court}'
     program_label: 'Programa: %{items}'
     program_more: '+ %{count} más'
+    program_details_hint: '(descripción detallada en la página del partido)'
     participants_label: 'Participantes:'
     prebooking_request: 'Solicitud de reserva previa para el partido #%{game_id} de
       %{name}'
