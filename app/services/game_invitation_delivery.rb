@@ -1,3 +1,6 @@
+require "cgi"
+require "uri"
+
 class GameInvitationDelivery
   def initialize(game:, inviter:, game_url:)
     @game = game
@@ -24,16 +27,8 @@ class GameInvitationDelivery
         key = coach_invitation ? "coach_invitation_subject" : "game_invitation_subject"
         I18n.t("user_mailer.notification.#{key}", locale: locale, game_id: game.id)
       end,
-      body: lambda do |locale, channel|
-        lines = [
-          Telegram::I18n.t(title_key(coach_invitation), locale: locale),
-          Telegram::Handlers::GamesHandler.game_label(game, owner: inviter, locale: locale, coach_names: true, channel: channel),
-          court_line(locale),
-          program_line(locale),
-          Telegram::I18n.t(:game_invitation_from, locale: locale, name: inviter_name(locale, channel))
-        ]
-        "#{lines.compact.join("\n")}\n\n#{game_url}"
-      end,
+      body: ->(locale, channel) { body_text(locale, channel, coach_invitation) },
+      parse_mode: "HTML",
       actions: lambda do |locale|
         if coach_invitation
           coach_actions(locale)
@@ -42,6 +37,24 @@ class GameInvitationDelivery
         end
       end
     )
+  end
+
+  # В телеграме сообщение уходит размеченным — ради ссылки на корт, — поэтому
+  # всё, что пришло от людей (названия, имена, план), экранируется. В письме
+  # тот же текст идёт без разметки: @body вставляется и в text-шаблон тоже.
+  def body_text(locale, channel, coach_invitation)
+    markup = channel.to_s == "telegram"
+    esc = ->(value) { markup ? CGI.escapeHTML(value.to_s) : value.to_s }
+
+    lines = [
+      esc.(Telegram::I18n.t(title_key(coach_invitation), locale: locale)),
+      esc.(Telegram::Handlers::GamesHandler.game_label(game, owner: inviter, locale: locale, coach_names: true, channel: channel)),
+      court_line(locale, esc, linked: markup),
+      program_line(locale, esc),
+      esc.(Telegram::I18n.t(:game_invitation_from, locale: locale, name: inviter_name(locale, channel)))
+    ]
+
+    "#{lines.compact.join("\n")}\n\n#{esc.(game_url)}"
   end
 
   # Шапка сразу говорит, куда зовут: в игру, на тренировку или тренером на неё.
@@ -57,17 +70,36 @@ class GameInvitationDelivery
 
   # Куда ехать — вопрос, который задают первым. В напоминании корт назван, а в
   # приглашении его не было вовсе: человек шёл за ним по ссылке.
-  def court_line(locale)
-    name = game.court&.name.to_s.strip
+  def court_line(locale, esc, linked:)
+    court = game.court
+    name = court&.name.to_s.strip
+    return nil if name.blank?
 
-    Telegram::I18n.t(:court_label, locale: locale, name: name) if name.present?
+    url = linked ? court_url(court) : nil
+    label = url.present? ? "<a href=\"#{esc.(url)}\">#{esc.(name)}</a>" : esc.(name)
+
+    Telegram::I18n.t(:court_label, locale: locale, name: label)
+  end
+
+  # Хост берём у ссылки на игру, а не из настроек: она уже пришла из запроса и
+  # верна и на проде, и локально.
+  def court_url(court)
+    return nil if court.id.blank?
+
+    uri = URI.parse(game_url)
+    uri.path = "/courts/#{court.id}"
+    uri.query = nil
+    uri.fragment = nil
+    uri.to_s
+  rescue URI::InvalidURIError
+    nil
   end
 
   # План занятия — самое важное в приглашении на тренировку после времени и корта.
-  def program_line(locale)
+  def program_line(locale, esc)
     program = Telegram::Helpers::GameFormatting.training_program(game, locale: locale)
 
-    Telegram::I18n.t(:program_label, locale: locale, items: program) if program.present?
+    Telegram::I18n.t(:program_label, locale: locale, items: esc.(program)) if program.present?
   end
 
   def inviter_name(locale, channel)

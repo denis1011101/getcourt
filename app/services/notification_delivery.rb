@@ -1,9 +1,15 @@
 class NotificationDelivery
   class Notification
-    def initialize(subject:, body:, actions: [])
+    # parse_mode нужен тем сообщениям, где есть разметка — например ссылка на
+    # корт в приглашении. Остальные остаются чистым текстом: тогда телеграму
+    # нечего разбирать и нечем подавиться на имени с «&».
+    attr_reader :parse_mode
+
+    def initialize(subject:, body:, actions: [], parse_mode: nil)
       @subject = subject
       @body = body
       @actions = actions
+      @parse_mode = parse_mode
     end
 
     def subject(locale, channel = nil)
@@ -41,10 +47,11 @@ class NotificationDelivery
       end
       keyboard = buttons.group_by(&:first).values.map { |row| row.map(&:last) }
 
+      parse_mode = notification.parse_mode
       if keyboard.any?
-        Telegram::Api.send_with_buttons(user.telegram_chat_id, text, keyboard, parse_mode: nil)
+        Telegram::Api.send_with_buttons(user.telegram_chat_id, text, keyboard, parse_mode: parse_mode)
       else
-        SendTelegramNotificationJob.perform_later(user.telegram_chat_id, text, parse_mode: nil)
+        SendTelegramNotificationJob.perform_later(user.telegram_chat_id, text, parse_mode: parse_mode)
       end
     end
   end
