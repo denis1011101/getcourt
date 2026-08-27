@@ -3,5 +3,8 @@
 User-agent: *
 Disallow:
 
+# Переключатель языка только редиректит на нужный поддомен — краулить нечего.
+Disallow: /locale/
+
 # Multilingual sitemap
 Sitemap: https://getcourt.co/sitemap.xml

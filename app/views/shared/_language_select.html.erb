@@ -9,6 +9,7 @@
                 set_locale_path(locale: loc, return_to: request.path),
                 class: "#{link_class} #{active ? 'bg-indigo-600 text-white' : 'text-gray-700 hover:bg-gray-50 dark:text-slate-100 dark:hover:bg-slate-700'}",
                 data: { turbo: false },
+                rel: "nofollow",
                 aria: { current: ("true" if active) } %>
   <% end %>
 </nav>

@@ -144,7 +144,7 @@ module ApplicationHelper
     return @canonical_url if @canonical_url.present?
     return content_for(:canonical_url) if content_for?(:canonical_url)
 
-    "https://#{ApplicationHelper.canonical_host_for(request)}#{request.path}"
+    "https://#{ApplicationHelper.canonical_host_for(request)}#{canonical_request_path}"
   end
 
   def hreflang_links
@@ -161,8 +161,18 @@ module ApplicationHelper
     SEO_INDEXABLE_LOCALES.include?(locale)
   end
 
+  # Каноникал страницы списка должен ссылаться на саму себя, иначе вторая и
+  # дальше страницы схлопываются в первую и карточки с них теряют вес. Из query
+  # оставляем только номер страницы: фильтры и utm показывают тот же список.
+  def canonical_request_path
+    page = request.query_parameters["page"].to_i
+    return request.path if page <= 1
+
+    "#{request.path}?#{{ page: page }.to_query}"
+  end
+
   def localized_url_for(locale)
-    "https://#{ApplicationHelper.host_for_locale(locale)}#{request.path}"
+    "https://#{ApplicationHelper.host_for_locale(locale)}#{canonical_request_path}"
   end
 
   def absolute_url(path)
