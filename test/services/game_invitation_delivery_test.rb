@@ -45,6 +45,19 @@ class GameInvitationDeliveryTest < ActiveSupport::TestCase
     assert_not_includes text, "<a href"
   end
 
+  test "does not count spots for a training" do
+    text = invitation_text(training: true)
+
+    assert_not_includes text, "мест свободно"
+    assert_not_includes text, "места свободно"
+  end
+
+  test "still counts spots for a game" do
+    text = invitation_text(training: false)
+
+    assert_match(/мест[оа]? свободно|места свободно/, text)
+  end
+
   private
     def invitation_text(training:, blocks: [ "Разминка", "Подача" ], court_name: nil, channel: "telegram")
       coach = User.create!(

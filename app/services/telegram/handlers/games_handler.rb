@@ -28,6 +28,17 @@ module Telegram
           date = Telegram::Helpers::GameFormatting.game_datetime(g, locale: locale)
           title = Telegram::Helpers::GameFormatting.game_title(g, locale: locale)
 
+          # На тренировке мест не считают: на один корт выходит хоть десять
+          # человек, а «0 мест свободно» читается как «не приходи».
+          training = g.respond_to?(:training?) && g.training?
+          spots_text = spots_left_text(g, locale: locale) unless training
+          coach = Telegram::Helpers::GameFormatting.coach_mark(g, locale: locale, with_names: coach_names, channel: channel)
+
+          title_with_id = "#{title || (g.respond_to?(:title) && g.title.to_s.presence) || 'Game'} ##{g.id}"
+          [ title_with_id, date, spots_text, coach ].compact.join(" — ")
+        end
+
+        def spots_left_text(g, locale:)
           required = (g.respond_to?(:players_count) && g.players_count.to_i > 0) ? g.players_count.to_i : 4
           approved_count =
             if g.participations.loaded?
@@ -35,14 +46,10 @@ module Telegram
             else
               g.participations.respond_to?(:approved) ? g.participations.approved.count : g.participations.count
             end
-          taken = approved_count
-          spots_left = required - taken
+          spots_left = required - approved_count
           spots_left = 0 if spots_left.negative?
-          spots_text = Telegram::I18n.spots_left_text(spots_left, locale: locale)
-          coach = Telegram::Helpers::GameFormatting.coach_mark(g, locale: locale, with_names: coach_names, channel: channel)
 
-          title_with_id = "#{title || (g.respond_to?(:title) && g.title.to_s.presence) || 'Game'} ##{g.id}"
-          [ title_with_id, date, spots_text, coach ].compact.join(" — ")
+          Telegram::I18n.spots_left_text(spots_left, locale: locale)
         end
 
         # [bot-menu-off] Отключено намеренно: пользуемся сайтом getcourt.co,
