@@ -762,8 +762,6 @@ en:
   training_blocks:
     title: "Training constructor"
     hint: "Session blocks live in your library: fill one in once and just tick it in the next training."
-    manage: "Open"
-    back_to_games: "Back to my games"
     new_title: "New block"
     create: "Add"
     save: "Save"

@@ -407,6 +407,32 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     user&.destroy
     court&.destroy
   end
+  test "account page links to the training blocks library for a coach" do
+    coach = User.create!(email: "coach-library-#{SecureRandom.hex(4)}@example.com", coach: true)
+    post session_url, params: { email: coach.email }
+
+    get edit_account_url
+
+    assert_response :success
+    assert_includes response.body, training_blocks_path
+    assert_includes response.body, "Training constructor"
+  ensure
+    coach&.destroy
+  end
+
+  test "account page hides the training blocks library from a player without blocks" do
+    user_email = "player_library_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: user_email }
+    user = User.find_by!(email: user_email)
+
+    get edit_account_url
+
+    assert_response :success
+    assert_not_includes response.body, training_blocks_path
+  ensure
+    user&.destroy
+  end
+
   test "coach sees confirmed future dates in account games" do
     coach = User.create!(email: "coach-schedule@example.com", coach: true)
     game = Game.create!(
