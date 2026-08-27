@@ -28,6 +28,7 @@ class GameInvitationDelivery
         lines = [
           Telegram::I18n.t(title_key(coach_invitation), locale: locale),
           Telegram::Handlers::GamesHandler.game_label(game, owner: inviter, locale: locale, coach_names: true, channel: channel),
+          court_line(locale),
           program_line(locale),
           Telegram::I18n.t(:game_invitation_from, locale: locale, name: inviter_name(locale, channel))
         ]
@@ -52,6 +53,14 @@ class GameInvitationDelivery
     else
       :invitation_title
     end
+  end
+
+  # Куда ехать — вопрос, который задают первым. В напоминании корт назван, а в
+  # приглашении его не было вовсе: человек шёл за ним по ссылке.
+  def court_line(locale)
+    name = game.court&.name.to_s.strip
+
+    Telegram::I18n.t(:court_label, locale: locale, name: name) if name.present?
   end
 
   # План занятия — самое важное в приглашении на тренировку после времени и корта.

@@ -17,6 +17,12 @@ class GameInvitationDeliveryTest < ActiveSupport::TestCase
     assert_not_includes text, "Программа:"
   end
 
+  test "names the court so the invitee knows where to come" do
+    text = invitation_text(training: false)
+
+    assert_includes text, "Корт: #{courts(:one).name}"
+  end
+
   private
     def invitation_text(training:)
       coach = User.create!(
