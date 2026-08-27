@@ -1,6 +1,3 @@
-require "cgi"
-require "uri"
-
 class GameInvitationDelivery
   def initialize(game:, inviter:, game_url:)
     @game = game
@@ -43,13 +40,12 @@ class GameInvitationDelivery
   # всё, что пришло от людей (названия, имена, план), экранируется. В письме
   # тот же текст идёт без разметки: @body вставляется и в text-шаблон тоже.
   def body_text(locale, channel, coach_invitation)
-    markup = channel.to_s == "telegram"
-    esc = ->(value) { markup ? CGI.escapeHTML(value.to_s) : value.to_s }
+    esc = Telegram::Helpers::Markup.escaper(channel)
 
     lines = [
       esc.(Telegram::I18n.t(title_key(coach_invitation), locale: locale)),
       esc.(Telegram::Handlers::GamesHandler.game_label(game, owner: inviter, locale: locale, coach_names: true, channel: channel)),
-      court_line(locale, esc, linked: markup),
+      court_line(locale, channel),
       program_line(locale, esc),
       esc.(Telegram::I18n.t(:game_invitation_from, locale: locale, name: inviter_name(locale, channel)))
     ]
@@ -70,29 +66,10 @@ class GameInvitationDelivery
 
   # Куда ехать — вопрос, который задают первым. В напоминании корт назван, а в
   # приглашении его не было вовсе: человек шёл за ним по ссылке.
-  def court_line(locale, esc, linked:)
-    court = game.court
-    name = court&.name.to_s.strip
-    return nil if name.blank?
+  def court_line(locale, channel)
+    name = Telegram::Helpers::Markup.court_name(game.court, base_url: game_url, channel: channel)
 
-    url = linked ? court_url(court) : nil
-    label = url.present? ? "<a href=\"#{esc.(url)}\">#{esc.(name)}</a>" : esc.(name)
-
-    Telegram::I18n.t(:court_label, locale: locale, name: label)
-  end
-
-  # Хост берём у ссылки на игру, а не из настроек: она уже пришла из запроса и
-  # верна и на проде, и локально.
-  def court_url(court)
-    return nil if court.id.blank?
-
-    uri = URI.parse(game_url)
-    uri.path = "/courts/#{court.id}"
-    uri.query = nil
-    uri.fragment = nil
-    uri.to_s
-  rescue URI::InvalidURIError
-    nil
+    Telegram::I18n.t(:court_label, locale: locale, name: name) if name.present?
   end
 
   # План занятия — самое важное в приглашении на тренировку после времени и корта.

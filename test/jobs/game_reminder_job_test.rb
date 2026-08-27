@@ -145,6 +145,49 @@ class GameReminderJobTest < ActiveJob::TestCase
     coach&.destroy
   end
 
+  test "makes the court name a link in the telegram reminder" do
+    coach = create_coach("court-link-reminder@example.com", 93_020, name: "Иван Петров")
+    game = training_with(coaches: [ coach ])
+    text = telegram_reminder_for(game, users(:one), locale: "ru")
+
+    assert_includes text, %(<a href="https://getcourt.co/courts/#{courts(:one).id}">#{courts(:one).name}</a>)
+  ensure
+    coach&.destroy
+  end
+
+  test "escapes what people typed in the telegram reminder" do
+    coach = create_coach("court-escape-reminder@example.com", 93_021, name: "Смит & сыновья")
+    game = training_with(coaches: [ coach ], blocks: [ "Подача <сильно>" ])
+    text = telegram_reminder_for(game, users(:one), locale: "ru")
+
+    assert_includes text, "Смит &amp; сыновья"
+    assert_includes text, "Подача &lt;сильно&gt;"
+    assert_not_includes text, "<сильно>"
+  ensure
+    coach&.destroy
+  end
+
+  test "keeps the email reminder free of markup" do
+    coach = create_coach("court-plain-reminder@example.com", 93_022, name: "Иван Петров")
+    game = training_with(coaches: [ coach ])
+    recipient = users(:one)
+    recipient.update!(
+      email: "court-plain-recipient@example.com",
+      notification_channel: "email",
+      locale: "ru"
+    )
+    game.participations.create!(user: recipient)
+
+    perform_enqueued_jobs { GameReminderJob.perform_now }
+    body = mail_text(ActionMailer::Base.deliveries.find { |mail| mail.to.include?(recipient.email) })
+
+    # В письме кнопки — свои ссылки, а вот корт должен остаться просто именем.
+    assert_includes body, "на корте #{courts(:one).name}"
+    assert_not_includes body, "/courts/#{courts(:one).id}"
+  ensure
+    coach&.destroy
+  end
+
   private
     def mail_text(mail)
       mail.multipart? ? mail.parts.map { |part| part.body.decoded }.join("\n") : mail.body.decoded

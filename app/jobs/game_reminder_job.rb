@@ -79,6 +79,7 @@ class GameReminderJob < ApplicationJob
     NotificationDelivery::Notification.new(
       subject: ->(locale) { I18n.t("user_mailer.notification.#{subject_key}", locale: locale) },
       body: ->(locale, channel) { reminder_text(game, target_date, recipients, day_offset, locale, channel, game_url) },
+      parse_mode: "HTML",
       actions: lambda do |locale|
         [ { label: I18n.t("user_mailer.notification.view_game", locale: locale), url: game_url, telegram: false } ]
       end
@@ -87,12 +88,14 @@ class GameReminderJob < ApplicationJob
 
   def reminder_text(game, target_date, recipients, day_offset, locale, channel, game_url)
     t = ->(key, **args) { Telegram::I18n.t(key, locale: locale, **args) }
+    esc = Telegram::Helpers::Markup.escaper(channel)
     time = game.next_time || game.time
     time_text = Telegram::Helpers::GameFormatting.format_time_hhmm(time, locale: locale) || "—:--"
     when_text = day_offset == 1 ? t.call(:tomorrow) : t.call(:today)
-    court_name = game.court&.name || t.call(:unknown_court)
+    court_name = Telegram::Helpers::Markup.court_name(game.court, base_url: game_url, channel: channel) ||
+      esc.call(t.call(:unknown_court))
     participant_names = recipients.filter_map do |user|
-      Telegram::Helpers::UserLookup.display_name(user, fallback: t.call(:user_fallback), channel: channel)
+      esc.call(Telegram::Helpers::UserLookup.display_name(user, fallback: t.call(:user_fallback), channel: channel))
     end.join("\n")
     head = t.call(
       game.training? ? :reminder_head_training : :reminder_head,
@@ -102,10 +105,10 @@ class GameReminderJob < ApplicationJob
       court: court_name
     )
     coach = Telegram::Helpers::GameFormatting.coach_mark(game, locale: locale, with_names: true, channel: channel)
-    title = coach ? "#{head} — #{coach}" : "#{head}."
+    title = coach ? "#{head} — #{esc.call(coach)}" : "#{head}."
     program = Telegram::Helpers::GameFormatting.training_program(game, locale: locale)
-    program_line = t.call(:program_label, items: program) if program.present?
+    program_line = t.call(:program_label, items: esc.call(program)) if program.present?
 
-    [ title, program_line, "#{t.call(:participants_label)}\n#{participant_names}", game_url ].compact.join("\n\n")
+    [ title, program_line, "#{t.call(:participants_label)}\n#{participant_names}", esc.call(game_url) ].compact.join("\n\n")
   end
 end
