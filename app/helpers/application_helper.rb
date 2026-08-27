@@ -144,7 +144,7 @@ module ApplicationHelper
     return @canonical_url if @canonical_url.present?
     return content_for(:canonical_url) if content_for?(:canonical_url)
 
-    "https://#{ApplicationHelper.canonical_host_for(request)}#{request.path}"
+    "https://#{ApplicationHelper.canonical_host_for(request)}#{canonical_request_path}"
   end
 
   def hreflang_links
@@ -161,8 +161,26 @@ module ApplicationHelper
     SEO_INDEXABLE_LOCALES.include?(locale)
   end
 
+  # Каноникал страницы списка должен ссылаться на саму себя, иначе вторая и
+  # дальше страницы схлопываются в первую и карточки с них теряют вес.
+  #
+  # Номер берём у самого pagy, а не из query: на непагинированной странице
+  # (@pagy нет) «?page=2» — мусорный параметр, и делать по нему отдельный
+  # каноникал значит плодить дубли карточек. Заодно это защищает от
+  # «?page[]=2», где параметр приходит массивом и на нём падал to_i.
+  #
+  # Остальной query по-прежнему сводим к базовому пути: фильтры и utm ведут
+  # на тот же список, а «?city=Moscow&page=2» — уже другая выборка, и её
+  # каноникал с чужим номером страницы был бы враньём.
+  def canonical_request_path
+    page = @pagy.respond_to?(:page) ? @pagy.page.to_i : 1
+    return request.path unless page > 1 && request.query_parameters.keys == [ "page" ]
+
+    "#{request.path}?#{{ page: page }.to_query}"
+  end
+
   def localized_url_for(locale)
-    "https://#{ApplicationHelper.host_for_locale(locale)}#{request.path}"
+    "https://#{ApplicationHelper.host_for_locale(locale)}#{canonical_request_path}"
   end
 
   def absolute_url(path)

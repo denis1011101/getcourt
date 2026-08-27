@@ -22,6 +22,57 @@ class CourtsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to courts_path
   end
 
+  # ---- seo ----------------------------------------------------------------
+
+  test "paginated index canonicalizes and hreflangs to itself, not to the first page" do
+    get courts_url(host: "getcourt.co", page: 2)
+
+    assert_response :success
+    assert_select "link[rel='canonical'][href='https://getcourt.co/courts?page=2']", count: 1
+    assert_select "link[rel='alternate'][hreflang='ru'][href='https://ru.getcourt.co/courts?page=2']", count: 1
+    assert_select "link[rel='alternate'][hreflang='x-default'][href='https://getcourt.co/courts?page=2']", count: 1
+  end
+
+  test "first page keeps a clean canonical without the page parameter" do
+    get courts_url(host: "getcourt.co", page: 1)
+
+    assert_response :success
+    assert_select "link[rel='canonical'][href='https://getcourt.co/courts']", count: 1
+  end
+
+  test "court page ignores a stray page parameter in its canonical" do
+    courts(:one).update!(moderation_status: "approved")
+
+    get court_url(courts(:one), host: "getcourt.co", page: 2)
+
+    assert_response :success
+    assert_select "link[rel='canonical'][href='https://getcourt.co/courts/#{courts(:one).id}']", count: 1
+  end
+
+  test "filtered index does not canonicalize to another page of the unfiltered list" do
+    get courts_url(host: "getcourt.co", city: "Moscow", page: 2)
+
+    assert_response :success
+    assert_select "link[rel='canonical'][href='https://getcourt.co/courts']", count: 1
+  end
+
+  test "court page survives a non-scalar page parameter" do
+    courts(:one).update!(moderation_status: "approved")
+
+    get "/courts/#{courts(:one).id}?page[]=2", headers: { "HOST" => "getcourt.co" }
+
+    assert_response :success
+    assert_select "link[rel='canonical'][href='https://getcourt.co/courts/#{courts(:one).id}']", count: 1
+  end
+
+  test "language switcher links are nofollow" do
+    get courts_url(host: "getcourt.co")
+
+    assert_response :success
+    assert_select "a[rel='nofollow'][href^='/locale/']", minimum: 3
+    assert_select "a[href^='/locale/']:not([rel='nofollow'])", count: 0
+  end
+
   # ---- moderation filter --------------------------------------------------
 
   test "index only shows approved courts to guests" do
