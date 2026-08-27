@@ -58,8 +58,21 @@ class GameInvitationDeliveryTest < ActiveSupport::TestCase
     assert_match(/мест[оа]? свободно|места свободно/, text)
   end
 
+  test "hints that the blocks have a full description on the game page" do
+    text = invitation_text(training: true, descriptions: { "Разминка" => "10 минут ОФП, скакалка" })
+
+    assert_includes text, "Программа: Разминка, Подача (подробное описание — на странице игры)"
+  end
+
+  test "says nothing about descriptions when the blocks have none" do
+    text = invitation_text(training: true)
+
+    assert_includes text, "Программа: Разминка, Подача"
+    assert_not_includes text, "на странице игры"
+  end
+
   private
-    def invitation_text(training:, blocks: [ "Разминка", "Подача" ], court_name: nil, channel: "telegram")
+    def invitation_text(training:, blocks: [ "Разминка", "Подача" ], descriptions: {}, court_name: nil, channel: "telegram")
       coach = User.create!(
         email: "invite-coach@example.com",
         name: "Иван Петров",
@@ -86,7 +99,9 @@ class GameInvitationDeliveryTest < ActiveSupport::TestCase
         coach: (coach if training)
       )
       if training
-        block_ids = blocks.map { |title| TrainingBlock.create!(user: coach, title: title).id }
+        block_ids = blocks.map do |title|
+          TrainingBlock.create!(user: coach, title: title, description: descriptions[title]).id
+        end
         game.replace_training_plan!(block_ids)
       end
       delivery = GameInvitationDelivery.new(

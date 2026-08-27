@@ -49,7 +49,7 @@ Rails.application.routes.draw do
     post :dismiss_onboarding
   end
 
-  # Библиотека блоков тренировок живёт в личном кабинете рядом с расписанием.
+  # Библиотека блоков тренировок — отдельный раздел личного кабинета.
   resources :training_blocks, only: %i[index create update destroy], path: "account/training_blocks"
 
   resources :users, only: [ :index, :show ] do
