@@ -86,6 +86,9 @@ module Telegram
 
         kept = []
         titles.each do |title|
+          # Первый блок берём всегда: план без единого пункта бессмыслен. Выйти
+          # за лимит сообщения он при этом не может — TrainingBlock держит title
+          # в 100 символов.
           break if kept.any? && (kept + [ title ]).join(", ").length > limit
           kept << title
         end
