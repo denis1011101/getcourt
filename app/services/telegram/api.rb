@@ -29,15 +29,22 @@ module Telegram
       nil
     end
 
-    def self.send_with_buttons(chat_id, text, buttons, parse_mode: "Markdown")
+    # Превью ссылки телеграм рисует из своего кэша и обновляет его, когда сам
+    # сочтёт нужным: под приглашением висела карточка чужого корта и чужой даты.
+    # Всё нужное и так есть в тексте, поэтому по умолчанию превью выключено.
+    LINK_PREVIEW_DISABLED = { is_disabled: true }.to_json
+
+    def self.send_with_buttons(chat_id, text, buttons, parse_mode: "Markdown", link_preview: false)
       params = { "chat_id" => chat_id.to_s, "text" => text.to_s, "reply_markup" => { inline_keyboard: buttons }.to_json }
       params["parse_mode"] = parse_mode if parse_mode.present?
+      params["link_preview_options"] = LINK_PREVIEW_DISABLED unless link_preview
       post("sendMessage", params)
     end
 
-    def self.send_simple(chat_id, text, parse_mode: "Markdown")
+    def self.send_simple(chat_id, text, parse_mode: "Markdown", link_preview: false)
       params = { "chat_id" => chat_id.to_s, "text" => text.to_s }
       params["parse_mode"] = parse_mode if parse_mode.present?
+      params["link_preview_options"] = LINK_PREVIEW_DISABLED unless link_preview
       post("sendMessage", params)
     end
 

@@ -74,11 +74,30 @@ module Telegram
       end
 
       # План занятия в одну строку: названия блоков без описаний и минут.
-      def self.training_program(game, limit: 160)
+      #
+      # Режем по целым блокам: «Подачи на т...» посреди слова не читается, а
+      # сколько блоков не поместилось — видно из хвоста. Предел нужен, чтобы
+      # длинный план не выбил всё сообщение за 4096 символов телеграма.
+      def self.training_program(game, limit: 600, locale: Telegram::I18n::DEFAULT_LOCALE)
         return nil unless game.respond_to?(:game_training_blocks)
 
         titles = game.game_training_blocks.filter_map { |entry| entry.training_block&.title&.strip.presence }
-        titles.join(", ").presence&.truncate(limit)
+        return nil if titles.empty?
+
+        kept = []
+        titles.each do |title|
+          # Первый блок берём всегда: план без единого пункта бессмыслен. Выйти
+          # за лимит сообщения он при этом не может — TrainingBlock держит title
+          # в 100 символов.
+          break if kept.any? && (kept + [ title ]).join(", ").length > limit
+          kept << title
+        end
+
+        text = kept.join(", ")
+        dropped = titles.size - kept.size
+        return text if dropped.zero?
+
+        "#{text} #{Telegram::I18n.t(:program_more, locale: locale, count: dropped)}"
       end
 
       def self.resolve_date(game)

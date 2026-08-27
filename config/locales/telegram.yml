@@ -132,6 +132,7 @@ ru:
     reminder_head_training: 'Напоминание: у вас тренировка %{when} (%{date}) в %{time}
       на корте %{court}'
     program_label: 'Программа: %{items}'
+    program_more: '+ ещё %{count}'
     participants_label: 'Участники:'
     prebooking_request: 'Запрос на предбронирование игры #%{game_id} от %{name}'
     dates_label: 'Даты: %{dates}'
@@ -704,6 +705,7 @@ en:
     reminder_head_training: 'Reminder: you have a training %{when} (%{date}) at %{time}
       on %{court}'
     program_label: 'Programme: %{items}'
+    program_more: '+ %{count} more'
     participants_label: 'Participants:'
     prebooking_request: 'Prebooking request for Game #%{game_id} from %{name}'
     dates_label: 'Dates: %{dates}'
@@ -1234,6 +1236,7 @@ es:
     reminder_head_training: 'Recordatorio: tienes un entrenamiento %{when} (%{date})
       a las %{time} en %{court}'
     program_label: 'Programa: %{items}'
+    program_more: '+ %{count} más'
     participants_label: 'Participantes:'
     prebooking_request: 'Solicitud de reserva previa para el partido #%{game_id} de
       %{name}'
