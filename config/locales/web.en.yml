@@ -374,14 +374,15 @@ en:
       instructions_html: 'To receive Telegram notifications, please open a chat with
         our bot %{link} and send:'
       regenerate_token: Regenerate token
+    coach_schedule:
+      title: Coaching schedule
+      empty: No confirmed coaching dates yet.
+      participants: Participants
     games:
       title: My games
       empty: No games yet.
       open_game: Open game
       enter_stats: Enter score & stats
-      coach_schedule_title: Coaching schedule
-      coach_schedule_empty: No confirmed coaching dates yet.
-      coach_participants: Participants
       past_title: Past matches
       past_subtitle: Match history from before deleted or external entries. Not linked
         to active games.

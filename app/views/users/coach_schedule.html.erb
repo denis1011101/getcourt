@@ -1,0 +1,29 @@
+<% content_for :meta_title, t("users.coach_schedule.title") %>
+<% content_for :meta_robots, "noindex, follow" %>
+
+<div class="mx-auto max-w-3xl space-y-4 px-4 py-6">
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold"><%= t("users.coach_schedule.title") %></h1>
+    <%= link_to t("common.back_to_account"), edit_account_path, class: "text-sm text-indigo-600 hover:underline dark:text-indigo-400" %>
+  </div>
+
+  <% if @coach_schedule.empty? %>
+    <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("users.coach_schedule.empty") %></p>
+  <% else %>
+    <% @coach_schedule.each do |entry| %>
+      <% game = entry[:game] %>
+      <div class="rounded-lg border bg-white p-4 dark:border-white/10 dark:bg-slate-800/80">
+        <p class="text-sm text-gray-500 dark:text-slate-400">
+          <%= l(entry[:date], format: :long) %> · <%= game.time&.strftime("%H:%M") %>
+        </p>
+        <p class="font-medium">
+          <%= link_to game.court&.name, game_path(game), class: "hover:underline" %>
+        </p>
+        <p class="mt-2 text-sm text-gray-700 dark:text-slate-300">
+          <%= t("users.coach_schedule.participants") %>:
+          <%= game.participations.filter_map { |participation| participation.user&.name.presence || participation.user&.email }.join(", ").presence || "—" %>
+        </p>
+      </div>
+    <% end %>
+  <% end %>
+</div>

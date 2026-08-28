@@ -377,14 +377,15 @@ es:
       instructions_html: 'Para recibir notificaciones de Telegram, abre un chat con
         nuestro bot %{link} y envía:'
       regenerate_token: Regenerar token
+    coach_schedule:
+      title: Horario del entrenador
+      empty: Todavía no hay fechas confirmadas.
+      participants: Participantes
     games:
       title: Mis partidos
       empty: Todavía no hay partidos.
       open_game: Abrir partido
       enter_stats: Introducir marcador y estadísticas
-      coach_schedule_title: Horario del entrenador
-      coach_schedule_empty: Todavía no hay fechas confirmadas.
-      coach_participants: Participantes
       past_title: Partidos anteriores
       past_subtitle: Historial de partidos de entradas eliminadas o externas. No está
         vinculado a partidos activos.

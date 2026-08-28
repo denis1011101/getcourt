@@ -378,14 +378,15 @@ ru:
       instructions_html: 'Чтобы получать уведомления в Telegram, откройте чат с нашим
         ботом %{link} и отправьте:'
       regenerate_token: Обновить токен
+    coach_schedule:
+      title: Расписание тренера
+      empty: Подтверждённых дат пока нет.
+      participants: Участники
     games:
       title: Мои игры
       empty: Игр пока нет.
       open_game: Открыть игру
       enter_stats: Внести счёт и статистику
-      coach_schedule_title: Расписание тренера
-      coach_schedule_empty: Подтверждённых дат пока нет.
-      coach_participants: Участники
       past_title: Прошлые матчи
       past_subtitle: История матчей из удалённых или внешних записей. Не привязана
         к активным играм.

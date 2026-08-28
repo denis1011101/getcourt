@@ -40,6 +40,7 @@ Rails.application.routes.draw do
 
   resource :account, only: %i[edit update destroy], controller: :users do
     get :games
+    get :coach_schedule
     get :profile
     get :notifications
     get :security
