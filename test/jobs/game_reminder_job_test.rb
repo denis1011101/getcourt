@@ -4,27 +4,45 @@ class GameReminderJobTest < ActiveJob::TestCase
   include ActionMailer::TestHelper
 
   test "adds coach mark to training reminder" do
+    coach = create_coach("mark-coach-reminder@example.com", 93_020, name: "Иван Петров")
+    text = reminder_text(with_coach: true, coach: coach)
+
+    assert_match(/\A.* — With coach Иван Петров\n/, text)
+    assert_includes text, "Reminder: you have a training today"
+  ensure
+    coach&.destroy
+  end
+
+  # Галка «с тренером» стоит, а тренера ещё ищут: обещать занятие с тренером рано.
+  test "omits coach mark from training reminder while no coach is chosen" do
     text = reminder_text(with_coach: true)
 
-    assert_match(/\A.* — With coach\n/, text)
     assert_includes text, "Reminder: you have a training today"
+    assert_not_includes text.lines.first, " — With coach"
+    assert text.lines.first.chomp.end_with?(".")
   end
 
 
   test "localizes game reminder in Russian" do
-    text = reminder_text(with_coach: true, locale: "ru")
+    coach = create_coach("ru-coach-reminder@example.com", 93_021, name: "Иван Петров")
+    text = reminder_text(with_coach: true, locale: "ru", coach: coach)
 
     assert_includes text, "Напоминание: у вас тренировка сегодня"
     assert_includes text, Date.current.strftime("%d.%m.%Y")
-    assert_includes text, " — С тренером\n"
+    assert_includes text, " — С тренером Иван Петров\n"
+  ensure
+    coach&.destroy
   end
 
   test "localizes game reminder in Spanish" do
-    text = reminder_text(with_coach: true, locale: "es")
+    coach = create_coach("es-coach-reminder@example.com", 93_022, name: "Иван Петров")
+    text = reminder_text(with_coach: true, locale: "es", coach: coach)
 
     assert_includes text, "Recordatorio: tienes un entrenamiento hoy"
     assert_includes text, Date.current.strftime("%d/%m/%Y")
-    assert_includes text, " — Con entrenador\n"
+    assert_includes text, " — Con el entrenador Иван Петров\n"
+  ensure
+    coach&.destroy
   end
 
   test "omits coach mark from game reminder without coach" do
@@ -267,10 +285,10 @@ class GameReminderJobTest < ActiveJob::TestCase
       coach&.destroy
     end
 
-    def reminder_text(with_coach:, locale: "en")
+    def reminder_text(with_coach:, locale: "en", coach: nil)
       game = games(:one)
       recipient = users(:one)
-      game.update!(date: Date.current, recurring: false, with_coach: with_coach)
+      game.update!(date: Date.current, recurring: false, with_coach: with_coach, coach: coach)
       recipient.update!(email: "reminder-#{locale}-#{with_coach}@example.com", telegram_chat_id: 90_006, telegram_locale: locale, notification_channel: "telegram")
       calls = []
 
@@ -278,6 +296,6 @@ class GameReminderJobTest < ActiveJob::TestCase
         GameReminderJob.perform_now
       end
 
-      calls.first.second
+      calls.find { |call| call.first == recipient.telegram_chat_id }.second
     end
 end

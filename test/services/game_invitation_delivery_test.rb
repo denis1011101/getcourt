@@ -10,6 +10,14 @@ class GameInvitationDeliveryTest < ActiveSupport::TestCase
     assert_includes text, "Приглашает Пётр Организатор."
   end
 
+  # Тренировку заводят заранее, а тренера ищут потом — до выбора звать «с тренером» не за что.
+  test "does not promise a coach in the invitation while none is chosen" do
+    text = invitation_text(training: true, coach_chosen: false)
+
+    assert_includes text, "Вас приглашают на тренировку:"
+    assert_not_includes text, "С тренером"
+  end
+
   test "invites to a game without a programme" do
     text = invitation_text(training: false)
 
@@ -72,7 +80,7 @@ class GameInvitationDeliveryTest < ActiveSupport::TestCase
   end
 
   private
-    def invitation_text(training:, blocks: [ "Разминка", "Подача" ], descriptions: {}, court_name: nil, channel: "telegram")
+    def invitation_text(training:, coach_chosen: true, blocks: [ "Разминка", "Подача" ], descriptions: {}, court_name: nil, channel: "telegram")
       coach = User.create!(
         email: "invite-coach@example.com",
         name: "Иван Петров",
@@ -96,7 +104,7 @@ class GameInvitationDeliveryTest < ActiveSupport::TestCase
         date: Date.tomorrow,
         time: "18:00",
         with_coach: training,
-        coach: (coach if training)
+        coach: (coach if training && coach_chosen)
       )
       if training
         block_ids = blocks.map do |title|

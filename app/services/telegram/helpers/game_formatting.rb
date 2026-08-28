@@ -50,8 +50,12 @@ module Telegram
         label == key ? value.titleize : label
       end
 
+      # «С тренером» — обещание, а не галка в форме: пока тренера не выбрали (или
+      # он отказался), на корт с тренером никто не выйдет, и в напоминании с
+      # приглашением об этом молчим.
       def self.coach_mark(game, locale: Telegram::I18n::DEFAULT_LOCALE, with_names: false, channel: :telegram)
         return nil unless game.respond_to?(:with_coach?) && game.with_coach?
+        return nil if expected_coaches(game).empty?
 
         names = with_names ? coach_names(game, locale: locale, channel: channel) : []
         if names.empty?
@@ -62,13 +66,17 @@ module Telegram
         end
       end
 
+      # Тренеры, которых ещё ждут: выбранные и не отказавшиеся.
+      def self.expected_coaches(game)
+        return [] unless game.respond_to?(:coaches)
+
+        game.coaches.reject { |coach| game.invitation_status_for(coach) == "declined" }
+      end
+
       # Тренера зовут так же, как игрока в списке участников, а отказавшийся
       # тренер на корт не придёт — его имени в напоминании нет.
       def self.coach_names(game, locale: Telegram::I18n::DEFAULT_LOCALE, channel: :telegram)
-        return [] unless game.respond_to?(:coaches)
-
-        coaches = game.coaches.reject { |coach| game.invitation_status_for(coach) == "declined" }
-        coaches.map do |coach|
+        expected_coaches(game).map do |coach|
           UserLookup.display_name(coach, fallback: Telegram::I18n.t(:user_fallback, locale: locale), channel: channel)
         end
       end
