@@ -101,26 +101,28 @@ class UsersController < ApplicationController
     redirect_to profile_account_path, notice: "City cleared"
   end
 
+  # Расписание тренера — отдельный раздел кабинета: игроку он не нужен вовсе,
+  # а тренеру мешал искать свои игры в общем списке.
+  def coach_schedule
+    return redirect_to edit_account_path unless current_user.coach?
+
+    # Тренер может стоять и вторым — расписание собираем по обоим слотам.
+    accepted_games = Game.where(coach_id: current_user.id, coach_invitation_status: "accepted")
+      .or(Game.where(second_coach_id: current_user.id, second_coach_invitation_status: "accepted"))
+
+    recurring_dates = current_user.coach_prebookings
+      .where(date: Date.current.., game: accepted_games)
+      .includes(game: [ :court, { participations: :user } ])
+      .map { |booking| { game: booking.game, date: booking.date } }
+    one_off_dates = accepted_games
+      .where(recurring: false, date: Date.current..)
+      .includes(:court, participations: :user)
+      .map { |game| { game: game, date: game.date } }
+
+    @coach_schedule = (recurring_dates + one_off_dates).sort_by { |entry| [ entry[:date], entry[:game].time.to_s ] }
+  end
+
   def games
-    @coach_schedule =
-      if current_user.coach?
-        # Тренер может стоять и вторым — расписание собираем по обоим слотам.
-        accepted_games = Game.where(coach_id: current_user.id, coach_invitation_status: "accepted")
-          .or(Game.where(second_coach_id: current_user.id, second_coach_invitation_status: "accepted"))
-
-        recurring_dates = current_user.coach_prebookings
-          .where(date: Date.current.., game: accepted_games)
-          .includes(game: [ :court, { participations: :user } ])
-          .map { |booking| { game: booking.game, date: booking.date } }
-        one_off_dates = accepted_games
-          .where(recurring: false, date: Date.current..)
-          .includes(:court, participations: :user)
-          .map { |game| { game: game, date: game.date } }
-
-        (recurring_dates + one_off_dates).sort_by { |entry| [ entry[:date], entry[:game].time.to_s ] }
-      else
-        []
-      end
     order_sql =
       if Game.column_names.include?("next_date")
         "COALESCE(games.next_date, games.date) DESC NULLS LAST, games.time DESC"

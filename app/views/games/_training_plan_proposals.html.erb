@@ -1,0 +1,107 @@
+<%# Правки плана: участник предлагает, организатор решает, состав голосует. %>
+<section class="mt-4 rounded-md border border-gray-200 p-3 dark:border-white/10" data-testid="training-plan-proposals">
+  <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("games.training_plan_proposals.title") %></h2>
+
+  <% if proposals.empty? %>
+    <p class="mt-2 text-sm text-gray-500 dark:text-slate-400"><%= t("games.training_plan_proposals.empty") %></p>
+  <% end %>
+
+  <% proposals.each do |proposal| %>
+    <article class="mt-3 rounded-md border border-gray-200 p-3 dark:border-white/10" data-testid="training-plan-proposal">
+      <div class="flex flex-wrap items-center gap-2">
+        <p class="text-sm font-medium text-gray-900 dark:text-slate-100">
+          <%= t("games.training_plan_proposals.author", name: proposal.user.name.presence || proposal.user.email) %>
+        </p>
+        <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-slate-700 dark:text-slate-300">
+          <%= t("games.training_plan_proposals.status_#{proposal.status}") %>
+        </span>
+        <span class="rounded-full bg-indigo-50 px-2 py-0.5 text-xs text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
+          <%= t("games.training_plan_proposals.mode_badge_#{proposal.mode}") %>
+        </span>
+      </div>
+
+      <ol class="mt-2 space-y-1">
+        <% proposal.blocks.each_with_index do |block, index| %>
+          <li class="text-sm text-gray-700 dark:text-slate-300"><%= index + 1 %>. <%= block.label %></li>
+        <% end %>
+      </ol>
+
+      <% if proposal.comment.present? %>
+        <p class="mt-2 text-sm text-gray-600 dark:text-slate-400"><%= proposal.comment %></p>
+      <% end %>
+
+      <% if proposal.voting? %>
+        <p class="mt-2 text-xs text-gray-500 dark:text-slate-400">
+          <%= t("games.training_plan_proposals.votes", yes: proposal.votes_in_favor, total: proposal.votes_expected) %>
+        </p>
+
+        <% if proposal.voter_ids.include?(current_user&.id) %>
+          <% if proposal.voted?(current_user) %>
+            <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.training_plan_proposals.voted") %></p>
+          <% else %>
+            <div class="mt-2 flex gap-2">
+              <%= button_to t("games.training_plan_proposals.vote_yes"),
+                    vote_game_training_plan_proposal_path(game, proposal, in_favor: "1"), method: :post,
+                    class: "rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white" %>
+              <%= button_to t("games.training_plan_proposals.vote_no"),
+                    vote_game_training_plan_proposal_path(game, proposal, in_favor: "0"), method: :post,
+                    class: "rounded-md border border-red-300 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-300" %>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <div class="mt-3 flex flex-wrap gap-2">
+        <% if proposal.pending? && can_manage?(game) %>
+          <%= button_to t("games.training_plan_proposals.approve"),
+                approve_game_training_plan_proposal_path(game, proposal), method: :post,
+                class: "rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white" %>
+          <%= button_to t("games.training_plan_proposals.reject"),
+                reject_game_training_plan_proposal_path(game, proposal), method: :post,
+                class: "rounded-md border border-red-300 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-300" %>
+        <% end %>
+
+        <% if proposal.user_id == current_user&.id || can_manage?(game) %>
+          <%= button_to t("games.training_plan_proposals.withdraw"),
+                game_training_plan_proposal_path(game, proposal), method: :delete,
+                class: "rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 dark:border-white/15 dark:text-slate-300" %>
+        <% end %>
+      </div>
+
+      <%# Организатор правит предложенное, прежде чем пускать его дальше. %>
+      <% if proposal.pending? && can_manage?(game) && blocks.any? %>
+        <details class="mt-3">
+          <summary class="cursor-pointer text-sm text-indigo-600 dark:text-indigo-400"><%= t("games.training_plan_proposals.edit") %></summary>
+          <div class="mt-3">
+            <%= render "games/training_plan_proposal_form",
+                       url: game_training_plan_proposal_path(game, proposal),
+                       method: :patch,
+                       blocks: blocks,
+                       selected_ids: proposal.training_block_ids,
+                       comment: proposal.comment,
+                       selected_mode: proposal.mode,
+                       field_id_prefix: "proposal_#{proposal.id}_block",
+                       submit_label: t("games.training_plan_proposals.save") %>
+          </div>
+        </details>
+      <% end %>
+    </article>
+  <% end %>
+
+  <% if can_propose && blocks.any? %>
+    <details class="mt-3" data-testid="training-plan-proposal-new">
+      <summary class="cursor-pointer text-sm text-indigo-600 dark:text-indigo-400"><%= t("games.training_plan_proposals.propose") %></summary>
+      <div class="mt-3">
+        <%= render "games/training_plan_proposal_form",
+                   url: game_training_plan_proposals_path(game),
+                   method: :post,
+                   blocks: blocks,
+                   selected_ids: game.training_block_ids,
+                   comment: nil,
+                   selected_mode: "vote",
+                   field_id_prefix: "proposal_new_block",
+                   submit_label: t("games.training_plan_proposals.submit") %>
+      </div>
+    </details>
+  <% end %>
+</section>

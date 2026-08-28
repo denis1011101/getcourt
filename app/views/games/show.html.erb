@@ -148,6 +148,14 @@
       </section>
     <% end %>
 
+    <% if @game.training? %>
+      <%= render "games/training_plan_proposals",
+                 game: @game,
+                 proposals: @training_plan_proposals,
+                 blocks: @proposal_training_blocks,
+                 can_propose: @can_propose_training_plan %>
+    <% end %>
+
     <% onboarding = GameOnboardingPresenter.new(game: @game, user: current_user) %>
     <% player_search_onboarding = onboarding.items.find { |item| item.key == :player_search && !item.completed } if onboarding.visible? %>
     <% if onboarding.visible? %>

@@ -129,6 +129,7 @@ es:
       prebooking_subject: "Solicitud de reserva para el partido #%{game_id}"
       participation_subject: "Participantes actualizados en el partido #%{game_id}"
       game_change_subject: "El partido #%{game_id} ha cambiado"
+      training_plan_proposal_subject: "Cambio del plan de entrenamiento en el partido #%{game_id}"
       participation_approved_subject: "Tu solicitud para el partido #%{game_id} ha sido aprobada"
       participation_rejected_subject: "Tu solicitud para el partido #%{game_id} ha sido rechazada"
       prebooking_approved_subject: "Tu reserva para el partido #%{game_id} ha sido aprobada"

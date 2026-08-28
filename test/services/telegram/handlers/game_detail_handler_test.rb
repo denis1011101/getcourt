@@ -13,11 +13,23 @@ class Telegram::Handlers::GameDetailHandlerTest < ActiveSupport::TestCase
   end
 
   test "includes coach line when game has a coach" do
-    @game.update_columns(with_coach: true)
+    coach = User.create!(email: "detail-coach-#{SecureRandom.hex(4)}@example.com", coach: true)
+    @game.update_columns(with_coach: true, coach_id: coach.id)
 
     text, = render_game
 
     assert_includes text, "Тренер: С тренером"
+  ensure
+    coach&.destroy
+  end
+
+  # Галку поставили, тренера ещё ищут — обещать занятие с тренером рано.
+  test "omits coach line while the coach is not chosen" do
+    @game.update_columns(with_coach: true)
+
+    text, = render_game
+
+    assert_not_includes text, "Тренер:"
   end
 
   test "includes available weather" do

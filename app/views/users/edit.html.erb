@@ -36,6 +36,17 @@
       <%= t("users.edit.security") %>
     <% end %>
 
+    <%# Расписание тренера — только тренеру: игроку в нём нечего смотреть. %>
+    <% if current_user.coach? %>
+      <%= link_to coach_schedule_account_path,
+            class: "inline-flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition" do %>
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 8.25h16.5M4.5 5.25h15a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75h-15a.75.75 0 01-.75-.75V6a.75.75 0 01.75-.75z"/>
+        </svg>
+        <%= t("users.coach_schedule.title") %>
+      <% end %>
+    <% end %>
+
     <%# Библиотека блоков — отдельный раздел кабинета: тренеру она нужна всегда, организатору — если блоки уже заведены. %>
     <% if current_user.coach? || current_user.training_blocks.exists? %>
       <%= link_to training_blocks_path,

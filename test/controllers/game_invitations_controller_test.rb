@@ -9,7 +9,8 @@ class GameInvitationsControllerTest < ActionDispatch::IntegrationTest
     game = games(:one)
     owner.update!(email: "invite-owner@example.com", telegram_chat_id: 90_001)
     target.update!(email: "invite-target@example.com", telegram_username: "@targetuser", telegram_chat_id: 90_002, telegram_locale: "en", notification_channel: "telegram")
-    game.update!(user: owner, with_coach: true)
+    coach = User.create!(email: "invite-coach-#{SecureRandom.hex(4)}@example.com", name: "Coach Ivan", coach: true)
+    game.update!(user: owner, with_coach: true, coach: coach)
 
     post session_url, params: { email: owner.email }
 
@@ -24,7 +25,7 @@ class GameInvitationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal target.telegram_chat_id, chat_id
     assert_includes text, game_path(game)
     assert_includes text, "You are invited to a training:"
-    assert_includes text, " — With coach\n"
+    assert_includes text, " — With coach Coach Ivan\n"
     assert_equal "Join ##{game.id}", buttons.first.first[:text]
     assert_equal "game:join_invited:#{game.id}", buttons.first.first[:callback_data]
   end

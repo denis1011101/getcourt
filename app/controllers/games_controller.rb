@@ -65,6 +65,7 @@ class GamesController < ApplicationController
   end
 
   def show
+    prepare_training_plan_proposals
   end
 
   def new
@@ -177,6 +178,26 @@ class GamesController < ApplicationController
 
   def prepare_coaches
     @coaches = User.not_merged.where(coach: true).order(:name)
+  end
+
+  # Правки плана видны всем, кто открыл тренировку, а предлагать их может тот,
+  # кто выйдет на корт: состав, тренеры и организатор.
+  def prepare_training_plan_proposals
+    @training_plan_proposals = TrainingPlanProposal.none
+    @proposal_training_blocks = TrainingBlock.none
+    @can_propose_training_plan = false
+    return unless @game.training?
+
+    @training_plan_proposals = @game.training_plan_proposals.open.includes(:user).recent_first
+    return unless current_user && (current_user.admin? || @game.team_member_ids.include?(current_user.id))
+
+    @can_propose_training_plan = true
+    # Блок из личной библиотеки автора правки виден остальным в её списке —
+    # иначе организатор потерял бы его, сохраняя ту же правку.
+    @proposal_training_blocks = TrainingBlock.available_for(
+      ([ current_user.id, @game.user_id ] + @game.assigned_coach_ids).compact.uniq,
+      @game.training_block_ids + @training_plan_proposals.flat_map(&:training_block_ids)
+    ).ordered
   end
 
   # В форме показываем свою библиотеку, библиотеки тренеров этой тренировки и

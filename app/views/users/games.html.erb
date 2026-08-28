@@ -10,31 +10,6 @@
     <%= t("account.games.fairness_warning") %>
   </div>
 
-  <% if current_user.coach? %>
-    <section class="space-y-3">
-      <h2 class="text-xl font-bold text-gray-900 dark:text-slate-100"><%= t("users.games.coach_schedule_title") %></h2>
-      <% if @coach_schedule.empty? %>
-        <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("users.games.coach_schedule_empty") %></p>
-      <% else %>
-        <% @coach_schedule.each do |entry| %>
-          <% game = entry[:game] %>
-          <div class="rounded-lg border bg-white p-4 dark:border-white/10 dark:bg-slate-800/80">
-            <p class="text-sm text-gray-500 dark:text-slate-400">
-              <%= l(entry[:date], format: :long) %> · <%= game.time&.strftime("%H:%M") %>
-            </p>
-            <p class="font-medium">
-              <%= link_to game.court&.name, game_path(game), class: "hover:underline" %>
-            </p>
-            <p class="mt-2 text-sm text-gray-700 dark:text-slate-300">
-              <%= t("users.games.coach_participants") %>:
-              <%= game.participations.filter_map { |participation| participation.user&.name.presence || participation.user&.email }.join(", ").presence || "—" %>
-            </p>
-          </div>
-        <% end %>
-      <% end %>
-    </section>
-  <% end %>
-
   <% if @games.empty? %>
     <p class="text-gray-500"><%= t("users.games.empty") %></p>
   <% else %>

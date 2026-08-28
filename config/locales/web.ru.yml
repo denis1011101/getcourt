@@ -154,6 +154,39 @@ ru:
         pending: Ожидает ответа тренера
         accepted: Принято
         declined: Отклонено
+    training_plan_proposals:
+      title: Правки плана
+      empty: Открытых правок нет.
+      propose: Предложить правку
+      edit: Поправить
+      comment: Комментарий (необязательно)
+      mode_vote: Вынести на голосование состава
+      mode_direct: Применить без голосования
+      mode_hint: 'Последнее слово за организатором: правка пойдёт дальше, когда он
+        её подтвердит.'
+      submit: Отправить правку
+      save: Сохранить правку
+      approve: Подтвердить
+      reject: Отклонить
+      withdraw: Убрать
+      vote_yes: За
+      vote_no: Против
+      votes: 'За: %{yes} из %{total}'
+      voted: Ваш голос учтён.
+      author: Предложил %{name}
+      status_pending: Ждёт подтверждения организатора
+      status_voting: Идёт голосование
+      mode_badge_vote: С голосованием
+      mode_badge_direct: Без голосования
+      created: Правка ушла организатору.
+      updated: Правка обновлена.
+      applied: План тренировки обновлён.
+      vote_started: Голосование началось.
+      rejected: Правка отклонена.
+      removed: Правка убрана.
+      closed: Эту правку уже рассмотрели.
+      vote_counted: Голос учтён.
+      vote_not_allowed: Голосуют только участники игры.
     form:
       errors:
         one: "%{count} ошибка помешала сохранить игру:"
@@ -378,14 +411,15 @@ ru:
       instructions_html: 'Чтобы получать уведомления в Telegram, откройте чат с нашим
         ботом %{link} и отправьте:'
       regenerate_token: Обновить токен
+    coach_schedule:
+      title: Расписание тренера
+      empty: Подтверждённых дат пока нет.
+      participants: Участники
     games:
       title: Мои игры
       empty: Игр пока нет.
       open_game: Открыть игру
       enter_stats: Внести счёт и статистику
-      coach_schedule_title: Расписание тренера
-      coach_schedule_empty: Подтверждённых дат пока нет.
-      coach_participants: Участники
       past_title: Прошлые матчи
       past_subtitle: История матчей из удалённых или внешних записей. Не привязана
         к активным играм.

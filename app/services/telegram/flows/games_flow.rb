@@ -11,6 +11,10 @@ module Telegram
             return true if Telegram::Flows::Games::InviteFlow.handle_callback(callback) rescue false
           end
 
+          if cb.data.match?(/\Agame:plan_vote:/)
+            return true if Telegram::Flows::Games::PlanVoteFlow.handle_callback(callback) rescue false
+          end
+
           # [bot-menu-off] Отключено намеренно: пользуемся сайтом getcourt.co,
           # бот оставлен только для приглашений и карточки игры.
           # Раскомментировать, если решим вернуть функциональность в бот.

@@ -92,6 +92,8 @@ class User < ApplicationRecord
   has_many :coach_prebookings, foreign_key: :coach_id, dependent: :destroy, inverse_of: :coach
   # Библиотека блоков тренировок принадлежит тренеру и уходит вместе с ним.
   has_many :training_blocks, dependent: :destroy
+  has_many :training_plan_proposals, dependent: :destroy
+  has_many :training_plan_votes, dependent: :destroy
   has_many :participations
   has_many :favorite_court_links, class_name: "FavoriteCourt", dependent: :destroy
   has_many :court_suggestions, dependent: :destroy

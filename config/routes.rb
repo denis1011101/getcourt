@@ -40,6 +40,7 @@ Rails.application.routes.draw do
 
   resource :account, only: %i[edit update destroy], controller: :users do
     get :games
+    get :coach_schedule
     get :profile
     get :notifications
     get :security
@@ -127,6 +128,16 @@ Rails.application.routes.draw do
         post :cancel
         post :approve
         post :reject
+      end
+    end
+
+    # Правки плана тренировки: их предлагают участники, а судьбу решает
+    # организатор или голосование состава.
+    resources :training_plan_proposals, only: %i[create update destroy] do
+      member do
+        post :approve
+        post :reject
+        post :vote
       end
     end
 

@@ -23,6 +23,8 @@ class Game < ApplicationRecord
   # План тренировки — блоки из библиотеки тренера в выбранном порядке.
   has_many :game_training_blocks, -> { ordered }, dependent: :destroy, inverse_of: :game
   has_many :training_blocks, through: :game_training_blocks
+  # Правки плана, которые предложили участники тренировки.
+  has_many :training_plan_proposals, dependent: :destroy
 
   SURFACES = Court::SURFACES
   KINDS = %w[game training].freeze
@@ -57,6 +59,13 @@ class Game < ApplicationRecord
 
   def coaches
     [ coach, second_coach ].compact
+  end
+
+  # Кто выходит на корт: состав, принятые тренеры и организатор. Они же решают,
+  # как пройдёт занятие — предлагают правки плана и голосуют за них.
+  def team_member_ids
+    ids = participations.approved.where.not(user_id: nil).pluck(:user_id)
+    (ids + accepted_coaches.map(&:id) + [ user_id ]).compact.uniq
   end
 
   # Порядок блоков задаёт сам список: он и есть план занятия.

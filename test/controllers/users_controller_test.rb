@@ -433,7 +433,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     user&.destroy
   end
 
-  test "coach sees confirmed future dates in account games" do
+  test "coach sees confirmed future dates in the coaching schedule section" do
     coach = User.create!(email: "coach-schedule@example.com", coach: true)
     game = Game.create!(
       court: courts(:one),
@@ -447,10 +447,10 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     game.coach_prebookings.create!(coach: coach, date: game.next_date)
     post session_url, params: { email: coach.email }
 
-    get games_account_url
+    get coach_schedule_account_url
 
     assert_response :success
-    assert_includes response.body, "Coaching schedule"
+    assert_includes response.body, I18n.t("users.coach_schedule.title")
     assert_includes response.body, game.court.name
   ensure
     coach&.destroy
@@ -469,7 +469,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     game.update!(coach_invitation_status: "accepted")
     post session_url, params: { email: coach.email }
 
-    get games_account_url
+    get coach_schedule_account_url
 
     assert_response :success
     assert_includes response.body, game.court.name
@@ -477,6 +477,32 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   ensure
     coach&.destroy
   end
+  test "a player is bounced from the coaching schedule and does not see its link" do
+    player_email = "schedule_player_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: player_email }
+    player = User.find_by!(email: player_email)
+
+    get coach_schedule_account_url
+    assert_redirected_to edit_account_path
+
+    get edit_account_url
+    assert_not_includes response.body, coach_schedule_account_path
+  ensure
+    player&.destroy
+  end
+
+  test "the account page links a coach to the coaching schedule" do
+    coach = User.create!(email: "coach-schedule-link-#{SecureRandom.hex(4)}@example.com", coach: true)
+    post session_url, params: { email: coach.email }
+
+    get edit_account_url
+
+    assert_response :success
+    assert_includes response.body, coach_schedule_account_path
+  ensure
+    coach&.destroy
+  end
+
   test "newcomer sees the checklist on the homepage and can close it for good" do
     newcomer = User.create!(email: "checklist-newcomer@example.com")
     post session_url, params: { email: newcomer.email }
@@ -495,7 +521,7 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     newcomer&.destroy
   end
 
-  test "account games lists trainings where the user is the second coach" do
+  test "the coaching schedule lists trainings where the user is the second coach" do
     coach_email = "second_coach_schedule_#{SecureRandom.hex(4)}@example.com"
     court = Court.create!(name: "Second Coach Court")
     first = User.create!(email: "schedule_first_coach_#{SecureRandom.hex(4)}@example.com", coach: true)
@@ -514,10 +540,10 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     )
     game.update!(second_coach_invitation_status: "accepted")
 
-    get games_account_url
+    get coach_schedule_account_url
 
     assert_response :success
-    assert_not_includes response.body, I18n.t("users.games.coach_schedule_empty")
+    assert_not_includes response.body, I18n.t("users.coach_schedule.empty")
     assert_includes response.body, court.name
   ensure
     game&.destroy
