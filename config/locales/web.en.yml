@@ -152,6 +152,39 @@ en:
         pending: Waiting for coach response
         accepted: Accepted
         declined: Declined
+    training_plan_proposals:
+      title: Plan changes
+      empty: No open changes.
+      propose: Suggest a change
+      edit: Edit the change
+      comment: Comment (optional)
+      mode_vote: Put it to a vote of the players
+      mode_direct: Apply it without a vote
+      mode_hint: The organiser has the last word — the change goes through once they
+        approve it.
+      submit: Send the change
+      save: Save the change
+      approve: Approve
+      reject: Reject
+      withdraw: Remove
+      vote_yes: For
+      vote_no: Against
+      votes: 'For: %{yes} of %{total}'
+      voted: Your vote is counted.
+      author: Suggested by %{name}
+      status_pending: Waiting for the organiser
+      status_voting: Vote in progress
+      mode_badge_vote: With a vote
+      mode_badge_direct: Without a vote
+      created: The change was sent to the organiser.
+      updated: The change was updated.
+      applied: The training plan was updated.
+      vote_started: The vote has started.
+      rejected: The change was rejected.
+      removed: The change was removed.
+      closed: This change has already been decided.
+      vote_counted: Your vote is counted.
+      vote_not_allowed: Only players of this game can vote.
     form:
       errors:
         one: '1 error prohibited this game from being saved:'

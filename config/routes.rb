@@ -131,6 +131,16 @@ Rails.application.routes.draw do
       end
     end
 
+    # Правки плана тренировки: их предлагают участники, а судьбу решает
+    # организатор или голосование состава.
+    resources :training_plan_proposals, only: %i[create update destroy] do
+      member do
+        post :approve
+        post :reject
+        post :vote
+      end
+    end
+
     resources :prebooking_cancellations, only: [ :create, :destroy ]
     resources :coach_prebookings, only: [ :create, :destroy ]
     resources :media, only: %i[create destroy], controller: "game_media"

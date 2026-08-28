@@ -124,6 +124,7 @@ ru:
       prebooking_subject: "Запрос на предбронирование игры #%{game_id}"
       participation_subject: "Изменился состав игры #%{game_id}"
       game_change_subject: "Изменения в игре #%{game_id}"
+      training_plan_proposal_subject: "Правка плана тренировки в игре #%{game_id}"
       participation_approved_subject: "Ваша заявка в игру #%{game_id} одобрена"
       participation_rejected_subject: "Ваша заявка в игру #%{game_id} отклонена"
       prebooking_approved_subject: "Ваше предбронирование игры #%{game_id} одобрено"

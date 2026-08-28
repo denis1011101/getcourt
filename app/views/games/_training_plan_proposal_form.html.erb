@@ -1,0 +1,27 @@
+<%# Форма правки: тот же конструктор плана, что и в игре, плюс выбор — голосовать или нет. %>
+<%= form_with url: url, method: method, class: "space-y-3", data: { turbo: false } do %>
+  <div data-controller="training-plan">
+    <%= render "games/training_plan_library",
+               blocks: blocks,
+               selected_ids: selected_ids,
+               field_name: "training_plan_proposal[training_block_ids][]",
+               field_id_prefix: field_id_prefix %>
+  </div>
+
+  <%= text_field_tag "training_plan_proposal[comment]", comment, id: nil,
+        placeholder: t("games.training_plan_proposals.comment"),
+        class: "w-full rounded-md border border-gray-300 px-3 py-2 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+
+  <fieldset class="space-y-1">
+    <% TrainingPlanProposal::MODES.each do |mode| %>
+      <label class="flex items-center gap-2 text-sm text-gray-600 dark:text-slate-300">
+        <%= radio_button_tag "training_plan_proposal[mode]", mode, selected_mode == mode, id: nil, class: "h-4 w-4 text-indigo-600" %>
+        <%= t("games.training_plan_proposals.mode_#{mode}") %>
+      </label>
+    <% end %>
+  </fieldset>
+
+  <p class="text-xs text-gray-500 dark:text-slate-400"><%= t("games.training_plan_proposals.mode_hint") %></p>
+
+  <%= submit_tag submit_label, class: "inline-flex items-center rounded bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700" %>
+<% end %>

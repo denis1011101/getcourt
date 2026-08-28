@@ -134,6 +134,19 @@ ru:
     program_label: 'Программа: %{items}'
     program_more: '+ ещё %{count}'
     program_details_hint: '(подробное описание — на странице игры)'
+    plan_proposal_title: 'Правка плана тренировки от %{name}:'
+    plan_proposal_vote_title: 'Голосование за правку плана от %{name}:'
+    plan_proposal_applied_title: 'План тренировки обновлён — правка от %{name}:'
+    plan_proposal_rejected_title: 'Правку плана отклонили — предлагал %{name}:'
+    plan_proposal_plan_label: 'Новый план: %{items}'
+    plan_proposal_comment_label: 'Комментарий: %{text}'
+    plan_proposal_approve_hint: Подтвердите или отклоните правку на странице игры.
+    plan_proposal_vote_hint: Ответьте кнопкой ниже.
+    plan_vote_yes: За
+    plan_vote_no: Против
+    plan_vote_counted: Голос учтён
+    plan_vote_closed: Голосование уже закончилось
+    plan_vote_not_allowed: Голосуют только участники игры
     participants_label: 'Участники:'
     prebooking_request: 'Запрос на предбронирование игры #%{game_id} от %{name}'
     dates_label: 'Даты: %{dates}'
@@ -708,6 +721,19 @@ en:
     program_label: 'Programme: %{items}'
     program_more: '+ %{count} more'
     program_details_hint: '(full description on the game page)'
+    plan_proposal_title: 'Training plan change from %{name}:'
+    plan_proposal_vote_title: 'Vote on the plan change from %{name}:'
+    plan_proposal_applied_title: 'Training plan updated — change from %{name}:'
+    plan_proposal_rejected_title: 'Plan change rejected — suggested by %{name}:'
+    plan_proposal_plan_label: 'New plan: %{items}'
+    plan_proposal_comment_label: 'Comment: %{text}'
+    plan_proposal_approve_hint: Approve or reject the change on the game page.
+    plan_proposal_vote_hint: Answer with a button below.
+    plan_vote_yes: For
+    plan_vote_no: Against
+    plan_vote_counted: Vote counted
+    plan_vote_closed: The vote is already over
+    plan_vote_not_allowed: Only players of this game can vote
     participants_label: 'Participants:'
     prebooking_request: 'Prebooking request for Game #%{game_id} from %{name}'
     dates_label: 'Dates: %{dates}'
@@ -1240,6 +1266,19 @@ es:
     program_label: 'Programa: %{items}'
     program_more: '+ %{count} más'
     program_details_hint: '(descripción detallada en la página del partido)'
+    plan_proposal_title: 'Cambio del plan de entrenamiento de %{name}:'
+    plan_proposal_vote_title: 'Votación sobre el cambio del plan de %{name}:'
+    plan_proposal_applied_title: 'Plan de entrenamiento actualizado — cambio de %{name}:'
+    plan_proposal_rejected_title: 'Cambio del plan rechazado — lo propuso %{name}:'
+    plan_proposal_plan_label: 'Nuevo plan: %{items}'
+    plan_proposal_comment_label: 'Comentario: %{text}'
+    plan_proposal_approve_hint: Aprueba o rechaza el cambio en la página del partido.
+    plan_proposal_vote_hint: Responde con un botón de abajo.
+    plan_vote_yes: A favor
+    plan_vote_no: En contra
+    plan_vote_counted: Voto contado
+    plan_vote_closed: La votación ya ha terminado
+    plan_vote_not_allowed: Solo los jugadores del partido pueden votar
     participants_label: 'Participantes:'
     prebooking_request: 'Solicitud de reserva previa para el partido #%{game_id} de
       %{name}'

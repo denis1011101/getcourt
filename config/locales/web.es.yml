@@ -153,6 +153,39 @@ es:
         pending: Esperando la respuesta del entrenador
         accepted: Aceptada
         declined: Rechazada
+    training_plan_proposals:
+      title: Cambios del plan
+      empty: No hay cambios abiertos.
+      propose: Proponer un cambio
+      edit: Editar el cambio
+      comment: Comentario (opcional)
+      mode_vote: Someterlo a votación de los jugadores
+      mode_direct: Aplicarlo sin votación
+      mode_hint: 'La última palabra es del organizador: el cambio sigue adelante
+        cuando lo apruebe.'
+      submit: Enviar el cambio
+      save: Guardar el cambio
+      approve: Aprobar
+      reject: Rechazar
+      withdraw: Quitar
+      vote_yes: A favor
+      vote_no: En contra
+      votes: 'A favor: %{yes} de %{total}'
+      voted: Tu voto está contado.
+      author: Propuesto por %{name}
+      status_pending: Esperando al organizador
+      status_voting: Votación en curso
+      mode_badge_vote: Con votación
+      mode_badge_direct: Sin votación
+      created: El cambio se envió al organizador.
+      updated: El cambio se actualizó.
+      applied: El plan de entrenamiento se actualizó.
+      vote_started: La votación ha empezado.
+      rejected: El cambio fue rechazado.
+      removed: El cambio se quitó.
+      closed: Este cambio ya se resolvió.
+      vote_counted: Voto contado.
+      vote_not_allowed: Solo los jugadores del partido pueden votar.
     form:
       errors:
         one: '1 error impidió guardar el partido:'

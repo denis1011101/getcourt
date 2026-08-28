@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_25_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_28_090000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -462,6 +462,31 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_25_090000) do
     t.index ["user_id"], name: "index_training_blocks_on_user_id"
   end
 
+  create_table "training_plan_proposals", force: :cascade do |t|
+    t.text "comment"
+    t.datetime "created_at", null: false
+    t.integer "game_id", null: false
+    t.string "mode", default: "vote", null: false
+    t.string "status", default: "pending", null: false
+    t.json "training_block_ids", default: [], null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["game_id", "status"], name: "index_training_plan_proposals_on_game_id_and_status"
+    t.index ["game_id"], name: "index_training_plan_proposals_on_game_id"
+    t.index ["user_id"], name: "index_training_plan_proposals_on_user_id"
+  end
+
+  create_table "training_plan_votes", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.boolean "in_favor", null: false
+    t.integer "training_plan_proposal_id", null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["training_plan_proposal_id", "user_id"], name: "index_training_plan_votes_on_proposal_and_voter", unique: true
+    t.index ["training_plan_proposal_id"], name: "index_training_plan_votes_on_training_plan_proposal_id"
+    t.index ["user_id"], name: "index_training_plan_votes_on_user_id"
+  end
+
   create_table "translation_caches", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "text_en", null: false
@@ -560,5 +585,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_25_090000) do
   add_foreign_key "tournament_participants", "users"
   add_foreign_key "tournaments", "users"
   add_foreign_key "training_blocks", "users"
+  add_foreign_key "training_plan_proposals", "games"
+  add_foreign_key "training_plan_proposals", "users"
+  add_foreign_key "training_plan_votes", "training_plan_proposals"
+  add_foreign_key "training_plan_votes", "users"
   add_foreign_key "users", "users", column: "merged_into_id"
 end
