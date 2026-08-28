@@ -28,6 +28,45 @@ class TrainingPlanProposalTest < ActiveSupport::TestCase
     assert_equal [ @warmup.id ], proposal.game.reload.training_block_ids
   end
 
+  # Ушедший из игры на корт не выйдет, и его голос не должен решать за тех, кто выйдет.
+  test "the ballot of someone who left the game stops counting" do
+    proposal = proposal_for(players: 3)
+    voters = proposal.voter_ids.map { |id| User.find(id) }
+
+    proposal.approve!
+    proposal.vote!(voters.first, true)
+    assert_predicate proposal, :voting?
+
+    proposal.game.participations.find_by(user_id: voters.first.id).destroy
+    proposal = TrainingPlanProposal.find(proposal.id)
+
+    proposal.vote!(voters.second, false)
+    assert_predicate proposal, :voting?
+
+    proposal.vote!(voters.third, false)
+    assert_predicate proposal, :rejected?
+  end
+
+  test "a block deleted from the library drops out of the change" do
+    proposal = proposal_for(players: 0)
+    TrainingBlock.find(proposal.training_block_ids.first).destroy
+
+    proposal.approve!
+
+    assert_predicate proposal, :applied?
+    assert_equal [ @warmup.id ], proposal.game.reload.training_block_ids
+  end
+
+  test "a change loses its meaning together with the last block" do
+    proposal = proposal_for(players: 0)
+    TrainingBlock.where(id: proposal.training_block_ids).find_each(&:destroy)
+
+    proposal.approve!
+
+    assert_predicate proposal, :rejected?
+    assert_empty proposal.game.reload.training_block_ids
+  end
+
   test "a change with nobody else to ask applies right after approval" do
     proposal = proposal_for(players: 0)
 

@@ -60,8 +60,13 @@ class TrainingPlanProposal < ApplicationRecord
   end
 
   def apply!
+    # Блок могли удалить из библиотеки, пока правка ждала своей очереди: в план
+    # ставим то, что уцелело, а если не уцелело ничего — применять нечего.
+    ids = blocks.map(&:id)
+    return update!(status: "rejected") if ids.empty?
+
     transaction do
-      game.replace_training_plan!(training_block_ids)
+      game.replace_training_plan!(ids)
       update!(status: "applied")
     end
   end
@@ -79,16 +84,17 @@ class TrainingPlanProposal < ApplicationRecord
     return false unless voting? && voter_ids.include?(voter&.id)
 
     training_plan_votes.find_or_initialize_by(user_id: voter.id).update!(in_favor: in_favor)
+    @ballots = nil
     settle!
     true
   end
 
   def votes_in_favor
-    training_plan_votes.where(in_favor: true).count + 1
+    ballots.count(&:in_favor?) + 1
   end
 
   def votes_against
-    training_plan_votes.where(in_favor: false).count
+    ballots.count { |ballot| !ballot.in_favor? }
   end
 
   def votes_expected
@@ -96,6 +102,12 @@ class TrainingPlanProposal < ApplicationRecord
   end
 
   private
+
+  # Голос того, кто уже вышел из игры, не считаем: иначе бюллетень ушедшего
+  # решает за тех, кто на корт всё-таки выйдет.
+  def ballots
+    @ballots ||= training_plan_votes.where(user_id: voter_ids).to_a
+  end
 
   # Ждать последний голос незачем: как только одна сторона взяла большинство,
   # остальные бюллетени ничего не меняют.
