@@ -16,4 +16,13 @@
     <%= form.submit t("courts.form.submit"), class: "rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition" %>
     <%= link_to t("common.cancel"), courts_path, class: "block inline-flex items-center rounded-md border border-gray-300 dark:border-white/10 px-3 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/5 transition" %>
   </div>
+
+  <%# Удаление живёт здесь, а не в карточке списка: слишком легко снести чужой
+      корт мимоходом, а до формы правки доходит только тот, кто им управляет. %>
+  <% if court.persisted? %>
+    <div class="mt-4 pt-4 border-t dark:border-white/10 flex items-center gap-3">
+      <%= link_to t("courts.form.view_court"), court_path(court), class: "text-sm text-indigo-600 transition-colors hover:text-indigo-800 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300" %>
+      <%= link_to t("courts.form.delete_court"), court_path(court), data: { turbo_method: :delete, turbo_confirm: t("courts.form.delete_confirm") }, class: "text-sm text-red-600 hover:underline" %>
+    </div>
+  <% end %>
 <% end %>

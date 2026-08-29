@@ -332,6 +332,9 @@ es:
       contact_value: Contacto %{number}
       contact_value_placeholder: Teléfono, web, email o mensajería
       contacts_example: 'Por ejemplo: Telegram + Viber + web, o cualquier otra combinación.'
+      view_court: Ver pista
+      delete_court: Eliminar pista
+      delete_confirm: "¿Seguro que quieres eliminar esta pista?"
     new:
       title: Crear pista
       subtitle: Añade los detalles y la ubicación de una nueva pista.

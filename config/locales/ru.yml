@@ -528,7 +528,6 @@ ru:
         few: "%{count} игры"
         many: "%{count} игр"
         other: "%{count} игры"
-      delete_confirm: "Удалить этот корт?"
       free_only: "Бесплатные корты"
       free_badge: "Бесплатно"
       outdoor_only: "Открытые корты"

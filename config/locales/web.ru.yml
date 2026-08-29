@@ -332,6 +332,9 @@ ru:
       contact_value: Контакт %{number}
       contact_value_placeholder: Телефон, сайт, email или мессенджер
       contacts_example: 'Например: Telegram + Viber + сайт или любое другое сочетание.'
+      view_court: Открыть корт
+      delete_court: Удалить корт
+      delete_confirm: Удалить этот корт?
     new:
       title: Новый корт
       subtitle: Добавьте описание и расположение нового корта.

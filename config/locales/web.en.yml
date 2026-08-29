@@ -328,6 +328,9 @@ en:
       contact_value: Contact %{number}
       contact_value_placeholder: Phone, website, email or messenger
       contacts_example: 'Example: Telegram + Viber + website, or any other combination.'
+      view_court: View Court
+      delete_court: Delete Court
+      delete_confirm: Are you sure you want to delete this court?
     new:
       title: Create New Court
       subtitle: Add details and location for a new court.

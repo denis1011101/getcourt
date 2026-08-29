@@ -517,7 +517,6 @@ es:
       games_count:
         one: "1 partido"
         other: "%{count} partidos"
-      delete_confirm: "¿Seguro que quieres eliminar esta pista?"
       free_only: "Pistas gratuitas"
       free_badge: "Gratuito"
       outdoor_only: "Pistas al aire libre"
