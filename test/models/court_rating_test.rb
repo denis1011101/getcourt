@@ -21,16 +21,16 @@ class CourtRatingTest < ActiveSupport::TestCase
   end
 
   test "second rating from the same person overwrites the first" do
-    @court.rate_by!(@user, 5)
-    @court.rate_by!(@user, 2)
+    rate(@user, 5)
+    rate(@user, 2)
 
     assert_equal 1, @court.reload.ratings_count
     assert_equal 2, @court.rating_by(@user).value
   end
 
   test "average and count follow added and removed ratings" do
-    @court.rate_by!(@user, 5)
-    @court.rate_by!(@other, 2)
+    rate(@user, 5)
+    rate(@other, 2)
 
     assert_equal 2, @court.reload.ratings_count
     assert_in_delta 3.5, @court.ratings_average.to_f, 0.001
@@ -42,8 +42,27 @@ class CourtRatingTest < ActiveSupport::TestCase
   end
 
   test "rating an approved court leaves it published" do
-    @court.rate_by!(@user, 4)
+    rate(@user, 4)
 
     assert_predicate @court.reload, :approved?
+  end
+
+  test "rejected update keeps the stored value and reports the failure" do
+    rate(@user, 4)
+
+    rating = @court.rating_from(@user)
+    rating.value = 9
+
+    assert_not rating.save
+    assert_equal 4, @court.rating_by(@user).value
+  end
+
+  private
+
+  def rate(user, value)
+    rating = @court.rating_from(user)
+    rating.value = value
+    rating.save!
+    rating
   end
 end

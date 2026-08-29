@@ -3,9 +3,10 @@ class CourtRatingsController < ApplicationController
   before_action :require_verified_user!
 
   def create
-    rating = @court.rate_by!(current_user, params[:value])
+    rating = @court.rating_from(current_user)
+    rating.value = params[:value]
 
-    if rating.persisted?
+    if rating.save
       redirect_to court_path(@court, anchor: "rating"), notice: t("courts.ratings.saved")
     else
       redirect_to court_path(@court, anchor: "rating"), alert: rating.errors.full_messages.to_sentence
@@ -19,8 +20,10 @@ class CourtRatingsController < ApplicationController
 
   private
 
+  # Тем же набором, что и страница корта: корт на модерации или отклонённый
+  # чужим не виден, и копить на нём звёзды до публикации нельзя.
   def set_court
-    @court = Court.find(params[:court_id])
+    @court = Court.visible_to(current_user).find(params[:court_id])
   end
 
   # Подтверждение аккаунта проверяем здесь, а не только в шаблоне: форму со

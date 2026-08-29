@@ -44,12 +44,12 @@ class Court < ApplicationRecord
     local + other
   end
 
-  # Оценку заводим или переписываем: у человека на корт ровно одна звезда.
-  def rate_by!(user, value)
-    rating = ratings.find_or_initialize_by(user: user)
-    rating.value = value
-    rating.save
-    rating
+  # Оценка у человека на корт ровно одна, поэтому новая правит старую, а не
+  # добавляется рядом. Сохраняет вызывающий: у переписанной оценки persisted?
+  # истинно и до сохранения, и отличить принятую от отклонённой можно только по
+  # результату save.
+  def rating_from(user)
+    ratings.find_or_initialize_by(user: user)
   end
 
   def rating_by(user)
@@ -60,11 +60,16 @@ class Court < ApplicationRecord
     ratings_count.positive?
   end
 
-  # Считаем через update_columns: правка корта отправляет его обратно на
-  # модерацию, а звёзды посетителей публикацию трогать не должны.
+  # Считаем и пишем одним запросом. Порознь нельзя: параллельные оценки доходят
+  # сюда каждая своим after_commit, и «прочитал — посчитал — записал» затирает
+  # результат того, кто закоммитился позже. Мимо валидаций — иначе правка корта
+  # отправила бы его обратно на модерацию из-за чужой звезды.
   def refresh_rating!
-    ratings.reset
-    update_columns(ratings_count: ratings.count, ratings_average: ratings.average(:value).to_f.round(2))
+    self.class.where(id: id).update_all(<<~SQL.squish)
+      ratings_count = (SELECT COUNT(*) FROM court_ratings WHERE court_ratings.court_id = courts.id),
+      ratings_average = (SELECT COALESCE(ROUND(AVG(value), 2), 0) FROM court_ratings WHERE court_ratings.court_id = courts.id)
+    SQL
+    reload
   end
 
   def surface_labels
