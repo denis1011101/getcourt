@@ -4,11 +4,14 @@ class Court < ApplicationRecord
   has_many :games, dependent: :destroy
   has_many :favorite_court_links, class_name: "FavoriteCourt", dependent: :destroy
   has_many :court_suggestions, dependent: :destroy
+  has_many :ratings, class_name: "CourtRating", dependent: :destroy
   has_many :fans, through: :favorite_court_links, source: :user
   validates :name, presence: true
   belongs_to :user, optional: true
 
-  SURFACES = %w[hard clay grass artificial_grass].freeze
+  # `rubber` — резиновая крошка и наливная резина: их кладут вместо харда на
+  # дворовых и школьных площадках, и на глаз это не хард, а отдельное покрытие.
+  SURFACES = %w[hard clay grass artificial_grass rubber].freeze
 
   before_validation :normalize_surfaces
   validate :surfaces_are_valid
@@ -39,6 +42,29 @@ class Court < ApplicationRecord
       court.city_name.to_s.strip.downcase == user_city
     end
     local + other
+  end
+
+  # Оценку заводим или переписываем: у человека на корт ровно одна звезда.
+  def rate_by!(user, value)
+    rating = ratings.find_or_initialize_by(user: user)
+    rating.value = value
+    rating.save
+    rating
+  end
+
+  def rating_by(user)
+    user.present? ? ratings.find_by(user: user) : nil
+  end
+
+  def rated?
+    ratings_count.positive?
+  end
+
+  # Считаем через update_columns: правка корта отправляет его обратно на
+  # модерацию, а звёзды посетителей публикацию трогать не должны.
+  def refresh_rating!
+    ratings.reset
+    update_columns(ratings_count: ratings.count, ratings_average: ratings.average(:value).to_f.round(2))
   end
 
   def surface_labels

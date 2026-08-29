@@ -26,7 +26,7 @@
   <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
     <div>
       <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-slate-100"><%= @court.name %></h1>
-      <% if @court.sport.present? || @court.outdoor? || @court.indoor? || @court.surfaces.any? %>
+      <% if @court.sport.present? || @court.outdoor? || @court.indoor? || @court.sauna? || @court.surfaces.any? %>
         <p class="mt-2 flex flex-wrap gap-1.5">
           <% if @court.sport.present? %>
             <span class="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-sm font-medium text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-200">
@@ -43,6 +43,11 @@
               <%= t("courts.index.indoor_badge") %>
             </span>
           <% end %>
+          <% if @court.sauna? %>
+            <span class="inline-flex items-center rounded-full bg-rose-50 px-3 py-1 text-sm font-medium text-rose-700 dark:bg-rose-500/15 dark:text-rose-300">
+              <%= t("courts.index.sauna_badge") %>
+            </span>
+          <% end %>
           <% @court.surface_labels.each do |surface_label| %>
             <span class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-sm font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
               <%= surface_label %>
@@ -56,6 +61,13 @@
             <path fill-rule="evenodd" d="M10 2a6 6 0 00-6 6c0 4.418 6 10 6 10s6-5.582 6-10a6 6 0 00-6-6zm0 8a2 2 0 110-4 2 2 0 010 4z" clip-rule="evenodd"/>
           </svg>
           <%= @court.address %>
+        </p>
+      <% end %>
+      <% if @court.rated? %>
+        <p class="mt-1 flex items-center gap-1.5 text-sm text-gray-600 dark:text-slate-300">
+          <%= render "courts/stars", value: @court.ratings_average.to_f, size: :sm %>
+          <span class="font-semibold"><%= number_with_precision(@court.ratings_average, precision: 1) %></span>
+          <%= link_to t("courts.ratings.count", count: @court.ratings_count), "#rating", class: "text-gray-400 underline dark:text-slate-500" %>
         </p>
       <% end %>
     </div>
@@ -126,6 +138,13 @@
             </div>
           <% end %>
 
+          <% if @court.sauna? %>
+            <div>
+              <p class="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wide font-medium"><%= t("courts.show.sauna") %></p>
+              <p class="text-sm font-medium text-gray-900 dark:text-slate-100 mt-0.5"><%= t("courts.show.sauna_available") %></p>
+            </div>
+          <% end %>
+
           <% if lat && lng && !(lat.zero? && lng.zero?) %>
             <div>
               <p class="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wide font-medium"><%= t("courts.show.coordinates") %></p>
@@ -152,6 +171,8 @@
           <% end %>
         </div>
       </div>
+
+      <%= render "courts/rating", court: @court %>
     </div>
 
     <!-- Right column: Games at this court -->

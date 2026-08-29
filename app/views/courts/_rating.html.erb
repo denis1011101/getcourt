@@ -1,0 +1,47 @@
+<div id="rating" class="bg-white rounded-xl border p-4 dark:bg-slate-800/80 dark:border-white/10">
+  <h2 class="text-sm font-semibold text-gray-900 dark:text-slate-100"><%= t("courts.ratings.title") %></h2>
+
+  <% if court.rated? %>
+    <div class="mt-2 flex items-center gap-2">
+      <%= render "courts/stars", value: court.ratings_average.to_f, size: :md %>
+      <span class="text-lg font-semibold text-gray-900 dark:text-slate-100"><%= number_with_precision(court.ratings_average, precision: 1) %></span>
+      <span class="text-sm text-gray-500 dark:text-slate-400"><%= t("courts.ratings.count", count: court.ratings_count) %></span>
+    </div>
+  <% else %>
+    <p class="mt-2 text-sm text-gray-500 dark:text-slate-400"><%= t("courts.ratings.empty") %></p>
+  <% end %>
+
+  <% if !user_signed_in? %>
+    <p class="mt-3 text-sm text-gray-500 dark:text-slate-400">
+      <%= link_to t("courts.ratings.sign_in_to_rate"), new_session_path, class: "font-medium text-indigo-600 underline dark:text-indigo-400" %>
+    </p>
+  <% elsif !current_user.verified? %>
+    <p class="mt-3 text-sm text-gray-500 dark:text-slate-400">
+      <%= t("courts.ratings.verification_hint") %>
+      <%= link_to t("courts.ratings.verify_cta"), new_account_verification_path, class: "font-medium text-indigo-600 underline dark:text-indigo-400" %>
+    </p>
+  <% else %>
+    <% mine = court.rating_by(current_user) %>
+    <p class="mt-3 text-xs uppercase tracking-wide font-medium text-gray-400 dark:text-slate-500">
+      <%= mine ? t("courts.ratings.your_rating") : t("courts.ratings.rate_prompt") %>
+    </p>
+    <div class="mt-1 flex items-center gap-1">
+      <% CourtRating::VALUES.each do |value| %>
+        <%= button_to court_rating_path(court),
+              method: :post,
+              params: { value: value },
+              class: "p-0.5 rounded transition hover:scale-110",
+              aria: { label: t("courts.ratings.star_label", count: value) } do %>
+          <svg class="w-7 h-7 <%= mine && value <= mine.value ? "text-amber-400" : "text-gray-300 dark:text-slate-600" %>" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M9.05 2.93c.3-.92 1.6-.92 1.9 0l1.36 4.18h4.4c.97 0 1.37 1.24.59 1.81l-3.56 2.59 1.36 4.18c.3.92-.76 1.69-1.54 1.12L10 14.23l-3.56 2.58c-.78.57-1.84-.2-1.54-1.12l1.36-4.18-3.56-2.59c-.78-.57-.38-1.81.59-1.81h4.4l1.36-4.18z"/>
+          </svg>
+        <% end %>
+      <% end %>
+
+      <% if mine %>
+        <%= button_to t("courts.ratings.remove"), court_rating_path(court), method: :delete,
+              class: "ml-2 text-xs text-gray-500 underline hover:text-red-600 dark:text-slate-400" %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

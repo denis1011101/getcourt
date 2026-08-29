@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_28_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_29_090200) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -109,6 +109,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_28_090000) do
     t.index ["game_id"], name: "index_coach_prebookings_on_game_id"
   end
 
+  create_table "court_ratings", force: :cascade do |t|
+    t.integer "court_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.integer "value", null: false
+    t.index ["court_id", "user_id"], name: "index_court_ratings_on_court_id_and_user_id", unique: true
+    t.index ["court_id"], name: "index_court_ratings_on_court_id"
+    t.index ["user_id"], name: "index_court_ratings_on_user_id"
+  end
+
   create_table "court_suggestions", force: :cascade do |t|
     t.text "comment"
     t.integer "court_id", null: false
@@ -138,6 +149,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_28_090000) do
     t.string "moderation_status", default: "pending", null: false
     t.string "name"
     t.boolean "outdoor", default: false, null: false
+    t.decimal "ratings_average", precision: 3, scale: 2, default: "0.0", null: false
+    t.integer "ratings_count", default: 0, null: false
+    t.boolean "sauna", default: false, null: false
     t.string "sport"
     t.string "street"
     t.text "surfaces"
@@ -503,6 +517,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_28_090000) do
     t.text "court_preferences_note"
     t.datetime "created_at", null: false
     t.string "email"
+    t.datetime "email_verified_at"
     t.string "locale"
     t.string "login_code"
     t.datetime "login_code_sent_at"
@@ -542,6 +557,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_28_090000) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "coach_prebookings", "games"
   add_foreign_key "coach_prebookings", "users", column: "coach_id"
+  add_foreign_key "court_ratings", "courts"
+  add_foreign_key "court_ratings", "users"
   add_foreign_key "court_suggestions", "courts"
   add_foreign_key "court_suggestions", "users"
   add_foreign_key "court_suggestions", "users", column: "reviewed_by_id"

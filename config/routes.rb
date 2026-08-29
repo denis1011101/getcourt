@@ -68,6 +68,7 @@ Rails.application.routes.draw do
   post "/sign_in/verify",    to: "sessions#check"
   delete "/sign_out",        to: "sessions#destroy", as: :destroy_session
   delete "/sign_out",        to: "sessions#destroy", as: :sign_out
+  resource :account_verification, only: %i[new create update]
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -84,6 +85,7 @@ Rails.application.routes.draw do
     # Named `corrections` so the helpers stay distinct from the top-level
     # court_suggestions index below, which owns court_suggestions_path.
     resources :suggestions, only: %i[new create], controller: "court_suggestions", as: :corrections
+    resource :rating, only: %i[create destroy], controller: "court_ratings"
   end
   resources :court_suggestions, only: %i[index show] do
     resource :approval, only: :create, controller: "court_suggestion_approvals"

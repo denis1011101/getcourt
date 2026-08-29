@@ -110,7 +110,7 @@ class CourtsController < ApplicationController
   end
 
   def court_params
-    permitted = params.require(:court).permit(:name, :sport, :coordinates, :contact_type, :contact_value, :free, :outdoor, :indoor, surfaces: [], contact_entries: [ :contact_type, :contact_value ])
+    permitted = params.require(:court).permit(:name, :sport, :coordinates, :contact_type, :contact_value, :free, :outdoor, :indoor, :sauna, surfaces: [], contact_entries: [ :contact_type, :contact_value ])
     contact_entries = permitted.delete(:contact_entries)
 
     if contact_entries.present?
