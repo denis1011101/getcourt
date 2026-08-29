@@ -96,6 +96,7 @@ class User < ApplicationRecord
   has_many :training_plan_votes, dependent: :destroy
   has_many :participations
   has_many :favorite_court_links, class_name: "FavoriteCourt", dependent: :destroy
+  has_many :court_ratings, dependent: :destroy
   has_many :court_suggestions, dependent: :destroy
   has_many :reviewed_court_suggestions, class_name: "CourtSuggestion", foreign_key: :reviewed_by_id, dependent: :nullify, inverse_of: :reviewed_by
   has_many :favorite_courts, through: :favorite_court_links, source: :court
@@ -113,6 +114,17 @@ class User < ApplicationRecord
 
   def admin?
     admin == true
+  end
+
+  # Обычный вход по email кода не требует, поэтому «залогинен» само по себе не
+  # значит «это его почта». Подтверждением считаем введённый код с письма или
+  # привязанный телеграм — без этого оценки кортов накрутить слишком легко.
+  def verified?
+    email_verified_at.present? || telegram_chat_id.present?
+  end
+
+  def verify_email!
+    update_columns(email_verified_at: Time.current) if email_verified_at.blank?
   end
 
   def skill_level_display

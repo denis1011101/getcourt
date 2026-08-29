@@ -4,11 +4,14 @@ class Court < ApplicationRecord
   has_many :games, dependent: :destroy
   has_many :favorite_court_links, class_name: "FavoriteCourt", dependent: :destroy
   has_many :court_suggestions, dependent: :destroy
+  has_many :ratings, class_name: "CourtRating", dependent: :destroy
   has_many :fans, through: :favorite_court_links, source: :user
   validates :name, presence: true
   belongs_to :user, optional: true
 
-  SURFACES = %w[hard clay grass artificial_grass].freeze
+  # `rubber` — резиновая крошка и наливная резина: их кладут вместо харда на
+  # дворовых и школьных площадках, и на глаз это не хард, а отдельное покрытие.
+  SURFACES = %w[hard clay grass artificial_grass rubber].freeze
 
   before_validation :normalize_surfaces
   validate :surfaces_are_valid
@@ -39,6 +42,34 @@ class Court < ApplicationRecord
       court.city_name.to_s.strip.downcase == user_city
     end
     local + other
+  end
+
+  # Оценка у человека на корт ровно одна, поэтому новая правит старую, а не
+  # добавляется рядом. Сохраняет вызывающий: у переписанной оценки persisted?
+  # истинно и до сохранения, и отличить принятую от отклонённой можно только по
+  # результату save.
+  def rating_from(user)
+    ratings.find_or_initialize_by(user: user)
+  end
+
+  def rating_by(user)
+    user.present? ? ratings.find_by(user: user) : nil
+  end
+
+  def rated?
+    ratings_count.positive?
+  end
+
+  # Считаем и пишем одним запросом. Порознь нельзя: параллельные оценки доходят
+  # сюда каждая своим after_commit, и «прочитал — посчитал — записал» затирает
+  # результат того, кто закоммитился позже. Мимо валидаций — иначе правка корта
+  # отправила бы его обратно на модерацию из-за чужой звезды.
+  def refresh_rating!
+    self.class.where(id: id).update_all(<<~SQL.squish)
+      ratings_count = (SELECT COUNT(*) FROM court_ratings WHERE court_ratings.court_id = courts.id),
+      ratings_average = (SELECT COALESCE(ROUND(AVG(value), 2), 0) FROM court_ratings WHERE court_ratings.court_id = courts.id)
+    SQL
+    reload
   end
 
   def surface_labels

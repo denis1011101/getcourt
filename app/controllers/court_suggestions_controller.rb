@@ -78,7 +78,7 @@ class CourtSuggestionsController < ApplicationController
 
   def editable_params
     permitted = params.require(:court_suggestion).permit(
-      :name, :sport, :coordinates, :contact_type, :contact_value, :free, :outdoor, :indoor,
+      :name, :sport, :coordinates, :contact_type, :contact_value, :free, :outdoor, :indoor, :sauna,
       surfaces: [], contact_entries: %i[contact_type contact_value]
     )
     contact_entries = permitted.delete(:contact_entries)

@@ -1,6 +1,6 @@
 class CourtSuggestion < ApplicationRecord
   STATUSES = %w[pending approved rejected].freeze
-  EDITABLE_FIELDS = %w[name sport coordinates contact_type contact_value free outdoor indoor surfaces].freeze
+  EDITABLE_FIELDS = %w[name sport coordinates contact_type contact_value free outdoor indoor sauna surfaces].freeze
 
   belongs_to :court
   belongs_to :user

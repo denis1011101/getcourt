@@ -31,3 +31,8 @@ production:
   cleanup_old_game_media:
     class: CleanupOldGameMediaJob
     schedule: at 5am every day
+  # В 7 утра, как и кроновая строка, которую эта задача заменяет. Время идёт по
+  # config.time_zone (Asia/Yekaterinburg) — тому же, что стоял в CRON_TZ.
+  generate_sitemap:
+    class: GenerateSitemapJob
+    schedule: at 7am every day
