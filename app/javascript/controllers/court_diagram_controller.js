@@ -358,11 +358,22 @@ export default class extends Controller {
 
   // Подписи раздаём по порядку: игроки буквами, соперники цифрами. Остальные
   // фигуры узнаются по форме, подпись им только мешает.
+  //
+  // Ищем первую свободную подпись, а не считаем фигуры: после удаления счётчик
+  // снова выдал бы уже занятую букву — убрали A из [A, B], и следующий игрок
+  // тоже стал бы B.
   #nextLabel(kind) {
-    const taken = this.frame.items.filter((item) => item.kind === kind).length
-    if (kind === "player") return String.fromCharCode(65 + (taken % 26))
-    if (kind === "opponent") return String((taken % 9) + 1)
-    return ""
+    if (kind !== "player" && kind !== "opponent") return ""
+
+    const used = new Set(
+      this.frame.items.filter((item) => item.kind === kind).map((item) => item.label)
+    )
+    const candidates =
+      kind === "player"
+        ? Array.from({ length: 26 }, (_, index) => String.fromCharCode(65 + index))
+        : Array.from({ length: MAX_ITEMS }, (_, index) => String(index + 1))
+
+    return candidates.find((label) => !used.has(label)) || ""
   }
 
   // Экран → координаты viewBox. Считаем на каждое событие, а не кэшируем: холст
