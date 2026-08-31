@@ -10,7 +10,11 @@ class CourtDiagramSourcesController < ApplicationController
   def show
     source = TrainingBlock::Diagram::Source.call
 
-    expires_in 1.hour, public: true
+    # URL стабильный, а исходник меняется с деплоем: дай тут срок жизни — и
+    # вернувшийся браузер до его конца будет исполнять старый Ruby рядом с новым
+    # рантаймом, то есть ровно то расхождение, ради которого всё и затевалось.
+    # Поэтому ревалидация обязательна: тело гоняется только когда ETag разошёлся.
+    expires_in 0, public: true, must_revalidate: true
     return unless stale?(etag: source, public: true)
 
     render plain: source, content_type: "text/plain"
