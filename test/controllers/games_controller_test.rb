@@ -1156,6 +1156,26 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     owner&.destroy
   end
 
+  test "a block with a court diagram shows it on the game page" do
+    post session_url, params: { email: "plan-diagram-owner@example.com" }
+    owner = User.find_by!(email: "plan-diagram-owner@example.com")
+    owner.update!(coach: true)
+    block = owner.training_blocks.create!(
+      title: "Подача с выходом",
+      diagram: { frames: [ { items: [ { kind: "player", label: "A", x: 50, y: 150 } ] } ] }.to_json
+    )
+    game = Game.create!(court: courts(:one), user: owner, date: Date.current + 1.day, time: "18:00", kind: "training")
+    game.replace_training_plan!([ block.id ])
+
+    get game_url(game)
+
+    assert_response :success
+    assert_select "[data-testid=training-plan] [data-controller=court-diagram]", 1
+  ensure
+    game&.destroy
+    owner&.destroy
+  end
+
   test "an invalid inline block stops the save and comes back filled in" do
     post session_url, params: { email: "plan-invalid-owner@example.com" }
     owner = User.find_by!(email: "plan-invalid-owner@example.com")

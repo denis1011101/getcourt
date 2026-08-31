@@ -25,6 +25,29 @@ class TrainingBlocksControllerTest < ActionDispatch::IntegrationTest
     coach&.destroy
   end
 
+  test "the court diagram comes from the form as JSON and is stored normalized" do
+    post session_url, params: { email: "library-diagram@example.com" }
+    coach = User.find_by!(email: "library-diagram@example.com")
+    coach.update!(coach: true)
+    diagram = {
+      frames: [ {
+        title: "Фаза 1",
+        items: [ { kind: "player", label: "A", x: 40, y: 900 }, { kind: "боль", x: 1, y: 1 } ],
+        arrows: [ { kind: "run", x1: 40, y1: 150, x2: 60, y2: 90 } ]
+      } ]
+    }
+
+    post training_blocks_url, params: { training_block: { title: "Выход к сетке", diagram: diagram.to_json } }
+
+    assert_redirected_to training_blocks_path
+    frame = coach.training_blocks.sole.diagram_frames.sole
+    assert_equal [ "player" ], frame["items"].map { |item| item["kind"] }
+    assert_equal TrainingBlock::Diagram::HEIGHT, frame["items"].sole["y"]
+    assert_equal 1, frame["arrows"].size
+  ensure
+    coach&.destroy
+  end
+
   test "a block is created, renamed and deleted from the library" do
     post session_url, params: { email: "library-crud@example.com" }
     coach = User.find_by!(email: "library-crud@example.com")

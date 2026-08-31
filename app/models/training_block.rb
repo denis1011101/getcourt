@@ -42,6 +42,20 @@ class TrainingBlock < ApplicationRecord
     where(user: user).where.not(id: except).detect { |block| block.title.casecmp?(title.to_s.strip) }
   end
 
+  # Схему присылают JSON-строкой из скрытого поля формы, поэтому нормализуем её
+  # в сеттере: в базе всегда лежит уже проверенная структура.
+  def diagram=(value)
+    super(Diagram.normalize(value))
+  end
+
+  def diagram_frames
+    Diagram.frames(diagram)
+  end
+
+  def diagram?
+    Diagram.any?(diagram)
+  end
+
   def label
     return title if duration_minutes.blank?
 

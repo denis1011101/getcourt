@@ -1,0 +1,69 @@
+<%# Схема корта для блока тренировки. Один и тот же партиал работает редактором
+    и просмотром: readonly убирает панель инструментов и скрытое поле, а рисует
+    кадры всё равно Stimulus — иначе отрисовку фигур пришлось бы держать в двух
+    местах, здесь и в JS. %>
+<% readonly = local_assigns.fetch(:readonly, false) %>
+<% field_name = local_assigns.fetch(:field_name, "training_block[diagram]") %>
+<% tools = %w[select player opponent coach ball cone run ball_path] %>
+
+<div class="space-y-2"
+     data-controller="court-diagram"
+     data-court-diagram-diagram-value="<%= block.diagram.to_json %>"
+     data-court-diagram-readonly-value="<%= readonly %>">
+
+  <% unless readonly %>
+    <%= hidden_field_tag field_name, block.diagram.to_json, id: nil,
+          data: { court_diagram_target: "input" } %>
+
+    <p class="text-xs text-gray-500 dark:text-slate-400"><%= t(".hint") %></p>
+
+    <div class="flex flex-wrap gap-1">
+      <% tools.each do |tool| %>
+        <button type="button" data-tool="<%= tool %>" aria-pressed="false"
+                data-court-diagram-target="tool"
+                data-action="court-diagram#selectTool"
+                class="rounded border border-gray-300 px-2 py-1 text-xs text-gray-600 hover:bg-gray-50 dark:border-white/15 dark:text-slate-300 dark:hover:bg-white/5">
+          <%= t(".tools.#{tool}") %>
+        </button>
+      <% end %>
+    </div>
+  <% end %>
+
+  <svg viewBox="0 0 100 200" role="img" aria-label="<%= t(".title") %>"
+       class="w-full max-w-[16rem] touch-none select-none rounded-md border border-gray-300 dark:border-white/15"
+       data-court-diagram-target="svg"
+       data-action="pointerdown->court-diagram#start pointermove->court-diagram#move pointerup->court-diagram#finish pointercancel->court-diagram#finish">
+    <%= render "training_blocks/court_markings" %>
+    <g data-court-diagram-target="layer" class="text-slate-900 dark:text-slate-100"></g>
+  </svg>
+
+  <div class="flex flex-wrap items-center gap-1">
+    <span class="text-xs text-gray-500 dark:text-slate-400"><%= t(".frames") %></span>
+    <span class="flex flex-wrap gap-1" data-court-diagram-target="tabs"></span>
+
+    <% unless readonly %>
+      <button type="button" data-action="court-diagram#addFrame"
+              class="rounded border border-gray-300 px-2 py-1 text-xs text-gray-600 hover:bg-gray-50 dark:border-white/15 dark:text-slate-300 dark:hover:bg-white/5"><%= t(".add_frame") %></button>
+      <button type="button" data-action="court-diagram#duplicateFrame"
+              class="rounded border border-gray-300 px-2 py-1 text-xs text-gray-600 hover:bg-gray-50 dark:border-white/15 dark:text-slate-300 dark:hover:bg-white/5"><%= t(".duplicate_frame") %></button>
+      <button type="button" data-action="court-diagram#deleteFrame"
+              class="rounded border border-gray-300 px-2 py-1 text-xs text-red-600 hover:bg-red-50 dark:border-white/15 dark:text-red-300 dark:hover:bg-white/5"><%= t(".delete_frame") %></button>
+    <% end %>
+  </div>
+
+  <% unless readonly %>
+    <div class="flex flex-wrap items-center gap-1">
+      <%# Без name: название кадра уезжает на сервер внутри JSON схемы, а не отдельным полем. %>
+      <input type="text" maxlength="40" placeholder="<%= t(".frame_title") %>"
+             data-court-diagram-target="frameTitle"
+             data-action="input->court-diagram#updateFrameTitle"
+             class="w-40 rounded-md border border-gray-300 px-2 py-1 text-xs dark:border-white/15 dark:bg-slate-700 dark:text-slate-100">
+      <button type="button" data-action="court-diagram#deleteSelected"
+              class="rounded border border-gray-300 px-2 py-1 text-xs text-gray-600 hover:bg-gray-50 dark:border-white/15 dark:text-slate-300 dark:hover:bg-white/5"><%= t(".delete_selected") %></button>
+      <button type="button" data-action="court-diagram#undo"
+              class="rounded border border-gray-300 px-2 py-1 text-xs text-gray-600 hover:bg-gray-50 dark:border-white/15 dark:text-slate-300 dark:hover:bg-white/5"><%= t(".undo") %></button>
+      <button type="button" data-action="court-diagram#clearFrame"
+              class="rounded border border-gray-300 px-2 py-1 text-xs text-gray-600 hover:bg-gray-50 dark:border-white/15 dark:text-slate-300 dark:hover:bg-white/5"><%= t(".clear_frame") %></button>
+    </div>
+  <% end %>
+</div>
