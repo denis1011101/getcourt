@@ -827,6 +827,8 @@ es:
     diagram:
       title: "Esquema de la pista"
       hint: "Elige una figura y toca la pista. La flecha se dibuja arrastrando; las figuras se mueven en modo \"Seleccionar\"."
+      booting: "Preparando el editor…"
+      failed: "El editor no se cargó: recarga la página."
       frames: "Fotogramas:"
       frame_title: "Título del fotograma"
       add_frame: "+ fotograma"

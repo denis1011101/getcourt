@@ -814,6 +814,8 @@ en:
     diagram:
       title: "Court diagram"
       hint: "Pick a figure and tap the court. Draw an arrow by dragging; move figures in \"Select\" mode."
+      booting: "Preparing the editor…"
+      failed: "The editor failed to load — reload the page."
       frames: "Frames:"
       frame_title: "Frame title"
       add_frame: "+ frame"

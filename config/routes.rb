@@ -53,6 +53,10 @@ Rails.application.routes.draw do
   # Библиотека блоков тренировок — отдельный раздел личного кабинета.
   resources :training_blocks, only: %i[index create update destroy], path: "account/training_blocks"
 
+  # Исходник редактора схемы корта: в браузере его исполняет ruby.wasm, чтобы
+  # лимиты и нормализация схемы не расходились с сервером.
+  get "wasm/court_diagram.rb" => "court_diagram_sources#show", as: :court_diagram_source
+
   resources :users, only: [ :index, :show ] do
     resource :player_statistic, only: [ :show ]
   end

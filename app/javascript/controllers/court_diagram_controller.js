@@ -1,21 +1,12 @@
 import { Controller } from "@hotwired/stimulus"
+import { openEditor } from "court_diagram/runtime"
 
-// Координатная сетка совпадает с TrainingBlock::Diagram и с viewBox разметки
-// корта: 100 единиц в ширину, 200 в длину. Лимиты дублируют серверные — не
-// потому, что им верят, а чтобы редактор не давал нарисовать то, что сервер
-// потом молча срежет.
-const WIDTH = 100
-const HEIGHT = 200
-const MAX_FRAMES = 8
-const MAX_ITEMS = 16
-const MAX_ARROWS = 20
-const MIN_ARROW_LENGTH = 3
-const UNDO_LIMIT = 20
+// Здесь остались только события и отрисовка. Кадры, фигуры, стрелки, подписи,
+// отмена и лимиты живут в TrainingBlock::Diagram::Editor и крутятся в ruby.wasm:
+// правила разбора схемы должны быть одни и те же в браузере и на сервере, а
+// продублированные константы расходятся ровно в тот день, когда их поправят с
+// одной стороны.
 const SVG_NS = "http://www.w3.org/2000/svg"
-
-const ITEM_TOOLS = ["player", "opponent", "coach", "ball", "cone"]
-// Инструмент «стрелка бега» и «стрелка мяча» кладут разный kind в одну и ту же фигуру.
-const ARROW_TOOLS = { run: "run", ball_path: "ball" }
 
 const ITEM_COLORS = {
   player: "#4F46E5",
@@ -26,174 +17,117 @@ const ITEM_COLORS = {
 }
 
 export default class extends Controller {
-  static targets = ["svg", "layer", "input", "tabs", "frameTitle", "tool"]
-  static values = { diagram: Object, readonly: Boolean }
+  static targets = [ "svg", "layer", "input", "tabs", "frameTitle", "tool", "status" ]
+  static values = { diagram: Object, readonly: Boolean, source: String }
 
   connect() {
-    this.frames = this.#framesFrom(this.diagramValue)
-    this.frameIndex = 0
-    this.tool = "select"
-    this.selected = null
-    this.dragging = null
-    this.draft = null
-    this.undoStack = []
+    this.send = null
+    this.state = this.#serverState()
     this.render()
+
+    // Просмотр обходится без Ruby: схема уже посчитана сервером, а в плане игры
+    // таких схем пять штук — тащить ради них рантайм незачем.
+    if (!this.readonlyValue) this.#boot()
   }
 
-  // --- инструменты ---------------------------------------------------------
+  disconnect() {
+    // Иначе редакторы копятся в общем VM: Turbo перерисовывает библиотеку на
+    // каждое сохранение блока.
+    try {
+      this.send?.("close")
+    } catch (error) {
+      console.error("court diagram", error)
+    }
+
+    this.send = null
+  }
+
+  async #boot() {
+    this.#busy(true)
+
+    try {
+      const { send, state } = await openEditor(this.sourceValue, this.diagramValue)
+
+      // Пока грузился рантайм, блок мог обновиться турбо-фреймом. Редактор в
+      // общем VM уже создан, и закрыть его больше будет некому: disconnect
+      // прошёл раньше, чем появился send.
+      if (!this.element.isConnected) {
+        send("close")
+        return
+      }
+
+      this.send = send
+      this.state = state
+      this.#busy(false)
+      this.render()
+    } catch (error) {
+      console.error("court diagram", error)
+      this.#failed()
+    }
+  }
+
+  // --- жесты ---------------------------------------------------------------
 
   selectTool(event) {
-    this.tool = event.currentTarget.dataset.tool
-    this.selected = null
-    this.render()
+    this.#apply("select_tool", { tool: event.currentTarget.dataset.tool })
   }
 
-  // --- рисование -----------------------------------------------------------
-
   start(event) {
-    if (this.readonlyValue) return
+    if (this.readonlyValue || !this.send) return
     event.preventDefault()
+
     const point = this.#point(event)
+    this.#apply("pointer_down", { ...point, index: this.#itemIndexAt(event.target) })
 
-    if (this.tool === "select") {
-      const index = this.#itemIndexAt(event.target)
-      this.selected = index
-      if (index !== null) {
-        this.#pushUndo()
-        this.dragging = index
-        this.#capture(event)
-      }
-      this.render()
-      return
-    }
-
-    if (ITEM_TOOLS.includes(this.tool)) {
-      if (this.frame.items.length >= MAX_ITEMS) return
-
-      this.#pushUndo()
-      this.frame.items.push({
-        kind: this.tool,
-        label: this.#nextLabel(this.tool),
-        x: point.x,
-        y: point.y
-      })
-      this.render()
-      return
-    }
-
-    const kind = ARROW_TOOLS[this.tool]
-    if (kind && this.frame.arrows.length < MAX_ARROWS) {
-      this.#pushUndo()
-      this.draft = { kind, x1: point.x, y1: point.y, x2: point.x, y2: point.y }
-      this.#capture(event)
-      this.render()
-    }
+    if (this.state.capturing) this.#capture(event)
   }
 
   move(event) {
-    if (this.dragging === null && !this.draft) return
+    if (!this.state.capturing) return
     event.preventDefault()
-    const point = this.#point(event)
 
-    if (this.draft) {
-      this.draft.x2 = point.x
-      this.draft.y2 = point.y
-    } else {
-      const item = this.frame.items[this.dragging]
-      item.x = point.x
-      item.y = point.y
-    }
-
-    this.render()
+    this.#apply("pointer_move", this.#point(event))
   }
 
   finish(event) {
-    if (this.draft) {
-      const { x1, y1, x2, y2 } = this.draft
-      if (Math.hypot(x2 - x1, y2 - y1) >= MIN_ARROW_LENGTH) {
-        this.frame.arrows.push(this.draft)
-      } else {
-        // Тычок вместо жеста: ни стрелки, ни шага в истории отмены.
-        this.undoStack.pop()
-      }
-      this.draft = null
-    }
+    if (!this.state.capturing) return
 
-    this.dragging = null
     this.#release(event)
-    this.render()
+    this.#apply("pointer_up")
   }
 
   // --- правки --------------------------------------------------------------
 
-  deleteSelected() {
-    if (this.selected === null) return
-
-    this.#pushUndo()
-    this.frame.items.splice(this.selected, 1)
-    this.selected = null
-    this.render()
-  }
-
-  clearFrame() {
-    this.#pushUndo()
-    this.frames[this.frameIndex] = this.#blankFrame(this.frame.title)
-    this.selected = null
-    this.render()
-  }
-
-  undo() {
-    const snapshot = this.undoStack.pop()
-    if (!snapshot) return
-
-    this.frames = JSON.parse(snapshot)
-    this.frameIndex = Math.min(this.frameIndex, this.frames.length - 1)
-    this.selected = null
-    this.render()
-  }
-
-  // --- кадры ---------------------------------------------------------------
-
-  selectFrame(event) {
-    this.frameIndex = Number(event.currentTarget.dataset.frameIndex)
-    this.selected = null
-    this.render()
-  }
-
-  addFrame() {
-    if (this.frames.length >= MAX_FRAMES) return
-
-    this.#pushUndo()
-    this.frames.push(this.#blankFrame())
-    this.frameIndex = this.frames.length - 1
-    this.selected = null
-    this.render()
-  }
-
-  // Фазы упражнения отличаются одним-двумя шагами, поэтому следующий кадр почти
-  // всегда начинается с копии предыдущего.
-  duplicateFrame() {
-    if (this.frames.length >= MAX_FRAMES) return
-
-    this.#pushUndo()
-    this.frames.splice(this.frameIndex + 1, 0, JSON.parse(JSON.stringify(this.frame)))
-    this.frameIndex += 1
-    this.selected = null
-    this.render()
-  }
-
-  deleteFrame() {
-    this.#pushUndo()
-    this.frames.splice(this.frameIndex, 1)
-    if (this.frames.length === 0) this.frames.push(this.#blankFrame())
-    this.frameIndex = Math.min(this.frameIndex, this.frames.length - 1)
-    this.selected = null
-    this.render()
-  }
+  deleteSelected() { this.#apply("delete_selected") }
+  clearFrame() { this.#apply("clear_frame") }
+  undo() { this.#apply("undo") }
+  addFrame() { this.#apply("add_frame") }
+  duplicateFrame() { this.#apply("duplicate_frame") }
+  deleteFrame() { this.#apply("delete_frame") }
 
   updateFrameTitle(event) {
-    this.frame.title = event.currentTarget.value
-    this.#save()
+    this.#apply("frame_title", { title: event.currentTarget.value })
+  }
+
+  selectFrame(event) {
+    const index = Number(event.currentTarget.dataset.frameIndex)
+
+    // Кадры листаются и в просмотре, где Ruby не поднимается: показать фазу
+    // упражнения — это не правка схемы.
+    if (!this.send) {
+      this.state = { ...this.state, frame_index: index }
+      this.render()
+      return
+    }
+
+    this.#apply("select_frame", { index })
+  }
+
+  #apply(op, args = {}) {
+    if (!this.send) return
+
+    this.state = this.send(op, args)
+    this.render()
   }
 
   // --- отрисовка -----------------------------------------------------------
@@ -211,7 +145,7 @@ export default class extends Controller {
   }
 
   get frame() {
-    return this.frames[this.frameIndex]
+    return this.state.frames[this.state.frame_index]
   }
 
   #renderLayer() {
@@ -219,7 +153,7 @@ export default class extends Controller {
     layer.replaceChildren()
 
     this.frame.arrows.forEach((arrow) => layer.appendChild(this.#arrowNode(arrow)))
-    if (this.draft) layer.appendChild(this.#arrowNode(this.draft, true))
+    if (this.state.draft) layer.appendChild(this.#arrowNode(this.state.draft, true))
     this.frame.items.forEach((item, index) => layer.appendChild(this.#itemNode(item, index)))
   }
 
@@ -227,14 +161,14 @@ export default class extends Controller {
     if (!this.hasTabsTarget) return
 
     this.tabsTarget.replaceChildren()
-    this.frames.forEach((frame, index) => {
+    this.state.frames.forEach((frame, index) => {
       const button = document.createElement("button")
       button.type = "button"
       button.dataset.frameIndex = index
       button.dataset.action = "court-diagram#selectFrame"
       button.textContent = frame.title?.trim() || String(index + 1)
       button.className =
-        index === this.frameIndex
+        index === this.state.frame_index
           ? "rounded bg-indigo-600 px-2 py-1 text-xs text-white"
           : "rounded border border-gray-300 px-2 py-1 text-xs text-gray-600 dark:border-white/15 dark:text-slate-300"
       this.tabsTarget.appendChild(button)
@@ -243,7 +177,7 @@ export default class extends Controller {
 
   #renderTools() {
     this.toolTargets.forEach((button) => {
-      const active = button.dataset.tool === this.tool
+      const active = button.dataset.tool === this.state.tool
       button.classList.toggle("bg-indigo-600", active)
       button.classList.toggle("text-white", active)
       button.classList.toggle("border-indigo-600", active)
@@ -260,7 +194,7 @@ export default class extends Controller {
     const color = ITEM_COLORS[item.kind] || ITEM_COLORS.player
     const shape = this.#shapeNode(item.kind)
     shape.setAttribute("fill", color)
-    if (index === this.selected) {
+    if (index === this.state.selected) {
       shape.setAttribute("stroke", "#FFFFFF")
       shape.setAttribute("stroke-width", "1.2")
     }
@@ -341,52 +275,30 @@ export default class extends Controller {
 
   // --- служебное -----------------------------------------------------------
 
-  #framesFrom(value) {
-    const raw = Array.isArray(value?.frames) ? value.frames : []
-    const frames = raw.map((frame) => ({
-      title: typeof frame?.title === "string" ? frame.title : "",
-      items: Array.isArray(frame?.items) ? frame.items : [],
-      arrows: Array.isArray(frame?.arrows) ? frame.arrows : []
-    }))
+  // Пока Ruby не поднялся — и всегда в просмотре — рисуем то, что пришло с
+  // сервера: там уже нормализованная схема.
+  #serverState() {
+    const frames = Array.isArray(this.diagramValue?.frames) ? this.diagramValue.frames : []
 
-    return frames.length > 0 ? frames : [ this.#blankFrame() ]
-  }
-
-  #blankFrame(title = "") {
-    return { title, items: [], arrows: [] }
-  }
-
-  // Подписи раздаём по порядку: игроки буквами, соперники цифрами. Остальные
-  // фигуры узнаются по форме, подпись им только мешает.
-  //
-  // Ищем первую свободную подпись, а не считаем фигуры: после удаления счётчик
-  // снова выдал бы уже занятую букву — убрали A из [A, B], и следующий игрок
-  // тоже стал бы B.
-  #nextLabel(kind) {
-    if (kind !== "player" && kind !== "opponent") return ""
-
-    const used = new Set(
-      this.frame.items.filter((item) => item.kind === kind).map((item) => item.label)
-    )
-    const candidates =
-      kind === "player"
-        ? Array.from({ length: 26 }, (_, index) => String.fromCharCode(65 + index))
-        : Array.from({ length: MAX_ITEMS }, (_, index) => String(index + 1))
-
-    return candidates.find((label) => !used.has(label)) || ""
+    return {
+      frames: frames.length > 0 ? frames : [ { title: "", items: [], arrows: [] } ],
+      frame_index: 0,
+      tool: "select",
+      selected: null,
+      draft: null,
+      capturing: false
+    }
   }
 
   // Экран → координаты viewBox. Считаем на каждое событие, а не кэшируем: холст
   // живёт внутри <details> и до раскрытия у него вообще нет размеров.
+  // За сетку не обрезаем — это делает Ruby, там же, где обрезает пришедший POST.
   #point(event) {
     const matrix = this.svgTarget.getScreenCTM()
     if (!matrix) return { x: 0, y: 0 }
 
     const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse())
-    return {
-      x: Math.round(Math.min(Math.max(point.x, 0), WIDTH) * 100) / 100,
-      y: Math.round(Math.min(Math.max(point.y, 0), HEIGHT) * 100) / 100
-    }
+    return { x: point.x, y: point.y }
   }
 
   #itemIndexAt(target) {
@@ -404,14 +316,30 @@ export default class extends Controller {
     }
   }
 
-  #pushUndo() {
-    this.undoStack.push(JSON.stringify(this.frames))
-    if (this.undoStack.length > UNDO_LIMIT) this.undoStack.shift()
+  // Кнопки без поднятого Ruby ничего не делают, поэтому на время загрузки они
+  // выключены, а не просто молчат в ответ на клик.
+  #busy(busy) {
+    this.element.querySelectorAll("button[data-action*='court-diagram#']").forEach((button) => {
+      button.disabled = busy
+    })
+
+    // Поле названия — тоже: набранное до старта редактор не увидит, он соберётся
+    // из пришедшего с сервера, и текст останется на экране, но не в схеме.
+    if (this.hasFrameTitleTarget) this.frameTitleTarget.disabled = busy
+
+    if (this.hasStatusTarget) this.statusTarget.hidden = !busy
+  }
+
+  #failed() {
+    if (!this.hasStatusTarget) return
+
+    this.statusTarget.hidden = false
+    this.statusTarget.textContent = this.statusTarget.dataset.failedText
   }
 
   #save() {
-    if (this.readonlyValue || !this.hasInputTarget) return
+    if (this.readonlyValue || !this.hasInputTarget || this.state.value === undefined) return
 
-    this.inputTarget.value = JSON.stringify({ frames: this.frames })
+    this.inputTarget.value = this.state.value
   }
 }

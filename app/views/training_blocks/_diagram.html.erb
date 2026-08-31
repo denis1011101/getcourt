@@ -9,6 +9,7 @@
 <div class="space-y-2"
      data-controller="court-diagram"
      data-court-diagram-diagram-value="<%= block.diagram.to_json %>"
+     data-court-diagram-source-value="<%= court_diagram_source_path %>"
      data-court-diagram-readonly-value="<%= readonly %>">
 
   <% unless readonly %>
@@ -16,6 +17,12 @@
           data: { court_diagram_target: "input" } %>
 
     <p class="text-xs text-gray-500 dark:text-slate-400"><%= t(".hint") %></p>
+
+    <%# Редактор считает схему в ruby.wasm, а рантайм грузится не мгновенно:
+        пока он едет, кнопки выключены и об этом надо сказать. %>
+    <p hidden class="text-xs text-amber-600 dark:text-amber-400"
+       data-court-diagram-target="status"
+       data-failed-text="<%= t(".failed") %>"><%= t(".booting") %></p>
 
     <div class="flex flex-wrap gap-1">
       <% tools.each do |tool| %>
