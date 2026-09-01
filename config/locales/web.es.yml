@@ -393,8 +393,11 @@ es:
       coach_hint: 'Márcalo si entrenas: ayuda a que otros encuentren y contraten entrenadores.'
       city: Ciudad
       city_placeholder: p. ej. Madrid
-      city_hint: Escribe un lugar. Al guardar, el sistema transliterará el nombre
-        e intentará detectar la zona horaria. Pulsa «Guardar cambios».
+      city_hint: 'Empieza a escribir y elige una ciudad de la lista: solo se guarda
+        la ciudad elegida. La zona horaria se rellena sola.'
+      city_searching: Buscando…
+      city_search_error: No se pudo cargar la lista de ciudades.
+      city_clear: Quitar ciudad
       about_me: Sobre mí
       about_me_placeholder: Cuenta algo sobre ti…
       no_city_matches: Sin resultados.

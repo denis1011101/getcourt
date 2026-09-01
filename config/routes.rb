@@ -45,6 +45,7 @@ Rails.application.routes.draw do
     get :notifications
     get :security
     get :courts
+    get :city_search
     post :regenerate_token
     post :clear_city, to: "users#clear_city", as: :clear_city
     post :dismiss_onboarding

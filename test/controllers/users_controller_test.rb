@@ -551,4 +551,129 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     coach&.destroy
     court&.destroy
   end
+
+  # --- Город: сохраняется только выбор из справочника ------------------------
+
+  test "profile form does not prefill a city guessed from the timezone" do
+    with_city_user do |user, cities|
+      user.update!(timezone: "Asia/Yekaterinburg", city_name: nil)
+
+      get profile_account_url
+
+      assert_response :success
+      # Раньше сюда подставлялся первый попавшийся город этой таймзоны.
+      assert_no_match(/#{cities[:zyukayka].name}/, response.body)
+    end
+  end
+
+  test "picking a city saves its canonical name and timezone" do
+    with_city_user do |user, cities|
+      patch account_url, params: {
+        section: "profile",
+        selected_city_id: cities[:yekaterinburg].id,
+        user: { city_name: "что угодно" }
+      }
+
+      user.reload
+      assert_equal "Yekaterinburg", user.city_name
+      assert_equal "Ekaterinburg", user.timezone
+    end
+  end
+
+  test "free text without a picked city leaves the city untouched" do
+    with_city_user do |user, _cities|
+      user.update!(city_name: "Yekaterinburg", timezone: "Ekaterinburg")
+
+      patch account_url, params: {
+        section: "profile",
+        user: { name: "Denis", city_name: "Gilyovskaya Roscha, Tyumen" }
+      }
+
+      user.reload
+      assert_equal "Denis", user.name
+      assert_equal "Yekaterinburg", user.city_name
+    end
+  end
+
+  test "hyphenated city name is stored verbatim" do
+    with_city_user do |user, _cities|
+      city = City.create!(name: "Sankt-Peterburg", asciiname: "Sankt-Peterburg",
+                          country_code: "RU", timezone: "Europe/Moscow",
+                          population: 5_351_935, geoname_id: unique_geoname_id)
+
+      patch account_url, params: { section: "profile", selected_city_id: city.id, user: { city_name: "" } }
+
+      assert_equal "Sankt-Peterburg", user.reload.city_name
+    ensure
+      city&.destroy
+    end
+  end
+
+  test "city search caps a client-supplied limit" do
+    with_city_user do |_user, _cities|
+      # Отрицательный LIMIT в SQLite снимает ограничение совсем.
+      get city_search_account_url, params: { q: "a", limit: -1 }
+
+      assert_response :success
+      assert_operator JSON.parse(response.body).size, :<=, UsersController::CITY_SEARCH_MAX_LIMIT
+    end
+  end
+
+  test "picked city survives a failed validation" do
+    with_city_user do |user, cities|
+      other_email = "taken_#{SecureRandom.hex(4)}@example.com"
+      other = User.create!(email: other_email)
+
+      patch account_url, params: {
+        section: "profile",
+        selected_city_id: cities[:yekaterinburg].id,
+        user: { email: other_email }
+      }
+
+      assert_response :unprocessable_entity
+      assert_select "input[name=selected_city_id][value=?]", cities[:yekaterinburg].id.to_s
+      assert_nil user.reload.city_name
+    ensure
+      other&.destroy
+    end
+  end
+
+  test "city search returns matching cities as json" do
+    with_city_user do |_user, _cities|
+      get city_search_account_url, params: { q: "ekaterinburg" }
+
+      assert_response :success
+      names = JSON.parse(response.body).map { |city| city["name"] }
+      assert_includes names, "Yekaterinburg"
+    end
+  end
+
+  private
+
+  def with_city_user
+    email = "city_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: email }
+    user = User.find_by!(email: email)
+
+    cities = {
+      yekaterinburg: City.create!(name: "Yekaterinburg", asciiname: "Yekaterinburg",
+                                  country_code: "RU", timezone: "Asia/Yekaterinburg",
+                                  population: 1_495_066, geoname_id: unique_geoname_id),
+      # Посёлок, который раньше подставлялся всем с таймзоной Asia/Yekaterinburg:
+      # в справочнике он идёт первым по id в этой зоне.
+      zyukayka: City.create!(name: "Zyukayka", asciiname: "Zyukayka",
+                             country_code: "RU", timezone: "Asia/Yekaterinburg",
+                             population: 4_556, geoname_id: unique_geoname_id)
+    }
+
+    yield user, cities
+  ensure
+    user&.destroy
+    cities&.each_value(&:destroy)
+  end
+
+  def unique_geoname_id
+    @geoname_seq = (@geoname_seq || 0) + 1
+    900_000_000 + (Process.pid % 100_000) * 10 + @geoname_seq
+  end
 end

@@ -2,6 +2,7 @@ class UsersController < ApplicationController
   include LocationFilters
 
   CITY_SEARCH_DEFAULT_LIMIT = 5
+  CITY_SEARCH_MAX_LIMIT = 20
 
   before_action :authenticate_user!
 
@@ -38,13 +39,13 @@ class UsersController < ApplicationController
     court_preferences_submitted = user_params.key?(:court_preferences_mode) || user_params.key?(:favorite_court_ids)
     court_preferences_mode = user_params[:court_preferences_mode].presence || default_court_preferences_mode(@user)
 
-    query = user_attrs["city_name"].to_s.strip
-    if query.present?
-      coords_regex = /\A\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*\z/
-      # for plain names: transliterate immediately so DB shows e.g. "Kurgan"
-      unless query =~ coords_regex
-        user_attrs["city_name"] = translit_str(query)
-      end
+    # Город принимаем только выбором из подсказок: произвольный текст в поле
+    # раньше уезжал в city_name как есть и ломал матчинг с courts.city_name.
+    user_attrs.delete("city_name")
+    selected_city = City.find_by(id: params[:selected_city_id]) if params[:selected_city_id].present?
+    if selected_city
+      user_attrs["city_name"] = selected_city.canonical_name
+      user_attrs["timezone"] = selected_city.rails_timezone if selected_city.rails_timezone.present?
     end
 
     if court_preferences_submitted
@@ -63,12 +64,6 @@ class UsersController < ApplicationController
     Rails.logger.info "[UsersController#update] saving user_attrs=#{user_attrs.inspect}"
 
     if @user.update(user_attrs)
-      # enqueue background job to resolve timezone asynchronously (by coords or by name)
-      if query.present?
-        ResolveUserCityJob.perform_later(@user.id, query)
-        Rails.logger.info "[UsersController#update] enqueued ResolveUserCityJob for user_id=#{@user.id} query=#{query.inspect}"
-      end
-
       respond_to do |format|
         format.html { redirect_to update_section_path(section), notice: "Account updated" }
         format.json { render json: { success: true, city_name: @user.city_name, timezone: @user.timezone } }
@@ -93,6 +88,19 @@ class UsersController < ApplicationController
   def dismiss_onboarding
     current_user.dismiss_onboarding!
     redirect_back fallback_location: root_path
+  end
+
+  # Подсказки для поля города: отдаём только то, что есть в справочнике, —
+  # сохранить можно лишь выбранную строку.
+  def city_search
+    # Потолок обязателен: в SQLite отрицательный LIMIT снимает ограничение
+    # совсем, и запрос вытащил бы весь справочник городов целиком.
+    limit = params[:limit].present? ? params[:limit].to_i.clamp(1, CITY_SEARCH_MAX_LIMIT) : CITY_SEARCH_DEFAULT_LIMIT
+    cities = Cities::SearchService.new(query: params[:q], limit: limit).call
+
+    render json: cities.map { |city|
+      { id: city.id, name: city.canonical_name, hint: [ city.country_code, city.timezone ].compact_blank.join(" · ") }
+    }
   end
 
   def clear_city
@@ -177,10 +185,6 @@ class UsersController < ApplicationController
 
   private
 
-  def translit_str(s)
-    Russian.translit(s.to_s)
-  end
-
   def user_update_params
     params.require(:user).permit(
       :name,
@@ -205,15 +209,15 @@ class UsersController < ApplicationController
     @registration_token = @user.ensure_telegram_registration_token!
   end
 
+  # Раньше здесь по таймзоне подбирался «какой-нибудь» город из справочника и
+  # подставлялся в поле города. Таймзона города не определяет — в
+  # Asia/Yekaterinburg лежит и Челябинск, и Тюмень, — поэтому не подставляем
+  # ничего: пустое поле честнее угаданного.
   def prepare_profile_form_state
-    @limit = params[:limit].to_i.nonzero? || CITY_SEARCH_DEFAULT_LIMIT
-
-    if params[:selected_city_name].present?
-      @selected_city_name = params[:selected_city_name]
-    else
-      c = City.find_by(timezone: @user.timezone)
-      @selected_city_name = "#{c.name}, #{c.country_code} — #{c.timezone}" if c.present?
-    end
+    # После ошибки валидации форму рисуем заново, и выбранный город надо вернуть
+    # в hidden-поле: в видимом поле он уже стоит, а без id следующая отправка
+    # город не изменит.
+    @selected_city_id = params[:selected_city_id].presence
   end
 
   def prepare_court_preferences_state

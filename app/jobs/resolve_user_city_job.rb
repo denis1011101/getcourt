@@ -18,11 +18,8 @@ class ResolveUserCityJob < ApplicationJob
 
     return unless city
 
-    new_name = city.respond_to?(:asciiname) ? city.asciiname.presence || translit_str(city.name) : translit_str(city.name)
-
-    # map IANA -> Rails display name
-    rails_zone = ActiveSupport::TimeZone.all.find { |z| z.tzinfo.name == city.timezone } rescue nil
-    tz_to_set = rails_zone ? rails_zone.name : (ActiveSupport::TimeZone[city.timezone].present? ? city.timezone : nil)
+    new_name = city.canonical_name
+    tz_to_set = city.rails_timezone
 
     # avoid clobbering if user changed city manually after save:
     expected_current = original_query =~ coords_regex ? original_query : translit_str(original_query)
