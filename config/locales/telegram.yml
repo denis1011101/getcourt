@@ -77,6 +77,16 @@ ru:
     invite_skipped_self: 'Пропущены (это вы): %{users}'
     game_or_user_not_found: Игра или пользователь не найдены
     joined_game: Вы присоединились к игре
+    chat_offer: "Вы в составе игры %{game}. Хотите писать остальным участникам прямо здесь?"
+    chat_open_btn: "Открыть чат игры"
+    chat_started: "Теперь вы пишете в чат игры %{game}. Сообщения увидят участники, подключённые к Telegram (%{count})."
+    chat_switch_btn: "Сменить игру"
+    chat_exit_btn: "Выйти из чата"
+    chat_stopped: "Вышли из чата. Сообщения боту снова видите только вы."
+    chat_pick_prompt: "В какую игру писать?"
+    chat_none: "Нет игр, в чат которых можно писать."
+    chat_not_available: "Чат этой игры недоступен: игра прошла или вас нет в составе."
+    chat_text_only: "Пока чат передаёт только текст. Фото и видео — следующим шагом."
     join_request_already_sent: Запрос уже отправлен
     already_joined_game: Вы уже участвуете в игре
     join_request_sent: Запрос на участие отправлен
@@ -664,6 +674,16 @@ en:
     invite_skipped_self: 'Skipped self: %{users}'
     game_or_user_not_found: Game or user not found
     joined_game: You joined the game
+    chat_offer: "You are in game %{game}. Want to message the other players right here?"
+    chat_open_btn: "Open game chat"
+    chat_started: "You are now writing to game %{game}. Players connected to Telegram will see your messages (%{count})."
+    chat_switch_btn: "Switch game"
+    chat_exit_btn: "Leave chat"
+    chat_stopped: "Left the chat. Messages to the bot are private again."
+    chat_pick_prompt: "Which game do you want to write to?"
+    chat_none: "No games with an open chat."
+    chat_not_available: "This game's chat is unavailable: the game is over or you are not in the squad."
+    chat_text_only: "The chat carries text only for now. Photos and video come next."
     join_request_already_sent: Request already sent
     already_joined_game: You already joined
     join_request_sent: Join request sent
@@ -1208,6 +1228,16 @@ es:
     invite_skipped_self: 'Omitidos (eres tú): %{users}'
     game_or_user_not_found: Partido o usuario no encontrado
     joined_game: Te has unido al partido
+    chat_offer: "Estás en el partido %{game}. ¿Quieres escribir aquí a los demás?"
+    chat_open_btn: "Abrir chat del partido"
+    chat_started: "Ahora escribes al partido %{game}. Lo verán los jugadores conectados a Telegram (%{count})."
+    chat_switch_btn: "Cambiar de partido"
+    chat_exit_btn: "Salir del chat"
+    chat_stopped: "Has salido del chat. Tus mensajes al bot vuelven a ser privados."
+    chat_pick_prompt: "¿A qué partido quieres escribir?"
+    chat_none: "No hay partidos con chat abierto."
+    chat_not_available: "El chat de este partido no está disponible: ya terminó o no estás en la alineación."
+    chat_text_only: "Por ahora el chat solo lleva texto. Fotos y vídeo, en el siguiente paso."
     join_request_already_sent: La solicitud ya se ha enviado
     already_joined_game: Ya estás en el partido
     join_request_sent: Solicitud para unirse enviada

@@ -61,6 +61,44 @@ class Game < ApplicationRecord
     [ coach, second_coach ].compact
   end
 
+  # Чат игры живёт до конца дня игры. У повторяющейся игры одной даты нет,
+  # поэтому там режим просто протухает через сутки, и его включают заново —
+  # угадывать, какое занятие человек имел в виду, мы не беремся.
+  CHAT_MAX_TTL = 24.hours
+
+  def chat_open_until
+    return CHAT_MAX_TTL.from_now if recurring? || date.blank?
+
+    closes_at = date.end_of_day
+    closes_at > Time.current ? closes_at : nil
+  end
+
+  def chat_open?
+    chat_open_until.present?
+  end
+
+  # Кому уходит сообщение из чата: те же, кто выходит на корт, но только с
+  # привязанным ботом — остальным доставить некуда.
+  # NOT IN со списком, где есть NULL, в SQL не отбирает ничего — колонка
+  # bigint, так что достаточно проверки на NULL.
+  def chat_members
+    User.where(id: team_member_ids).where.not(telegram_chat_id: nil)
+  end
+
+  # Игры, в чат которых человек вправе писать прямо сейчас.
+  def self.with_open_chat_for(user)
+    return none unless user
+
+    participant_ids = Participation.approved.where(user_id: user.id).pluck(:game_id)
+    coach_ids = where(coach_id: user.id, coach_invitation_status: "accepted").pluck(:id) +
+                where(second_coach_id: user.id, second_coach_invitation_status: "accepted").pluck(:id)
+    owned_ids = where(user_id: user.id).pluck(:id)
+
+    where(id: (participant_ids + coach_ids + owned_ids).uniq)
+      .includes(:court)
+      .select(&:chat_open?)
+  end
+
   # Кто выходит на корт: состав, принятые тренеры и организатор. Они же решают,
   # как пройдёт занятие — предлагают правки плана и голосуют за них.
   def team_member_ids

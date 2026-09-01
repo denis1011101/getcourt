@@ -13,8 +13,19 @@ class Participation < ApplicationRecord
 
   scope :guests, -> { where(user_id: nil) }
 
+  # Выбыл из состава — режим чата этой игры гасим: писать в неё он больше не
+  # вправе, и указатель не должен переживать участие.
+  after_destroy :close_game_chat
+  after_update :close_game_chat, if: -> { saved_change_to_status? && !approved? }
+
   def guest?
     user_id.nil?
+  end
+
+  def close_game_chat
+    Telegram::Chat::Session.stop_for(user, game)
+  rescue StandardError => e
+    Rails.logger.warn("[Participation##{id}] chat session cleanup failed: #{e.class}: #{e.message}")
   end
 
   def display_name
