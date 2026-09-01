@@ -16,11 +16,11 @@ module Telegram
 
           # Find coaches, prioritize overlapping favorite courts, then same city
           scope = User.not_merged.where(coach: true).includes(:favorite_courts)
-          user_city = user&.city_name.to_s.strip.downcase.presence
+          user_city = City.normalize_name(user&.city_name)
 
           coaches = scope.to_a.sort_by do |coach|
             overlap_count = favorite_ids.any? ? (coach.favorite_courts.map(&:id) & favorite_ids).size : 0
-            same_city = user_city && coach.city_name.to_s.strip.downcase == user_city ? 0 : 1
+            same_city = user_city && City.normalize_name(coach.city_name) == user_city ? 0 : 1
             [ -overlap_count, same_city, coach.name.to_s ]
           end
 
@@ -41,7 +41,7 @@ module Telegram
           buttons = items.map do |coach|
             name = Telegram::Helpers::UserLookup.display_name(coach)
             sports = coach.respond_to?(:preferred_sports) && coach.preferred_sports.present? ? Array(coach.preferred_sports).join(", ") : "—"
-            city = coach.city_name.to_s.titleize.presence || "—"
+            city = coach.city_name.presence || "—"
             label = "#{name} · #{sports} · #{city}"
             # Truncate label for Telegram button limit (64 chars)
             label = label[0..60] + "..." if label.length > 63
@@ -69,7 +69,7 @@ module Telegram
 
           name = Telegram::Helpers::UserLookup.display_name(coach)
           sports = coach.respond_to?(:preferred_sports) && coach.preferred_sports.present? ? Array(coach.preferred_sports).join(", ") : "—"
-          city = coach.city_name.to_s.titleize.presence || "—"
+          city = coach.city_name.presence || "—"
           host = ENV.fetch("APP_HOST", "https://getcourt.co")
           courts = if coach.court_preferences_note.present?
             coach.court_preferences_note

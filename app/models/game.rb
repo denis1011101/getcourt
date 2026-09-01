@@ -1,6 +1,6 @@
 class Game < ApplicationRecord
   after_commit :schedule_post_game_stats_reminder, on: %i[create update]
-  after_commit :enqueue_urgent_player_search_notification, on: %i[create update]
+  after_commit :announce_urgent_player_search, on: %i[create update]
   after_update :drop_training_plan_from_plain_game, if: -> { saved_change_to_kind? && !training? }
   after_update :remove_stale_coach_prebookings,
                if: -> { saved_change_to_coach_id? || saved_change_to_second_coach_id? || saved_change_to_date? || saved_change_to_recurring? }
@@ -59,6 +59,44 @@ class Game < ApplicationRecord
 
   def coaches
     [ coach, second_coach ].compact
+  end
+
+  # Чат игры живёт до конца дня игры. У повторяющейся игры одной даты нет,
+  # поэтому там режим просто протухает через сутки, и его включают заново —
+  # угадывать, какое занятие человек имел в виду, мы не беремся.
+  CHAT_MAX_TTL = 24.hours
+
+  def chat_open_until
+    return CHAT_MAX_TTL.from_now if recurring? || date.blank?
+
+    closes_at = date.end_of_day
+    closes_at > Time.current ? closes_at : nil
+  end
+
+  def chat_open?
+    chat_open_until.present?
+  end
+
+  # Кому уходит сообщение из чата: те же, кто выходит на корт, но только с
+  # привязанным ботом — остальным доставить некуда.
+  # NOT IN со списком, где есть NULL, в SQL не отбирает ничего — колонка
+  # bigint, так что достаточно проверки на NULL.
+  def chat_members
+    User.where(id: team_member_ids).where.not(telegram_chat_id: nil)
+  end
+
+  # Игры, в чат которых человек вправе писать прямо сейчас.
+  def self.with_open_chat_for(user)
+    return none unless user
+
+    participant_ids = Participation.approved.where(user_id: user.id).pluck(:game_id)
+    coach_ids = where(coach_id: user.id, coach_invitation_status: "accepted").pluck(:id) +
+                where(second_coach_id: user.id, second_coach_invitation_status: "accepted").pluck(:id)
+    owned_ids = where(user_id: user.id).pluck(:id)
+
+    where(id: (participant_ids + coach_ids + owned_ids).uniq)
+      .includes(:court)
+      .select(&:chat_open?)
   end
 
   # Кто выходит на корт: состав, принятые тренеры и организатор. Они же решают,
@@ -586,12 +624,16 @@ class Game < ApplicationRecord
     coach_prebookings.where(id: stale_ids).delete_all if stale_ids.any?
   end
 
-  def enqueue_urgent_player_search_notification
+  # Срочный поиск включают и с сайта, и из телеграм-бота, поэтому оба канала —
+  # рассылка по городу и внешний кросспостинг — висят на модели, а не на
+  # контроллере: иначе один из входов молча остаётся без анонса.
+  def announce_urgent_player_search
     return unless urgent_player_search?
     return unless saved_change_to_urgent_player_search?
     return unless self[:urgent_player_search]
 
     NotifyUrgentPlayerSearchJob.perform_later(id)
+    Social.publish_urgent(self)
   end
 
   # IMPORTANT: relies on Time.zone being already set (caller wraps Time.use_zone)

@@ -145,6 +145,63 @@ class GameMediaControllerTest < ActionDispatch::IntegrationTest
     assert GameMedium.exists?(medium.id)
   end
 
+  test "the title is optional and stays empty when nobody typed one" do
+    sign_in_as @participant
+    post game_media_path(@game), params: { file: upload }
+
+    assert_nil @game.game_media.last.title
+  end
+
+  test "a typed title is saved with the upload" do
+    sign_in_as @participant
+    post game_media_path(@game), params: { file: upload, title: "  Serve breakdown  " }
+
+    assert_equal "Serve breakdown", @game.game_media.last.title
+  end
+
+  test "a fresh upload stays out of Tennis Life until someone ticks the box" do
+    sign_in_as @participant
+    post game_media_path(@game), params: { file: upload }
+
+    assert_not @game.game_media.last.show_in_feed?
+  end
+
+  test "the author turns the Tennis Life checkbox on and back off" do
+    sign_in_as @participant
+    post game_media_path(@game), params: { file: upload }
+    medium = @game.game_media.last
+
+    patch game_medium_path(@game, medium), params: { show_in_feed: "1" }
+    assert medium.reload.show_in_feed?
+
+    patch game_medium_path(@game, medium), params: { show_in_feed: "0" }
+    assert_not medium.reload.show_in_feed?
+  end
+
+  test "an admin can switch it for someone else's attachment" do
+    sign_in_as @participant
+    post game_media_path(@game), params: { file: upload }
+    medium = @game.game_media.last
+
+    admin = User.create!(name: "Media Admin Feed", email: "media-admin-feed@example.com", admin: true)
+    sign_in_as admin
+    patch game_medium_path(@game, medium), params: { show_in_feed: "1" }
+
+    assert medium.reload.show_in_feed?
+  end
+
+  test "a bystander cannot put someone else's attachment on the front page" do
+    sign_in_as @participant
+    post game_media_path(@game), params: { file: upload }
+    medium = @game.game_media.last
+
+    sign_in_as @outsider
+    patch game_medium_path(@game, medium), params: { show_in_feed: "1" }
+
+    assert_not medium.reload.show_in_feed?
+    assert_equal I18n.t("game_media.not_allowed"), flash[:alert]
+  end
+
   private
 
   def upload(content_type: "image/png", filename: "shot.png")

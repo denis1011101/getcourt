@@ -32,21 +32,21 @@ class SendTrainingVideoJob < ApplicationJob
       **Rails.application.config.action_mailer.default_url_options.to_h.symbolize_keys
     )
     # Ролик может выложить не только организатор, но и админ или принятый
-    # тренер, поэтому имя берём из самой загрузки. Без имени — нейтральный
-    # текст: приписывать видео организатору наугад нельзя.
-    author = medium.user&.name.to_s.strip.presence
+    # тренер, поэтому имя берём из самой загрузки. Без имени и ника —
+    # нейтральный текст: приписывать видео организатору наугад нельзя.
+    author = medium.user&.broadcast_label
+    title = medium.title.presence
+    # Четыре формулировки вместо склейки из кусков: подставлять имя и название
+    # в обрубки фразы — значит ломать порядок слов в других языках.
+    key = "game_media.shared_video.body"
+    key += "_by" if author
+    key += "_titled" if title
 
     NotificationDelivery::Notification.new(
-      subject: ->(locale) { I18n.t("game_media.training_video.subject", locale: locale) },
-      body: lambda { |locale|
-        if author
-          I18n.t("game_media.training_video.body_by", author: author, locale: locale)
-        else
-          I18n.t("game_media.training_video.body", locale: locale)
-        end
-      },
+      subject: ->(locale) { I18n.t("game_media.shared_video.subject", locale: locale) },
+      body: ->(locale) { I18n.t(key, author: author, title: title, locale: locale) },
       actions: lambda { |locale|
-        [ { label: I18n.t("game_media.training_video.action", locale: locale), url: url } ]
+        [ { label: I18n.t("game_media.shared_video.action", locale: locale), url: url } ]
       }
     )
   end

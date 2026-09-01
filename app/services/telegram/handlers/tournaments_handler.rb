@@ -31,8 +31,8 @@ module Telegram
           tournaments = Tournament.includes(:tournament_participants, :courts).order(created_at: :desc).to_a
 
           if user&.city_name.present?
-            user_city = user.city_name.downcase
-            local, other = tournaments.partition { |t| t.courts.any? { |c| c.city_name.to_s.downcase == user_city } }
+            user_city = City.normalize_name(user.city_name)
+            local, other = tournaments.partition { |t| t.courts.any? { |c| City.normalize_name(c.city_name) == user_city } }
             tournaments = local + other
           end
 
@@ -80,8 +80,8 @@ module Telegram
                                   .order(created_at: :desc).to_a
 
           if user.city_name.present?
-            user_city = user.city_name.downcase
-            local, other = tournaments.partition { |t| t.courts.any? { |c| c.city_name.to_s.downcase == user_city } }
+            user_city = City.normalize_name(user.city_name)
+            local, other = tournaments.partition { |t| t.courts.any? { |c| City.normalize_name(c.city_name) == user_city } }
             tournaments = local + other
           end
 

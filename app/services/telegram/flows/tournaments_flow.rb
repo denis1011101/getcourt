@@ -459,12 +459,7 @@ module Telegram
         end
 
         def normalized_city(value)
-          city = ::I18n.transliterate(value.to_s).downcase.strip
-          city = city.gsub(/\s+/, " ")
-          return nil if city.blank?
-
-          # Handle common transliteration variant: Yekaterinburg vs Ekaterinburg.
-          city.sub(/\Ay(?=[aeiou])/, "")
+          City.normalize_name(value)
         end
 
         def send_players_count_input_prompt(chat_id, message_id: nil)

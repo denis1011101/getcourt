@@ -78,10 +78,14 @@ en:
     hidden: Attachment hidden from the feed.
     failed: Could not upload the attachment.
     not_allowed: Only the organizer and the players of this game can attach media.
-    training_video:
-      subject: Training video for your game
-      body: A training video has been shared with the players of your game.
-      body_by: "%{author} shared a training video with the players of your game."
+    feed_enabled: The attachment is now shown in Tennis Life.
+    feed_disabled: The attachment is no longer shown in Tennis Life.
+    shared_video:
+      subject: New video in your game
+      body: A new video has been added to your game.
+      body_titled: "The video \u201C%{title}\u201D has been added to your game."
+      body_by: "%{author} shared a video."
+      body_by_titled: "%{author} shared the video \u201C%{title}\u201D."
       action: Watch video
   games:
     show:
@@ -117,6 +121,10 @@ en:
         notify_participants: Send this video to the players
         notify_participants_hint: The video will be delivered through each player's selected notification channel.
         remove: Remove
+        show_in_feed: Show in Tennis Life
+        title_label: Title
+        title_placeholder: Optional, for example "Serve breakdown"
+        show_in_feed_hint: That section is open to everyone, including visitors who are not signed in.
         remove_confirm: Remove this attachment?
         alt: Photo from the game
         limits: "Up to %{images} photos (%{image_size} MB each) and %{videos} video (%{video_size} MB)."

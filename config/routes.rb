@@ -150,7 +150,7 @@ Rails.application.routes.draw do
 
     resources :prebooking_cancellations, only: [ :create, :destroy ]
     resources :coach_prebookings, only: [ :create, :destroy ]
-    resources :media, only: %i[create destroy], controller: "game_media"
+    resources :media, only: %i[create update destroy], controller: "game_media"
   end
   get "/games(/:country_slug)(/:city_slug)", to: "games#index", as: :games_browse,
       constraints: { country_slug: /[a-z][a-z0-9-]*/, city_slug: /[a-z0-9-]+/ }

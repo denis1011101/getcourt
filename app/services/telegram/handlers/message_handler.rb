@@ -19,6 +19,18 @@ module Telegram
         text = message["text"].to_s
         if text.start_with?("/")
           case text.split.first
+          when /\A\/chat(@|$)/
+            user = Telegram::Helpers::UserLookup.find_user(chat_id)
+            if user
+              Telegram::Chat::Flow.start(chat_id, user)
+            else
+              Api.send_simple(chat_id, t.(:user_not_found))
+            end
+            return
+          when /\A\/stop(@|$)/
+            user = Telegram::Helpers::UserLookup.find_user(chat_id)
+            Telegram::Chat::Flow.stop(chat_id, user) if user
+            return
           when /\A\/create_game(@|$)/
             Telegram::Flows::Games::Manage::CreateFlow.start_create_game(chat_id)
             return
@@ -40,6 +52,11 @@ module Telegram
             return
           end
         end
+
+        # Режим чата стоит выше диалогов: ключи tg:conv живут два часа, и
+        # брошенный когда-то мастер не должен глотать сообщения в игру. Но ниже
+        # команд — команды бота не ретранслируются никогда.
+        return if Telegram::Chat::Relay.handle_message(message)
 
         key = "tg:conv:#{chat_id}"
         conv = Rails.cache.read(key) || {}

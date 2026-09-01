@@ -41,7 +41,7 @@ module Telegram
           else
             nil
           end
-        val.present? ? val.to_s.titleize : "—"
+        val.presence || "—"
       end
 
       def coach_label

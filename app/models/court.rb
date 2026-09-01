@@ -35,11 +35,11 @@ class Court < ApplicationRecord
   def self.sorted_for_user(user)
     # По id корты идут вперемешку, поэтому раскладываем их по городу и названию.
     courts = all.to_a.sort_by { |court| [ court.city_name.to_s, court.name.to_s ] }
-    user_city = user&.city_name.to_s.strip.downcase.presence
+    user_city = City.normalize_name(user&.city_name)
     return courts unless user_city
 
     local, other = courts.partition do |court|
-      court.city_name.to_s.strip.downcase == user_city
+      City.normalize_name(court.city_name) == user_city
     end
     local + other
   end

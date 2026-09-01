@@ -191,11 +191,7 @@ module ApplicationHelper
   end
 
   def normalize_telegram_username(username)
-    candidate = username.to_s.strip.delete_prefix("@")
-    return if candidate.blank?
-    return unless candidate.match?(/\A[A-Za-z0-9_]{5,32}\z/)
-
-    candidate
+    User.normalize_telegram_username(username)
   end
 
   # The handle a person is actually known by: @nick for those who came from the

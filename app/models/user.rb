@@ -187,6 +187,33 @@ class User < ApplicationRecord
     false
   end
 
+  # Ник, каким человек подписан в телеграме. Валидация поля пропускает и @,
+  # и пробелы по краям, поэтому канонический вид собираем здесь — как с
+  # City.normalize_name, чтобы правило жило в одном месте.
+  TELEGRAM_USERNAME_FORMAT = /\A[A-Za-z0-9_]{5,32}\z/
+
+  def self.normalize_telegram_username(value)
+    candidate = value.to_s.strip.delete_prefix("@")
+    return nil unless candidate.match?(TELEGRAM_USERNAME_FORMAT)
+
+    candidate
+  end
+
+  def telegram_handle
+    nick = self.class.normalize_telegram_username(telegram_username)
+    "@#{nick}" if nick
+  end
+
+  # Подпись автора в рассылках. E-mail сюда не попадает намеренно: письмо
+  # уходит всей команде, и почта одного игрока не должна становиться известной
+  # остальным. Если ни имени, ни ника нет — nil, и текст идёт без автора.
+  def broadcast_label
+    parts = [ name.presence, telegram_handle ].compact
+    return nil if parts.empty?
+
+    parts.length == 2 ? "#{parts.first} (#{parts.last})" : parts.first
+  end
+
   private
 
   def ensure_player_statistic

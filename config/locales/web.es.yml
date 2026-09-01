@@ -78,10 +78,14 @@ es:
     hidden: Archivo oculto del feed.
     failed: No se ha podido subir el archivo.
     not_allowed: Solo el organizador y los jugadores del partido pueden adjuntar archivos.
-    training_video:
-      subject: Vídeo de entrenamiento para tu partido
-      body: Se ha compartido un vídeo de entrenamiento con los jugadores de tu partido.
-      body_by: "%{author} ha compartido un vídeo de entrenamiento con los jugadores de tu partido."
+    feed_enabled: El archivo ya se muestra en la sección Tennis Life.
+    feed_disabled: El archivo ya no se muestra en la sección Tennis Life.
+    shared_video:
+      subject: Nuevo vídeo en tu partido
+      body: Se ha añadido un nuevo vídeo a tu partido.
+      body_titled: "Se ha añadido el vídeo «%{title}» a tu partido."
+      body_by: "%{author} ha compartido un vídeo."
+      body_by_titled: "%{author} ha compartido el vídeo «%{title}»."
       action: Ver vídeo
   games:
     show:
@@ -117,6 +121,10 @@ es:
         notify_participants: Enviar este vídeo a los jugadores
         notify_participants_hint: Cada jugador recibirá el vídeo por el canal de notificaciones que haya elegido.
         remove: Eliminar
+        show_in_feed: Mostrar en Tennis Life
+        title_label: Título
+        title_placeholder: Opcional, por ejemplo «Análisis del saque»
+        show_in_feed_hint: Esa sección está abierta a todo el mundo, incluso sin iniciar sesión.
         remove_confirm: "¿Eliminar este archivo?"
         alt: Foto del partido
         limits: "Hasta %{images} fotos (%{image_size} MB cada una) y %{videos} vídeo (%{video_size} MB)."

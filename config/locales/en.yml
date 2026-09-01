@@ -291,13 +291,6 @@ en:
         telegram_not_connected: "Not connected"
         registration_source: "Registration source"
         not_set: "Not set"
-    threads:
-      headline: "🎾 Looking for %{sport} players in %{city}!"
-      date_line: "📅 %{date} at %{time}"
-      court_line: "🏟 %{court}"
-      spots_line:
-        one: "👥 %{count} spot left"
-        other: "👥 %{count} spots left"
     form:
       court_country: "Country"
       court_country_any: "— any country —"
@@ -796,3 +789,25 @@ en:
   coaches:
     index:
       courts_label: "Courts"
+  social:
+    urgent:
+      headline: "🎾 Looking for %{sport} players in %{city}!"
+      date_line: "📅 %{date} at %{time}"
+      court_line: "🏟 %{court}"
+      spots_line:
+        one: "👥 %{count} spot left"
+        other: "👥 %{count} spots left"
+    daily:
+      unknown_surface: "an unknown surface"
+      upcoming:
+        one: "🎾 Tomorrow: %{sport} at %{court}, %{city} — %{time}. %{count} spot left. Join: %{url}"
+        other: "🎾 Tomorrow: %{sport} at %{court}, %{city} — %{time}. %{count} spots left. Join: %{url}"
+      result: "🏆 Match played: %{score} on %{surface}. %{winner} takes it. Log yours at %{url}"
+      fact:
+        total_hours: "⏱ %{value} hours played on GetCourt so far. Add yours 🎾"
+        courts_cities: "📍 %{courts} courts in %{cities} cities on the map. Missing yours? Add it 🎾"
+        longest_match: "🔥 Longest match of the season: %{score} — %{games} games."
+        popular_surface: "🏟 Most played surface this season: %{surface} (%{count} matches)."
+        player_month: "🥇 Most active player of the month: %{name} — %{count} matches."
+        new_players_month: "👋 %{count} new players joined GetCourt this month."
+        busiest_court: "🎾 Busiest court of the season: %{name} — %{count} games."

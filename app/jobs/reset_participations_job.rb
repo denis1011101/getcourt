@@ -12,6 +12,7 @@ class ResetParticipationsJob < ApplicationJob
           game.mark_participations_reset!(nd)
           Rails.logger.info "Reset participations from prebookings for Game##{game.id} for occurrence #{nd}"
         else
+          close_chat_sessions(game)
           game.participations.delete_all
           game.mark_participations_reset!(nd)
           Rails.logger.info "Reset participations for Game##{game.id} for occurrence #{nd}"
@@ -21,6 +22,16 @@ class ResetParticipationsJob < ApplicationJob
   end
 
   private
+
+  # delete_all идёт мимо колбэков Participation, поэтому режим чата у выбывших
+  # гасим здесь — иначе они продолжат писать в состав, из которого их убрали.
+  def close_chat_sessions(game)
+    game.participations.includes(:user).find_each do |participation|
+      Telegram::Chat::Session.stop_for(participation.user, game)
+    end
+  rescue StandardError => e
+    Rails.logger.warn("[ResetParticipationsJob] chat cleanup failed for Game##{game.id}: #{e.class}: #{e.message}")
+  end
 
   # Promote users from prebookings on nd into participations, shift next prebookings up,
   # and append a new empty prebooking date at the end.

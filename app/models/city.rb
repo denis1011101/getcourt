@@ -13,6 +13,31 @@ class City < ApplicationRecord
       .transform_values { |rows| rows.max_by { |(_, _, population)| population.to_i }[1] }
   end
 
+  # Написания одного города, разошедшиеся по базе: у пользователей город долго
+  # был свободным текстом, у кортов он приходит из геокодера. Ключ — вариант,
+  # значение — то, к чему приводим.
+  NAME_ALIASES = {
+    "yekaterinburg" => "ekaterinburg"
+  }.freeze
+
+  # Единая нормализация названия города для сравнений. Живёт в модели, потому
+  # что сравнивают города и контроллеры, и модели, и телеграм-хендлеры; пока
+  # это лежало в концерне контроллеров, до него дотягивались не все, и часть
+  # мест сравнивала сырой downcase — для «Ekaterinburg» против «Yekaterinburg»
+  # это молчаливое «город не совпал».
+  def self.normalize_name(value)
+    name = I18n.transliterate(value.to_s).downcase.strip.gsub(/\s+/, " ")
+    return nil if name.blank?
+
+    NAME_ALIASES.fetch(name, name)
+  end
+
+  # Все написания, которые нормализуются в это же название, — нужны там, где
+  # город ищут запросом по справочнику, а не сравнением в памяти.
+  def self.alias_names_for(name)
+    ([ name ] + NAME_ALIASES.select { |_variant, canonical| canonical == name }.keys).uniq
+  end
+
   # Каноническое имя города для профиля и матчинга с courts.city_name: берём
   # name, а не asciiname — в кортах города записаны с диакритикой («Båstad»,
   # «Acapulco de Juárez»), и asciiname с ними бы не совпал.

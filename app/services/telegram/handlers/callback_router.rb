@@ -14,6 +14,11 @@ module Telegram
         #   return true
         # end
 
+        if data.start_with?("chat:")
+          Telegram::Chat::Flow.handle_callback(callback_query)
+          return true
+        end
+
         if data.start_with?("game:")
           Telegram::Handlers::GamesCallbackHandler.process(callback_query)
           return true
