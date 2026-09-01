@@ -12,7 +12,10 @@ class PostSocialJobTest < ActiveJob::TestCase
       self.class.calls << { content: content, locale: locale }
     end
 
-    def call = self.class.result
+    def call
+      result = self.class.result
+      result.respond_to?(:call) ? result.call : result
+    end
   end
 
   setup do
@@ -46,6 +49,18 @@ class PostSocialJobTest < ActiveJob::TestCase
     assert_equal 1, FakeAdapter.calls.size
   end
 
+  test "a concurrent job cannot call the adapter for the same material" do
+    FakeAdapter.result = -> {
+      perform("urgent", "game:#{@game.id}", "bluesky")
+      "post-1"
+    }
+
+    perform("urgent", "game:#{@game.id}", "bluesky")
+
+    assert_equal 1, FakeAdapter.calls.size
+    assert_equal "post-1", SocialPost.last.external_post_id
+  end
+
   test "an unconfigured adapter is never called" do
     FakeAdapter.configured = false
 
@@ -70,6 +85,30 @@ class PostSocialJobTest < ActiveJob::TestCase
     assert_no_difference -> { SocialPost.count } do
       perform("urgent", "game:#{@game.id}", "bluesky")
     end
+  end
+
+  test "an adapter failure releases the claim for a later attempt" do
+    FakeAdapter.result = -> { raise "network error" }
+
+    assert_raises(RuntimeError) { perform("urgent", "game:#{@game.id}", "bluesky") }
+    assert_not SocialPost.exists?
+
+    FakeAdapter.result = "post-2"
+    perform("urgent", "game:#{@game.id}", "bluesky")
+
+    assert_equal "post-2", SocialPost.last.external_post_id
+  end
+
+  test "a stale claim can be taken over" do
+    SocialPost.create!(network: "bluesky", kind: "urgent", dedup_key: "game:#{@game.id}",
+                       external_post_id: "claim:abandoned", posted_at: nil,
+                       created_at: 31.minutes.ago, updated_at: 31.minutes.ago)
+
+    perform("urgent", "game:#{@game.id}", "bluesky")
+
+    assert_equal 1, FakeAdapter.calls.size
+    assert_equal "post-1", SocialPost.last.external_post_id
+    assert SocialPost.last.posted_at?
   end
 
   test "an unknown network is skipped" do

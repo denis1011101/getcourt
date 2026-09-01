@@ -30,6 +30,18 @@ class Social::DailyPlannerTest < ActiveSupport::TestCase
     assert_not_equal "upcoming", Social::DailyPlanner.new.pick&.variant
   end
 
+  test "upcoming content becomes unavailable when the game is cancelled after planning" do
+    Game.destroy_all
+    game = Game.create!(court: @court, user: @user, date: Date.tomorrow, time: "18:00",
+                        sport: "Tennis", players_count: 4)
+    content = Social::DailyPlanner.new.pick
+
+    game.prebooking_cancellations.create!(date: Date.tomorrow, user: @user)
+
+    assert_equal game.id.to_s, content.subject
+    assert_not content.available?
+  end
+
   test "moves on to yesterday's result once upcoming has just been posted" do
     Game.destroy_all
     Match.destroy_all

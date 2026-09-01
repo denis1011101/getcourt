@@ -37,7 +37,8 @@ module Social
         case variant
         # Дата в ключе, а джоба могла отлежаться в очереди — «Tomorrow» должно
         # оставаться завтрашним днём, иначе анонс уйдёт задним числом.
-        when "upcoming" then game.present? && game.occurrence_date?(date + 1) && game.spots_left.positive?
+        when "upcoming"
+          game.present? && game.occurrence_date?(date + 1) && !game.cancelled_on?(date + 1) && game.spots_left.positive?
         when "result" then match.present? && winner_name.present?
         when "fact" then fact_ready?
         else false

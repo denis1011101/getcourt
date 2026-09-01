@@ -1,6 +1,8 @@
 require "test_helper"
 
 class Telegram::ChatRelayTest < ActiveSupport::TestCase
+  include ActiveJob::TestHelper
+
   setup do
     @court = Court.create!(name: "Relay Court", city_name: "Yekaterinburg")
     @owner = User.create!(email: "relay_owner_#{SecureRandom.hex(4)}@example.com", name: "Owner", telegram_chat_id: unique_chat_id)
@@ -74,6 +76,30 @@ class Telegram::ChatRelayTest < ActiveSupport::TestCase
     end
 
     assert_equal 7.seconds, rescheduled
+  end
+
+  test "delivery retries a server error" do
+    assert_enqueued_jobs 1, only: Telegram::DeliverChatMessageJob do
+      stub_singleton(Telegram::Api, :post, ->(*) { { "ok" => false, "error_code" => 503 } }) do
+        Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "привет")
+      end
+    end
+  end
+
+  test "delivery retries when Telegram does not respond" do
+    assert_enqueued_jobs 1, only: Telegram::DeliverChatMessageJob do
+      stub_singleton(Telegram::Api, :post, ->(*) { nil }) do
+        Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "привет")
+      end
+    end
+  end
+
+  test "delivery does not retry a permanent client error" do
+    assert_no_enqueued_jobs only: Telegram::DeliverChatMessageJob do
+      stub_singleton(Telegram::Api, :post, ->(*) { { "ok" => false, "error_code" => 403, "description" => "Forbidden" } }) do
+        Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "привет")
+      end
+    end
   end
 
   private
