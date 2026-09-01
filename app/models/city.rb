@@ -12,4 +12,20 @@ class City < ApplicationRecord
       .group_by(&:first)
       .transform_values { |rows| rows.max_by { |(_, _, population)| population.to_i }[1] }
   end
+
+  # Каноническое имя города для профиля и матчинга с courts.city_name: берём
+  # name, а не asciiname — в кортах города записаны с диакритикой («Båstad»,
+  # «Acapulco de Juárez»), и asciiname с ними бы не совпал.
+  def canonical_name
+    name.presence || asciiname.presence
+  end
+
+  # GeoNames отдаёт IANA-зону, а часть кода ждёт отображаемое имя Rails.
+  # Возвращаем то, что Rails понимает, иначе — nil, чтобы не записать мусор.
+  def rails_timezone
+    zone = ActiveSupport::TimeZone.all.find { |z| z.tzinfo.name == timezone }
+    return zone.name if zone
+
+    timezone if ActiveSupport::TimeZone[timezone.to_s].present?
+  end
 end

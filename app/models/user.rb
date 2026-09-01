@@ -1,5 +1,5 @@
 class User < ApplicationRecord
-  before_validation :normalize_email, :titleize_city_name, :set_default_notification_channel
+  before_validation :normalize_email, :set_default_notification_channel
   before_validation :set_default_registration_source, on: :create
 
   has_one :player_statistic, dependent: :destroy
@@ -196,11 +196,6 @@ class User < ApplicationRecord
   def normalize_email
     self.email = email.to_s.strip.downcase.presence
     true  # явно возвращаем true
-  end
-
-  def titleize_city_name
-    self.city_name = city_name.to_s.titleize.presence
-    true  # <-- FIX: явно возвращаем true, чтобы не прерывать save
   end
 
   def set_default_registration_source

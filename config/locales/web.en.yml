@@ -389,9 +389,12 @@ en:
       coach_hint: Tick if you coach — this helps others find and hire coaches in the
         future.
       city: City
-      city_placeholder: e.g. Moskva
-      city_hint: Enter a place. The system will transliterate names and try to detect
-        timezone automatically on save. Press "Save Changes".
+      city_placeholder: e.g. Moscow
+      city_hint: Start typing and pick a city from the list — only a picked city is
+        saved. The timezone is filled in for you.
+      city_searching: Searching…
+      city_search_error: Could not load the city list.
+      city_clear: Clear city
       about_me: About me
       about_me_placeholder: Tell others a bit about yourself…
       no_city_matches: No matches.
