@@ -2,6 +2,7 @@ class UsersController < ApplicationController
   include LocationFilters
 
   CITY_SEARCH_DEFAULT_LIMIT = 5
+  CITY_SEARCH_MAX_LIMIT = 20
 
   before_action :authenticate_user!
 
@@ -92,7 +93,9 @@ class UsersController < ApplicationController
   # Подсказки для поля города: отдаём только то, что есть в справочнике, —
   # сохранить можно лишь выбранную строку.
   def city_search
-    limit = params[:limit].to_i.nonzero? || CITY_SEARCH_DEFAULT_LIMIT
+    # Потолок обязателен: в SQLite отрицательный LIMIT снимает ограничение
+    # совсем, и запрос вытащил бы весь справочник городов целиком.
+    limit = params[:limit].present? ? params[:limit].to_i.clamp(1, CITY_SEARCH_MAX_LIMIT) : CITY_SEARCH_DEFAULT_LIMIT
     cities = Cities::SearchService.new(query: params[:q], limit: limit).call
 
     render json: cities.map { |city|
@@ -211,7 +214,10 @@ class UsersController < ApplicationController
   # Asia/Yekaterinburg лежит и Челябинск, и Тюмень, — поэтому не подставляем
   # ничего: пустое поле честнее угаданного.
   def prepare_profile_form_state
-    @limit = params[:limit].to_i.nonzero? || CITY_SEARCH_DEFAULT_LIMIT
+    # После ошибки валидации форму рисуем заново, и выбранный город надо вернуть
+    # в hidden-поле: в видимом поле он уже стоит, а без id следующая отправка
+    # город не изменит.
+    @selected_city_id = params[:selected_city_id].presence
   end
 
   def prepare_court_preferences_state

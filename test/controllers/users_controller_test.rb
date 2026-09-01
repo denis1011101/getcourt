@@ -609,6 +609,35 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "city search caps a client-supplied limit" do
+    with_city_user do |_user, _cities|
+      # Отрицательный LIMIT в SQLite снимает ограничение совсем.
+      get city_search_account_url, params: { q: "a", limit: -1 }
+
+      assert_response :success
+      assert_operator JSON.parse(response.body).size, :<=, UsersController::CITY_SEARCH_MAX_LIMIT
+    end
+  end
+
+  test "picked city survives a failed validation" do
+    with_city_user do |user, cities|
+      other_email = "taken_#{SecureRandom.hex(4)}@example.com"
+      other = User.create!(email: other_email)
+
+      patch account_url, params: {
+        section: "profile",
+        selected_city_id: cities[:yekaterinburg].id,
+        user: { email: other_email }
+      }
+
+      assert_response :unprocessable_entity
+      assert_select "input[name=selected_city_id][value=?]", cities[:yekaterinburg].id.to_s
+      assert_nil user.reload.city_name
+    ensure
+      other&.destroy
+    end
+  end
+
   test "city search returns matching cities as json" do
     with_city_user do |_user, _cities|
       get city_search_account_url, params: { q: "ekaterinburg" }

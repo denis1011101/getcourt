@@ -15,6 +15,7 @@ export default class extends Controller {
 
   connect() {
     this.searchTimeout = null
+    this.requestId = 0
     this.hideTimeout = null
     this.onDocumentClick = (event) => {
       if (!this.element.contains(event.target)) this.hide()
@@ -28,9 +29,11 @@ export default class extends Controller {
     document.removeEventListener("click", this.onDocumentClick)
   }
 
+  // Правка текста отменяет выбор: иначе к новому названию прицепился бы id
+  // прошлого города.
   search() {
     this.cityIdTarget.value = ""
-    clearTimeout(this.searchTimeout)
+    this.startRequest()
 
     const query = this.inputTarget.value.trim()
     if (query.length < 2) {
@@ -41,9 +44,24 @@ export default class extends Controller {
     this.searchTimeout = setTimeout(() => this.fetchCities(query), 300)
   }
 
+  // Фокус в поле лишь возвращает список: выбранный город остаётся выбранным.
+  reopen() {
+    if (this.cityIdTarget.value) return
+
+    this.search()
+  }
+
+  // Поколение запроса растёт на каждое изменение запроса, включая уход в
+  // слишком короткую строку, — иначе подвисший ответ снова открыл бы список
+  // с городами, которых в поле уже нет.
+  startRequest() {
+    clearTimeout(this.searchTimeout)
+    this.requestId = (this.requestId || 0) + 1
+    return this.requestId
+  }
+
   async fetchCities(query) {
     this.renderMessage(this.searchingValue)
-    this.requestId = (this.requestId || 0) + 1
     const requestId = this.requestId
 
     try {
@@ -88,6 +106,7 @@ export default class extends Controller {
 
   select(event) {
     const { id, name } = event.currentTarget.dataset
+    this.startRequest()
     this.cityIdTarget.value = id
     this.inputTarget.value = name
     this.hide()
