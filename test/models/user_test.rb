@@ -59,4 +59,33 @@ class UserTest < ActiveSupport::TestCase
 
     assert_equal [ anna, zoe ], ordered.to_a
   end
+
+  test "the telegram handle is canonical no matter how the nick was typed" do
+    user = User.new(telegram_username: "  @Nick_Name  ")
+
+    assert_equal "@Nick_Name", user.telegram_handle
+  end
+
+  test "a nick too short to be a telegram username gives no handle" do
+    assert_nil User.new(telegram_username: "abcd").telegram_handle
+    assert_nil User.new(telegram_username: nil).telegram_handle
+  end
+
+  # Подпись уходит всей команде, поэтому e-mail в неё не попадает никогда:
+  # почта одного игрока не должна становиться известной остальным.
+  test "broadcast_label never falls back to the email" do
+    user = User.create!(email: "broadcast-nameless@example.com")
+
+    assert_nil user.broadcast_label
+  end
+
+  test "broadcast_label puts the handle next to the name" do
+    named = User.new(name: "Marina", telegram_username: "marina_tg")
+    handle_only = User.new(telegram_username: "marina_tg")
+    name_only = User.new(name: "Marina")
+
+    assert_equal "Marina (@marina_tg)", named.broadcast_label
+    assert_equal "@marina_tg", handle_only.broadcast_label
+    assert_equal "Marina", name_only.broadcast_label
+  end
 end

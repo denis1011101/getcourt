@@ -29,6 +29,21 @@ class TennisLife::Feed::GameMediaSourceTest < ActiveSupport::TestCase
     assert_not_includes source_ids, medium.id
   end
 
+  test "an attachment without the Tennis Life checkbox stays out of the feed" do
+    medium = create_medium(show_in_feed: false)
+
+    assert_not_includes source_ids, medium.id
+  end
+
+  test "the loader refuses to serve an attachment unticked after the order was built" do
+    medium = create_medium
+    medium.update!(show_in_feed: false)
+
+    cards = TennisLife::Feed::Loader.new([ [ "game_media", medium.id ] ], snapshot_ts: @snapshot).load
+
+    assert_empty cards
+  end
+
   test "media from a tournament game stays private" do
     tournament_game = Game.create!(court: courts(:feed_approved), user: users(:one), date: Date.current + 2.days)
     # Через update_column: игру с турниром валидации привязывают к его датам и
@@ -64,8 +79,8 @@ class TennisLife::Feed::GameMediaSourceTest < ActiveSupport::TestCase
     TennisLife::Feed::Sources::GameMedia.new(snapshot_ts: @snapshot).ids
   end
 
-  def create_medium(game: games(:feed_upcoming), created_at: nil)
-    medium = GameMedium.new(game: game, user: users(:one))
+  def create_medium(game: games(:feed_upcoming), created_at: nil, show_in_feed: true)
+    medium = GameMedium.new(game: game, user: users(:one), show_in_feed: show_in_feed)
     medium.file.attach(
       io: StringIO.new(Base64.decode64(SAMPLE_PNG)),
       filename: "shot-#{SecureRandom.hex(4)}.png",

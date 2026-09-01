@@ -1,6 +1,6 @@
 class Game < ApplicationRecord
   after_commit :schedule_post_game_stats_reminder, on: %i[create update]
-  after_commit :enqueue_urgent_player_search_notification, on: %i[create update]
+  after_commit :announce_urgent_player_search, on: %i[create update]
   after_update :drop_training_plan_from_plain_game, if: -> { saved_change_to_kind? && !training? }
   after_update :remove_stale_coach_prebookings,
                if: -> { saved_change_to_coach_id? || saved_change_to_second_coach_id? || saved_change_to_date? || saved_change_to_recurring? }
@@ -624,12 +624,16 @@ class Game < ApplicationRecord
     coach_prebookings.where(id: stale_ids).delete_all if stale_ids.any?
   end
 
-  def enqueue_urgent_player_search_notification
+  # Срочный поиск включают и с сайта, и из телеграм-бота, поэтому оба канала —
+  # рассылка по городу и внешний кросспостинг — висят на модели, а не на
+  # контроллере: иначе один из входов молча остаётся без анонса.
+  def announce_urgent_player_search
     return unless urgent_player_search?
     return unless saved_change_to_urgent_player_search?
     return unless self[:urgent_player_search]
 
     NotifyUrgentPlayerSearchJob.perform_later(id)
+    Social.publish_urgent(self)
   end
 
   # IMPORTANT: relies on Time.zone being already set (caller wraps Time.use_zone)

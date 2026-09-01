@@ -266,13 +266,6 @@ es:
         telegram_not_connected: "No conectado"
         registration_source: "Fuente de registro"
         not_set: "Sin indicar"
-    threads:
-      headline: "🎾 ¡Buscamos jugadores de %{sport} en %{city}!"
-      date_line: "📅 %{date} a las %{time}"
-      court_line: "🏟 %{court}"
-      spots_line:
-        one: "👥 falta %{count} jugador"
-        other: "👥 faltan %{count} jugadores"
     form:
       court_country: "País"
       court_country_any: "— cualquier país —"
@@ -771,3 +764,11 @@ es:
   coaches:
     index:
       courts_label: "Pistas"
+  social:
+    urgent:
+      headline: "🎾 ¡Buscamos jugadores de %{sport} en %{city}!"
+      date_line: "📅 %{date} a las %{time}"
+      court_line: "🏟 %{court}"
+      spots_line:
+        one: "👥 falta %{count} jugador"
+        other: "👥 faltan %{count} jugadores"

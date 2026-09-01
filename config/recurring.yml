@@ -36,3 +36,8 @@ production:
   generate_sitemap:
     class: GenerateSitemapJob
     schedule: at 7am every day
+  # Вечер в РФ, день в Европе, утро в Америке. Аккаунты англоязычные, так что
+  # при смене целевой аудитории двигать надо именно эту строку.
+  daily_social_post:
+    class: PostDailySocialPostJob
+    schedule: at 6pm every day

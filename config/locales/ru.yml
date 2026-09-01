@@ -261,15 +261,6 @@ ru:
         telegram_not_connected: "Не привязан"
         registration_source: "Источник регистрации"
         not_set: "Не указано"
-    threads:
-      headline: "🎾 Ищем партнёров на %{sport} в %{city}!"
-      date_line: "📅 %{date} в %{time}"
-      court_line: "🏟 %{court}"
-      spots_line:
-        one: "👥 нужен %{count} игрок"
-        few: "👥 нужно %{count} игрока"
-        many: "👥 нужно %{count} игроков"
-        other: "👥 %{count} игроков"
     form:
       court_country: "Страна"
       court_country_any: "— любая страна —"
@@ -784,3 +775,13 @@ ru:
   coaches:
     index:
       courts_label: "Корты"
+  social:
+    urgent:
+      headline: "🎾 Ищем партнёров на %{sport} в %{city}!"
+      date_line: "📅 %{date} в %{time}"
+      court_line: "🏟 %{court}"
+      spots_line:
+        one: "👥 нужен %{count} игрок"
+        few: "👥 нужно %{count} игрока"
+        many: "👥 нужно %{count} игроков"
+        other: "👥 %{count} игроков"

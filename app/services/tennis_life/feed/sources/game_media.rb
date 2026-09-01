@@ -11,7 +11,7 @@ module TennisLife
         def ids
           # Здесь загрузка и есть событие, поэтому дата события — created_at,
           # а не отдельная колонка, как у матчей или постов.
-          recent(snapshotted(::GameMedium.visible), column: :created_at)
+          recent(snapshotted(::GameMedium.visible.in_feed), column: :created_at)
             .joins(:game)
             .where(games: { tournament_id: nil })
             .pluck(:id)

@@ -48,7 +48,7 @@ module TennisLife
           index_records(CourtSuggestion.includes(:court, :user).where(id: ids, status: "approved"))
         when "game_media"
           index_records(
-            GameMedium.visible
+            GameMedium.visible.in_feed
               .includes({ game: :court }, :user, file_attachment: :blob)
               .where(id: ids)
           )

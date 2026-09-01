@@ -132,9 +132,6 @@ class GamesController < ApplicationController
   def toggle_urgent_player_search
     was_enabled = @game.urgent_player_search?
     @game.update!(urgent_player_search: !was_enabled)
-    if !was_enabled && @game.urgent_player_search?
-      PostToThreadsJob.perform_later(@game.id, I18n.locale.to_s)
-    end
     state = @game.urgent_player_search? ? "enabled" : "disabled"
     redirect_to @game, notice: "Players search #{state}."
   end

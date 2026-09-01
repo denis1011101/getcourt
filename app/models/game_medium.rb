@@ -11,6 +11,7 @@ class GameMedium < ApplicationRecord
 
   MAX_IMAGE_SIZE = 5.megabytes
   MAX_VIDEO_SIZE = 25.megabytes
+  MAX_TITLE_LENGTH = 100
   MAX_IMAGES_PER_GAME = 6
   MAX_VIDEOS_PER_GAME = 1
 
@@ -20,8 +21,12 @@ class GameMedium < ApplicationRecord
   has_one_attached :file
 
   scope :visible, -> { where(hidden_at: nil) }
+  # Витрина Tennis Life открыта без логина, поэтому попадание туда — отдельное
+  # решение автора, а не следствие загрузки. См. GameMediaController#update.
+  scope :in_feed, -> { where(show_in_feed: true) }
   scope :newest_first, -> { order(created_at: :desc) }
 
+  validates :title, length: { maximum: MAX_TITLE_LENGTH }, allow_blank: true
   validate :file_attached
   validate :supported_content_type
   validate :within_size_limit

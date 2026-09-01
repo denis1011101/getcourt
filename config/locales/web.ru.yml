@@ -78,10 +78,14 @@ ru:
     hidden: Вложение скрыто из ленты.
     failed: Не удалось загрузить вложение.
     not_allowed: Прикладывать фото и видео могут организатор и участники игры.
-    training_video:
-      subject: Обучающее видео для вашей игры
-      body: Обучающим видео поделились с участниками вашей игры.
-      body_by: "%{author} поделился обучающим видео с участниками вашей игры."
+    feed_enabled: Вложение теперь видно в разделе Tennis Life.
+    feed_disabled: Вложение убрано из раздела Tennis Life.
+    shared_video:
+      subject: Новое видео в вашей игре
+      body: К вашей игре добавили новое видео.
+      body_titled: "К вашей игре добавили видео «%{title}»."
+      body_by: "%{author} поделился видео."
+      body_by_titled: "%{author} поделился видео «%{title}»."
       action: Смотреть видео
   games:
     show:
@@ -119,6 +123,10 @@ ru:
         notify_participants: Отправить это видео игрокам
         notify_participants_hint: Видео придёт каждому игроку через выбранный им канал уведомлений.
         remove: Удалить
+        show_in_feed: Показывать в Tennis Life
+        title_label: Название
+        title_placeholder: Необязательно, например «Разбор подачи»
+        show_in_feed_hint: Раздел открыт всем, в том числе без входа на сайт.
         remove_confirm: Удалить это вложение?
         alt: Фото с игры
         limits: "До %{images} фото (по %{image_size} МБ) и %{videos} видео (%{video_size} МБ)."

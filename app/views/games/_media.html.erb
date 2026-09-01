@@ -1,14 +1,15 @@
 <%# Фото и ролики с игры. Прикладывать может организатор, админ и любой
     записавшийся участник — снимает обычно не тот, кто игру создал. %>
-<% media = game.game_media.visible.includes(:user, file_attachment: :blob).newest_first %>
+<% media = game.game_media.visible.includes(:user, file_attachment: :blob).newest_first.to_a %>
+<% manageable = ->(medium) { current_user.present? && (medium.user_id == current_user.id || current_user.admin?) } %>
 
-<div class="mt-6 border-t dark:border-white/10 pt-4" data-testid="game-media">
-  <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300 mb-3"><%= t("games.show.media.title") %></h2>
+<section class="mt-6 rounded-md border border-gray-200 p-3 dark:border-white/10" data-testid="game-media">
+  <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("games.show.media.title") %></h2>
 
   <% if media.any? %>
-    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+    <div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
       <% media.each do |medium| %>
-        <figure class="relative overflow-hidden rounded-md border border-gray-200 dark:border-white/10">
+        <figure class="overflow-hidden rounded-md border border-gray-200 dark:border-white/10">
           <% preview = medium.preview_variant %>
           <% if preview %>
             <%= image_tag preview, loading: "lazy", alt: t("games.show.media.alt"), class: "h-32 w-full object-cover" %>
@@ -18,42 +19,86 @@
             </video>
           <% end %>
 
-          <% if current_user && (medium.user_id == current_user.id || current_user.admin?) %>
-            <%= button_to t("games.show.media.remove"),
-                  game_medium_path(game, medium),
-                  method: :delete,
-                  form: { data: { turbo_confirm: t("games.show.media.remove_confirm") } },
-                  class: "absolute right-1 top-1 rounded bg-black/60 px-2 py-0.5 text-xs text-white hover:bg-black/80" %>
+          <% if medium.title.present? || manageable.call(medium) %>
+            <figcaption class="space-y-2 border-t border-gray-200 p-2 dark:border-white/10">
+              <% if medium.title.present? %>
+                <p class="text-xs font-medium text-gray-700 dark:text-slate-200"><%= medium.title %></p>
+              <% end %>
+
+              <% if manageable.call(medium) %>
+                <%# Лента Tennis Life открыта без входа на сайт, поэтому показ там —
+                    отдельное действие, а не следствие загрузки. Права всё равно
+                    проверяет контроллер: галку видно только автору и админу, но
+                    запрос может прийти и мимо этой формы. Кадр вокруг галки —
+                    чтобы Turbo не уводил на полный переход, отматывая страницу
+                    к началу. %>
+                <%= turbo_frame_tag dom_id(medium, :feed_toggle) do %>
+                  <%= form_with url: game_medium_path(game, medium), method: :patch, class: "flex items-start gap-2" do %>
+                    <%= hidden_field_tag :show_in_feed, "0", id: nil %>
+                    <%= check_box_tag :show_in_feed, "1", medium.show_in_feed,
+                          id: "show_in_feed_#{medium.id}",
+                          onchange: "this.form.requestSubmit()",
+                          class: "mt-0.5 rounded border-gray-300 text-indigo-600" %>
+                    <%= label_tag "show_in_feed_#{medium.id}", t("games.show.media.show_in_feed"),
+                          class: "text-xs leading-tight text-gray-600 dark:text-slate-400" %>
+                  <% end %>
+                <% end %>
+
+                <%= button_to t("games.show.media.remove"),
+                      game_medium_path(game, medium),
+                      method: :delete,
+                      form: { data: { turbo_confirm: t("games.show.media.remove_confirm") }, class: "flex justify-end" },
+                      class: "rounded-md border border-red-300 px-2 py-1 text-xs font-medium text-red-700 transition hover:bg-red-50 dark:border-red-400/30 dark:text-red-300 dark:hover:bg-red-500/10" %>
+              <% end %>
+            </figcaption>
           <% end %>
         </figure>
       <% end %>
     </div>
+
+    <% if media.any? { |medium| manageable.call(medium) } %>
+      <p class="mt-2 text-xs text-gray-500 dark:text-slate-400"><%= t("games.show.media.show_in_feed_hint") %></p>
+    <% end %>
   <% else %>
-    <p class="text-sm text-gray-600 dark:text-slate-400"><%= t("games.show.media.empty") %></p>
+    <p class="mt-2 text-sm text-gray-600 dark:text-slate-400"><%= t("games.show.media.empty") %></p>
   <% end %>
 
   <% if can_contribute %>
-    <%= form_with url: game_media_path(game), method: :post, multipart: true, class: "mt-3 flex flex-wrap items-center gap-2" do |f| %>
-      <%= f.file_field :file, required: true,
-            accept: GameMedium::CONTENT_TYPES.join(","),
-            class: "text-sm text-gray-700 file:mr-2 file:rounded file:border-0 file:bg-indigo-50 file:px-3 file:py-1 file:text-indigo-700 dark:text-slate-300" %>
-      <% if can_send_training_video?(game) %>
-        <label class="flex basis-full items-start gap-2 text-sm text-gray-700 dark:text-slate-300">
-          <%= check_box_tag :notify_participants, "1", false, class: "mt-0.5 rounded border-gray-300 text-indigo-600" %>
-          <span>
-            <%= t("games.show.media.notify_participants") %>
-            <span class="block text-xs text-gray-500 dark:text-slate-400"><%= t("games.show.media.notify_participants_hint") %></span>
-          </span>
+    <div class="mt-3 rounded-md border border-gray-200 p-3 dark:border-white/10">
+      <%= form_with url: game_media_path(game), method: :post, multipart: true, class: "space-y-3" do |f| %>
+        <%= f.file_field :file, required: true,
+              accept: GameMedium::CONTENT_TYPES.join(","),
+              class: "block w-full text-sm text-gray-700 file:mr-3 file:rounded-md file:border-0 file:bg-indigo-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-indigo-700 hover:file:bg-indigo-100 dark:text-slate-300 dark:file:bg-indigo-500/15 dark:file:text-indigo-200" %>
+
+        <label class="block">
+          <span class="block text-xs font-medium text-gray-700 dark:text-slate-300"><%= t("games.show.media.title_label") %></span>
+          <%= text_field_tag :title, nil,
+                maxlength: GameMedium::MAX_TITLE_LENGTH,
+                placeholder: t("games.show.media.title_placeholder"),
+                class: "mt-1 w-full rounded border-gray-300 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
         </label>
+
+        <% if can_send_training_video?(game) %>
+          <label class="flex items-start gap-2 text-sm text-gray-700 dark:text-slate-300">
+            <%= check_box_tag :notify_participants, "1", false, class: "mt-0.5 rounded border-gray-300 text-indigo-600" %>
+            <span>
+              <%= t("games.show.media.notify_participants") %>
+              <span class="block text-xs text-gray-500 dark:text-slate-400"><%= t("games.show.media.notify_participants_hint") %></span>
+            </span>
+          </label>
+        <% end %>
+
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <p class="text-xs text-gray-500 dark:text-slate-400">
+            <%= t("games.show.media.limits",
+                  images: GameMedium::MAX_IMAGES_PER_GAME,
+                  image_size: GameMedium::MAX_IMAGE_SIZE / 1.megabyte,
+                  videos: GameMedium::MAX_VIDEOS_PER_GAME,
+                  video_size: GameMedium::MAX_VIDEO_SIZE / 1.megabyte) %>
+          </p>
+          <%= f.submit t("games.show.media.upload"), class: "inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-indigo-700" %>
+        </div>
       <% end %>
-      <%= f.submit t("games.show.media.upload"), class: "rounded bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700" %>
-    <% end %>
-    <p class="mt-2 text-xs text-gray-500 dark:text-slate-400">
-      <%= t("games.show.media.limits",
-            images: GameMedium::MAX_IMAGES_PER_GAME,
-            image_size: GameMedium::MAX_IMAGE_SIZE / 1.megabyte,
-            videos: GameMedium::MAX_VIDEOS_PER_GAME,
-            video_size: GameMedium::MAX_VIDEO_SIZE / 1.megabyte) %>
-    </p>
+    </div>
   <% end %>
-</div>
+</section>

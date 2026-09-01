@@ -4,7 +4,11 @@ class GameMediaController < ApplicationController
   # Прикладывать может организатор, админ и любой записавшийся участник:
   # снимает обычно не тот, кто игру создал.
   def create
-    medium = @game.game_media.new(user: current_user, file: params[:file])
+    medium = @game.game_media.new(
+      user: current_user,
+      file: params[:file],
+      title: params[:title].to_s.strip.presence
+    )
 
     unless contributor?
       redirect_to @game, alert: t("game_media.not_allowed"), status: :see_other and return
@@ -16,6 +20,22 @@ class GameMediaController < ApplicationController
       redirect_to @game, alert: medium.errors.full_messages.to_sentence.presence || t("game_media.failed"),
                   status: :see_other
     end
+  end
+
+  # Витрину Tennis Life видно без логина, поэтому показ там включается вручную
+  # и только автором вложения или админом. Права проверяем здесь: галку видит
+  # каждый, кому мы её отрисовали, но это не аргумент — запрос может прийти и
+  # от того, кому её не показывали.
+  def update
+    medium = @game.game_media.find(params[:id])
+
+    unless medium.user_id == current_user.id || current_user.admin?
+      redirect_to @game, alert: t("game_media.not_allowed"), status: :see_other and return
+    end
+
+    medium.update!(show_in_feed: ActiveModel::Type::Boolean.new.cast(params[:show_in_feed]))
+    notice = medium.show_in_feed? ? t("game_media.feed_enabled") : t("game_media.feed_disabled")
+    redirect_to @game, notice: notice, status: :see_other
   end
 
   # Автор убирает своё вложение совсем; админ прячет чужое, оставляя запись —

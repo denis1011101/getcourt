@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_30_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_02_110000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -203,10 +203,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_090000) do
     t.datetime "created_at", null: false
     t.integer "game_id", null: false
     t.datetime "hidden_at"
+    t.boolean "show_in_feed", default: false, null: false
+    t.string "title"
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
     t.index ["game_id"], name: "index_game_media_on_game_id"
     t.index ["hidden_at"], name: "index_game_media_on_hidden_at"
+    t.index ["show_in_feed"], name: "index_game_media_on_show_in_feed"
     t.index ["user_id"], name: "index_game_media_on_user_id"
   end
 
@@ -369,6 +372,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_30_090000) do
     t.index ["game_id", "date", "slot_index"], name: "index_prebookings_on_game_date_slot", unique: true
     t.index ["game_id"], name: "index_prebookings_on_game_id"
     t.index ["user_id"], name: "index_prebookings_on_user_id"
+  end
+
+  create_table "social_posts", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "dedup_key", null: false
+    t.string "external_post_id"
+    t.string "kind", null: false
+    t.string "network", null: false
+    t.datetime "posted_at"
+    t.datetime "updated_at", null: false
+    t.index ["network", "kind", "dedup_key"], name: "index_social_posts_on_network_and_kind_and_dedup_key", unique: true
+    t.index ["network", "kind", "posted_at"], name: "index_social_posts_on_network_and_kind_and_posted_at"
   end
 
   create_table "telegram_channels", force: :cascade do |t|
