@@ -43,7 +43,8 @@ module Telegram
           return false if chat_id.blank? || game.nil?
           return false unless game.chat_open? && game.team_member_ids.include?(user.id)
 
-          Session.start(chat_id, game)
+          return false unless Session.start_automatically(chat_id, user, game)
+
           show_status(chat_id.to_s, user, game)
           true
         end
@@ -96,11 +97,17 @@ module Telegram
         def show_status(chat_id, user, game)
           recipients = game.chat_members.where.not(id: user.id).count
           text = t(user, :chat_started, game: Message.game_label(game), count: recipients)
-          buttons = [ [
+          Telegram::Api.send_with_buttons(chat_id, text, controls(user), parse_mode: nil)
+        end
+
+        # Кнопки управления режимом. Их же вешает на доставленное сообщение
+        # DeliverChatMessageJob, когда чат включается получателю: состояние видно
+        # там же, где оно появилось, без отдельной карточки вдогонку.
+        def controls(user)
+          [ [
             { text: t(user, :chat_switch_btn), callback_data: "chat:pick" },
             { text: t(user, :chat_exit_btn), callback_data: "chat:exit" }
           ] ]
-          Telegram::Api.send_with_buttons(chat_id, text, buttons, parse_mode: nil)
         end
 
         private

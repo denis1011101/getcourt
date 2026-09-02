@@ -19,19 +19,38 @@ module Telegram
       # доставкой человека могли вывести из состава.
       return unless game.chat_open? && game.team_member_ids.include?(recipient.id)
 
+      # Отвечать в том же окне, где пришло сообщение, — первое, что делает
+      # человек. Без указателя ответ пропадал: Relay не знает, в какую игру его
+      # отдать. Поэтому доставка сама включает получателю чат этой игры — но
+      # только после того, как сообщение действительно ушло.
+      arming = Telegram::Chat::Session.automatic_start_needed?(
+        recipient.telegram_chat_id, recipient, game
+      )
+
       # Без parse_mode: это чужой текст, а не наш шаблон. С Markdown одиночный
       # `_` или `[` либо исказит сообщение, либо уронит отправку четырёхсоткой.
+      params = {
+        "chat_id" => recipient.telegram_chat_id.to_s,
+        "link_preview_options" => Telegram::Api::LINK_PREVIEW_DISABLED,
+        "text" => text.to_s
+      }
+      params["reply_markup"] = { inline_keyboard: Telegram::Chat::Flow.controls(recipient) }.to_json if arming
+
       response = begin
-        Telegram::Api.post("sendMessage", {
-          "chat_id" => recipient.telegram_chat_id.to_s,
-          "link_preview_options" => Telegram::Api::LINK_PREVIEW_DISABLED,
-          "text" => text.to_s
-        })
+        Telegram::Api.post("sendMessage", params)
       rescue StandardError => error
         raise TransientDeliveryError, error.message
       end
 
-      handle_response(response, game_id, recipient_id, text)
+      delivered = handle_response(response, game_id, recipient_id, text)
+      # Ретрай и постоянная ошибка не должны оставлять человека в чате, о котором
+      # он не узнал: сообщение с кнопками до него не дошло. Следующая попытка
+      # увидит, что указателя нет, и пришлёт кнопки снова. Запись — только если
+      # выбора всё ещё нет: пока шла отправка, человек мог открыть другую игру.
+      if arming && delivered
+        Telegram::Chat::Session.start_automatically(recipient.telegram_chat_id, recipient, game)
+      end
+      delivered
     end
 
     private

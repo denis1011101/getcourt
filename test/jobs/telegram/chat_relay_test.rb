@@ -1,7 +1,9 @@
 require "test_helper"
+require "support/cache_helper"
 
 class Telegram::ChatRelayTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
+  include CacheHelper
 
   setup do
     @court = Court.create!(name: "Relay Court", city_name: "Yekaterinburg")
@@ -51,6 +53,174 @@ class Telegram::ChatRelayTest < ActiveSupport::TestCase
     assert_equal @owner.telegram_chat_id.to_s, params["chat_id"]
     assert_equal "текст с _подчёркиванием_ и [скобкой", params["text"]
     assert_not params.key?("parse_mode")
+  end
+
+  # Ответ в том же окне — первое, что делает получатель. Раньше он пропадал:
+  # у человека не было указателя, и Relay не знал, в какую игру его отдать.
+  test "delivery turns the chat mode on for a recipient who has none" do
+    params = nil
+
+    with_memory_cache do
+      stub_singleton(Telegram::Api, :post, ->(_path, sent) { params = sent; { "ok" => true } }) do
+        Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "во сколько?")
+      end
+
+      assert_equal @game.id, Telegram::Chat::Session.active_game(@owner.telegram_chat_id, @owner).id
+    end
+
+    buttons = JSON.parse(params["reply_markup"])["inline_keyboard"].first
+    assert_equal [ "chat:pick", "chat:exit" ], buttons.map { |button| button["callback_data"] }
+  end
+
+  test "delivery leaves an existing chat choice alone" do
+    other = Game.create!(court: @court, user: @owner, date: Date.current, kind: "game")
+    params = nil
+
+    with_memory_cache do
+      Telegram::Chat::Session.start(@owner.telegram_chat_id, other)
+
+      stub_singleton(Telegram::Api, :post, ->(_path, sent) { params = sent; { "ok" => true } }) do
+        Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "во сколько?")
+      end
+
+      assert_equal other.id, Telegram::Chat::Session.game_id(@owner.telegram_chat_id)
+    end
+
+    assert_not params.key?("reply_markup")
+  ensure
+    other&.destroy
+  end
+
+  test "a later automatic delivery becomes the reply target" do
+    other = Game.create!(court: @court, user: @owner, date: Date.current, kind: "game")
+    second_delivery = nil
+
+    with_memory_cache do
+      stub_singleton(Telegram::Api, :post, ->(*) { { "ok" => true } }) do
+        Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "из первой игры")
+      end
+
+      stub_singleton(Telegram::Api, :post, ->(_path, sent) { second_delivery = sent; { "ok" => true } }) do
+        Telegram::DeliverChatMessageJob.perform_now(other.id, @owner.id, "из второй игры")
+      end
+
+      assert_equal other.id, Telegram::Chat::Session.active_game(@owner.telegram_chat_id, @owner).id
+    end
+
+    assert second_delivery.key?("reply_markup")
+  ensure
+    other&.destroy
+  end
+
+  test "a failed delivery leaves no chat mode behind" do
+    # 403 — постоянная ошибка: сообщение с кнопками до человека не дошло, и
+    # оказаться в чате втихаря он не должен.
+    with_memory_cache do
+      stub_singleton(Telegram::Api, :post, ->(*) { { "ok" => false, "error_code" => 403, "description" => "Forbidden" } }) do
+        Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "во сколько?")
+      end
+
+      assert_nil Telegram::Chat::Session.game_id(@owner.telegram_chat_id)
+    end
+  end
+
+  test "a throttled delivery arms nothing and sends the buttons again on the retry" do
+    throttled = { "ok" => false, "error_code" => 429, "parameters" => { "retry_after" => 7 } }
+    later = Class.new { def perform_later(*) = true }.new
+    second_attempt = nil
+
+    with_memory_cache do
+      stub_singleton(Telegram::Api, :post, ->(*) { throttled }) do
+        stub_singleton(Telegram::DeliverChatMessageJob, :set, ->(wait:) { later }) do
+          Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "во сколько?")
+        end
+      end
+
+      assert_nil Telegram::Chat::Session.game_id(@owner.telegram_chat_id)
+
+      stub_singleton(Telegram::Api, :post, ->(_path, sent) { second_attempt = sent; { "ok" => true } }) do
+        Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "во сколько?")
+      end
+
+      assert_equal @game.id, Telegram::Chat::Session.game_id(@owner.telegram_chat_id)
+    end
+
+    assert second_attempt.key?("reply_markup")
+  end
+
+  test "a retried server error leaves no chat mode behind" do
+    with_memory_cache do
+      assert_enqueued_jobs 1, only: Telegram::DeliverChatMessageJob do
+        stub_singleton(Telegram::Api, :post, ->(*) { { "ok" => false, "error_code" => 503 } }) do
+          Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "во сколько?")
+        end
+      end
+
+      assert_nil Telegram::Chat::Session.game_id(@owner.telegram_chat_id)
+    end
+  end
+
+  # Указатель на игру, которой больше нет, — мусор: он не должен навсегда
+  # запирать включение чата для живой игры.
+  test "a stale pointer does not block arming the chat mode" do
+    other = Game.create!(court: @court, user: @owner, date: Date.current, kind: "game")
+    params = nil
+
+    with_memory_cache do
+      Telegram::Chat::Session.start(@owner.telegram_chat_id, other)
+      other.destroy
+
+      stub_singleton(Telegram::Api, :post, ->(_path, sent) { params = sent; { "ok" => true } }) do
+        Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "во сколько?")
+      end
+
+      assert_equal @game.id, Telegram::Chat::Session.active_game(@owner.telegram_chat_id, @owner).id
+    end
+
+    assert params.key?("reply_markup")
+  end
+
+  # Отправка не мгновенна: пока она идёт, человек мог сам открыть другую игру.
+  test "a choice made while the message was in flight is not overwritten" do
+    other = Game.create!(court: @court, user: @owner, date: Date.current, kind: "game")
+
+    with_memory_cache do
+      posting = lambda do |*|
+        Telegram::Chat::Session.start(@owner.telegram_chat_id, other)
+        { "ok" => true }
+      end
+
+      stub_singleton(Telegram::Api, :post, posting) do
+        Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "во сколько?")
+      end
+
+      assert_equal other.id, Telegram::Chat::Session.game_id(@owner.telegram_chat_id)
+    end
+  ensure
+    other&.destroy
+  end
+
+  test "stale validation does not delete a concurrent explicit choice" do
+    stale = Game.create!(court: @court, user: @owner, date: Date.current, kind: "game")
+    fresh = Game.create!(court: @court, user: @owner, date: Date.current, kind: "game")
+
+    with_memory_cache do
+      Telegram::Chat::Session.start(@owner.telegram_chat_id, stale)
+      stale.destroy
+
+      lookup = lambda do |**|
+        Telegram::Chat::Session.start(@owner.telegram_chat_id, fresh)
+        nil
+      end
+      stub_singleton(Game, :find_by, lookup) do
+        assert_nil Telegram::Chat::Session.active_game(@owner.telegram_chat_id, @owner)
+      end
+
+      assert_equal fresh.id, Telegram::Chat::Session.game_id(@owner.telegram_chat_id)
+    end
+  ensure
+    fresh&.destroy
+    stale&.destroy
   end
 
   test "delivery re-checks membership right before sending" do
