@@ -62,9 +62,10 @@ class Game < ApplicationRecord
   end
 
   # Чат живёт ровно столько же, сколько состав: до еженедельного сброса участий —
-  # ночь с пятницы на субботу, 4 утра (ResetParticipationsJob в recurring.yml).
-  # Раньше у серии режим протухал через сутки, и человек оставался без чата
-  # посреди недели, хотя состав, которому он писал, никуда не делся.
+  # ночь с пятницы на субботу, 4 утра (ResetParticipationsJob в recurring.yml,
+  # там же чистка прошедших разовых игр). Раньше у серии режим протухал через
+  # сутки, и человек оставался без чата посреди недели, хотя состав, которому он
+  # писал, никуда не делся.
   CHAT_RESET_WDAY = 6
   CHAT_RESET_HOUR = 4
 
@@ -75,8 +76,13 @@ class Game < ApplicationRecord
     reset
   end
 
+  # Считаем не «ближайшую субботу вообще», а ту, что действительно разберёт этот
+  # состав: сброс сносит участия уже отыгранного вхождения, а чистка — только
+  # прошедшую разовую игру. Игру, назначенную после ближайшей субботы, эта ночь
+  # не касается, и гасить её чат в 4 утра не за что.
   def chat_open_until
-    Game.next_weekly_reset_at
+    closes_at = Game.next_weekly_reset_at(chat_window_anchor)
+    closes_at > Time.current ? closes_at : nil
   end
 
   def chat_open?
@@ -476,6 +482,13 @@ class Game < ApplicationRecord
 
   def next_time
     time
+  end
+
+  # День, после которого состав этой игры пойдёт под нож: у серии — ближайшее
+  # вхождение, у разовой — её дата.
+  def chat_window_anchor
+    occurrence = recurring? ? (next_date || date) : date
+    occurrence ? occurrence.end_of_day : Time.current
   end
 
   def previous_occurrence_before_next_date
