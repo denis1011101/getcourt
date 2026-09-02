@@ -61,16 +61,22 @@ class Game < ApplicationRecord
     [ coach, second_coach ].compact
   end
 
-  # Чат игры живёт до конца дня игры. У повторяющейся игры одной даты нет,
-  # поэтому там режим просто протухает через сутки, и его включают заново —
-  # угадывать, какое занятие человек имел в виду, мы не беремся.
-  CHAT_MAX_TTL = 24.hours
+  # Чат живёт ровно столько же, сколько состав: до еженедельного сброса участий —
+  # ночь с пятницы на субботу, 4 утра (ResetParticipationsJob в recurring.yml).
+  # Раньше у серии режим протухал через сутки, и человек оставался без чата
+  # посреди недели, хотя состав, которому он писал, никуда не делся.
+  CHAT_RESET_WDAY = 6
+  CHAT_RESET_HOUR = 4
+
+  def self.next_weekly_reset_at(from = Time.current)
+    from = from.in_time_zone
+    reset = from.beginning_of_day.change(hour: CHAT_RESET_HOUR)
+    reset += 1.day while reset <= from || reset.wday != CHAT_RESET_WDAY
+    reset
+  end
 
   def chat_open_until
-    return CHAT_MAX_TTL.from_now if recurring? || date.blank?
-
-    closes_at = date.end_of_day
-    closes_at > Time.current ? closes_at : nil
+    Game.next_weekly_reset_at
   end
 
   def chat_open?

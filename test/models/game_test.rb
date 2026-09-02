@@ -404,4 +404,23 @@ class GameTest < ActiveSupport::TestCase
   ensure
     game&.destroy
   end
+
+  test "chat stays open until the weekly reset, not for a fixed day" do
+    # Среда — до сброса ещё три ночи.
+    travel_to Time.zone.local(2026, 9, 2, 21, 0) do
+      assert_equal Time.zone.local(2026, 9, 5, 4, 0), Game.next_weekly_reset_at
+      assert_equal Game.next_weekly_reset_at, games(:one).chat_open_until
+      assert games(:one).chat_open?
+    end
+  end
+
+  test "the chat window rolls over to the next week right at the reset" do
+    travel_to Time.zone.local(2026, 9, 5, 3, 59) do
+      assert_equal Time.zone.local(2026, 9, 5, 4, 0), Game.next_weekly_reset_at
+    end
+
+    travel_to Time.zone.local(2026, 9, 5, 4, 0) do
+      assert_equal Time.zone.local(2026, 9, 12, 4, 0), Game.next_weekly_reset_at
+    end
+  end
 end
