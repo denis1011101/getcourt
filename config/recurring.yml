@@ -29,6 +29,15 @@ production:
   reset_participations:
     class: ResetParticipationsJob
     schedule: every saturday at 4am
+  # В ту же ночь, что и сброс: до неё состав и чат прошедшей игры живы, после —
+  # нет. Раньше обе задачи ходили из /etc/cron.d/getcourt по пятницам; кроновые
+  # строки с 2026-09-02 закомментированы.
+  cleanup_past_one_off_games:
+    class: CleanupPastOneOffGamesJob
+    schedule: every saturday at 4:15am
+  cleanup_past_tournaments:
+    class: CleanupPastTournamentsJob
+    schedule: every saturday at 4:30am
   reset_inactive_player_statistics:
     class: ResetInactivePlayerStatisticsJob
     schedule: at 4:30am every day
