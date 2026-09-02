@@ -38,7 +38,9 @@ class Participation < ApplicationRecord
   end
 
   def open_game_chat
-    Telegram::Chat::Flow.enter(user, game)
+    return if user_id.blank?
+
+    Telegram::OpenGameChatJob.perform_later(game_id, user_id)
   rescue StandardError => e
     Rails.logger.warn("[Participation##{id}] chat session start failed: #{e.class}: #{e.message}")
   end
