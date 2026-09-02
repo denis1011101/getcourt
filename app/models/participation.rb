@@ -18,6 +18,15 @@ class Participation < ApplicationRecord
   after_destroy :close_game_chat
   after_update :close_game_chat, if: -> { saved_change_to_status? && !approved? }
 
+  # Обратное: попал в состав — сразу пишет в чат игры. Через commit, потому что
+  # карточка уходит в телеграм и до отката транзакции ей рано. Одной строкой на
+  # оба события намеренно: две декларации с одним именем метода ActiveSupport
+  # схлопывает в одну, и создание переставало срабатывать.
+  # У колонки status дефолт «approved», поэтому на создании saved_change_to_status?
+  # молчит — новую запись ловим отдельно.
+  after_commit :open_game_chat, on: %i[create update],
+               if: -> { approved? && (previously_new_record? || saved_change_to_status?) }
+
   def guest?
     user_id.nil?
   end
@@ -26,6 +35,14 @@ class Participation < ApplicationRecord
     Telegram::Chat::Session.stop_for(user, game)
   rescue StandardError => e
     Rails.logger.warn("[Participation##{id}] chat session cleanup failed: #{e.class}: #{e.message}")
+  end
+
+  def open_game_chat
+    return if user_id.blank?
+
+    Telegram::OpenGameChatJob.perform_later(game_id, user_id)
+  rescue StandardError => e
+    Rails.logger.warn("[Participation##{id}] chat session start failed: #{e.class}: #{e.message}")
   end
 
   def display_name

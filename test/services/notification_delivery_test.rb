@@ -30,6 +30,20 @@ class NotificationDeliveryTest < ActiveSupport::TestCase
     user&.destroy
   end
 
+  test "does not enqueue an email for a user without an address" do
+    # Раньше письмо уходило в очередь и падало уже там («SMTP To address may not
+    # be blank»), а отправитель успевал отчитаться об успешной доставке.
+    # Записи без email в базе есть: бот заводит их через save(validate: false).
+    user = User.new(notification_channel: "telegram")
+    user.save(validate: false)
+
+    assert_no_enqueued_emails do
+      assert_not NotificationDelivery.deliver(**delivery_arguments(user))
+    end
+  ensure
+    user&.destroy
+  end
+
   private
 
   def delivery_arguments(user)

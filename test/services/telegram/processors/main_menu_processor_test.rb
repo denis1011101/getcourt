@@ -27,6 +27,38 @@ class Telegram::Processors::MainMenuProcessorTest < ActiveSupport::TestCase
     assert_equal "es", user.telegram_locale
   end
 
+  test "registration strips the handle from the record it detaches" do
+    user = users(:one)
+    user.update!(email: "telegram-detach@example.com", telegram_registration_token: "detach-token")
+    # Донор без флага telegram_generated_email не мержится: с него только снимают
+    # чат. Оставшийся ник делал дубль, и приглашение по @нику уходило в него.
+    donor = User.new(
+      name: "Old bot record",
+      telegram_username: "detached_user",
+      telegram_chat_id: 12_347
+    )
+    donor.save(validate: false)
+    message = {
+      "chat" => { "id" => 12_347 },
+      "from" => { "id" => 12_347, "username" => "detached_user" },
+      "text" => "/register detach-token"
+    }
+
+    stub_singleton(Telegram::Api, :send_simple, ->(*) { }) do
+      stub_singleton(Telegram::Handlers::MenuHandler, :menu, ->(*) { }) do
+        Telegram::Processors::MainMenuProcessor.handle_message(message)
+      end
+    end
+
+    donor.reload
+    assert_nil donor.telegram_chat_id
+    assert_nil donor.telegram_username
+    assert_equal 12_347, user.reload.telegram_chat_id
+    assert_equal "detached_user", user.telegram_username
+  ensure
+    donor&.destroy
+  end
+
   test "reports a merge failure without partially connecting Telegram" do
     user = users(:one)
     user.update!(email: "telegram-merge-failure@example.com", telegram_registration_token: "merge-token")

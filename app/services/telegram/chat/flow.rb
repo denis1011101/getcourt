@@ -2,8 +2,8 @@ module Telegram
   module Chat
     # Вход в режим чата, выбор игры и выход из него.
     #
-    # Режим включается только явным нажатием: принятое приглашение само по себе
-    # ничего не включает, иначе согласием оказывалось бы бездействие.
+    # Включается двумя путями: вступлением в игру (Participation зовёт enter
+    # через OpenGameChatJob) и вручную — командой /chat или кнопкой выбора игры.
     module Flow
       class << self
         def handle_callback(callback)
@@ -35,17 +35,17 @@ module Telegram
           true
         end
 
-        # Кнопка после принятия приглашения. Сам режим не включает.
-        def offer(chat_id, game)
-          return unless game&.chat_open?
+        # Вступление в игру само включает режим чата: человек уже в составе,
+        # значит писать сокомандникам вправе, и лишнее подтверждение тут только
+        # мешает. Карточка приходит с теми же кнопками, что и у /chat.
+        def enter(user, game)
+          chat_id = user&.telegram_chat_id
+          return false if chat_id.blank? || game.nil?
+          return false unless game.chat_open? && game.team_member_ids.include?(user.id)
 
-          user = Telegram::Helpers::UserLookup.find_user(chat_id)
-          Telegram::Api.send_with_buttons(
-            chat_id,
-            t(user, :chat_offer, game: Message.game_label(game)),
-            [ [ { text: t(user, :chat_open_btn), callback_data: "chat:open:#{game.id}" } ] ],
-            parse_mode: nil
-          )
+          Session.start(chat_id, game)
+          show_status(chat_id.to_s, user, game)
+          true
         end
 
         # Команда /chat: одна игра — подтверждаем её, несколько — спрашиваем.
@@ -90,9 +90,12 @@ module Telegram
           Telegram::Api.send_simple(chat_id, t(user, :chat_stopped), parse_mode: nil)
         end
 
-        # Индикатор: в какую игру уходят сообщения и кто их увидит.
+        # Индикатор: в какую игру уходят сообщения и кто их увидит. Себя из
+        # счётчика вычитаем — рассылка отправителя пропускает, и число должно
+        # совпадать с тем, сколько человек реально прочитает сообщение.
         def show_status(chat_id, user, game)
-          text = t(user, :chat_started, game: Message.game_label(game), count: game.chat_members.count)
+          recipients = game.chat_members.where.not(id: user.id).count
+          text = t(user, :chat_started, game: Message.game_label(game), count: recipients)
           buttons = [ [
             { text: t(user, :chat_switch_btn), callback_data: "chat:pick" },
             { text: t(user, :chat_exit_btn), callback_data: "chat:exit" }

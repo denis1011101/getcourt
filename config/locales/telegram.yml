@@ -77,8 +77,6 @@ ru:
     invite_skipped_self: 'Пропущены (это вы): %{users}'
     game_or_user_not_found: Игра или пользователь не найдены
     joined_game: Вы присоединились к игре
-    chat_offer: "Вы в составе игры %{game}. Хотите писать остальным участникам прямо здесь?"
-    chat_open_btn: "Открыть чат игры"
     chat_started: "Теперь вы пишете в чат игры %{game}. Сообщения увидят участники, подключённые к Telegram (%{count})."
     chat_switch_btn: "Сменить игру"
     chat_exit_btn: "Выйти из чата"
@@ -674,8 +672,6 @@ en:
     invite_skipped_self: 'Skipped self: %{users}'
     game_or_user_not_found: Game or user not found
     joined_game: You joined the game
-    chat_offer: "You are in game %{game}. Want to message the other players right here?"
-    chat_open_btn: "Open game chat"
     chat_started: "You are now writing to game %{game}. Players connected to Telegram will see your messages (%{count})."
     chat_switch_btn: "Switch game"
     chat_exit_btn: "Leave chat"
@@ -1228,8 +1224,6 @@ es:
     invite_skipped_self: 'Omitidos (eres tú): %{users}'
     game_or_user_not_found: Partido o usuario no encontrado
     joined_game: Te has unido al partido
-    chat_offer: "Estás en el partido %{game}. ¿Quieres escribir aquí a los demás?"
-    chat_open_btn: "Abrir chat del partido"
     chat_started: "Ahora escribes al partido %{game}. Lo verán los jugadores conectados a Telegram (%{count})."
     chat_switch_btn: "Cambiar de partido"
     chat_exit_btn: "Salir del chat"

@@ -59,6 +59,10 @@ class NotificationDelivery
   class EmailAdapter
     def self.deliver(user, notification)
       return false if user.telegram_generated_email?
+      # Без адреса письмо всё равно упадёт уже в джобе («SMTP To address may not
+      # be blank»), а вызывающий к тому моменту отрапортует об успехе. Пустой
+      # email — это сразу «не доставили».
+      return false if user.email.blank?
 
       locale = NotificationDelivery.email_locale(user)
       actions = notification.actions(locale, "email").filter_map do |action|
