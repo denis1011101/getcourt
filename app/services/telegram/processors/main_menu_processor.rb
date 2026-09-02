@@ -83,7 +83,11 @@ module Telegram
                 User.transaction do
                   donor = User.where(telegram_chat_id: chat_id).where.not(id: user.id).first
                   Users::Merge.call(source: donor, target: user) if donor&.telegram_generated_email?
-                  User.where(telegram_chat_id: chat_id).where.not(id: user.id).update_all(telegram_chat_id: nil, updated_at: Time.current)
+                  # Ник снимаем вместе с чатом: запись без chat_id всё равно ничего не
+                  # получит, а оставшийся на ней ник делает дубль, из-за которого
+                  # приглашение по @нику уходило не в тот аккаунт.
+                  User.where(telegram_chat_id: chat_id).where.not(id: user.id)
+                      .update_all(telegram_chat_id: nil, telegram_username: nil, updated_at: Time.current)
 
                   # Built after the merge: it may have filled the username and the locale
                   # from the bot account, and those must not be overwritten with stale values.

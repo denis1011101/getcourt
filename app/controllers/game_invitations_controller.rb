@@ -30,10 +30,16 @@ class GameInvitationsController < ApplicationController
   end
 
   def send_invitations(handles)
-    result = { sent: [], not_found: [], skipped_self: [], failed: [] }
-    resolve_users_by_handles(handles).each do |handle, user|
-      if user.blank?
+    result = { sent: [], not_found: [], skipped_self: [], ambiguous: [], failed: [] }
+    resolve_users_by_handles(handles).each do |handle, candidates|
+      if candidates.empty?
         result[:not_found] << "@#{handle}"
+        next
+      end
+
+      user = pick_recipient(candidates)
+      if user.nil?
+        result[:ambiguous] << "@#{handle}"
         next
       end
 
@@ -50,6 +56,17 @@ class GameInvitationsController < ApplicationController
       end
     end
     result
+  end
+
+  # Один ник может висеть на нескольких записях: старая ботовая учётка и живая
+  # веб-регистрация. Берём ту, до которой сообщение дойдёт, — с привязанным
+  # чатом. Если таких несколько, это разные люди с одинаковым ником в базе:
+  # выбирать за пользователя нельзя, честнее сказать, что ник неоднозначный.
+  def pick_recipient(candidates)
+    return candidates.first if candidates.one?
+
+    with_chat = candidates.select { |candidate| candidate.telegram_chat_id.present? }
+    with_chat.one? ? with_chat.first : nil
   end
 
   def deliver_invitation(user)
@@ -69,24 +86,27 @@ class GameInvitationsController < ApplicationController
     parts << "Sent: #{result[:sent].join(', ')}" if result[:sent].any?
     parts << "Not found: #{result[:not_found].join(', ')}" if result[:not_found].any?
     parts << "Skipped self: #{result[:skipped_self].join(', ')}" if result[:skipped_self].any?
+    parts << "Several accounts match: #{result[:ambiguous].join(', ')}" if result[:ambiguous].any?
     parts << "Failed: #{result[:failed].join(', ')}" if result[:failed].any?
     parts.presence&.join(". ") || "No invitations sent."
   end
 
+  # Возвращает все совпадения по нику, а не последнее: раньше запись, найденная
+  # позже, молча затирала предыдущую, и приглашение уходило в случайную из них.
   def resolve_users_by_handles(handles)
-    users_by_handle = {}
+    users_by_handle = Hash.new { |hash, key| hash[key] = [] }
     db_handles = handles + handles.map { |handle| "@#{handle}" }
     username_scopes(db_handles).each do |scope, column|
       scope.find_each do |user|
         value = user.public_send(column).to_s.delete_prefix("@").downcase
-        users_by_handle[value] = user if value.present?
+        users_by_handle[value] << user if value.present?
       end
     end
     User.where(telegram_chat_id: handles).find_each do |user|
-      users_by_handle[user.telegram_chat_id.to_s] = user
+      users_by_handle[user.telegram_chat_id.to_s] << user
     end
 
-    handles.index_with { |handle| users_by_handle[handle] }
+    handles.index_with { |handle| users_by_handle[handle].uniq }
   end
 
   def username_scopes(handles)

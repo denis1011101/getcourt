@@ -82,6 +82,55 @@ class GameInvitationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ %w[friend targetuser] ], owner.reload.recent_invite_handles
   end
 
+  test "invite goes to the account with a connected chat when a handle has duplicates" do
+    owner = users(:one)
+    target = users(:two)
+    game = games(:one)
+    owner.update!(email: "invite-dup-owner@example.com")
+    target.update!(email: "invite-dup-target@example.com", telegram_username: "@targetuser", telegram_chat_id: 90_010, notification_channel: "telegram")
+    # Осиротевшая ботовая запись: ник тот же, но ни чата, ни почты — письмо ей
+    # уходило в пустоту, а веб пользователю рапортовал об успехе.
+    phantom = build_unvalidated_user(name: "Phantom", telegram_username: "@targetuser", notification_channel: "telegram")
+    game.update!(user: owner)
+
+    post session_url, params: { email: owner.email }
+
+    calls = []
+    stub_singleton(Telegram::Api, :send_with_buttons, ->(*args) { calls << args; { "ok" => true } }) do
+      assert_no_enqueued_emails do
+        post game_invitations_path(game), params: { usernames: "@targetuser" }
+      end
+    end
+
+    assert_equal 1, calls.size
+    assert_equal target.telegram_chat_id, calls.first.first
+    assert_equal "Sent: @targetuser", flash[:notice]
+  ensure
+    phantom&.destroy
+  end
+
+  test "invite is not sent when two connected accounts share a handle" do
+    owner = users(:one)
+    target = users(:two)
+    game = games(:one)
+    owner.update!(email: "invite-ambiguous-owner@example.com")
+    target.update!(email: "invite-ambiguous-target@example.com", telegram_username: "@targetuser", telegram_chat_id: 90_011, notification_channel: "telegram")
+    twin = User.create!(email: "invite-ambiguous-twin@example.com", telegram_username: "@targetuser", telegram_chat_id: 90_012, notification_channel: "telegram")
+    game.update!(user: owner)
+
+    post session_url, params: { email: owner.email }
+
+    calls = []
+    stub_singleton(Telegram::Api, :send_with_buttons, ->(*args) { calls << args; { "ok" => true } }) do
+      post game_invitations_path(game), params: { usernames: "@targetuser" }
+    end
+
+    assert_empty calls
+    assert_equal "Several accounts match: @targetuser", flash[:alert]
+  ensure
+    twin&.destroy
+  end
+
   test "non owner cannot invite users" do
     owner = users(:one)
     target = users(:two)
@@ -113,6 +162,14 @@ class GameInvitationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   private
+    # Ботовые записи заводятся без валидаций и живут без email — воспроизводим
+    # их тем же способом, что и Telegram::Processors::MainMenuProcessor.
+    def build_unvalidated_user(**attributes)
+      user = User.new(**attributes)
+      user.save(validate: false)
+      user
+    end
+
     def invitation_payload_for(locale, chat_id:)
       owner = users(:one)
       target = users(:two)

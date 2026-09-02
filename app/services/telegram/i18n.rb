@@ -36,8 +36,10 @@ module Telegram
       locale_for(user)
     end
 
+    # У сообщения может не быть language_code вовсе — тогда просто нет догадки
+    # о языке, а не NoMethodError на середине регистрации.
     def self.locale_from_language_code(language_code)
-      locale = language_code.to_s.split("-").first.downcase
+      locale = language_code.to_s.split("-").first.to_s.downcase
       locale if LOCALES.include?(locale)
     end
 
