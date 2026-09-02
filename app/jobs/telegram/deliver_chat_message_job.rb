@@ -23,7 +23,9 @@ module Telegram
       # человек. Без указателя ответ пропадал: Relay не знает, в какую игру его
       # отдать. Поэтому доставка сама включает получателю чат этой игры — но
       # только после того, как сообщение действительно ушло.
-      arming = chat_mode_missing?(recipient)
+      arming = Telegram::Chat::Session.automatic_start_needed?(
+        recipient.telegram_chat_id, recipient, game
+      )
 
       # Без parse_mode: это чужой текст, а не наш шаблон. С Markdown одиночный
       # `_` или `[` либо исказит сообщение, либо уронит отправку четырёхсоткой.
@@ -45,19 +47,13 @@ module Telegram
       # он не узнал: сообщение с кнопками до него не дошло. Следующая попытка
       # увидит, что указателя нет, и пришлёт кнопки снова. Запись — только если
       # выбора всё ещё нет: пока шла отправка, человек мог открыть другую игру.
-      Telegram::Chat::Session.start_unless_active(recipient.telegram_chat_id, game) if arming && delivered
+      if arming && delivered
+        Telegram::Chat::Session.start_automatically(recipient.telegram_chat_id, recipient, game)
+      end
       delivered
     end
 
     private
-
-    # Только когда человек не пишет прямо сейчас в другую игру: перебивать чужой
-    # выбор молча нельзя, там он сам решил, куда пишет. Спрашиваем active_game, а
-    # не сырой указатель: протухший — на удалённую игру или на ту, из состава
-    # которой человека вывели, — иначе навсегда заблокировал бы включение.
-    def chat_mode_missing?(recipient)
-      Telegram::Chat::Session.active_game(recipient.telegram_chat_id, recipient).nil?
-    end
 
     def handle_response(response, game_id, recipient_id, text)
       return true if response.is_a?(Hash) && response["ok"]

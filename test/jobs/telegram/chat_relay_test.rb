@@ -65,7 +65,7 @@ class Telegram::ChatRelayTest < ActiveSupport::TestCase
         Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "во сколько?")
       end
 
-      assert_equal @game.id, Telegram::Chat::Session.game_id(@owner.telegram_chat_id)
+      assert_equal @game.id, Telegram::Chat::Session.active_game(@owner.telegram_chat_id, @owner).id
     end
 
     buttons = JSON.parse(params["reply_markup"])["inline_keyboard"].first
@@ -87,6 +87,27 @@ class Telegram::ChatRelayTest < ActiveSupport::TestCase
     end
 
     assert_not params.key?("reply_markup")
+  ensure
+    other&.destroy
+  end
+
+  test "a later automatic delivery becomes the reply target" do
+    other = Game.create!(court: @court, user: @owner, date: Date.current, kind: "game")
+    second_delivery = nil
+
+    with_memory_cache do
+      stub_singleton(Telegram::Api, :post, ->(*) { { "ok" => true } }) do
+        Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "из первой игры")
+      end
+
+      stub_singleton(Telegram::Api, :post, ->(_path, sent) { second_delivery = sent; { "ok" => true } }) do
+        Telegram::DeliverChatMessageJob.perform_now(other.id, @owner.id, "из второй игры")
+      end
+
+      assert_equal other.id, Telegram::Chat::Session.active_game(@owner.telegram_chat_id, @owner).id
+    end
+
+    assert second_delivery.key?("reply_markup")
   ensure
     other&.destroy
   end
@@ -153,7 +174,7 @@ class Telegram::ChatRelayTest < ActiveSupport::TestCase
         Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "во сколько?")
       end
 
-      assert_equal @game.id, Telegram::Chat::Session.game_id(@owner.telegram_chat_id)
+      assert_equal @game.id, Telegram::Chat::Session.active_game(@owner.telegram_chat_id, @owner).id
     end
 
     assert params.key?("reply_markup")
@@ -177,6 +198,29 @@ class Telegram::ChatRelayTest < ActiveSupport::TestCase
     end
   ensure
     other&.destroy
+  end
+
+  test "stale validation does not delete a concurrent explicit choice" do
+    stale = Game.create!(court: @court, user: @owner, date: Date.current, kind: "game")
+    fresh = Game.create!(court: @court, user: @owner, date: Date.current, kind: "game")
+
+    with_memory_cache do
+      Telegram::Chat::Session.start(@owner.telegram_chat_id, stale)
+      stale.destroy
+
+      lookup = lambda do |**|
+        Telegram::Chat::Session.start(@owner.telegram_chat_id, fresh)
+        nil
+      end
+      stub_singleton(Game, :find_by, lookup) do
+        assert_nil Telegram::Chat::Session.active_game(@owner.telegram_chat_id, @owner)
+      end
+
+      assert_equal fresh.id, Telegram::Chat::Session.game_id(@owner.telegram_chat_id)
+    end
+  ensure
+    fresh&.destroy
+    stale&.destroy
   end
 
   test "delivery re-checks membership right before sending" do

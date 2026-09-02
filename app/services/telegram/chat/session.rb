@@ -10,47 +10,62 @@ module Telegram
     # игры уже после того, как включил режим.
     module Session
       KEY_PREFIX = "tg:chat:active".freeze
+      AUTOMATIC_KEY_PREFIX = "tg:chat:auto".freeze
 
       class << self
+        # Явный выбор пользователя всегда имеет приоритет над автоматическим.
         def start(chat_id, game)
           closes_at = game&.chat_open_until
           return false unless closes_at
 
           ttl = [ closes_at - Time.current, 1.minute ].max
           Rails.cache.write(key(chat_id), game.id, expires_in: ttl)
+          Rails.cache.delete(automatic_key(chat_id))
           true
         end
 
-        # То же, но не трогая уже сделанный выбор. Атомарно: между решением
-        # «указателя нет» и записью человек мог сам открыть другую игру — или
-        # это успела сделать параллельная доставка, — и затирать её нельзя.
-        def start_unless_active(chat_id, game)
+        # Автоматические сессии сменяют друг друга, но лежат отдельно от явного
+        # выбора и поэтому не могут его затереть даже при параллельной записи.
+        def start_automatically(chat_id, user, game)
           closes_at = game&.chat_open_until
           return false unless closes_at
 
           ttl = [ closes_at - Time.current, 1.minute ].max
-          Rails.cache.write(key(chat_id), game.id, expires_in: ttl, unless_exist: true)
+          Rails.cache.write(automatic_key(chat_id), game.id, expires_in: ttl)
+
+          # Явный выбор мог появиться, пока шла доставка. Он имеет приоритет;
+          # автоматический указатель заодно убираем, чтобы тот не ожил после TTL.
+          if active_game_for(explicit_game_id(chat_id), user)
+            Rails.cache.delete(automatic_key(chat_id))
+            return false
+          end
+
+          true
+        end
+
+        def automatic_start_needed?(chat_id, user, game)
+          return false if active_game_for(explicit_game_id(chat_id), user)
+
+          active_game_for(automatic_game_id(chat_id), user)&.id != game.id
         end
 
         def stop(chat_id)
           Rails.cache.delete(key(chat_id))
+          Rails.cache.delete(automatic_key(chat_id))
         end
 
         def game_id(chat_id)
-          Rails.cache.read(key(chat_id))
+          explicit_game_id(chat_id) || automatic_game_id(chat_id)
         end
 
-        # Игра, в которую человек пишет прямо сейчас, — или nil, и тогда режим
-        # гасится: игра прошла, человека вывели из состава, игру удалили.
+        # Игра, в которую человек пишет прямо сейчас. Протухшие указатели не
+        # удаляем здесь: параллельный явный выбор мог уже записать в тот же ключ
+        # новое значение. Они безвредны и исчезнут сами по TTL.
         def active_game(chat_id, user)
-          id = game_id(chat_id)
-          return nil unless id && user
+          return nil unless user
 
-          game = Game.find_by(id: id)
-          return game if game&.chat_open? && game.team_member_ids.include?(user.id)
-
-          stop(chat_id)
-          nil
+          active_game_for(explicit_game_id(chat_id), user) ||
+            active_game_for(automatic_game_id(chat_id), user)
         end
 
         # Человек вышел из игры (или его вывели) — гасим режим, но только если
@@ -66,6 +81,27 @@ module Telegram
 
         def key(chat_id)
           "#{KEY_PREFIX}:#{chat_id}"
+        end
+
+        def automatic_key(chat_id)
+          "#{AUTOMATIC_KEY_PREFIX}:#{chat_id}"
+        end
+
+        private
+
+        def explicit_game_id(chat_id)
+          Rails.cache.read(key(chat_id))
+        end
+
+        def automatic_game_id(chat_id)
+          Rails.cache.read(automatic_key(chat_id))
+        end
+
+        def active_game_for(id, user)
+          return nil unless id && user
+
+          game = Game.find_by(id: id)
+          game if game&.chat_open? && game.team_member_ids.include?(user.id)
         end
       end
     end

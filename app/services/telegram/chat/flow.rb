@@ -43,7 +43,8 @@ module Telegram
           return false if chat_id.blank? || game.nil?
           return false unless game.chat_open? && game.team_member_ids.include?(user.id)
 
-          Session.start(chat_id, game)
+          return false unless Session.start_automatically(chat_id, user, game)
+
           show_status(chat_id.to_s, user, game)
           true
         end
