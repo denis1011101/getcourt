@@ -89,6 +89,45 @@ class Telegram::Chat::RelayTest < ActiveSupport::TestCase
     assert_match(/текст/i, said.to_s)
   end
 
+  # Регрессия: ретранслятор был написан, но живой путь сообщения его не звал —
+  # UpdateService уходит в MainMenuProcessor, а тот знал только /start и
+  # /register. Режим чата включался, а текст пропадал молча.
+  test "text typed in the bot reaches the relay through the live update path" do
+    enqueued = nil
+
+    in_chat_mode do
+      stub_singleton(Telegram::RelayChatMessageJob, :perform_later, ->(*args) { enqueued = args }) do
+        Telegram::UpdateService.process({ "message" => tg_message("привет") })
+      end
+    end
+
+    assert_equal [ @game.id, @player.id, "привет" ], enqueued
+  end
+
+  test "an unknown command is not relayed into the game chat" do
+    enqueued = []
+
+    in_chat_mode do
+      stub_singleton(Telegram::RelayChatMessageJob, :perform_later, ->(*args) { enqueued << args }) do
+        Telegram::UpdateService.process({ "message" => tg_message("/menu") })
+      end
+    end
+
+    assert_empty enqueued
+  end
+
+  test "the chat command opens chat mode through the live update path" do
+    started = []
+
+    with_memory_cache do
+      stub_singleton(Telegram::Chat::Flow, :start, ->(chat_id, user) { started << [ chat_id, user.id ] }) do
+        Telegram::UpdateService.process({ "message" => tg_message("/chat") })
+      end
+    end
+
+    assert_equal [ [ @player.telegram_chat_id.to_s, @player.id ] ], started
+  end
+
   private
 
   def in_chat_mode

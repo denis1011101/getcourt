@@ -115,12 +115,35 @@ module Telegram
             end
             nil
 
+          when /\A\/chat(@\w+)?\z/
+            user = Telegram::Helpers::UserLookup.find_user(chat_id)
+            if user
+              Telegram::Chat::Flow.start(chat_id, user)
+            else
+              locale = Telegram::Helpers::UserLookup.locale_for(chat_id)
+              Telegram::Api.send_simple(chat_id, Telegram::I18n.t(:user_not_found, locale: locale), parse_mode: nil)
+            end
+            nil
+
+          when /\A\/stop(@\w+)?\z/
+            user = Telegram::Helpers::UserLookup.find_user(chat_id)
+            Telegram::Chat::Flow.stop(chat_id, user) if user
+            nil
+
             # [bot-menu-off] Отключено намеренно: пользуемся сайтом getcourt.co,
             # бот оставлен только для приглашений и карточки игры.
             # Раскомментировать, если решим вернуть функциональность в бот.
             # when "/menu"
             #   Telegram::Handlers::MenuHandler.menu(chat_id) rescue nil
             #   nil
+
+          else
+            # Режим чата ниже команд: команду бота ретранслировать нельзя, даже
+            # незнакомую. Всё остальное — текст и вложения — забирает чат игры,
+            # если он включён; если нет, Relay вернёт false и сообщение просто
+            # никуда не пойдёт, как и раньше.
+            Telegram::Chat::Relay.handle_message(message) unless text.start_with?("/")
+            nil
           end
         rescue => e
           Rails.logger.error "[Telegram::MainMenuProcessor] handle_message error: #{e.class} #{e.message}\n#{e.backtrace.join("\n")}\nmessage: #{message.inspect}"
