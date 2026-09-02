@@ -63,11 +63,29 @@ class Telegram::Chat::RelayTest < ActiveSupport::TestCase
     end
   end
 
-  test "a finished game stops accepting messages" do
+  # Отыгранная игра живёт в базе до еженедельной чистки, и состав вместе с ней:
+  # обсудить её после матча — обычное дело, поэтому чат закрывается не концом
+  # дня игры, а сбросом.
+  test "a played game keeps its chat until the weekly reset" do
+    enqueued = nil
+
     in_chat_mode do
       @game.update_columns(date: Date.current - 2, recurring: false)
 
-      stub_singleton(Telegram::RelayChatMessageJob, :perform_later, ->(*) { flunk "игра прошла" }) do
+      stub_singleton(Telegram::RelayChatMessageJob, :perform_later, ->(*args) { enqueued = args }) do
+        assert Telegram::Chat::Relay.handle_message(tg_message("привет"))
+      end
+      assert_equal @game.id, Telegram::Chat::Session.game_id(@player.telegram_chat_id)
+    end
+
+    assert_equal [ @game.id, @player.id, "привет" ], enqueued
+  end
+
+  test "a deleted game closes the chat mode" do
+    in_chat_mode do
+      @game.destroy
+
+      stub_singleton(Telegram::RelayChatMessageJob, :perform_later, ->(*) { flunk "игры больше нет" }) do
         assert_not Telegram::Chat::Relay.handle_message(tg_message("привет"))
       end
       assert_nil Telegram::Chat::Session.game_id(@player.telegram_chat_id)

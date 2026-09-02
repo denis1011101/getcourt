@@ -404,4 +404,55 @@ class GameTest < ActiveSupport::TestCase
   ensure
     game&.destroy
   end
+
+  test "chat stays open until the weekly reset, not for a fixed day" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 3), kind: "game")
+
+    # Среда: игра в четверг, разберёт её состав ближайшая суббота.
+    travel_to Time.zone.local(2026, 9, 2, 21, 0) do
+      assert_equal Time.zone.local(2026, 9, 5, 4, 0), Game.next_weekly_reset_at
+      assert_equal Time.zone.local(2026, 9, 5, 4, 0), game.chat_open_until
+      assert game.chat_open?
+    end
+  ensure
+    game&.destroy
+  end
+
+  # Ближайшая суббота ничего не делает с составом игры, назначенной после неё:
+  # чистка сносит только прошедшие разовые игры, сброс — только отыгранные серии.
+  test "a game scheduled beyond the coming reset keeps its chat until its own" do
+    one_off = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 20), kind: "game")
+    # Серия с ближайшим вхождением в воскресенье — уже за субботней границей.
+    series = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 6), recurring: true, kind: "game")
+
+    travel_to Time.zone.local(2026, 9, 2, 21, 0) do
+      assert_equal Time.zone.local(2026, 9, 26, 4, 0), one_off.chat_open_until
+      assert_equal Time.zone.local(2026, 9, 12, 4, 0), series.chat_open_until
+      assert one_off.chat_open?
+      assert series.chat_open?
+    end
+  ensure
+    [ one_off, series ].compact.each(&:destroy)
+  end
+
+  test "chat closes once the cleanup that removes the game has passed" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 8, 25), kind: "game")
+
+    travel_to Time.zone.local(2026, 9, 2, 21, 0) do
+      assert_nil game.chat_open_until
+      assert_not game.chat_open?
+    end
+  ensure
+    game&.destroy
+  end
+
+  test "the chat window rolls over to the next week right at the reset" do
+    travel_to Time.zone.local(2026, 9, 5, 3, 59) do
+      assert_equal Time.zone.local(2026, 9, 5, 4, 0), Game.next_weekly_reset_at
+    end
+
+    travel_to Time.zone.local(2026, 9, 5, 4, 0) do
+      assert_equal Time.zone.local(2026, 9, 12, 4, 0), Game.next_weekly_reset_at
+    end
+  end
 end
