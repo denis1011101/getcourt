@@ -109,6 +109,47 @@ class GameInvitationsControllerTest < ActionDispatch::IntegrationTest
     phantom&.destroy
   end
 
+  test "invite falls back to the email account when the twin has no channel at all" do
+    owner = users(:one)
+    target = users(:two)
+    game = games(:one)
+    owner.update!(email: "invite-email-dup-owner@example.com")
+    target.update!(email: "invite-email-dup-target@example.com", telegram_username: "@targetuser", telegram_chat_id: nil, notification_channel: "email", locale: "en")
+    # Ни чата, ни почты — доставить нечем, и мешать живой почтовой учётке
+    # такая запись не должна.
+    phantom = build_unvalidated_user(name: "Phantom", telegram_username: "@targetuser", notification_channel: "telegram")
+    game.update!(user: owner)
+
+    post session_url, params: { email: owner.email }
+
+    assert_enqueued_emails 1 do
+      post game_invitations_path(game), params: { usernames: "@targetuser" }
+    end
+
+    assert_equal "Sent: @targetuser", flash[:notice]
+  ensure
+    phantom&.destroy
+  end
+
+  test "invite reports a failure when no account behind the handle can be reached" do
+    owner = users(:one)
+    game = games(:one)
+    owner.update!(email: "invite-unreachable-owner@example.com")
+    first = build_unvalidated_user(name: "Phantom one", telegram_username: "@targetuser", notification_channel: "telegram")
+    second = build_unvalidated_user(name: "Phantom two", telegram_username: "@targetuser", notification_channel: "telegram")
+    game.update!(user: owner)
+
+    post session_url, params: { email: owner.email }
+
+    assert_no_enqueued_emails do
+      post game_invitations_path(game), params: { usernames: "@targetuser" }
+    end
+
+    assert_equal "Failed: @targetuser", flash[:alert]
+  ensure
+    [ first, second ].compact.each(&:destroy)
+  end
+
   test "invite is not sent when two connected accounts share a handle" do
     owner = users(:one)
     target = users(:two)

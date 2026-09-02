@@ -90,9 +90,12 @@ module Telegram
           Telegram::Api.send_simple(chat_id, t(user, :chat_stopped), parse_mode: nil)
         end
 
-        # Индикатор: в какую игру уходят сообщения и кто их увидит.
+        # Индикатор: в какую игру уходят сообщения и кто их увидит. Себя из
+        # счётчика вычитаем — рассылка отправителя пропускает, и число должно
+        # совпадать с тем, сколько человек реально прочитает сообщение.
         def show_status(chat_id, user, game)
-          text = t(user, :chat_started, game: Message.game_label(game), count: game.chat_members.count)
+          recipients = game.chat_members.where.not(id: user.id).count
+          text = t(user, :chat_started, game: Message.game_label(game), count: recipients)
           buttons = [ [
             { text: t(user, :chat_switch_btn), callback_data: "chat:pick" },
             { text: t(user, :chat_exit_btn), callback_data: "chat:exit" }

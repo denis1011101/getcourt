@@ -56,7 +56,7 @@ class ParticipationTest < ActiveSupport::TestCase
 
   test "joining a game turns on chat mode and shows the switch and leave buttons" do
     court = Court.create!(name: "Join Chat Court", city_name: "Yekaterinburg")
-    owner = User.create!(email: "join-chat-owner-#{SecureRandom.hex(4)}@example.com", name: "Owner")
+    owner = User.create!(email: "join-chat-owner-#{SecureRandom.hex(4)}@example.com", name: "Owner", telegram_chat_id: 910_000_003)
     player = User.create!(email: "join-chat-player-#{SecureRandom.hex(4)}@example.com", name: "Player", telegram_chat_id: 910_000_001)
     game = Game.create!(court: court, user: owner, date: Date.current, kind: "game")
     sent = []
@@ -70,9 +70,11 @@ class ParticipationTest < ActiveSupport::TestCase
     end
 
     assert_equal 1, sent.size
-    chat_id, _text, buttons = sent.first
+    chat_id, text, buttons = sent.first
     assert_equal player.telegram_chat_id.to_s, chat_id
     assert_equal [ "chat:pick", "chat:exit" ], buttons.first.map { |button| button[:callback_data] }
+    # В счётчике только владелец: себе сообщение не приходит.
+    assert_includes text, "(1)"
   ensure
     game&.destroy
     [ owner, player ].compact.each(&:destroy)

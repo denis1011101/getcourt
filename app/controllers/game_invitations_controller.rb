@@ -39,7 +39,9 @@ class GameInvitationsController < ApplicationController
 
       user = pick_recipient(candidates)
       if user.nil?
-        result[:ambiguous] << "@#{handle}"
+        # Некому доставить — это не спор об аккаунтах, а провал доставки.
+        bucket = candidates.any? { |candidate| reachable?(candidate) } ? :ambiguous : :failed
+        result[bucket] << "@#{handle}"
         next
       end
 
@@ -59,14 +61,29 @@ class GameInvitationsController < ApplicationController
   end
 
   # Один ник может висеть на нескольких записях: старая ботовая учётка и живая
-  # веб-регистрация. Берём ту, до которой сообщение дойдёт, — с привязанным
-  # чатом. Если таких несколько, это разные люди с одинаковым ником в базе:
-  # выбирать за пользователя нельзя, честнее сказать, что ник неоднозначный.
+  # веб-регистрация. Берём ту, до которой сообщение дойдёт: сперва с привязанным
+  # чатом, затем с рабочей почтой — письмо тоже доставка. Если в этом ярусе
+  # претендентов несколько, это разные люди с одинаковым ником: выбирать за
+  # пользователя нельзя, честнее сказать, что ник неоднозначный.
   def pick_recipient(candidates)
     return candidates.first if candidates.one?
 
     with_chat = candidates.select { |candidate| candidate.telegram_chat_id.present? }
-    with_chat.one? ? with_chat.first : nil
+    return with_chat.first if with_chat.one?
+    return nil if with_chat.many?
+
+    with_email = candidates.select { |candidate| emailable?(candidate) }
+    with_email.one? ? with_email.first : nil
+  end
+
+  # Ровно то, что умеет NotificationDelivery: телеграм при привязанном чате,
+  # иначе письмо — но не на служебный адрес, сгенерированный ботом.
+  def reachable?(user)
+    user.telegram_chat_id.present? || emailable?(user)
+  end
+
+  def emailable?(user)
+    user.email.present? && !user.telegram_generated_email?
   end
 
   def deliver_invitation(user)
