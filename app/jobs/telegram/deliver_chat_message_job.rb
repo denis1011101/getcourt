@@ -21,8 +21,9 @@ module Telegram
 
       # Отвечать в том же окне, где пришло сообщение, — первое, что делает
       # человек. Без указателя ответ пропадал: Relay не знает, в какую игру его
-      # отдать. Поэтому доставка сама включает получателю чат этой игры.
-      armed = arm_chat_mode(game, recipient)
+      # отдать. Поэтому доставка сама включает получателю чат этой игры — но
+      # только после того, как сообщение действительно ушло.
+      arming = chat_mode_missing?(recipient)
 
       # Без parse_mode: это чужой текст, а не наш шаблон. С Markdown одиночный
       # `_` или `[` либо исказит сообщение, либо уронит отправку четырёхсоткой.
@@ -31,7 +32,7 @@ module Telegram
         "link_preview_options" => Telegram::Api::LINK_PREVIEW_DISABLED,
         "text" => text.to_s
       }
-      params["reply_markup"] = { inline_keyboard: Telegram::Chat::Flow.controls(recipient) }.to_json if armed
+      params["reply_markup"] = { inline_keyboard: Telegram::Chat::Flow.controls(recipient) }.to_json if arming
 
       response = begin
         Telegram::Api.post("sendMessage", params)
@@ -39,18 +40,22 @@ module Telegram
         raise TransientDeliveryError, error.message
       end
 
-      handle_response(response, game_id, recipient_id, text)
+      delivered = handle_response(response, game_id, recipient_id, text)
+      # Ретрай и постоянная ошибка не должны оставлять человека в чате, о котором
+      # он не узнал: сообщение с кнопками до него не дошло. Следующая попытка
+      # увидит, что указателя нет, и пришлёт кнопки снова.
+      Telegram::Chat::Session.start(recipient.telegram_chat_id, game) if arming && delivered
+      delivered
     end
 
     private
 
     # Только когда человек не пишет прямо сейчас в другую игру: перебивать чужой
-    # выбор молча нельзя, там он сам решил, куда пишет.
-    def arm_chat_mode(game, recipient)
-      chat_id = recipient.telegram_chat_id
-      return false if Telegram::Chat::Session.game_id(chat_id).present?
-
-      Telegram::Chat::Session.start(chat_id, game)
+    # выбор молча нельзя, там он сам решил, куда пишет. Спрашиваем active_game, а
+    # не сырой указатель: протухший — на удалённую игру или на ту, из состава
+    # которой человека вывели, — иначе навсегда заблокировал бы включение.
+    def chat_mode_missing?(recipient)
+      Telegram::Chat::Session.active_game(recipient.telegram_chat_id, recipient).nil?
     end
 
     def handle_response(response, game_id, recipient_id, text)
