@@ -1,7 +1,9 @@
 require "test_helper"
+require "support/cache_helper"
 
 class Telegram::ChatRelayTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
+  include CacheHelper
 
   setup do
     @court = Court.create!(name: "Relay Court", city_name: "Yekaterinburg")
@@ -51,6 +53,42 @@ class Telegram::ChatRelayTest < ActiveSupport::TestCase
     assert_equal @owner.telegram_chat_id.to_s, params["chat_id"]
     assert_equal "текст с _подчёркиванием_ и [скобкой", params["text"]
     assert_not params.key?("parse_mode")
+  end
+
+  # Ответ в том же окне — первое, что делает получатель. Раньше он пропадал:
+  # у человека не было указателя, и Relay не знал, в какую игру его отдать.
+  test "delivery turns the chat mode on for a recipient who has none" do
+    params = nil
+
+    with_memory_cache do
+      stub_singleton(Telegram::Api, :post, ->(_path, sent) { params = sent; { "ok" => true } }) do
+        Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "во сколько?")
+      end
+
+      assert_equal @game.id, Telegram::Chat::Session.game_id(@owner.telegram_chat_id)
+    end
+
+    buttons = JSON.parse(params["reply_markup"])["inline_keyboard"].first
+    assert_equal [ "chat:pick", "chat:exit" ], buttons.map { |button| button["callback_data"] }
+  end
+
+  test "delivery leaves an existing chat choice alone" do
+    other = Game.create!(court: @court, user: @owner, date: Date.current, kind: "game")
+    params = nil
+
+    with_memory_cache do
+      Telegram::Chat::Session.start(@owner.telegram_chat_id, other)
+
+      stub_singleton(Telegram::Api, :post, ->(_path, sent) { params = sent; { "ok" => true } }) do
+        Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "во сколько?")
+      end
+
+      assert_equal other.id, Telegram::Chat::Session.game_id(@owner.telegram_chat_id)
+    end
+
+    assert_not params.key?("reply_markup")
+  ensure
+    other&.destroy
   end
 
   test "delivery re-checks membership right before sending" do
