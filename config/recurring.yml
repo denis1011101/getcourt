@@ -22,9 +22,13 @@ production:
     class: GameReminderJob
     args: [ 0 ]
     schedule: at 2pm every day
+  # Раз в неделю, в ночь с пятницы на субботу — как это делала кроновая строка
+  # `participations:reset` (она с этой даты закомментирована). Ежедневный запуск,
+  # стоявший здесь с 2026-08-15, вычищал состав на следующее же утро после игры,
+  # а не раз в неделю.
   reset_participations:
     class: ResetParticipationsJob
-    schedule: at 4am every day
+    schedule: every saturday at 4am
   reset_inactive_player_statistics:
     class: ResetInactivePlayerStatisticsJob
     schedule: at 4:30am every day
