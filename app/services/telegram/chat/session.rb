@@ -21,6 +21,17 @@ module Telegram
           true
         end
 
+        # То же, но не трогая уже сделанный выбор. Атомарно: между решением
+        # «указателя нет» и записью человек мог сам открыть другую игру — или
+        # это успела сделать параллельная доставка, — и затирать её нельзя.
+        def start_unless_active(chat_id, game)
+          closes_at = game&.chat_open_until
+          return false unless closes_at
+
+          ttl = [ closes_at - Time.current, 1.minute ].max
+          Rails.cache.write(key(chat_id), game.id, expires_in: ttl, unless_exist: true)
+        end
+
         def stop(chat_id)
           Rails.cache.delete(key(chat_id))
         end

@@ -159,6 +159,26 @@ class Telegram::ChatRelayTest < ActiveSupport::TestCase
     assert params.key?("reply_markup")
   end
 
+  # Отправка не мгновенна: пока она идёт, человек мог сам открыть другую игру.
+  test "a choice made while the message was in flight is not overwritten" do
+    other = Game.create!(court: @court, user: @owner, date: Date.current, kind: "game")
+
+    with_memory_cache do
+      posting = lambda do |*|
+        Telegram::Chat::Session.start(@owner.telegram_chat_id, other)
+        { "ok" => true }
+      end
+
+      stub_singleton(Telegram::Api, :post, posting) do
+        Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "во сколько?")
+      end
+
+      assert_equal other.id, Telegram::Chat::Session.game_id(@owner.telegram_chat_id)
+    end
+  ensure
+    other&.destroy
+  end
+
   test "delivery re-checks membership right before sending" do
     @participation.destroy
 

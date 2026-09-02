@@ -43,8 +43,9 @@ module Telegram
       delivered = handle_response(response, game_id, recipient_id, text)
       # Ретрай и постоянная ошибка не должны оставлять человека в чате, о котором
       # он не узнал: сообщение с кнопками до него не дошло. Следующая попытка
-      # увидит, что указателя нет, и пришлёт кнопки снова.
-      Telegram::Chat::Session.start(recipient.telegram_chat_id, game) if arming && delivered
+      # увидит, что указателя нет, и пришлёт кнопки снова. Запись — только если
+      # выбора всё ещё нет: пока шла отправка, человек мог открыть другую игру.
+      Telegram::Chat::Session.start_unless_active(recipient.telegram_chat_id, game) if arming && delivered
       delivered
     end
 
