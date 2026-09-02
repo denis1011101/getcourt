@@ -35,17 +35,17 @@ module Telegram
           true
         end
 
-        # Кнопка после принятия приглашения. Сам режим не включает.
-        def offer(chat_id, game)
-          return unless game&.chat_open?
+        # Вступление в игру само включает режим чата: человек уже в составе,
+        # значит писать сокомандникам вправе, и лишнее подтверждение тут только
+        # мешает. Карточка приходит с теми же кнопками, что и у /chat.
+        def enter(user, game)
+          chat_id = user&.telegram_chat_id
+          return false if chat_id.blank? || game.nil?
+          return false unless game.chat_open? && game.team_member_ids.include?(user.id)
 
-          user = Telegram::Helpers::UserLookup.find_user(chat_id)
-          Telegram::Api.send_with_buttons(
-            chat_id,
-            t(user, :chat_offer, game: Message.game_label(game)),
-            [ [ { text: t(user, :chat_open_btn), callback_data: "chat:open:#{game.id}" } ] ],
-            parse_mode: nil
-          )
+          Session.start(chat_id, game)
+          show_status(chat_id.to_s, user, game)
+          true
         end
 
         # Команда /chat: одна игра — подтверждаем её, несколько — спрашиваем.

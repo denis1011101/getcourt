@@ -100,8 +100,8 @@ module Telegram
                 end
 
                 Telegram::Handlers::GamesHandler.show_game(cb.chat_id, game.id, 1, message_id: cb.message_id) rescue nil
-                # Само принятие ничего не включает: предлагаем чат кнопкой.
-                Telegram::Chat::Flow.offer(cb.chat_id, game) rescue nil
+                # Режим чата включает сама Participation — здесь звать нечего,
+                # иначе карточка придёт дважды.
                 nil
 
               when /\Agame:leave:(\d+)\z/
