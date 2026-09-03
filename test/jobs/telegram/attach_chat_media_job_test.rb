@@ -53,6 +53,21 @@ class Telegram::AttachChatMediaJobTest < ActiveSupport::TestCase
     assert_equal Telegram::I18n.t(:chat_media_too_big), said
   end
 
+  test "a download that did not happen is answered in the reader's language" do
+    said = nil
+    @owner.update!(telegram_locale: "es")
+
+    stub_singleton(Telegram::Api, :download_file, ->(_file_id) { nil }) do
+      stub_singleton(Telegram::Api, :send_simple, ->(_chat_id, text, **_kw) { said = text }) do
+        assert_no_difference -> { @game.game_media.count } do
+          Telegram::AttachChatMediaJob.perform_now(@game.id, @owner.id, @photo, nil)
+        end
+      end
+    end
+
+    assert_equal Telegram::I18n.t(:chat_media_download_failed, locale: "es"), said
+  end
+
   test "an attachment over the game limit leaves no orphan file behind" do
     GameMedium::MAX_IMAGES_PER_GAME.times { |i| attach_image("shot#{i}.png") }
     said = nil

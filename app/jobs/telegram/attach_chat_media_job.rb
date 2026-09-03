@@ -23,7 +23,7 @@ module Telegram
       return reply(user, :chat_media_too_big, locale) if media["file_size"].to_i > MAX_DOWNLOAD
 
       file, filename = Telegram::Api.download_file(media["file_id"])
-      return reply(user, :chat_media_failed, locale, reason: "download") unless file
+      return reply(user, :chat_media_download_failed, locale) unless file
 
       begin
         attach(game, user, file, filename, caption, locale)

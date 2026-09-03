@@ -90,6 +90,8 @@ ru:
     chat_media_too_big: Файл больше 20 МБ — столько бот забрать не может. На страницу
       игры его получится добавить с сайта.
     chat_media_failed: 'Файл переслан, но на страницу игры не добавлен: %{reason}'
+    chat_media_download_failed: Файл переслан, но скачать его на страницу игры не
+      удалось. Попробуйте добавить его на сайте.
     join_request_already_sent: Запрос уже отправлен
     already_joined_game: Вы уже участвуете в игре
     join_request_sent: Запрос на участие отправлен
@@ -690,6 +692,8 @@ en:
     chat_media_too_big: The file is over 20 MB — the bot cannot fetch that much. You
       can still add it to the game page from the site.
     chat_media_failed: 'The file was relayed but not added to the game page: %{reason}'
+    chat_media_download_failed: The file was relayed, but fetching it for the game
+      page failed. Try adding it from the site.
     join_request_already_sent: Request already sent
     already_joined_game: You already joined
     join_request_sent: Join request sent
@@ -1248,6 +1252,8 @@ es:
       Puedes añadirlo a la página del partido desde la web.
     chat_media_failed: 'El archivo se ha reenviado, pero no se ha añadido a la página
       del partido: %{reason}'
+    chat_media_download_failed: El archivo se ha reenviado, pero no se ha podido
+      descargar para la página del partido. Prueba a añadirlo desde la web.
     join_request_already_sent: La solicitud ya se ha enviado
     already_joined_game: Ya estás en el partido
     join_request_sent: Solicitud para unirse enviada

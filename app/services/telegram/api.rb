@@ -81,19 +81,32 @@ module Telegram
       path = result.dig("result", "file_path") if result.is_a?(Hash)
       return nil if path.blank?
 
-      uri = URI("https://api.telegram.org/file/bot#{TOKEN}/#{path}")
       file = Tempfile.new("telegram-file", binmode: true)
+      begin
+        fetch_file(URI("https://api.telegram.org/file/bot#{TOKEN}/#{path}"), file) ? [ file, File.basename(path) ] : discard_file(file)
+      rescue StandardError => e
+        Rails.logger.warn("[Telegram::Api] download_file failed: #{e.class}: #{e.message}")
+        discard_file(file)
+      end
+    end
+
+    def self.fetch_file(uri, file)
       Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
         http.request(Net::HTTP::Get.new(uri)) do |response|
-          return nil unless response.is_a?(Net::HTTPSuccess)
+          return false unless response.is_a?(Net::HTTPSuccess)
 
           response.read_body { |chunk| file.write(chunk) }
         end
       end
       file.rewind
-      [ file, File.basename(path) ]
-    rescue StandardError => e
-      Rails.logger.warn("[Telegram::Api] download_file failed: #{e.class}: #{e.message}")
+      true
+    end
+
+    # Неудача на любом шаге — и временный файл надо убрать здесь: наружу он не
+    # уходит, а значит, закрыть его вызывающему коду уже не за что.
+    def self.discard_file(file)
+      file.close
+      file.unlink
       nil
     end
 
