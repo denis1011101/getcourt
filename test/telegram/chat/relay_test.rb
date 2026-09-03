@@ -27,7 +27,7 @@ class Telegram::Chat::RelayTest < ActiveSupport::TestCase
       end
     end
 
-    assert_equal [ @game.id, @player.id, "привет" ], enqueued
+    assert_equal [ @game.id, @player.id, "привет", nil ], enqueued
   end
 
   test "ignores a message when chat mode is off" do
@@ -78,7 +78,7 @@ class Telegram::Chat::RelayTest < ActiveSupport::TestCase
       assert_equal @game.id, Telegram::Chat::Session.game_id(@player.telegram_chat_id)
     end
 
-    assert_equal [ @game.id, @player.id, "привет" ], enqueued
+    assert_equal [ @game.id, @player.id, "привет", nil ], enqueued
   end
 
   test "a deleted game closes the chat mode" do
@@ -92,19 +92,48 @@ class Telegram::Chat::RelayTest < ActiveSupport::TestCase
     end
   end
 
-  test "media is answered instead of being silently dropped" do
+  test "a photo is relayed with its caption" do
+    enqueued = nil
+
+    in_chat_mode do
+      stub_singleton(Telegram::RelayChatMessageJob, :perform_later, ->(*args) { enqueued = args }) do
+        photo = tg_message(nil, message_id: 900).merge(
+          "photo" => [ { "file_id" => "small" }, { "file_id" => "large" } ],
+          "caption" => "вот корт"
+        )
+        assert Telegram::Chat::Relay.handle_message(photo)
+      end
+    end
+
+    assert_equal [ @game.id, @player.id, "вот корт", { "kind" => "photo", "file_id" => "large" } ], enqueued
+  end
+
+  test "a sticker without any caption is relayed too" do
+    enqueued = nil
+
+    in_chat_mode do
+      stub_singleton(Telegram::RelayChatMessageJob, :perform_later, ->(*args) { enqueued = args }) do
+        sticker = tg_message(nil, message_id: 901).merge("sticker" => { "file_id" => "stk" })
+        assert Telegram::Chat::Relay.handle_message(sticker)
+      end
+    end
+
+    assert_equal [ @game.id, @player.id, "", { "kind" => "sticker", "file_id" => "stk" } ], enqueued
+  end
+
+  test "what the chat cannot carry is answered instead of being silently dropped" do
     said = nil
 
     in_chat_mode do
       stub_singleton(Telegram::Api, :send_simple, ->(_chat_id, text, **_kw) { said = text }) do
-        stub_singleton(Telegram::RelayChatMessageJob, :perform_later, ->(*) { flunk "медиа пока не рассылаем" }) do
-          photo = tg_message(nil, message_id: 900).merge("photo" => [ { "file_id" => "x" } ])
-          assert Telegram::Chat::Relay.handle_message(photo)
+        stub_singleton(Telegram::RelayChatMessageJob, :perform_later, ->(*) { flunk "гео пересылать нечем" }) do
+          location = tg_message(nil, message_id: 902).merge("location" => { "latitude" => 56.8, "longitude" => 60.6 })
+          assert Telegram::Chat::Relay.handle_message(location)
         end
       end
     end
 
-    assert_match(/текст/i, said.to_s)
+    assert_equal Telegram::I18n.t(:chat_unsupported), said
   end
 
   # Регрессия: ретранслятор был написан, но живой путь сообщения его не звал —
@@ -119,7 +148,22 @@ class Telegram::Chat::RelayTest < ActiveSupport::TestCase
       end
     end
 
-    assert_equal [ @game.id, @player.id, "привет" ], enqueued
+    assert_equal [ @game.id, @player.id, "привет", nil ], enqueued
+  end
+
+  # Тот же живой путь, что и у текста: у вложения text пустой, и раньше на
+  # этом месте сообщение упиралось в разбор команд.
+  test "a photo sent to the bot reaches the relay through the live update path" do
+    enqueued = nil
+
+    in_chat_mode do
+      stub_singleton(Telegram::RelayChatMessageJob, :perform_later, ->(*args) { enqueued = args }) do
+        photo = tg_message(nil).merge("photo" => [ { "file_id" => "live" } ])
+        Telegram::UpdateService.process({ "message" => photo })
+      end
+    end
+
+    assert_equal({ "kind" => "photo", "file_id" => "live" }, enqueued&.last)
   end
 
   test "an unknown command is not relayed into the game chat" do

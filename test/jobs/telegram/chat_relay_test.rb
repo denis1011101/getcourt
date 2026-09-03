@@ -24,13 +24,63 @@ class Telegram::ChatRelayTest < ActiveSupport::TestCase
 
   test "fan-out reaches every member with a bot except the sender" do
     delivered = []
-    stub_singleton(Telegram::DeliverChatMessageJob, :perform_later, ->(game_id, recipient_id, text) { delivered << [ game_id, recipient_id, text ] }) do
+    stub_singleton(Telegram::DeliverChatMessageJob, :perform_later, ->(game_id, recipient_id, text, media = nil) { delivered << [ game_id, recipient_id, text, media ] }) do
       Telegram::RelayChatMessageJob.perform_now(@game.id, @player.id, "во сколько завтра?")
     end
 
     assert_equal [ @owner.id ], delivered.map { |row| row[1] }
     assert_match "во сколько завтра?", delivered.first[2]
     assert_match "Player", delivered.first[2]
+  end
+
+  test "an attachment travels by file_id, with the header in the caption" do
+    delivered = []
+    stub_singleton(Telegram::DeliverChatMessageJob, :perform_later, ->(*args) { delivered << args }) do
+      Telegram::RelayChatMessageJob.perform_now(@game.id, @player.id, "вот корт", { "kind" => "photo", "file_id" => "abc" })
+    end
+
+    assert_equal({ "kind" => "photo", "file_id" => "abc" }, delivered.first.last)
+
+    params = nil
+    path = nil
+    stub_singleton(Telegram::Api, :post, ->(sent_path, sent) { path = sent_path; params = sent; { "ok" => true } }) do
+      Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, delivered.first[2], delivered.first.last)
+    end
+
+    assert_equal "sendPhoto", path
+    assert_equal "abc", params["photo"]
+    assert_match "вот корт", params["caption"]
+    assert_not params.key?("text")
+  end
+
+  # Подпись стикеру и кружку Telegram не даёт, а без шапки не видно, кто и в
+  # какую игру прислал — поэтому шапка уходит отдельным сообщением перед ними.
+  test "a sticker is preceded by the header message" do
+    sent = []
+
+    with_memory_cache do
+      stub_singleton(Telegram::Api, :post, ->(path, params) { sent << [ path, params ]; { "ok" => true } }) do
+        Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "💬 #1 · Player", { "kind" => "sticker", "file_id" => "stk" })
+      end
+    end
+
+    assert_equal [ "sendMessage", "sendSticker" ], sent.map(&:first)
+    assert_equal "stk", sent.last.last["sticker"]
+    # Кнопки — на последнем сообщении, том самом, ради которого всё слалось.
+    assert_not sent.first.last.key?("reply_markup")
+    assert sent.last.last.key?("reply_markup")
+  end
+
+  test "a caption too long for Telegram is trimmed, not dropped" do
+    params = nil
+    long = "я" * 1500
+
+    stub_singleton(Telegram::Api, :post, ->(_path, sent) { params = sent; { "ok" => true } }) do
+      Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, long, { "kind" => "video", "file_id" => "vid" })
+    end
+
+    assert_equal 1024, params["caption"].length
+    assert params["caption"].end_with?("…")
   end
 
   test "a sender who already left the squad is not relayed" do

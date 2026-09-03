@@ -84,7 +84,7 @@ ru:
     chat_pick_prompt: "В какую игру писать?"
     chat_none: "Нет игр, в чат которых можно писать."
     chat_not_available: "Чат этой игры недоступен: игра прошла или вас нет в составе."
-    chat_text_only: "Пока чат передаёт только текст. Фото и видео — следующим шагом."
+    chat_unsupported: "Это чат пока не передаёт. Текст, фото, видео, гифки, документы, стикеры и голосовые — доходят."
     join_request_already_sent: Запрос уже отправлен
     already_joined_game: Вы уже участвуете в игре
     join_request_sent: Запрос на участие отправлен
@@ -679,7 +679,7 @@ en:
     chat_pick_prompt: "Which game do you want to write to?"
     chat_none: "No games with an open chat."
     chat_not_available: "This game's chat is unavailable: the game is over or you are not in the squad."
-    chat_text_only: "The chat carries text only for now. Photos and video come next."
+    chat_unsupported: "The chat cannot carry this yet. Text, photos, video, GIFs, documents, stickers and voice notes get through."
     join_request_already_sent: Request already sent
     already_joined_game: You already joined
     join_request_sent: Join request sent
@@ -1231,7 +1231,7 @@ es:
     chat_pick_prompt: "¿A qué partido quieres escribir?"
     chat_none: "No hay partidos con chat abierto."
     chat_not_available: "El chat de este partido no está disponible: ya terminó o no estás en la alineación."
-    chat_text_only: "Por ahora el chat solo lleva texto. Fotos y vídeo, en el siguiente paso."
+    chat_unsupported: "Esto el chat aún no lo lleva. Texto, fotos, vídeo, GIF, documentos, stickers y notas de voz sí llegan."
     join_request_already_sent: La solicitud ya se ha enviado
     already_joined_game: Ya estás en el partido
     join_request_sent: Solicitud para unirse enviada

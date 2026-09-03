@@ -21,15 +21,17 @@ module Telegram
 
           return true if duplicate?(chat_id, message["message_id"])
 
-          text = message["text"].to_s.strip
-          if text.blank?
-            # Медиа — следующий этап; молча проглотить его нельзя, человек ждёт,
-            # что вложение увидят.
-            Telegram::Api.send_simple(chat_id, t(user, :chat_text_only), parse_mode: nil)
+          media = Media.from(message)
+          # У вложения текст лежит в подписи, а не в text.
+          body = (media ? message["caption"] : message["text"]).to_s.strip
+          if media.nil? && body.blank?
+            # Гео, контакт, опрос — молча проглотить нельзя, человек ждёт, что
+            # присланное увидят.
+            Telegram::Api.send_simple(chat_id, t(user, :chat_unsupported), parse_mode: nil)
             return true
           end
 
-          Telegram::RelayChatMessageJob.perform_later(game.id, user.id, text)
+          Telegram::RelayChatMessageJob.perform_later(game.id, user.id, body, media)
           true
         end
 

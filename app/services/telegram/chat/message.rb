@@ -4,8 +4,9 @@ module Telegram
     # намеренно: имя своё, а тело — чужое, и склеивать их в один шаблон с
     # разметкой нельзя.
     module Message
+      # Подписи у вложения может не быть — тогда сообщение это одна шапка.
       def self.render(game:, sender:, body:)
-        [ header(game, sender), body.to_s ].join("\n")
+        [ header(game, sender), body.to_s.presence ].compact.join("\n")
       end
 
       def self.header(game, sender)

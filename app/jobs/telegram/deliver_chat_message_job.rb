@@ -9,8 +9,10 @@ module Telegram
     retry_on TransientDeliveryError, wait: :polynomially_longer, attempts: 5
 
     MAX_RETRY_WAIT = 5.minutes
+    # Лимит подписи у Telegram вчетверо меньше лимита текста.
+    CAPTION_LIMIT = 1024
 
-    def perform(game_id, recipient_id, text)
+    def perform(game_id, recipient_id, text, media = nil)
       game = Game.find_by(id: game_id)
       recipient = User.find_by(id: recipient_id)
       return unless game && recipient && recipient.telegram_chat_id.present?
@@ -27,22 +29,11 @@ module Telegram
         recipient.telegram_chat_id, recipient, game
       )
 
-      # Без parse_mode: это чужой текст, а не наш шаблон. С Markdown одиночный
-      # `_` или `[` либо исказит сообщение, либо уронит отправку четырёхсоткой.
-      params = {
-        "chat_id" => recipient.telegram_chat_id.to_s,
-        "link_preview_options" => Telegram::Api::LINK_PREVIEW_DISABLED,
-        "text" => text.to_s
-      }
-      params["reply_markup"] = { inline_keyboard: Telegram::Chat::Flow.controls(recipient) }.to_json if arming
+      requests = requests_for(recipient.telegram_chat_id.to_s, text, media)
+      # Кнопки вешаем на последнее сообщение — то, ради которого всё и слалось.
+      requests.last.last["reply_markup"] = { inline_keyboard: Telegram::Chat::Flow.controls(recipient) }.to_json if arming
 
-      response = begin
-        Telegram::Api.post("sendMessage", params)
-      rescue StandardError => error
-        raise TransientDeliveryError, error.message
-      end
-
-      delivered = handle_response(response, game_id, recipient_id, text)
+      delivered = requests.all? { |path, params| deliver(path, params, game_id, recipient_id, text, media) }
       # Ретрай и постоянная ошибка не должны оставлять человека в чате, о котором
       # он не узнал: сообщение с кнопками до него не дошло. Следующая попытка
       # увидит, что указателя нет, и пришлёт кнопки снова. Запись — только если
@@ -55,7 +46,47 @@ module Telegram
 
     private
 
-    def handle_response(response, game_id, recipient_id, text)
+    # Что уходит получателю: одно сообщение с текстом, вложение с шапкой в
+    # подписи или — если тип подписи не принимает — шапка отдельным сообщением
+    # перед вложением, иначе не видно, кто и в какую игру прислал.
+    def requests_for(chat_id, text, media)
+      spec = media && Telegram::Chat::Media.spec(media["kind"])
+      return [ text_request(chat_id, text) ] unless spec
+
+      params = { "chat_id" => chat_id, spec[:field] => media["file_id"] }
+      if spec[:caption]
+        [ [ spec[:method], params.merge("caption" => caption(text)) ] ]
+      else
+        [ text_request(chat_id, text), [ spec[:method], params ] ]
+      end
+    end
+
+    def text_request(chat_id, text)
+      # Без parse_mode: это чужой текст, а не наш шаблон. С Markdown одиночный
+      # `_` или `[` либо исказит сообщение, либо уронит отправку четырёхсоткой.
+      [ "sendMessage", {
+        "chat_id" => chat_id,
+        "link_preview_options" => Telegram::Api::LINK_PREVIEW_DISABLED,
+        "text" => text.to_s
+      } ]
+    end
+
+    def caption(text)
+      text = text.to_s
+      text.length > CAPTION_LIMIT ? "#{text[0, CAPTION_LIMIT - 1]}…" : text
+    end
+
+    def deliver(path, params, game_id, recipient_id, text, media)
+      response = begin
+        Telegram::Api.post(path, params)
+      rescue StandardError => error
+        raise TransientDeliveryError, error.message
+      end
+
+      handle_response(response, game_id, recipient_id, text, media)
+    end
+
+    def handle_response(response, game_id, recipient_id, text, media)
       return true if response.is_a?(Hash) && response["ok"]
 
       error_code = response["error_code"].to_i if response.is_a?(Hash)
@@ -67,7 +98,7 @@ module Telegram
       wait = 1 if wait <= 0
       return log_failure(error_code, response) if wait > MAX_RETRY_WAIT.to_i
 
-      self.class.set(wait: wait.seconds).perform_later(game_id, recipient_id, text)
+      self.class.set(wait: wait.seconds).perform_later(game_id, recipient_id, text, media)
       false
     end
 
