@@ -23,7 +23,7 @@ class ParticipationNotifier
     time = game.respond_to?(:next_time) ? (game.next_time || game.time) : game.time
     date_text = date ? I18n.l(date, format: :telegram, locale: locale) : "—"
     time_text = Telegram::Helpers::GameFormatting.format_time_hhmm(time, locale: locale) || "—:--"
-    action_text = Telegram::I18n.t("participation_#{action}".to_sym, locale: locale)
+    action_text = Telegram::I18n.t(action_key(game, action), locale: locale)
     text = Telegram::I18n.t(
       :participation_notification,
       locale: locale,
@@ -35,6 +35,14 @@ class ParticipationNotifier
     "#{text}\n\n#{game_url}"
   end
   private_class_method :notification_text
+
+  # Состав тренировки меняется теми же действиями, что и состав игры, но
+  # владельцу приходило «присоединился к вашей игре» — берём текст под тип.
+  def self.action_key(game, action)
+    suffix = "_training" if game.respond_to?(:training?) && game.training?
+    "participation_#{action}#{suffix}".to_sym
+  end
+  private_class_method :action_key
 
   def self.actor_name(actor, locale, channel)
     if actor.respond_to?(:guest?) && actor.guest?

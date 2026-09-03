@@ -9,8 +9,13 @@ module Telegram
     retry_on TransientDeliveryError, wait: :polynomially_longer, attempts: 5
 
     MAX_RETRY_WAIT = 5.minutes
+    # Лимит подписи у Telegram вчетверо меньше лимита текста.
+    CAPTION_LIMIT = 1024
+    # Метка ушедшей шапки переживает и ретраи с растущей паузой, и перенос по
+    # retry_after: и то и другое укладывается в считаные минуты.
+    HEADER_TTL = 1.hour
 
-    def perform(game_id, recipient_id, text)
+    def perform(game_id, recipient_id, text, media = nil, origin = nil)
       game = Game.find_by(id: game_id)
       recipient = User.find_by(id: recipient_id)
       return unless game && recipient && recipient.telegram_chat_id.present?
@@ -27,22 +32,18 @@ module Telegram
         recipient.telegram_chat_id, recipient, game
       )
 
-      # Без parse_mode: это чужой текст, а не наш шаблон. С Markdown одиночный
-      # `_` или `[` либо исказит сообщение, либо уронит отправку четырёхсоткой.
-      params = {
-        "chat_id" => recipient.telegram_chat_id.to_s,
-        "link_preview_options" => Telegram::Api::LINK_PREVIEW_DISABLED,
-        "text" => text.to_s
-      }
-      params["reply_markup"] = { inline_keyboard: Telegram::Chat::Flow.controls(recipient) }.to_json if arming
+      # Кому чат включает сама доставка, карточки не видит: срок жизни чата для
+      # него дописываем к первому сообщению, рядом с теми же кнопками. Отдельной
+      # переменной, а не поверх text: с исходным текстом уходит перенос по 429,
+      # и приписка не должна накапливаться от попытки к попытке.
+      hint = Telegram::I18n.t(:chat_lifetime, locale: Telegram::I18n.locale_for(recipient)) if arming
 
-      response = begin
-        Telegram::Api.post("sendMessage", params)
-      rescue StandardError => error
-        raise TransientDeliveryError, error.message
-      end
+      header, attachment = requests_for(recipient.telegram_chat_id.to_s, text, media, hint)
+      # Кнопки вешаем на вложение — то сообщение, ради которого всё и слалось.
+      attachment.last["reply_markup"] = { inline_keyboard: Telegram::Chat::Flow.controls(recipient) }.to_json if arming
 
-      delivered = handle_response(response, game_id, recipient_id, text)
+      delivered = deliver_header(header, game_id, recipient_id, text, media, origin) &&
+                  deliver(*attachment, game_id, recipient_id, text, media, origin)
       # Ретрай и постоянная ошибка не должны оставлять человека в чате, о котором
       # он не узнал: сообщение с кнопками до него не дошло. Следующая попытка
       # увидит, что указателя нет, и пришлёт кнопки снова. Запись — только если
@@ -55,7 +56,77 @@ module Telegram
 
     private
 
-    def handle_response(response, game_id, recipient_id, text)
+    # Что уходит получателю: одно сообщение с текстом либо вложение с шапкой в
+    # подписи. Стикер и видеокружок подписи не принимают — им шапка идёт
+    # отдельным сообщением перед вложением, иначе не видно, кто и в какую игру
+    # прислал.
+    def requests_for(chat_id, text, media, hint)
+      spec = media && Telegram::Chat::Media.spec(media["kind"])
+      return [ nil, text_request(chat_id, with_hint(text, hint)) ] unless spec
+
+      params = { "chat_id" => chat_id, spec[:field] => media["file_id"] }
+      return [ nil, [ spec[:method], params.merge("caption" => caption(text, hint)) ] ] if spec[:caption]
+
+      [ text_request(chat_id, with_hint(text, hint)), [ spec[:method], params ] ]
+    end
+
+    def with_hint(text, hint)
+      [ text.to_s, hint ].compact_blank.join("\n\n")
+    end
+
+    # Ретрай приходит с теми же аргументами, а упереться в лимит вложение может
+    # уже после того, как шапка ушла: без отметки человек получал бы шапку
+    # заново на каждой попытке. Отметка привязана к исходному сообщению и
+    # получателю — на следующий стикер шапка придёт как обычно. Пропажа отметки
+    # безопасна: в худшем случае вернётся сегодняшнее поведение, дубль шапки.
+    def deliver_header(header, game_id, recipient_id, text, media, origin)
+      return true if header.nil? || header_delivered?(origin, recipient_id)
+      return false unless deliver(*header, game_id, recipient_id, text, media, origin)
+
+      Rails.cache.write(header_key(origin, recipient_id), true, expires_in: HEADER_TTL) if origin.present?
+      true
+    end
+
+    def header_delivered?(origin, recipient_id)
+      origin.present? && Rails.cache.exist?(header_key(origin, recipient_id))
+    end
+
+    def header_key(origin, recipient_id)
+      "tg:chat:header:#{origin}:#{recipient_id}"
+    end
+
+    def text_request(chat_id, text)
+      # Без parse_mode: это чужой текст, а не наш шаблон. С Markdown одиночный
+      # `_` или `[` либо исказит сообщение, либо уронит отправку четырёхсоткой.
+      [ "sendMessage", {
+        "chat_id" => chat_id,
+        "link_preview_options" => Telegram::Api::LINK_PREVIEW_DISABLED,
+        "text" => text.to_s
+      } ]
+    end
+
+    # Обрезать в подписи надо чужой текст, а не нашу приписку: место под неё
+    # держим заранее, иначе на длинной подписи срок жизни чата не дошёл бы до
+    # того самого человека, которому он и адресован.
+    def caption(text, hint)
+      limit = CAPTION_LIMIT - (hint.present? ? hint.length + 2 : 0)
+      text = text.to_s
+      text = "#{text[0, limit - 1]}…" if text.length > limit
+
+      with_hint(text, hint)
+    end
+
+    def deliver(path, params, game_id, recipient_id, text, media, origin)
+      response = begin
+        Telegram::Api.post(path, params)
+      rescue StandardError => error
+        raise TransientDeliveryError, error.message
+      end
+
+      handle_response(response, game_id, recipient_id, text, media, origin)
+    end
+
+    def handle_response(response, game_id, recipient_id, text, media, origin)
       return true if response.is_a?(Hash) && response["ok"]
 
       error_code = response["error_code"].to_i if response.is_a?(Hash)
@@ -67,7 +138,7 @@ module Telegram
       wait = 1 if wait <= 0
       return log_failure(error_code, response) if wait > MAX_RETRY_WAIT.to_i
 
-      self.class.set(wait: wait.seconds).perform_later(game_id, recipient_id, text)
+      self.class.set(wait: wait.seconds).perform_later(game_id, recipient_id, text, media, origin)
       false
     end
 

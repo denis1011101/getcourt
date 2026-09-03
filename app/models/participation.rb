@@ -41,6 +41,11 @@ class Participation < ApplicationRecord
     return if user_id.blank?
 
     Telegram::OpenGameChatJob.perform_later(game_id, user_id)
+
+    # Организатор в составе, но сам никуда не вступает: без этого он не узнал
+    # бы, что уже пишет в чат игры, и не увидел бы кнопок выхода и смены.
+    owner_id = game&.user_id
+    Telegram::OpenGameChatJob.perform_later(game_id, owner_id) if owner_id.present? && owner_id != user_id
   rescue StandardError => e
     Rails.logger.warn("[Participation##{id}] chat session start failed: #{e.class}: #{e.message}")
   end

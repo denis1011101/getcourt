@@ -43,7 +43,22 @@ module Telegram
           return false if chat_id.blank? || game.nil?
           return false unless game.chat_open? && game.team_member_ids.include?(user.id)
 
-          return false unless Session.start_automatically(chat_id, user, game)
+          # Карточку показываем только тому, у кого этого чата ещё нет: в игру
+          # вступают по одному, а организатору мы шлём её на каждое вступление.
+          return false unless Session.automatic_start_needed?(chat_id.to_s, user, game)
+
+          # Право на карточку заявляем до указателя: молча включённый чат — это
+          # ровно то, чего мы избегаем. Человек, вышедший кнопкой, иначе
+          # оказывался в чате обратно и узнавал бы об этом, только когда его
+          # сообщение уже ушло команде.
+          return false unless Session.claim_card(chat_id.to_s, game)
+
+          # Явный выбор мог опередить нас — тогда чат не наш, и замок надо
+          # отпустить, иначе он на минуту съест карточку следующей попытки.
+          unless Session.start_automatically(chat_id, user, game)
+            Session.release_card(chat_id.to_s, game)
+            return false
+          end
 
           show_status(chat_id.to_s, user, game)
           true
@@ -69,7 +84,8 @@ module Telegram
             return
           end
 
-          buttons = games.map { |game| [ { text: Message.game_label(game), callback_data: "chat:open:#{game.id}" } ] }
+          locale = Telegram::I18n.locale_for(user)
+          buttons = games.map { |game| [ { text: Message.game_label(game, locale: locale), callback_data: "chat:open:#{game.id}" } ] }
           Telegram::Api.send_with_buttons(chat_id, t(user, :chat_pick_prompt), buttons, parse_mode: nil)
         end
 
@@ -96,7 +112,11 @@ module Telegram
         # совпадать с тем, сколько человек реально прочитает сообщение.
         def show_status(chat_id, user, game)
           recipients = game.chat_members.where.not(id: user.id).count
-          text = t(user, :chat_started, game: Message.game_label(game), count: recipients)
+          label = Message.game_label(game, locale: Telegram::I18n.locale_for(user))
+          text = [
+            t(user, :chat_started, game: label, count: recipients),
+            t(user, :chat_lifetime)
+          ].join("\n")
           Telegram::Api.send_with_buttons(chat_id, text, controls(user), parse_mode: nil)
         end
 

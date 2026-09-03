@@ -78,13 +78,21 @@ ru:
     game_or_user_not_found: Игра или пользователь не найдены
     joined_game: Вы присоединились к игре
     chat_started: "Теперь вы пишете в чат игры %{game}. Сообщения увидят участники, подключённые к Telegram (%{count})."
+    chat_lifetime: "Чат живёт столько же, сколько состав: до субботы, 4:00."
     chat_switch_btn: "Сменить игру"
     chat_exit_btn: "Выйти из чата"
     chat_stopped: "Вышли из чата. Сообщения боту снова видите только вы."
     chat_pick_prompt: "В какую игру писать?"
     chat_none: "Нет игр, в чат которых можно писать."
     chat_not_available: "Чат этой игры недоступен: игра прошла или вас нет в составе."
-    chat_text_only: "Пока чат передаёт только текст. Фото и видео — следующим шагом."
+    chat_unsupported: "Это чат пока не передаёт. Текст, фото, видео, гифки, документы, стикеры и голосовые — доходят."
+    chat_media_saved: Файл добавлен на страницу игры. Показать его в Tennis Life
+      можно там же, галкой.
+    chat_media_too_big: Файл больше 20 МБ — столько бот забрать не может. На страницу
+      игры его получится добавить с сайта.
+    chat_media_failed: 'Файл переслан, но на страницу игры не добавлен: %{reason}'
+    chat_media_download_failed: Файл переслан, но скачать его на страницу игры не
+      удалось. Попробуйте добавить его на сайте.
     join_request_already_sent: Запрос уже отправлен
     already_joined_game: Вы уже участвуете в игре
     join_request_sent: Запрос на участие отправлен
@@ -109,6 +117,7 @@ ru:
     participation_request_rejected_user: 'Ваш запрос на участие в игре #%{game_id}
       отклонён.'
     participation_requested: запросил участие в вашей игре
+    participation_requested_training: запросил участие в вашей тренировке
     game_changed_title: 'Игра изменилась:'
     game_changed_line: "%{field}: %{from} → %{to}"
     game_changed_series_note: Изменения касаются всех будущих дат этой еженедельной игры.
@@ -130,9 +139,13 @@ ru:
     game_changed_field_environment: Площадка
     game_changed_field_comment: Комментарий
     participation_joined: присоединился к вашей игре
+    participation_joined_training: присоединился к вашей тренировке
     participation_left: покинул вашу игру
+    participation_left_training: покинул вашу тренировку
     participation_removed: был удалён из вашей игры
+    participation_removed_training: был удалён из вашей тренировки
     participation_guest_added: был добавлен в вашу игру
+    participation_guest_added_training: был добавлен в вашу тренировку
     participation_notification: "%{name} %{action} — %{date}, %{time}"
     today: сегодня
     tomorrow: завтра
@@ -673,13 +686,21 @@ en:
     game_or_user_not_found: Game or user not found
     joined_game: You joined the game
     chat_started: "You are now writing to game %{game}. Players connected to Telegram will see your messages (%{count})."
+    chat_lifetime: "The chat lives as long as the squad does: until Saturday, 4:00."
     chat_switch_btn: "Switch game"
     chat_exit_btn: "Leave chat"
     chat_stopped: "Left the chat. Messages to the bot are private again."
     chat_pick_prompt: "Which game do you want to write to?"
     chat_none: "No games with an open chat."
     chat_not_available: "This game's chat is unavailable: the game is over or you are not in the squad."
-    chat_text_only: "The chat carries text only for now. Photos and video come next."
+    chat_unsupported: "The chat cannot carry this yet. Text, photos, video, GIFs, documents, stickers and voice notes get through."
+    chat_media_saved: The file has been added to the game page. You can show it in
+      Tennis Life there, with the checkbox.
+    chat_media_too_big: The file is over 20 MB — the bot cannot fetch that much. You
+      can still add it to the game page from the site.
+    chat_media_failed: 'The file was relayed but not added to the game page: %{reason}'
+    chat_media_download_failed: The file was relayed, but fetching it for the game
+      page failed. Try adding it from the site.
     join_request_already_sent: Request already sent
     already_joined_game: You already joined
     join_request_sent: Join request sent
@@ -704,6 +725,7 @@ en:
     participation_request_rejected_user: 'Your request to join Game #%{game_id} was
       rejected.'
     participation_requested: requested to join your game
+    participation_requested_training: requested to join your training
     game_changed_title: 'The game has changed:'
     game_changed_line: "%{field}: %{from} → %{to}"
     game_changed_series_note: The change applies to every upcoming date of this weekly game.
@@ -725,9 +747,13 @@ en:
     game_changed_field_environment: Setting
     game_changed_field_comment: Comment
     participation_joined: joined your game
+    participation_joined_training: joined your training
     participation_left: left your game
+    participation_left_training: left your training
     participation_removed: was removed from your game
+    participation_removed_training: was removed from your training
     participation_guest_added: was added to your game
+    participation_guest_added_training: was added to your training
     participation_notification: "%{name} %{action} on %{date} at %{time}"
     today: today
     tomorrow: tomorrow
@@ -1225,13 +1251,22 @@ es:
     game_or_user_not_found: Partido o usuario no encontrado
     joined_game: Te has unido al partido
     chat_started: "Ahora escribes al partido %{game}. Lo verán los jugadores conectados a Telegram (%{count})."
+    chat_lifetime: "El chat vive lo mismo que la alineación: hasta el sábado a las 4:00."
     chat_switch_btn: "Cambiar de partido"
     chat_exit_btn: "Salir del chat"
     chat_stopped: "Has salido del chat. Tus mensajes al bot vuelven a ser privados."
     chat_pick_prompt: "¿A qué partido quieres escribir?"
     chat_none: "No hay partidos con chat abierto."
     chat_not_available: "El chat de este partido no está disponible: ya terminó o no estás en la alineación."
-    chat_text_only: "Por ahora el chat solo lleva texto. Fotos y vídeo, en el siguiente paso."
+    chat_unsupported: "Esto el chat aún no lo lleva. Texto, fotos, vídeo, GIF, documentos, stickers y notas de voz sí llegan."
+    chat_media_saved: El archivo se ha añadido a la página del partido. Allí mismo
+      puedes mostrarlo en Tennis Life con la casilla.
+    chat_media_too_big: El archivo pesa más de 20 MB y el bot no puede descargarlo.
+      Puedes añadirlo a la página del partido desde la web.
+    chat_media_failed: 'El archivo se ha reenviado, pero no se ha añadido a la página
+      del partido: %{reason}'
+    chat_media_download_failed: El archivo se ha reenviado, pero no se ha podido
+      descargar para la página del partido. Prueba a añadirlo desde la web.
     join_request_already_sent: La solicitud ya se ha enviado
     already_joined_game: Ya estás en el partido
     join_request_sent: Solicitud para unirse enviada
@@ -1256,6 +1291,7 @@ es:
     participation_request_rejected_user: 'Tu solicitud para unirte al partido #%{game_id}
       ha sido rechazada.'
     participation_requested: ha solicitado unirse a tu partido
+    participation_requested_training: ha solicitado unirse a tu entrenamiento
     game_changed_title: 'El partido ha cambiado:'
     game_changed_line: "%{field}: %{from} → %{to}"
     game_changed_series_note: El cambio afecta a todas las fechas futuras de este partido semanal.
@@ -1277,9 +1313,13 @@ es:
     game_changed_field_environment: Entorno
     game_changed_field_comment: Comentario
     participation_joined: se ha unido a tu partido
+    participation_joined_training: se ha unido a tu entrenamiento
     participation_left: ha salido de tu partido
+    participation_left_training: ha salido de tu entrenamiento
     participation_removed: ha sido eliminado de tu partido
+    participation_removed_training: ha sido eliminado de tu entrenamiento
     participation_guest_added: ha sido añadido a tu partido
+    participation_guest_added_training: ha sido añadido a tu entrenamiento
     participation_notification: "%{name} %{action} el %{date} a las %{time}"
     today: hoy
     tomorrow: mañana
