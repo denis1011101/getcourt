@@ -78,7 +78,8 @@ module Telegram
             return
           end
 
-          buttons = games.map { |game| [ { text: Message.game_label(game), callback_data: "chat:open:#{game.id}" } ] }
+          locale = Telegram::I18n.locale_for(user)
+          buttons = games.map { |game| [ { text: Message.game_label(game, locale: locale), callback_data: "chat:open:#{game.id}" } ] }
           Telegram::Api.send_with_buttons(chat_id, t(user, :chat_pick_prompt), buttons, parse_mode: nil)
         end
 
@@ -105,8 +106,9 @@ module Telegram
         # совпадать с тем, сколько человек реально прочитает сообщение.
         def show_status(chat_id, user, game)
           recipients = game.chat_members.where.not(id: user.id).count
+          label = Message.game_label(game, locale: Telegram::I18n.locale_for(user))
           text = [
-            t(user, :chat_started, game: Message.game_label(game), count: recipients),
+            t(user, :chat_started, game: label, count: recipients),
             t(user, :chat_lifetime)
           ].join("\n")
           Telegram::Api.send_with_buttons(chat_id, text, controls(user), parse_mode: nil)
