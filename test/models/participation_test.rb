@@ -72,12 +72,16 @@ class ParticipationTest < ActiveSupport::TestCase
       assert_equal game.id, Telegram::Chat::Session.game_id(player.telegram_chat_id)
     end
 
-    assert_equal 1, sent.size
-    chat_id, text, buttons = sent.first
+    # Карточка уходит и вступившему, и организатору: он в составе, но сам
+    # никуда не вступает и иначе остался бы без кнопок.
+    assert_equal [ player.telegram_chat_id.to_s, owner.telegram_chat_id.to_s ].sort, sent.map(&:first).sort
+
+    chat_id, text, buttons = sent.find { |args| args.first == player.telegram_chat_id.to_s }
     assert_equal player.telegram_chat_id.to_s, chat_id
     assert_equal [ "chat:pick", "chat:exit" ], buttons.first.map { |button| button[:callback_data] }
     # В счётчике только владелец: себе сообщение не приходит.
     assert_includes text, "(1)"
+    assert_includes text, Telegram::I18n.t(:chat_lifetime)
   ensure
     game&.destroy
     [ owner, player ].compact.each(&:destroy)
@@ -98,6 +102,32 @@ class ParticipationTest < ActiveSupport::TestCase
   ensure
     game&.destroy
     [ owner, player ].compact.each(&:destroy)
+    court&.destroy
+  end
+
+  # Вступают по одному, а организатору карточка уходит на каждое вступление:
+  # без этого он получал бы её заново на каждого игрока.
+  test "the owner is told about the chat once, not on every join" do
+    court = Court.create!(name: "Owner Once Court", city_name: "Yekaterinburg")
+    owner = User.create!(email: "once-chat-owner-#{SecureRandom.hex(4)}@example.com", name: "Owner", telegram_chat_id: 910_000_005)
+    first = User.create!(email: "once-chat-first-#{SecureRandom.hex(4)}@example.com", name: "First", telegram_chat_id: 910_000_006)
+    second = User.create!(email: "once-chat-second-#{SecureRandom.hex(4)}@example.com", name: "Second", telegram_chat_id: 910_000_007)
+    game = Game.create!(court: court, user: owner, date: Date.current, kind: "game")
+    sent = []
+
+    with_memory_cache do
+      stub_singleton(Telegram::Api, :send_with_buttons, ->(*args, **) { sent << args }) do
+        perform_enqueued_jobs do
+          Participation.create!(game: game, user: first, status: "approved", approved_at: Time.current)
+          Participation.create!(game: game, user: second, status: "approved", approved_at: Time.current)
+        end
+      end
+    end
+
+    assert_equal 1, sent.count { |args| args.first == owner.telegram_chat_id.to_s }
+  ensure
+    game&.destroy
+    [ owner, first, second ].compact.each(&:destroy)
     court&.destroy
   end
 

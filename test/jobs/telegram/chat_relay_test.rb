@@ -152,7 +152,7 @@ class Telegram::ChatRelayTest < ActiveSupport::TestCase
     end
 
     assert_equal @owner.telegram_chat_id.to_s, params["chat_id"]
-    assert_equal "текст с _подчёркиванием_ и [скобкой", params["text"]
+    assert params["text"].start_with?("текст с _подчёркиванием_ и [скобкой")
     assert_not params.key?("parse_mode")
   end
 
@@ -171,6 +171,27 @@ class Telegram::ChatRelayTest < ActiveSupport::TestCase
 
     buttons = JSON.parse(params["reply_markup"])["inline_keyboard"].first
     assert_equal [ "chat:pick", "chat:exit" ], buttons.map { |button| button["callback_data"] }
+  end
+
+  # Кому чат включает сама доставка, карточки со сроком жизни он не увидит:
+  # строка про субботу должна прийти с первым же сообщением.
+  test "the first delivered message says how long the chat lives" do
+    params = nil
+
+    with_memory_cache do
+      stub_singleton(Telegram::Api, :post, ->(_path, sent) { params = sent; { "ok" => true } }) do
+        Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "во сколько?")
+      end
+
+      assert_includes params["text"], Telegram::I18n.t(:chat_lifetime)
+
+      # Второе сообщение — уже без напоминания: чат у человека включён.
+      stub_singleton(Telegram::Api, :post, ->(_path, sent) { params = sent; { "ok" => true } }) do
+        Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "в восемь")
+      end
+
+      assert_equal "в восемь", params["text"]
+    end
   end
 
   test "delivery leaves an existing chat choice alone" do

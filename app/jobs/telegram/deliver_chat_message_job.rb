@@ -32,6 +32,10 @@ module Telegram
         recipient.telegram_chat_id, recipient, game
       )
 
+      # Кому чат включает сама доставка, карточки не видит: срок жизни чата для
+      # него дописываем к первому сообщению, рядом с теми же кнопками.
+      text = [ text, Telegram::I18n.t(:chat_lifetime, locale: Telegram::I18n.locale_for(recipient)) ].join("\n\n") if arming
+
       header, attachment = requests_for(recipient.telegram_chat_id.to_s, text, media)
       # Кнопки вешаем на вложение — то сообщение, ради которого всё и слалось.
       attachment.last["reply_markup"] = { inline_keyboard: Telegram::Chat::Flow.controls(recipient) }.to_json if arming

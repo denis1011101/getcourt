@@ -43,6 +43,9 @@ module Telegram
           return false if chat_id.blank? || game.nil?
           return false unless game.chat_open? && game.team_member_ids.include?(user.id)
 
+          # Карточку показываем только тому, у кого этого чата ещё нет: в игру
+          # вступают по одному, а организатору мы шлём её на каждое вступление.
+          return false unless Session.automatic_start_needed?(chat_id.to_s, user, game)
           return false unless Session.start_automatically(chat_id, user, game)
 
           show_status(chat_id.to_s, user, game)
@@ -96,7 +99,10 @@ module Telegram
         # совпадать с тем, сколько человек реально прочитает сообщение.
         def show_status(chat_id, user, game)
           recipients = game.chat_members.where.not(id: user.id).count
-          text = t(user, :chat_started, game: Message.game_label(game), count: recipients)
+          text = [
+            t(user, :chat_started, game: Message.game_label(game), count: recipients),
+            t(user, :chat_lifetime)
+          ].join("\n")
           Telegram::Api.send_with_buttons(chat_id, text, controls(user), parse_mode: nil)
         end
 
