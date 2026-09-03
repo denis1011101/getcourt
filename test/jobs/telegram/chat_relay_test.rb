@@ -24,7 +24,7 @@ class Telegram::ChatRelayTest < ActiveSupport::TestCase
 
   test "fan-out reaches every member with a bot except the sender" do
     delivered = []
-    stub_singleton(Telegram::DeliverChatMessageJob, :perform_later, ->(game_id, recipient_id, text, media = nil) { delivered << [ game_id, recipient_id, text, media ] }) do
+    stub_singleton(Telegram::DeliverChatMessageJob, :perform_later, ->(game_id, recipient_id, text, media = nil, origin = nil) { delivered << [ game_id, recipient_id, text, media, origin ] }) do
       Telegram::RelayChatMessageJob.perform_now(@game.id, @player.id, "во сколько завтра?")
     end
 
@@ -39,12 +39,12 @@ class Telegram::ChatRelayTest < ActiveSupport::TestCase
       Telegram::RelayChatMessageJob.perform_now(@game.id, @player.id, "вот корт", { "kind" => "photo", "file_id" => "abc" })
     end
 
-    assert_equal({ "kind" => "photo", "file_id" => "abc" }, delivered.first.last)
+    assert_equal({ "kind" => "photo", "file_id" => "abc" }, delivered.first[3])
 
     params = nil
     path = nil
     stub_singleton(Telegram::Api, :post, ->(sent_path, sent) { path = sent_path; params = sent; { "ok" => true } }) do
-      Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, delivered.first[2], delivered.first.last)
+      Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, delivered.first[2], delivered.first[3])
     end
 
     assert_equal "sendPhoto", path
@@ -69,6 +69,57 @@ class Telegram::ChatRelayTest < ActiveSupport::TestCase
     # Кнопки — на последнем сообщении, том самом, ради которого всё слалось.
     assert_not sent.first.last.key?("reply_markup")
     assert sent.last.last.key?("reply_markup")
+  end
+
+  # Шапка и вложение — два запроса, и второй может упереться в лимит уже после
+  # того, как первый ушёл. Повтор джобы приходит с теми же аргументами, поэтому
+  # шапку он обязан пропустить, иначе на каждой попытке будет по дублю.
+  test "a retry after a throttled attachment does not send the header again" do
+    sticker = { "kind" => "sticker", "file_id" => "stk" }
+    throttled = { "ok" => false, "error_code" => 429, "parameters" => { "retry_after" => 7 } }
+    later = Class.new { def perform_later(*) = true }.new
+    sent = []
+
+    with_memory_cache do
+      first = lambda do |path, params|
+        sent << path
+        path == "sendSticker" ? throttled : { "ok" => true }
+      end
+
+      stub_singleton(Telegram::Api, :post, first) do
+        stub_singleton(Telegram::DeliverChatMessageJob, :set, ->(wait:) { later }) do
+          Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "шапка", sticker, "42:7")
+        end
+      end
+
+      stub_singleton(Telegram::Api, :post, ->(path, _params) { sent << path; { "ok" => true } }) do
+        Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "шапка", sticker, "42:7")
+      end
+    end
+
+    assert_equal [ "sendMessage", "sendSticker", "sendSticker" ], sent
+  end
+
+  # Шапка не ушла — повторять её обязательно, иначе стикер придёт безымянным.
+  test "a retry after a throttled header sends the header again" do
+    sticker = { "kind" => "sticker", "file_id" => "stk" }
+    throttled = { "ok" => false, "error_code" => 429, "parameters" => { "retry_after" => 7 } }
+    later = Class.new { def perform_later(*) = true }.new
+    sent = []
+
+    with_memory_cache do
+      stub_singleton(Telegram::Api, :post, ->(path, _params) { sent << path; throttled }) do
+        stub_singleton(Telegram::DeliverChatMessageJob, :set, ->(wait:) { later }) do
+          Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "шапка", sticker, "42:8")
+        end
+      end
+
+      stub_singleton(Telegram::Api, :post, ->(path, _params) { sent << path; { "ok" => true } }) do
+        Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "шапка", sticker, "42:8")
+      end
+    end
+
+    assert_equal [ "sendMessage", "sendMessage", "sendSticker" ], sent
   end
 
   test "a caption too long for Telegram is trimmed, not dropped" do

@@ -4,7 +4,7 @@ module Telegram
   class RelayChatMessageJob < ApplicationJob
     queue_as :default
 
-    def perform(game_id, sender_id, body, media = nil)
+    def perform(game_id, sender_id, body, media = nil, origin = nil)
       game = Game.find_by(id: game_id)
       sender = User.find_by(id: sender_id)
       # У вложения подписи может не быть вовсе — пересылать всё равно есть что.
@@ -16,7 +16,7 @@ module Telegram
       text = Telegram::Chat::Message.render(game: game, sender: sender, body: body)
 
       game.chat_members.where.not(id: sender.id).find_each do |recipient|
-        Telegram::DeliverChatMessageJob.perform_later(game.id, recipient.id, text, media)
+        Telegram::DeliverChatMessageJob.perform_later(game.id, recipient.id, text, media, origin)
       end
     end
   end

@@ -11,8 +11,11 @@ module Telegram
     MAX_RETRY_WAIT = 5.minutes
     # Лимит подписи у Telegram вчетверо меньше лимита текста.
     CAPTION_LIMIT = 1024
+    # Метка ушедшей шапки переживает и ретраи с растущей паузой, и перенос по
+    # retry_after: и то и другое укладывается в считаные минуты.
+    HEADER_TTL = 1.hour
 
-    def perform(game_id, recipient_id, text, media = nil)
+    def perform(game_id, recipient_id, text, media = nil, origin = nil)
       game = Game.find_by(id: game_id)
       recipient = User.find_by(id: recipient_id)
       return unless game && recipient && recipient.telegram_chat_id.present?
@@ -29,11 +32,12 @@ module Telegram
         recipient.telegram_chat_id, recipient, game
       )
 
-      requests = requests_for(recipient.telegram_chat_id.to_s, text, media)
-      # Кнопки вешаем на последнее сообщение — то, ради которого всё и слалось.
-      requests.last.last["reply_markup"] = { inline_keyboard: Telegram::Chat::Flow.controls(recipient) }.to_json if arming
+      header, attachment = requests_for(recipient.telegram_chat_id.to_s, text, media)
+      # Кнопки вешаем на вложение — то сообщение, ради которого всё и слалось.
+      attachment.last["reply_markup"] = { inline_keyboard: Telegram::Chat::Flow.controls(recipient) }.to_json if arming
 
-      delivered = requests.all? { |path, params| deliver(path, params, game_id, recipient_id, text, media) }
+      delivered = deliver_header(header, game_id, recipient_id, text, media, origin) &&
+                  deliver(*attachment, game_id, recipient_id, text, media, origin)
       # Ретрай и постоянная ошибка не должны оставлять человека в чате, о котором
       # он не узнал: сообщение с кнопками до него не дошло. Следующая попытка
       # увидит, что указателя нет, и пришлёт кнопки снова. Запись — только если
@@ -46,19 +50,39 @@ module Telegram
 
     private
 
-    # Что уходит получателю: одно сообщение с текстом, вложение с шапкой в
-    # подписи или — если тип подписи не принимает — шапка отдельным сообщением
-    # перед вложением, иначе не видно, кто и в какую игру прислал.
+    # Что уходит получателю: одно сообщение с текстом либо вложение с шапкой в
+    # подписи. Стикер и видеокружок подписи не принимают — им шапка идёт
+    # отдельным сообщением перед вложением, иначе не видно, кто и в какую игру
+    # прислал.
     def requests_for(chat_id, text, media)
       spec = media && Telegram::Chat::Media.spec(media["kind"])
-      return [ text_request(chat_id, text) ] unless spec
+      return [ nil, text_request(chat_id, text) ] unless spec
 
       params = { "chat_id" => chat_id, spec[:field] => media["file_id"] }
-      if spec[:caption]
-        [ [ spec[:method], params.merge("caption" => caption(text)) ] ]
-      else
-        [ text_request(chat_id, text), [ spec[:method], params ] ]
-      end
+      return [ nil, [ spec[:method], params.merge("caption" => caption(text)) ] ] if spec[:caption]
+
+      [ text_request(chat_id, text), [ spec[:method], params ] ]
+    end
+
+    # Ретрай приходит с теми же аргументами, а упереться в лимит вложение может
+    # уже после того, как шапка ушла: без отметки человек получал бы шапку
+    # заново на каждой попытке. Отметка привязана к исходному сообщению и
+    # получателю — на следующий стикер шапка придёт как обычно. Пропажа отметки
+    # безопасна: в худшем случае вернётся сегодняшнее поведение, дубль шапки.
+    def deliver_header(header, game_id, recipient_id, text, media, origin)
+      return true if header.nil? || header_delivered?(origin, recipient_id)
+      return false unless deliver(*header, game_id, recipient_id, text, media, origin)
+
+      Rails.cache.write(header_key(origin, recipient_id), true, expires_in: HEADER_TTL) if origin.present?
+      true
+    end
+
+    def header_delivered?(origin, recipient_id)
+      origin.present? && Rails.cache.exist?(header_key(origin, recipient_id))
+    end
+
+    def header_key(origin, recipient_id)
+      "tg:chat:header:#{origin}:#{recipient_id}"
     end
 
     def text_request(chat_id, text)
@@ -76,17 +100,17 @@ module Telegram
       text.length > CAPTION_LIMIT ? "#{text[0, CAPTION_LIMIT - 1]}…" : text
     end
 
-    def deliver(path, params, game_id, recipient_id, text, media)
+    def deliver(path, params, game_id, recipient_id, text, media, origin)
       response = begin
         Telegram::Api.post(path, params)
       rescue StandardError => error
         raise TransientDeliveryError, error.message
       end
 
-      handle_response(response, game_id, recipient_id, text, media)
+      handle_response(response, game_id, recipient_id, text, media, origin)
     end
 
-    def handle_response(response, game_id, recipient_id, text, media)
+    def handle_response(response, game_id, recipient_id, text, media, origin)
       return true if response.is_a?(Hash) && response["ok"]
 
       error_code = response["error_code"].to_i if response.is_a?(Hash)
@@ -98,7 +122,7 @@ module Telegram
       wait = 1 if wait <= 0
       return log_failure(error_code, response) if wait > MAX_RETRY_WAIT.to_i
 
-      self.class.set(wait: wait.seconds).perform_later(game_id, recipient_id, text, media)
+      self.class.set(wait: wait.seconds).perform_later(game_id, recipient_id, text, media, origin)
       false
     end
 

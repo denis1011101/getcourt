@@ -31,11 +31,17 @@ module Telegram
             return true
           end
 
-          Telegram::RelayChatMessageJob.perform_later(game.id, user.id, body, media)
+          Telegram::RelayChatMessageJob.perform_later(game.id, user.id, body, media, origin(chat_id, message["message_id"]))
           true
         end
 
         private
+
+        # Метка исходного сообщения: по ней доставка отличает повтор джобы от
+        # нового сообщения и не шлёт шапку стикера дважды.
+        def origin(chat_id, message_id)
+          "#{chat_id}:#{message_id}" if message_id.present?
+        end
 
         def duplicate?(chat_id, message_id)
           return false if message_id.blank?

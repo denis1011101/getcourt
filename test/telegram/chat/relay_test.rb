@@ -27,7 +27,7 @@ class Telegram::Chat::RelayTest < ActiveSupport::TestCase
       end
     end
 
-    assert_equal [ @game.id, @player.id, "привет", nil ], enqueued
+    assert_equal [ @game.id, @player.id, "привет", nil ], enqueued&.first(4)
   end
 
   test "ignores a message when chat mode is off" do
@@ -78,7 +78,7 @@ class Telegram::Chat::RelayTest < ActiveSupport::TestCase
       assert_equal @game.id, Telegram::Chat::Session.game_id(@player.telegram_chat_id)
     end
 
-    assert_equal [ @game.id, @player.id, "привет", nil ], enqueued
+    assert_equal [ @game.id, @player.id, "привет", nil ], enqueued&.first(4)
   end
 
   test "a deleted game closes the chat mode" do
@@ -105,7 +105,8 @@ class Telegram::Chat::RelayTest < ActiveSupport::TestCase
       end
     end
 
-    assert_equal [ @game.id, @player.id, "вот корт", { "kind" => "photo", "file_id" => "large" } ], enqueued
+    assert_equal [ @game.id, @player.id, "вот корт", { "kind" => "photo", "file_id" => "large" } ], enqueued.first(4)
+    assert_equal "#{@player.telegram_chat_id}:900", enqueued.last
   end
 
   test "a sticker without any caption is relayed too" do
@@ -118,7 +119,7 @@ class Telegram::Chat::RelayTest < ActiveSupport::TestCase
       end
     end
 
-    assert_equal [ @game.id, @player.id, "", { "kind" => "sticker", "file_id" => "stk" } ], enqueued
+    assert_equal [ @game.id, @player.id, "", { "kind" => "sticker", "file_id" => "stk" } ], enqueued.first(4)
   end
 
   test "what the chat cannot carry is answered instead of being silently dropped" do
@@ -148,7 +149,7 @@ class Telegram::Chat::RelayTest < ActiveSupport::TestCase
       end
     end
 
-    assert_equal [ @game.id, @player.id, "привет", nil ], enqueued
+    assert_equal [ @game.id, @player.id, "привет", nil ], enqueued&.first(4)
   end
 
   # Тот же живой путь, что и у текста: у вложения text пустой, и раньше на
@@ -163,7 +164,7 @@ class Telegram::Chat::RelayTest < ActiveSupport::TestCase
       end
     end
 
-    assert_equal({ "kind" => "photo", "file_id" => "live" }, enqueued&.last)
+    assert_equal({ "kind" => "photo", "file_id" => "live" }, enqueued&.fetch(3))
   end
 
   test "an unknown command is not relayed into the game chat" do
