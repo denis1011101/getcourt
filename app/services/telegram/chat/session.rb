@@ -11,6 +11,7 @@ module Telegram
     module Session
       KEY_PREFIX = "tg:chat:active".freeze
       AUTOMATIC_KEY_PREFIX = "tg:chat:auto".freeze
+      CARD_KEY_PREFIX = "tg:chat:card".freeze
 
       class << self
         # Явный выбор пользователя всегда имеет приоритет над автоматическим.
@@ -18,8 +19,7 @@ module Telegram
           closes_at = game&.chat_open_until
           return false unless closes_at
 
-          ttl = [ closes_at - Time.current, 1.minute ].max
-          Rails.cache.write(key(chat_id), game.id, expires_in: ttl)
+          Rails.cache.write(key(chat_id), game.id, expires_in: ttl(closes_at))
           Rails.cache.delete(automatic_key(chat_id))
           true
         end
@@ -30,8 +30,7 @@ module Telegram
           closes_at = game&.chat_open_until
           return false unless closes_at
 
-          ttl = [ closes_at - Time.current, 1.minute ].max
-          Rails.cache.write(automatic_key(chat_id), game.id, expires_in: ttl)
+          Rails.cache.write(automatic_key(chat_id), game.id, expires_in: ttl(closes_at))
 
           # Явный выбор мог появиться, пока шла доставка. Он имеет приоритет;
           # автоматический указатель заодно убираем, чтобы тот не ожил после TTL.
@@ -49,7 +48,22 @@ module Telegram
           active_game_for(automatic_game_id(chat_id), user)&.id != game.id
         end
 
+        # Карточку с кнопками человек видит один раз на игру: вступают в состав
+        # параллельно, и два колбэка успевают увидеть пустой указатель оба.
+        # unless_exist возвращает false тому, кто пришёл вторым, — атомарно, на
+        # стороне кеша, а не в проверке перед записью.
+        def claim_card(chat_id, game)
+          closes_at = game&.chat_open_until
+          return false unless closes_at
+
+          Rails.cache.write(card_key(chat_id, game.id), true, expires_in: ttl(closes_at), unless_exist: true)
+        end
+
         def stop(chat_id)
+          # Вышел из чата — отметку о карточке снимаем, иначе на возвращение в
+          # игру он получил бы режим чата без кнопок.
+          game_id = game_id(chat_id)
+          Rails.cache.delete(card_key(chat_id, game_id)) if game_id
           Rails.cache.delete(key(chat_id))
           Rails.cache.delete(automatic_key(chat_id))
         end
@@ -87,7 +101,17 @@ module Telegram
           "#{AUTOMATIC_KEY_PREFIX}:#{chat_id}"
         end
 
+        def card_key(chat_id, game_id)
+          "#{CARD_KEY_PREFIX}:#{chat_id}:#{game_id}"
+        end
+
         private
+
+        # Указатель живёт ровно до закрытия чата, но не меньше минуты: за
+        # секунды до сброса писать всё ещё можно.
+        def ttl(closes_at)
+          [ closes_at - Time.current, 1.minute ].max
+        end
 
         def explicit_game_id(chat_id)
           Rails.cache.read(key(chat_id))

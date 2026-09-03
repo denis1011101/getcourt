@@ -126,12 +126,57 @@ class Telegram::ChatRelayTest < ActiveSupport::TestCase
     params = nil
     long = "я" * 1500
 
-    stub_singleton(Telegram::Api, :post, ->(_path, sent) { params = sent; { "ok" => true } }) do
-      Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, long, { "kind" => "video", "file_id" => "vid" })
+    with_memory_cache do
+      # Чат у получателя уже выбран — приписки не будет, режется только текст.
+      Telegram::Chat::Session.start(@owner.telegram_chat_id, @game)
+
+      stub_singleton(Telegram::Api, :post, ->(_path, sent) { params = sent; { "ok" => true } }) do
+        Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, long, { "kind" => "video", "file_id" => "vid" })
+      end
     end
 
     assert_equal 1024, params["caption"].length
     assert params["caption"].end_with?("…")
+  end
+
+  # Приписка адресована именно новичку в чате — обрезать в подписи надо чужой
+  # текст, а не её.
+  test "a caption at the limit keeps the lifetime line" do
+    params = nil
+    long = "я" * 1500
+
+    with_memory_cache do
+      stub_singleton(Telegram::Api, :post, ->(_path, sent) { params = sent; { "ok" => true } }) do
+        Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, long, { "kind" => "video", "file_id" => "vid" })
+      end
+    end
+
+    assert_equal 1024, params["caption"].length
+    assert params["caption"].end_with?(Telegram::I18n.t(:chat_lifetime))
+    assert_includes params["caption"], "…"
+  end
+
+  # Перенос по 429 уходит с исходным текстом: иначе приписка копилась бы от
+  # попытки к попытке.
+  test "a throttled message is rescheduled without the lifetime line baked in" do
+    throttled = { "ok" => false, "error_code" => 429, "parameters" => { "retry_after" => 7 } }
+    rescheduled = nil
+    later = Class.new do
+      def initialize(box) = @box = box
+      def perform_later(*args) = @box.replace(args)
+    end
+
+    with_memory_cache do
+      box = []
+      stub_singleton(Telegram::Api, :post, ->(*) { throttled }) do
+        stub_singleton(Telegram::DeliverChatMessageJob, :set, ->(wait:) { later.new(box) }) do
+          Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "во сколько?")
+        end
+      end
+      rescheduled = box
+    end
+
+    assert_equal "во сколько?", rescheduled[2]
   end
 
   test "a sender who already left the squad is not relayed" do

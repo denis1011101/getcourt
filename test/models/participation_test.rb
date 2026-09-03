@@ -131,6 +131,29 @@ class ParticipationTest < ActiveSupport::TestCase
     court&.destroy
   end
 
+  # Два вступления сходятся в один момент, и оба колбэка видят пустой
+  # указатель: карточку всё равно должен получить только один из них.
+  test "two joins at once do not send the owner two cards" do
+    court = Court.create!(name: "Race Chat Court", city_name: "Yekaterinburg")
+    owner = User.create!(email: "race-chat-owner-#{SecureRandom.hex(4)}@example.com", name: "Owner", telegram_chat_id: 910_000_008)
+    game = Game.create!(court: court, user: owner, date: Date.current, kind: "game")
+    sent = []
+
+    with_memory_cache do
+      stub_singleton(Telegram::Api, :send_with_buttons, ->(*args, **) { sent << args }) do
+        stub_singleton(Telegram::Chat::Session, :automatic_start_needed?, ->(*) { true }) do
+          2.times { Telegram::Chat::Flow.enter(owner, game) }
+        end
+      end
+    end
+
+    assert_equal 1, sent.size
+  ensure
+    game&.destroy
+    owner&.destroy
+    court&.destroy
+  end
+
   test "a join request does not turn on chat mode until it is approved" do
     court = Court.create!(name: "Pending Chat Court", city_name: "Yekaterinburg")
     owner = User.create!(email: "pending-chat-owner-#{SecureRandom.hex(4)}@example.com", name: "Owner")

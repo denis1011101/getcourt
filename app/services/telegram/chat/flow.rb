@@ -45,7 +45,10 @@ module Telegram
 
           # Карточку показываем только тому, у кого этого чата ещё нет: в игру
           # вступают по одному, а организатору мы шлём её на каждое вступление.
+          # Отметку заявляем атомарно — параллельные вступления иначе успевают
+          # оба увидеть пустой указатель и оба прислать карточку.
           return false unless Session.automatic_start_needed?(chat_id.to_s, user, game)
+          return false unless Session.claim_card(chat_id.to_s, game)
           return false unless Session.start_automatically(chat_id, user, game)
 
           show_status(chat_id.to_s, user, game)

@@ -33,10 +33,12 @@ module Telegram
       )
 
       # Кому чат включает сама доставка, карточки не видит: срок жизни чата для
-      # него дописываем к первому сообщению, рядом с теми же кнопками.
-      text = [ text, Telegram::I18n.t(:chat_lifetime, locale: Telegram::I18n.locale_for(recipient)) ].join("\n\n") if arming
+      # него дописываем к первому сообщению, рядом с теми же кнопками. Отдельной
+      # переменной, а не поверх text: с исходным текстом уходит перенос по 429,
+      # и приписка не должна накапливаться от попытки к попытке.
+      hint = Telegram::I18n.t(:chat_lifetime, locale: Telegram::I18n.locale_for(recipient)) if arming
 
-      header, attachment = requests_for(recipient.telegram_chat_id.to_s, text, media)
+      header, attachment = requests_for(recipient.telegram_chat_id.to_s, text, media, hint)
       # Кнопки вешаем на вложение — то сообщение, ради которого всё и слалось.
       attachment.last["reply_markup"] = { inline_keyboard: Telegram::Chat::Flow.controls(recipient) }.to_json if arming
 
@@ -58,14 +60,18 @@ module Telegram
     # подписи. Стикер и видеокружок подписи не принимают — им шапка идёт
     # отдельным сообщением перед вложением, иначе не видно, кто и в какую игру
     # прислал.
-    def requests_for(chat_id, text, media)
+    def requests_for(chat_id, text, media, hint)
       spec = media && Telegram::Chat::Media.spec(media["kind"])
-      return [ nil, text_request(chat_id, text) ] unless spec
+      return [ nil, text_request(chat_id, with_hint(text, hint)) ] unless spec
 
       params = { "chat_id" => chat_id, spec[:field] => media["file_id"] }
-      return [ nil, [ spec[:method], params.merge("caption" => caption(text)) ] ] if spec[:caption]
+      return [ nil, [ spec[:method], params.merge("caption" => caption(text, hint)) ] ] if spec[:caption]
 
-      [ text_request(chat_id, text), [ spec[:method], params ] ]
+      [ text_request(chat_id, with_hint(text, hint)), [ spec[:method], params ] ]
+    end
+
+    def with_hint(text, hint)
+      [ text.to_s, hint ].compact_blank.join("\n\n")
     end
 
     # Ретрай приходит с теми же аргументами, а упереться в лимит вложение может
@@ -99,9 +105,15 @@ module Telegram
       } ]
     end
 
-    def caption(text)
+    # Обрезать в подписи надо чужой текст, а не нашу приписку: место под неё
+    # держим заранее, иначе на длинной подписи срок жизни чата не дошёл бы до
+    # того самого человека, которому он и адресован.
+    def caption(text, hint)
+      limit = CAPTION_LIMIT - (hint.present? ? hint.length + 2 : 0)
       text = text.to_s
-      text.length > CAPTION_LIMIT ? "#{text[0, CAPTION_LIMIT - 1]}…" : text
+      text = "#{text[0, limit - 1]}…" if text.length > limit
+
+      with_hint(text, hint)
     end
 
     def deliver(path, params, game_id, recipient_id, text, media, origin)
