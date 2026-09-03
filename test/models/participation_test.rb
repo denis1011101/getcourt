@@ -154,6 +154,40 @@ class ParticipationTest < ActiveSupport::TestCase
     court&.destroy
   end
 
+  # Замок на карточку не должен переживать переключение на другую игру: чат
+  # первой игры обязан открыться снова, даже если карточка ещё под замком.
+  test "switching to another game does not lock the way back" do
+    court = Court.create!(name: "Back Chat Court", city_name: "Yekaterinburg")
+    owner = User.create!(email: "back-chat-owner-#{SecureRandom.hex(4)}@example.com", name: "Owner", telegram_chat_id: 910_000_009)
+    first = Game.create!(court: court, user: owner, date: Date.current, kind: "game")
+    second = Game.create!(court: court, user: owner, date: Date.current, kind: "game")
+    sent = []
+
+    with_memory_cache do
+      stub_singleton(Telegram::Api, :send_with_buttons, ->(*args, **) { sent << args }) do
+        Telegram::Chat::Flow.enter(owner, first)
+        Telegram::Chat::Flow.enter(owner, second)
+        # Возврат в первую игру: чат открыт снова, карточка ещё под замком.
+        Telegram::Chat::Flow.enter(owner, first)
+
+        assert_equal first.id, Telegram::Chat::Session.active_game(owner.telegram_chat_id, owner).id
+        assert_equal 2, sent.size
+
+        # Замок живёт минуту — за ней карточка приходит снова.
+        travel(2.minutes) do
+          Telegram::Chat::Flow.enter(owner, second)
+          Telegram::Chat::Flow.enter(owner, first)
+        end
+      end
+    end
+
+    assert_equal 4, sent.size
+  ensure
+    [ first, second ].compact.each(&:destroy)
+    owner&.destroy
+    court&.destroy
+  end
+
   test "a join request does not turn on chat mode until it is approved" do
     court = Court.create!(name: "Pending Chat Court", city_name: "Yekaterinburg")
     owner = User.create!(email: "pending-chat-owner-#{SecureRandom.hex(4)}@example.com", name: "Owner")
