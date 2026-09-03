@@ -13,9 +13,11 @@ module Telegram
       # Отправитель тоже мог выйти из состава, пока сообщение ждало очереди.
       return unless game.chat_open? && game.team_member_ids.include?(sender.id)
 
-      text = Telegram::Chat::Message.render(game: game, sender: sender, body: body)
-
+      # Текст собираем на каждого: шапка с датой должна прийти на его языке.
       game.chat_members.where.not(id: sender.id).find_each do |recipient|
+        text = Telegram::Chat::Message.render(
+          game: game, sender: sender, body: body, locale: Telegram::I18n.locale_for(recipient)
+        )
         Telegram::DeliverChatMessageJob.perform_later(game.id, recipient.id, text, media, origin)
       end
     end

@@ -33,6 +33,19 @@ class Telegram::ChatRelayTest < ActiveSupport::TestCase
     assert_match "Player", delivered.first[2]
   end
 
+  # Шапку собираем на каждого получателя: дата в ней должна читаться на его
+  # языке, а не на языке отправителя.
+  test "the header date comes in the recipient's locale" do
+    @owner.update!(telegram_locale: "en")
+    delivered = []
+
+    stub_singleton(Telegram::DeliverChatMessageJob, :perform_later, ->(*args) { delivered << args }) do
+      Telegram::RelayChatMessageJob.perform_now(@game.id, @player.id, "во сколько?")
+    end
+
+    assert_includes delivered.first[2], I18n.l(@game.next_date, format: :telegram, locale: "en")
+  end
+
   test "an attachment travels by file_id, with the header in the caption" do
     delivered = []
     stub_singleton(Telegram::DeliverChatMessageJob, :perform_later, ->(*args) { delivered << args }) do

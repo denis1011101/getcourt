@@ -155,7 +155,7 @@ class ParticipationTest < ActiveSupport::TestCase
   end
 
   # Замок на карточку не должен переживать переключение на другую игру: чат
-  # первой игры обязан открыться снова, даже если карточка ещё под замком.
+  # первой игры обязан открыться снова, и снова с кнопками.
   test "switching to another game does not lock the way back" do
     court = Court.create!(name: "Back Chat Court", city_name: "Yekaterinburg")
     owner = User.create!(email: "back-chat-owner-#{SecureRandom.hex(4)}@example.com", name: "Owner", telegram_chat_id: 910_000_009)
@@ -167,23 +167,64 @@ class ParticipationTest < ActiveSupport::TestCase
       stub_singleton(Telegram::Api, :send_with_buttons, ->(*args, **) { sent << args }) do
         Telegram::Chat::Flow.enter(owner, first)
         Telegram::Chat::Flow.enter(owner, second)
-        # Возврат в первую игру: чат открыт снова, карточка ещё под замком.
         Telegram::Chat::Flow.enter(owner, first)
 
         assert_equal first.id, Telegram::Chat::Session.active_game(owner.telegram_chat_id, owner).id
-        assert_equal 2, sent.size
-
-        # Замок живёт минуту — за ней карточка приходит снова.
-        travel(2.minutes) do
-          Telegram::Chat::Flow.enter(owner, second)
-          Telegram::Chat::Flow.enter(owner, first)
-        end
       end
     end
 
-    assert_equal 4, sent.size
+    assert_equal 3, sent.size
   ensure
     [ first, second ].compact.each(&:destroy)
+    owner&.destroy
+    court&.destroy
+  end
+
+  # Вышел кнопкой — вернуть в чат можно, но только карточкой: иначе следующее
+  # обычное сообщение боту ушло бы команде, о чём человек и не подозревает.
+  test "an explicit exit is not undone silently by the next join" do
+    court = Court.create!(name: "Exit Chat Court", city_name: "Yekaterinburg")
+    owner = User.create!(email: "exit-chat-owner-#{SecureRandom.hex(4)}@example.com", name: "Owner", telegram_chat_id: 910_000_010)
+    game = Game.create!(court: court, user: owner, date: Date.current, kind: "game")
+    sent = []
+
+    with_memory_cache do
+      stub_singleton(Telegram::Api, :send_with_buttons, ->(*args, **) { sent << args }) do
+        Telegram::Chat::Flow.enter(owner, game)
+        Telegram::Chat::Session.stop(owner.telegram_chat_id)
+
+        Telegram::Chat::Flow.enter(owner, game)
+
+        assert_equal game.id, Telegram::Chat::Session.active_game(owner.telegram_chat_id, owner).id
+      end
+    end
+
+    assert_equal 2, sent.size
+  ensure
+    game&.destroy
+    owner&.destroy
+    court&.destroy
+  end
+
+  # Карточку забрал параллельный колбэк — значит, и чат открывает он: включать
+  # режим, о котором мы промолчали, нельзя.
+  test "a lost race for the card leaves the chat mode alone" do
+    court = Court.create!(name: "Race Card Court", city_name: "Yekaterinburg")
+    owner = User.create!(email: "race-card-owner-#{SecureRandom.hex(4)}@example.com", name: "Owner", telegram_chat_id: 910_000_011)
+    game = Game.create!(court: court, user: owner, date: Date.current, kind: "game")
+
+    with_memory_cache do
+      # Замок уже заявлен — так выглядит проигранная гонка.
+      assert Telegram::Chat::Session.claim_card(owner.telegram_chat_id.to_s, game)
+
+      stub_singleton(Telegram::Api, :send_with_buttons, ->(*) { flunk "карточку шлёт победитель гонки" }) do
+        assert_not Telegram::Chat::Flow.enter(owner, game)
+      end
+
+      assert_nil Telegram::Chat::Session.game_id(owner.telegram_chat_id)
+    end
+  ensure
+    game&.destroy
     owner&.destroy
     court&.destroy
   end

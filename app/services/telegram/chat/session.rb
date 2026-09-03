@@ -35,6 +35,12 @@ module Telegram
           closes_at = game&.chat_open_until
           return false unless closes_at
 
+          # Указатель уехал на другую игру — замок прежней больше ничего не
+          # сторожит, а через минуту он и сам истечёт. Снимаем сразу, чтобы
+          # возвращение в ту игру снова пришло с карточкой.
+          previous = automatic_game_id(chat_id)
+          Rails.cache.delete(card_lock_key(chat_id, previous)) if previous && previous != game.id
+
           Rails.cache.write(automatic_key(chat_id), game.id, expires_in: ttl(closes_at))
 
           # Явный выбор мог появиться, пока шла доставка. Он имеет приоритет;
@@ -64,7 +70,15 @@ module Telegram
           Rails.cache.write(card_lock_key(chat_id, game.id), true, expires_in: CARD_LOCK_TTL, unless_exist: true)
         end
 
+        def release_card(chat_id, game)
+          Rails.cache.delete(card_lock_key(chat_id, game.id)) if game
+        end
+
         def stop(chat_id)
+          # Вышел кнопкой — замок снимаем вместе с указателем: вернуть человека
+          # в чат можно, но только карточкой, а не молча.
+          game_id = game_id(chat_id)
+          Rails.cache.delete(card_lock_key(chat_id, game_id)) if game_id
           Rails.cache.delete(key(chat_id))
           Rails.cache.delete(automatic_key(chat_id))
         end

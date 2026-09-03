@@ -5,13 +5,15 @@ module Telegram
     # разметкой нельзя.
     module Message
       # Подписи у вложения может не быть — тогда сообщение это одна шапка.
-      def self.render(game:, sender:, body:)
-        [ header(game, sender), body.to_s.presence ].compact.join("\n")
+      def self.render(game:, sender:, body:, locale: Telegram::I18n::DEFAULT_LOCALE)
+        [ header(game, sender, locale), body.to_s.presence ].compact.join("\n")
       end
 
-      def self.header(game, sender)
+      # Дата в шапке — на языке того, кто её читает: «03.09.2026» и «09/03/2026»
+      # это один день, и угадывать, какой формат перед ним, человек не должен.
+      def self.header(game, sender, locale = Telegram::I18n::DEFAULT_LOCALE)
         name = Telegram::Helpers::UserLookup.display_name(sender, fallback: "?")
-        "💬 #{game_label(game)} · #{name}"
+        "💬 #{game_label(game, locale: locale)} · #{name}"
       end
 
       # Дата — ближайшая: у еженедельной игры дата создания давно прошла, а в
