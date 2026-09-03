@@ -13,6 +13,8 @@ class Telegram::I18nTest < ActiveSupport::TestCase
     participation_no_permission participation_approved participation_rejected user_accepted user_rejected
     participation_request_approved_user participation_request_rejected_user participation_joined participation_left
     participation_requested participation_removed participation_guest_added participation_notification today tomorrow reminder_head
+    participation_requested_training participation_joined_training participation_left_training
+    participation_removed_training participation_guest_added_training
     reminder_head_training program_label coach_with_name coach_with_names
     training_invitation_title
     participants_label prebooking_request dates_label approve_all reject_all prebooking_request_approved_user

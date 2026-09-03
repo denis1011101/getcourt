@@ -117,6 +117,7 @@ ru:
     participation_request_rejected_user: 'Ваш запрос на участие в игре #%{game_id}
       отклонён.'
     participation_requested: запросил участие в вашей игре
+    participation_requested_training: запросил участие в вашей тренировке
     game_changed_title: 'Игра изменилась:'
     game_changed_line: "%{field}: %{from} → %{to}"
     game_changed_series_note: Изменения касаются всех будущих дат этой еженедельной игры.
@@ -138,9 +139,13 @@ ru:
     game_changed_field_environment: Площадка
     game_changed_field_comment: Комментарий
     participation_joined: присоединился к вашей игре
+    participation_joined_training: присоединился к вашей тренировке
     participation_left: покинул вашу игру
+    participation_left_training: покинул вашу тренировку
     participation_removed: был удалён из вашей игры
+    participation_removed_training: был удалён из вашей тренировки
     participation_guest_added: был добавлен в вашу игру
+    participation_guest_added_training: был добавлен в вашу тренировку
     participation_notification: "%{name} %{action} — %{date}, %{time}"
     today: сегодня
     tomorrow: завтра
@@ -720,6 +725,7 @@ en:
     participation_request_rejected_user: 'Your request to join Game #%{game_id} was
       rejected.'
     participation_requested: requested to join your game
+    participation_requested_training: requested to join your training
     game_changed_title: 'The game has changed:'
     game_changed_line: "%{field}: %{from} → %{to}"
     game_changed_series_note: The change applies to every upcoming date of this weekly game.
@@ -741,9 +747,13 @@ en:
     game_changed_field_environment: Setting
     game_changed_field_comment: Comment
     participation_joined: joined your game
+    participation_joined_training: joined your training
     participation_left: left your game
+    participation_left_training: left your training
     participation_removed: was removed from your game
+    participation_removed_training: was removed from your training
     participation_guest_added: was added to your game
+    participation_guest_added_training: was added to your training
     participation_notification: "%{name} %{action} on %{date} at %{time}"
     today: today
     tomorrow: tomorrow
@@ -1281,6 +1291,7 @@ es:
     participation_request_rejected_user: 'Tu solicitud para unirte al partido #%{game_id}
       ha sido rechazada.'
     participation_requested: ha solicitado unirse a tu partido
+    participation_requested_training: ha solicitado unirse a tu entrenamiento
     game_changed_title: 'El partido ha cambiado:'
     game_changed_line: "%{field}: %{from} → %{to}"
     game_changed_series_note: El cambio afecta a todas las fechas futuras de este partido semanal.
@@ -1302,9 +1313,13 @@ es:
     game_changed_field_environment: Entorno
     game_changed_field_comment: Comentario
     participation_joined: se ha unido a tu partido
+    participation_joined_training: se ha unido a tu entrenamiento
     participation_left: ha salido de tu partido
+    participation_left_training: ha salido de tu entrenamiento
     participation_removed: ha sido eliminado de tu partido
+    participation_removed_training: ha sido eliminado de tu entrenamiento
     participation_guest_added: ha sido añadido a tu partido
+    participation_guest_added_training: ha sido añadido a tu entrenamiento
     participation_notification: "%{name} %{action} el %{date} a las %{time}"
     today: hoy
     tomorrow: mañana
