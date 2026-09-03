@@ -32,6 +32,8 @@ module Telegram
           end
 
           Telegram::RelayChatMessageJob.perform_later(game.id, user.id, body, media, origin(chat_id, message["message_id"]))
+          # Фото и видео живут дольше переписки — им место и на странице игры.
+          Telegram::AttachChatMediaJob.perform_later(game.id, user.id, media, body) if Media.attachable?(media)
           true
         end
 

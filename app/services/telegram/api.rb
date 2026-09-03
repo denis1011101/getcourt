@@ -2,6 +2,7 @@ require "net/http"
 require "uri"
 require "json"
 require "securerandom"
+require "tempfile"
 
 module Telegram
   module Api
@@ -69,6 +70,31 @@ module Telegram
       response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(request) }
       Rails.logger.debug "[Telegram::Api] Response sendPhoto => #{response.body}"
       JSON.parse(response.body) rescue {}
+    end
+
+    # Bot API отдаёт файл в два шага: getFile возвращает путь, живущий около
+    # часа, и уже по нему файл качается. Пишем в Tempfile потоком, а не в
+    # строку: у прода гигабайт памяти, а вложение бывает и двадцатимегабайтным.
+    # Больше 20 МБ бот забрать не может — это ограничение самого API.
+    def self.download_file(file_id)
+      result = post("getFile", { "file_id" => file_id.to_s })
+      path = result.dig("result", "file_path") if result.is_a?(Hash)
+      return nil if path.blank?
+
+      uri = URI("https://api.telegram.org/file/bot#{TOKEN}/#{path}")
+      file = Tempfile.new("telegram-file", binmode: true)
+      Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
+        http.request(Net::HTTP::Get.new(uri)) do |response|
+          return nil unless response.is_a?(Net::HTTPSuccess)
+
+          response.read_body { |chunk| file.write(chunk) }
+        end
+      end
+      file.rewind
+      [ file, File.basename(path) ]
+    rescue StandardError => e
+      Rails.logger.warn("[Telegram::Api] download_file failed: #{e.class}: #{e.message}")
+      nil
     end
 
     def self.answer_callback(callback_id, text = nil, show_alert: false)

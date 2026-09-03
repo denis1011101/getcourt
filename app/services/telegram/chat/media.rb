@@ -25,23 +25,34 @@ module Telegram
           kind = SPECS.keys.find { |key| message[key].present? }
           return nil unless kind
 
-          file_id = file_id_for(message[kind])
-          return nil if file_id.blank?
+          value = message[kind]
+          value = value.last if value.is_a?(Array)
+          return nil unless value.is_a?(Hash) && value["file_id"].present?
 
-          { "kind" => kind, "file_id" => file_id }
+          # Тип и размер Telegram сообщает заранее: по ним видно, стоит ли
+          # вообще качать файл на страницу игры.
+          {
+            "kind" => kind,
+            "file_id" => value["file_id"],
+            "mime_type" => value["mime_type"],
+            "file_size" => value["file_size"]
+          }.compact
+        end
+
+        # В галерею игры идут только те вложения, которые она вообще умеет
+        # хранить: фото, видео и гифки. Файлом («документом») отправляют и то и
+        # другое, поэтому его пускаем по заявленному типу. Стикеры, голосовые и
+        # аудио остаются пересылкой — в галерее игры им делать нечего.
+        def attachable?(media)
+          return false unless media.is_a?(Hash)
+          return false unless %w[photo video animation document].include?(media["kind"])
+          return true unless media["kind"] == "document"
+
+          GameMedium::CONTENT_TYPES.include?(media["mime_type"])
         end
 
         def spec(kind)
           SPECS[kind.to_s]
-        end
-
-        private
-
-        # Фото приходит списком размеров, от миниатюры к оригиналу: берём
-        # последний, остальные Telegram нарежет получателю сам.
-        def file_id_for(value)
-          value = value.last if value.is_a?(Array)
-          value["file_id"] if value.is_a?(Hash)
         end
       end
     end

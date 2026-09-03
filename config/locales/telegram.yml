@@ -85,6 +85,11 @@ ru:
     chat_none: "Нет игр, в чат которых можно писать."
     chat_not_available: "Чат этой игры недоступен: игра прошла или вас нет в составе."
     chat_unsupported: "Это чат пока не передаёт. Текст, фото, видео, гифки, документы, стикеры и голосовые — доходят."
+    chat_media_saved: Файл добавлен на страницу игры. Показать его в Tennis Life
+      можно там же, галкой.
+    chat_media_too_big: Файл больше 20 МБ — столько бот забрать не может. На страницу
+      игры его получится добавить с сайта.
+    chat_media_failed: 'Файл переслан, но на страницу игры не добавлен: %{reason}'
     join_request_already_sent: Запрос уже отправлен
     already_joined_game: Вы уже участвуете в игре
     join_request_sent: Запрос на участие отправлен
@@ -680,6 +685,11 @@ en:
     chat_none: "No games with an open chat."
     chat_not_available: "This game's chat is unavailable: the game is over or you are not in the squad."
     chat_unsupported: "The chat cannot carry this yet. Text, photos, video, GIFs, documents, stickers and voice notes get through."
+    chat_media_saved: The file has been added to the game page. You can show it in
+      Tennis Life there, with the checkbox.
+    chat_media_too_big: The file is over 20 MB — the bot cannot fetch that much. You
+      can still add it to the game page from the site.
+    chat_media_failed: 'The file was relayed but not added to the game page: %{reason}'
     join_request_already_sent: Request already sent
     already_joined_game: You already joined
     join_request_sent: Join request sent
@@ -1232,6 +1242,12 @@ es:
     chat_none: "No hay partidos con chat abierto."
     chat_not_available: "El chat de este partido no está disponible: ya terminó o no estás en la alineación."
     chat_unsupported: "Esto el chat aún no lo lleva. Texto, fotos, vídeo, GIF, documentos, stickers y notas de voz sí llegan."
+    chat_media_saved: El archivo se ha añadido a la página del partido. Allí mismo
+      puedes mostrarlo en Tennis Life con la casilla.
+    chat_media_too_big: El archivo pesa más de 20 MB y el bot no puede descargarlo.
+      Puedes añadirlo a la página del partido desde la web.
+    chat_media_failed: 'El archivo se ha reenviado, pero no se ha añadido a la página
+      del partido: %{reason}'
     join_request_already_sent: La solicitud ya se ha enviado
     already_joined_game: Ya estás en el partido
     join_request_sent: Solicitud para unirse enviada

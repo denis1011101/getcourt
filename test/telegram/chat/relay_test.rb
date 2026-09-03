@@ -95,17 +95,22 @@ class Telegram::Chat::RelayTest < ActiveSupport::TestCase
   test "a photo is relayed with its caption" do
     enqueued = nil
 
+    attached = nil
+
     in_chat_mode do
       stub_singleton(Telegram::RelayChatMessageJob, :perform_later, ->(*args) { enqueued = args }) do
-        photo = tg_message(nil, message_id: 900).merge(
-          "photo" => [ { "file_id" => "small" }, { "file_id" => "large" } ],
-          "caption" => "вот корт"
-        )
-        assert Telegram::Chat::Relay.handle_message(photo)
+        stub_singleton(Telegram::AttachChatMediaJob, :perform_later, ->(*args) { attached = args }) do
+          photo = tg_message(nil, message_id: 900).merge(
+            "photo" => [ { "file_id" => "small" }, { "file_id" => "large" } ],
+            "caption" => "вот корт"
+          )
+          assert Telegram::Chat::Relay.handle_message(photo)
+        end
       end
     end
 
     assert_equal [ @game.id, @player.id, "вот корт", { "kind" => "photo", "file_id" => "large" } ], enqueued.first(4)
+    assert_equal [ @game.id, @player.id, { "kind" => "photo", "file_id" => "large" }, "вот корт" ], attached
     assert_equal "#{@player.telegram_chat_id}:900", enqueued.last
   end
 
@@ -114,8 +119,11 @@ class Telegram::Chat::RelayTest < ActiveSupport::TestCase
 
     in_chat_mode do
       stub_singleton(Telegram::RelayChatMessageJob, :perform_later, ->(*args) { enqueued = args }) do
-        sticker = tg_message(nil, message_id: 901).merge("sticker" => { "file_id" => "stk" })
-        assert Telegram::Chat::Relay.handle_message(sticker)
+        # Стикеру место в переписке, а не в галерее игры.
+        stub_singleton(Telegram::AttachChatMediaJob, :perform_later, ->(*) { flunk "стикер в игру не кладём" }) do
+          sticker = tg_message(nil, message_id: 901).merge("sticker" => { "file_id" => "stk" })
+          assert Telegram::Chat::Relay.handle_message(sticker)
+        end
       end
     end
 
