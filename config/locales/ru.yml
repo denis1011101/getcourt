@@ -1,4 +1,19 @@
 ru:
+  activerecord:
+    attributes:
+      game_medium:
+        file: "Файл"
+    errors:
+      models:
+        game_medium:
+          attributes:
+            file:
+              blank: "не выбран"
+              invalid_type: "должен быть JPEG, PNG, WebP, MP4 или MOV"
+              too_large: "слишком большой: фото — до 5 МБ, видео — до 25 МБ"
+            base:
+              too_many_videos: "К игре можно приложить только одно видео"
+              too_many_images: "К игре можно приложить не больше шести фото"
   errors:
     messages:
       pending_exists: "уже имеет предложение для этого корта на проверке"

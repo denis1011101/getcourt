@@ -28,6 +28,21 @@
 #       enabled: "ON"
 
 en:
+  activerecord:
+    attributes:
+      game_medium:
+        file: "File"
+    errors:
+      models:
+        game_medium:
+          attributes:
+            file:
+              blank: "is missing"
+              invalid_type: "must be JPEG, PNG, WebP, MP4 or MOV"
+              too_large: "is too big: up to 5 MB for photos and 25 MB for video"
+            base:
+              too_many_videos: "A game can hold only one video"
+              too_many_images: "A game can hold at most six photos"
   errors:
     messages:
       pending_exists: "already has a pending suggestion for this court"

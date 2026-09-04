@@ -54,6 +54,26 @@ class GameMediumTest < ActiveSupport::TestCase
     assert build_medium(filename: "still-fine.png").valid?
   end
 
+  # Ошибку читает и веб, и бот, пересылающий вложение из чата: без перевода
+  # вместо причины приходило «Translation missing».
+  test "spells the limits out in the person's language" do
+    build_medium(content_type: "video/mp4", filename: "first.mp4").save!
+
+    ::I18n.with_locale(:ru) do
+      second = build_medium(content_type: "video/mp4", filename: "second.mp4")
+
+      assert_not second.valid?
+      assert_equal "К игре можно приложить только одно видео", second.errors.full_messages.to_sentence
+    end
+
+    ::I18n.with_locale(:en) do
+      oversized = build_medium(bytes: "x" * (GameMedium::MAX_IMAGE_SIZE + 1))
+
+      assert_not oversized.valid?
+      assert_no_match(/translation missing/i, oversized.errors.full_messages.to_sentence)
+    end
+  end
+
   test "hiding keeps the record but drops it out of the visible scope" do
     medium = build_medium
     medium.save!
