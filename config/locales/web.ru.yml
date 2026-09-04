@@ -515,6 +515,7 @@ ru:
     reset: Сбросить квоту
     reset_title: Сброс квоты геокодирования
   tennis_life:
+    total_players: "Игроков на GetCourt: %{count}"
     scoreboard:
       title: Теннисное табло
       empty: Данных табло пока нет.

@@ -512,6 +512,7 @@ en:
     reset: Reset quota
     reset_title: Reset geocoding quota
   tennis_life:
+    total_players: "Players on GetCourt: %{count}"
     scoreboard:
       title: Tennis Scoreboard
       empty: No tennis scoreboard data yet.
