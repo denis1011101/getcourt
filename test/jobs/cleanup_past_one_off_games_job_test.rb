@@ -88,14 +88,15 @@ class CleanupPastOneOffGamesJobTest < ActiveJob::TestCase
     game.participations.create!(user: player, status: "approved", approved_at: Time.current)
 
     sent = []
-    stub_singleton(SendTelegramNotificationJob, :perform_later, ->(chat_id, text) { sent << [ chat_id, text ] }) do
+    stub_singleton(SendTelegramNotificationJob, :perform_later, ->(chat_id, text, **opts) { sent << [ chat_id, text, opts ] }) do
       CleanupPastOneOffGamesJob.perform_now
     end
 
     assert_nil Game.find_by(id: game.id)
     notice = sent.find { |chat_id, _| chat_id == player.telegram_chat_id.to_s }
     assert notice, "участнику удалённой игры должно уйти письмо о закрытии чата"
-    assert_match "чат", notice.last
-    assert_no_match(/translation missing/i, notice.last)
+    assert_match "чат", notice[1]
+    assert_no_match(/translation missing/i, notice[1])
+    assert_equal({ silent: true }, notice[2], "письмо о закрытии чата приходит без звука")
   end
 end
