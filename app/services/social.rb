@@ -55,5 +55,11 @@ module Social
     def app_url(path = "")
       "https://#{app_host}#{path}"
     end
+
+    # Одна точка на все площадки: /og-image.png, на который ссылались раньше, в
+    # репозитории не лежит и в проде отдаёт 404 — картинка молча не прикреплялась.
+    def logo_url
+      app_url("/android-chrome-512x512.png")
+    end
   end
 end

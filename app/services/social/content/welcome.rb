@@ -27,7 +27,7 @@ module Social
       end
 
       def image_url
-        Social.app_url("/og-image.png")
+        Social.logo_url
       end
 
       private

@@ -85,12 +85,19 @@ class Social::NostrPostingServiceTest < ActiveSupport::TestCase
     assert_equal "GetCourt", fields["display_name"]
     assert_equal "getcourt", fields["name"]
     assert_match "tennis", fields["about"]
-    assert_equal Social.app_url("/og-image.png"), fields["picture"]
+    assert_equal Social.logo_url, fields["picture"]
     assert_equal Social.app_url, fields["website"]
   end
 
   test "without a key there is no profile to publish" do
     with_env("NOSTR_SECRET_KEY" => "") do
+      assert_nil Social::NostrPostingService.publish_profile
+    end
+  end
+
+  test "a key that is not a valid scalar fails the profile without a stack trace" do
+    with_env("NOSTR_SECRET_KEY" => "0" * 64) do
+      assert Social::NostrPostingService.configured?, "по длине такой ключ проходит"
       assert_nil Social::NostrPostingService.publish_profile
     end
   end

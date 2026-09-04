@@ -59,6 +59,12 @@ module Social
 
         event = Nostr::Event.new(kind: PROFILE_KIND, content: profile_content, secret_key: secret_key)
         broadcast(event) ? event.id : nil
+      rescue => e
+        # Длину ключа `configured?` проверяет, а вот годится ли он как скаляр
+        # secp256k1 — выясняется только при подписи. Таска должна сказать об
+        # этом строкой, а не полотном трейса.
+        Rails.logger.error("[Social] nostr profile failed: #{e.class} #{e.message}")
+        nil
       end
 
       def broadcast(event)
@@ -77,7 +83,7 @@ module Social
           "name" => "getcourt",
           "display_name" => "GetCourt",
           "about" => PROFILE_ABOUT,
-          "picture" => Social.app_url("/og-image.png"),
+          "picture" => Social.logo_url,
           "website" => Social.app_url
         )
       end
