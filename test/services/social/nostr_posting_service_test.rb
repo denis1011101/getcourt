@@ -68,6 +68,38 @@ class Social::NostrPostingServiceTest < ActiveSupport::TestCase
     assert_nil publish(Social::Content::Welcome.new)
   end
 
+  test "the profile goes out as a signed kind 0 event" do
+    id = with_env("NOSTR_SECRET_KEY" => SECRET_HEX, "NOSTR_RELAYS" => "wss://relay.example") do
+      stub_singleton(Social::Nostr::Relay, :new, ->(*, **) { FakeRelay.new }) do
+        Social::NostrPostingService.publish_profile
+      end
+    end
+
+    profile = FakeRelay.published.sole
+    assert_equal 0, profile.kind
+    assert_equal id, profile.id
+    assert Social::Nostr::Schnorr.verify([ profile.id ].pack("H*"), [ profile.pubkey ].pack("H*"),
+                                         [ profile.signature ].pack("H*"))
+
+    fields = JSON.parse(profile.content)
+    assert_equal "GetCourt", fields["display_name"]
+    assert_equal "getcourt", fields["name"]
+    assert_match "tennis", fields["about"]
+    assert_equal Social.app_url("/og-image.png"), fields["picture"]
+    assert_equal Social.app_url, fields["website"]
+  end
+
+  test "without a key there is no profile to publish" do
+    with_env("NOSTR_SECRET_KEY" => "") do
+      assert_nil Social::NostrPostingService.publish_profile
+    end
+  end
+
+  test "the default relays are free to write to" do
+    assert_not_includes Social::NostrPostingService::DEFAULT_RELAYS, "wss://nostr.wine"
+    assert_not_includes Social::NostrPostingService::DEFAULT_RELAYS, "wss://relay.nostr.band"
+  end
+
   private
 
   def publish(content)
