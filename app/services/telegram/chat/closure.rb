@@ -24,17 +24,31 @@ module Telegram
         end
 
         # Указатель гасим здесь же: иначе человек останется в чате, которого уже
-        # нет, и следующее его сообщение уйдёт в никуда.
+        # нет, и следующее его сообщение уйдёт в никуда. Двумя проходами и с
+        # оговоркой на каждого: сброс состава и удаление игры уже случились,
+        # второго захода по этим людям не будет — так что одна упавшая отправка
+        # не должна ни оставить остальных в мёртвом чате, ни съесть их письма.
         def deliver(game, notices)
-          notices.each do |notice|
-            Session.stop_for(notice.user, game)
-            SendTelegramNotificationJob.perform_later(notice.user.telegram_chat_id.to_s, notice.text)
+          notices.each { |notice| guard(notice) { Session.stop_for(notice.user, game) } }
+          notices.count do |notice|
+            guard(notice) do
+              SendTelegramNotificationJob.perform_later(notice.user.telegram_chat_id.to_s, notice.text)
+            end
           end
-          notices.size
         end
 
         def notify(game, reason, users = nil)
           deliver(game, prepare(game, reason, users))
+        end
+
+        private
+
+        def guard(notice)
+          yield
+          true
+        rescue StandardError => e
+          Rails.logger.warn("[Chat::Closure] failed for User##{notice.user.id}: #{e.class}: #{e.message}")
+          false
         end
       end
     end

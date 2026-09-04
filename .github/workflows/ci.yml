@@ -41,8 +41,17 @@ jobs:
           ruby-version: .ruby-version
           bundler-cache: true
 
+      # Аудит ходит в реестр npm по сети, и тот регулярно отвечает 503 или рвёт
+      # соединение — проверка падала на PR, где JS никто не трогал. Уязвимость
+      # так же уронит шаг, просто не с первой попытки.
       - name: Scan for security vulnerabilities in JavaScript dependencies
-        run: bin/importmap audit
+        run: |
+          for attempt in 1 2 3; do
+            bin/importmap audit && exit 0
+            echo "importmap audit failed (attempt $attempt of 3), retrying in 15s"
+            sleep 15
+          done
+          exit 1
 
   lint:
     runs-on: ubuntu-latest
