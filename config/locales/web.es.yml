@@ -519,6 +519,7 @@ es:
     reset: Restablecer cuota
     reset_title: Restablecer la cuota de geocodificación
   tennis_life:
+    total_players: "Jugadores en GetCourt: %{count}"
     scoreboard:
       title: Marcador de tenis
       empty: Todavía no hay datos del marcador.

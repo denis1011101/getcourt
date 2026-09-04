@@ -150,6 +150,29 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     match&.destroy
   end
 
+  test "the feed header says how many players are on the service" do
+    merged = User.create!(email: "merged-away@example.com", merged_at: Time.current)
+    expected = User.not_merged.count
+    assert_operator User.count, :>, expected, "слитый аккаунт должен остаться в таблице"
+
+    ENV["TENNIS_LIFE_FEED"] = "1"
+    stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, nil) do
+      get tennis_life_index_url
+
+      assert_response :success
+      assert_includes response.body, I18n.t("tennis_life.total_players", count: expected)
+    end
+  ensure
+    merged&.destroy
+  end
+
+  test "the statistics page says the same number" do
+    get tennis_life_statistics_url
+
+    assert_response :success
+    assert_includes response.body, I18n.t("tennis_life.total_players", count: User.not_merged.count)
+  end
+
   test "index links to full statistics page" do
     match = Match.create!(
       user: users(:one),
