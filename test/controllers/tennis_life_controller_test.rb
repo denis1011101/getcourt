@@ -191,6 +191,18 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, I18n.t("tennis_life.total_players", count: User.not_merged.count)
   end
 
+  # Ссылка «Показать ещё» ведёт на адрес с курсором, который к приходу краулера
+  # уже протух: без nofollow каждый такой адрес превращался в редирект в отчёте
+  # Search Console.
+  test "the load more link is not offered to crawlers" do
+    cursor = TennisLife::Feed::Cursor.start(seed: 1, snapshot_ts: Time.current.beginning_of_hour)
+
+    html = ApplicationController.render(partial: "tennis_life/feed/sentinel", locals: { next_cursor: cursor })
+
+    assert_includes html, %(rel="nofollow")
+    assert_includes html, "cursor=#{CGI.escape(cursor.to_param)}"
+  end
+
   test "index links to full statistics page" do
     match = Match.create!(
       user: users(:one),

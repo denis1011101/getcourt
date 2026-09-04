@@ -22,6 +22,23 @@ class CourtsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to courts_path
   end
 
+  # 27-28 августа список кортов отвечал 500 на ?page=30: pagy отдавал nil вместо
+  # пустого массива, и шапка падала на @courts.size. Ловим границу — ровно целое
+  # число страниц и запрос первой пустой за ней.
+  test "the first page past the end does not blow up" do
+    per_page = Pagy::OPTIONS[:limit]
+    missing = -Court.visible_to(nil).count % per_page
+    missing.times do |index|
+      Court.create!(name: "Overflow Court #{index}", city_name: "Yekaterinburg", moderation_status: "approved")
+    end
+    pages = Court.visible_to(nil).count / per_page
+    assert_operator pages, :>, 0
+
+    get courts_url(page: pages + 1)
+
+    assert_includes 200..404, response.status, "страница за концом списка не должна падать с 500"
+  end
+
   # ---- seo ----------------------------------------------------------------
 
   test "paginated index canonicalizes and hreflangs to itself, not to the first page" do

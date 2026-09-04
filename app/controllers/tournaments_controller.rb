@@ -224,8 +224,13 @@ class TournamentsController < ApplicationController
       end
     end
 
+    # Прошедшие турниры сносит CleanupPastTournamentsJob, а ссылки на них
+    # остаются в поиске и в чужих постах. Без этой строки show падал с 500 на
+    # каждой такой ссылке — сейчас в проде турниров нет вовсе, и пятисотили
+    # все адреса подряд. Правильный ответ на удалённое — 404.
     def set_tournament
       @tournament = Tournament.find_by(id: params[:tournament_id] || params[:id])
+      raise ActiveRecord::RecordNotFound if @tournament.nil? && action_name != "options"
     end
 
     def participant_name_for(user)
