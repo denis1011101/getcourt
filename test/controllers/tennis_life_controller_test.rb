@@ -166,6 +166,24 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     merged&.destroy
   end
 
+  # Доскролл приходит турбо-потоком и рисует одни карточки — считать людей
+  # ради шапки, которой в ответе нет, незачем.
+  test "scrolling the feed does not count the players again" do
+    counting = []
+    subscriber = ActiveSupport::Notifications.subscribe("sql.active_record") do |*, payload|
+      # Именно наш подсчёт: у факта «новые за месяц» в том же запросе есть
+      # ещё и окно по created_at.
+      counting << payload[:sql] if payload[:sql].to_s.match?(/COUNT\(\*\) FROM "users" WHERE "users"\."merged_at" IS NULL\z/)
+    end
+
+    get tennis_life_feed_url, as: :turbo_stream
+
+    assert_response :success
+    assert_empty counting
+  ensure
+    ActiveSupport::Notifications.unsubscribe(subscriber)
+  end
+
   test "the statistics page says the same number" do
     get tennis_life_statistics_url
 

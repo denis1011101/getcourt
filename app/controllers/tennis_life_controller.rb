@@ -3,7 +3,7 @@ require "digest"
 class TennisLifeController < ApplicationController
   skip_before_action :authenticate_user!, only: %i[index classic feed statistics featured_translation]
   before_action :set_secondary_page_meta, only: %i[classic feed]
-  before_action :set_total_players, only: %i[index classic feed statistics]
+  helper_method :total_players
 
   FEED_PAGE_SIZE = 20
   PINNED_RATING_LIMIT = 5
@@ -60,8 +60,11 @@ class TennisLifeController < ApplicationController
 
   # Сколько всего людей на сервисе — число, за которым лезли в консоль. Слитые
   # аккаунты не считаем: они остаются в таблице только ради истории матчей.
-  def set_total_players
-    @total_players = User.not_merged.count
+  # Считаем лениво, а не в before_action: доскролл ленты приходит турбо-потоком,
+  # который рисует одни карточки, — незачем гонять COUNT по всей таблице (индекса
+  # на merged_at нет) ради шапки, которой в ответе не будет.
+  def total_players
+    @total_players ||= User.not_merged.count
   end
 
   def set_secondary_page_meta
@@ -86,7 +89,7 @@ class TennisLifeController < ApplicationController
       # { title: "Games played", value: Game.count }, # TODO: придумать как считать, наверное надо в статистику класть просто
       { title: "Hours played", value: total_hours_value },
       { title: "Players in rating", value: rating_rows.size },
-      { title: "Players registered", value: @total_players },
+      { title: "Players registered", value: total_players },
       { title: "Courts", value: Court.count }
       # { title: "Tournaments played", value: Tournament.count },
       # { title: "Game participations", value: Participation.count }
