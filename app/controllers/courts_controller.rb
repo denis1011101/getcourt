@@ -36,7 +36,12 @@ class CourtsController < ApplicationController
     end
 
     Rails.logger.info "Courts#index current_user_id=#{current_user&.id} courts=#{courts.map { |c| [ c.id, c.user_id ] }.inspect}"
+    # На странице за концом списка pagy возвращал nil вместо пустого массива, и
+    # шапка падала на @courts.size — 27-28 августа список кортов отвечал на
+    # ?page=30 пятисоткой. Версия гема с тех пор сменилась и так больше не
+    # делает, но страховка стоит одной строки, а пятисотка стоила трёх суток.
     @pagy, @courts = pagy_array(courts)
+    @courts ||= []
   end
 
   def show
