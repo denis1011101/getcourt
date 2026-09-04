@@ -26,6 +26,24 @@ namespace :social do
     end
   end
 
+  desc "Publish the account profile (rake social:profile[nostr]) — only Nostr needs it, the rest have a UI"
+  task :profile, [ :network ] => :environment do |_task, args|
+    network = args[:network].presence || "nostr"
+
+    if network != "nostr"
+      puts "#{network}: the profile is edited in the network's own app — only nostr has no UI for it"
+      next
+    end
+
+    unless Social::NostrPostingService.configured?
+      puts "nostr: not configured — set NOSTR_SECRET_KEY first."
+      next
+    end
+
+    id = Social::NostrPostingService.publish_profile
+    puts id ? "nostr: profile published #{id}" : "nostr: nothing published, see the log"
+  end
+
   desc "Show what the daily post would say today without publishing it"
   task daily_preview: :environment do
     content = Social::DailyPlanner.new.pick
