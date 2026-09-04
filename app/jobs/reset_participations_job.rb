@@ -7,16 +7,21 @@ class ResetParticipationsJob < ApplicationJob
       next unless nd
 
       if game.should_reset_participations?(Date.current)
+        # Снимок до сброса: кому чат закроется, видно только по разнице составов —
+        # часть людей вернётся в состав из предзаписи и никуда не выбывает.
+        chat_members = game.chat_members.to_a
+
         if game.prebooking_enabled?
           apply_prebookings_for_occurrence!(game, nd)
           game.mark_participations_reset!(nd)
           Rails.logger.info "Reset participations from prebookings for Game##{game.id} for occurrence #{nd}"
         else
-          close_chat_sessions(game)
           game.participations.delete_all
           game.mark_participations_reset!(nd)
           Rails.logger.info "Reset participations for Game##{game.id} for occurrence #{nd}"
         end
+
+        close_chat_for_dropped(game, chat_members)
       end
     end
   end
@@ -25,10 +30,13 @@ class ResetParticipationsJob < ApplicationJob
 
   # delete_all идёт мимо колбэков Participation, поэтому режим чата у выбывших
   # гасим здесь — иначе они продолжат писать в состав, из которого их убрали.
-  def close_chat_sessions(game)
-    game.participations.includes(:user).find_each do |participation|
-      Telegram::Chat::Session.stop_for(participation.user, game)
-    end
+  # Сброс идёт ночью, и без письма человек заметил бы это, только когда его
+  # сообщение уже никому не ушло.
+  def close_chat_for_dropped(game, previous_members)
+    game.participations.reset
+    remaining = game.team_member_ids
+    dropped = previous_members.reject { |user| remaining.include?(user.id) }
+    Telegram::Chat::Closure.notify(game, :chat_closed_reset, dropped)
   rescue StandardError => e
     Rails.logger.warn("[ResetParticipationsJob] chat cleanup failed for Game##{game.id}: #{e.class}: #{e.message}")
   end

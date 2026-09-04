@@ -1,4 +1,19 @@
 es:
+  activerecord:
+    attributes:
+      game_medium:
+        file: "Archivo"
+    errors:
+      models:
+        game_medium:
+          attributes:
+            file:
+              blank: "falta"
+              invalid_type: "debe ser JPEG, PNG, WebP, MP4 o MOV"
+              too_large: "es demasiado grande: hasta 5 MB para fotos y 25 MB para vídeo"
+            base:
+              too_many_videos: "Un partido admite un solo vídeo"
+              too_many_images: "Un partido admite como máximo seis fotos"
   errors:
     messages:
       pending_exists: "ya tiene una propuesta pendiente para esta pista"

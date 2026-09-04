@@ -1,6 +1,8 @@
 require "test_helper"
 
 class CleanupPastOneOffGamesJobTest < ActiveJob::TestCase
+  include StubHelper
+
   def setup
     @user  = users(:one)
     @court = courts(:one)
@@ -76,5 +78,24 @@ class CleanupPastOneOffGamesJobTest < ActiveJob::TestCase
 
     assert_nil Game.find_by(id: game.id)
     assert_equal 0, Participation.where(game_id: game.id).count
+  end
+
+  # Разовая игра исчезает вместе с чатом, и текст письма ссылается на её город и
+  # дату — значит, собрать его надо до удаления записи.
+  test "tells the squad that the chat died with the game" do
+    player = User.create!(email: "oneoff-chat@example.com", telegram_chat_id: 910_200_001, telegram_locale: "ru")
+    game = Game.create!(user: @user, court: @court, date: Date.yesterday, recurring: false)
+    game.participations.create!(user: player, status: "approved", approved_at: Time.current)
+
+    sent = []
+    stub_singleton(SendTelegramNotificationJob, :perform_later, ->(chat_id, text) { sent << [ chat_id, text ] }) do
+      CleanupPastOneOffGamesJob.perform_now
+    end
+
+    assert_nil Game.find_by(id: game.id)
+    notice = sent.find { |chat_id, _| chat_id == player.telegram_chat_id.to_s }
+    assert notice, "участнику удалённой игры должно уйти письмо о закрытии чата"
+    assert_match "чат", notice.last
+    assert_no_match(/translation missing/i, notice.last)
   end
 end

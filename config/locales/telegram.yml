@@ -77,11 +77,13 @@ ru:
     invite_skipped_self: 'Пропущены (это вы): %{users}'
     game_or_user_not_found: Игра или пользователь не найдены
     joined_game: Вы присоединились к игре
-    chat_started: "Теперь вы пишете в чат игры %{game}. Сообщения увидят участники, подключённые к Telegram (%{count})."
+    chat_started: "Теперь вы пишете в чат игры %{game}. Кроме вас, сообщения увидят участники, подключённые к Telegram (%{count})."
     chat_lifetime: "Чат живёт столько же, сколько состав: до субботы, 4:00."
     chat_switch_btn: "Сменить игру"
     chat_exit_btn: "Выйти из чата"
-    chat_stopped: "Вышли из чата. Сообщения боту снова видите только вы."
+    chat_stopped: "Вышли из чата. Сообщения боту снова видите только вы. Вернуться — командой /chat."
+    chat_closed_reset: "Чат игры %{game} закрыт: состав сброшен до следующей игры. Запишитесь снова — и чат откроется."
+    chat_closed_finished: "Игра %{game} прошла — её чат закрыт."
     chat_pick_prompt: "В какую игру писать?"
     chat_none: "Нет игр, в чат которых можно писать."
     chat_not_available: "Чат этой игры недоступен: игра прошла или вас нет в составе."
@@ -685,11 +687,13 @@ en:
     invite_skipped_self: 'Skipped self: %{users}'
     game_or_user_not_found: Game or user not found
     joined_game: You joined the game
-    chat_started: "You are now writing to game %{game}. Players connected to Telegram will see your messages (%{count})."
+    chat_started: "You are now writing to game %{game}. Besides you, players connected to Telegram will see your messages (%{count})."
     chat_lifetime: "The chat lives as long as the squad does: until Saturday, 4:00."
     chat_switch_btn: "Switch game"
     chat_exit_btn: "Leave chat"
-    chat_stopped: "Left the chat. Messages to the bot are private again."
+    chat_stopped: "Left the chat. Messages to the bot are private again. Send /chat to come back."
+    chat_closed_reset: "The chat for game %{game} is closed: the squad has been reset for the next game. Join again and the chat will reopen."
+    chat_closed_finished: "Game %{game} is over — its chat is closed."
     chat_pick_prompt: "Which game do you want to write to?"
     chat_none: "No games with an open chat."
     chat_not_available: "This game's chat is unavailable: the game is over or you are not in the squad."
@@ -1250,11 +1254,13 @@ es:
     invite_skipped_self: 'Omitidos (eres tú): %{users}'
     game_or_user_not_found: Partido o usuario no encontrado
     joined_game: Te has unido al partido
-    chat_started: "Ahora escribes al partido %{game}. Lo verán los jugadores conectados a Telegram (%{count})."
+    chat_started: "Ahora escribes al partido %{game}. Además de ti, lo verán los jugadores conectados a Telegram (%{count})."
     chat_lifetime: "El chat vive lo mismo que la alineación: hasta el sábado a las 4:00."
     chat_switch_btn: "Cambiar de partido"
     chat_exit_btn: "Salir del chat"
-    chat_stopped: "Has salido del chat. Tus mensajes al bot vuelven a ser privados."
+    chat_stopped: "Has salido del chat. Tus mensajes al bot vuelven a ser privados. Escribe /chat para volver."
+    chat_closed_reset: "El chat del partido %{game} está cerrado: la alineación se ha reiniciado hasta el próximo partido. Apúntate de nuevo y el chat volverá a abrirse."
+    chat_closed_finished: "El partido %{game} ha terminado: su chat está cerrado."
     chat_pick_prompt: "¿A qué partido quieres escribir?"
     chat_none: "No hay partidos con chat abierto."
     chat_not_available: "El chat de este partido no está disponible: ya terminó o no estás en la alineación."
