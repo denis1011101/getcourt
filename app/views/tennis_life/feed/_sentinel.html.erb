@@ -1,8 +1,11 @@
 <div id="tennis-life-feed-sentinel" class="mt-5" data-infinite-feed-target="sentinel">
   <% if next_cursor %>
     <div class="text-center">
+      <%# rel=nofollow, чтобы адрес с курсором не попадал в очередь обхода: сам
+          курсор к приходу краулера протухает и отвечает редиректом. %>
       <%= link_to t("tennis_life.feed.load_more"),
                   tennis_life_feed_path(cursor: next_cursor.to_param),
+                  rel: "nofollow",
                   class: "inline-flex rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700",
                   data: { infinite_feed_target: "link", action: "infinite-feed#load" } %>
       <p class="mt-2 hidden text-sm text-red-600 dark:text-red-400" data-infinite-feed-target="error"><%= t("tennis_life.feed.load_error") %></p>

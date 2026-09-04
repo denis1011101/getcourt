@@ -39,6 +39,24 @@ class TournamentsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  # Прошедшие турниры удаляются, а ссылки на них живут в выдаче — Search Console
+  # показывала их как «Server error (5xx)».
+  test "a tournament that no longer exists answers 404, not 500" do
+    missing_id = Tournament.maximum(:id).to_i + 1_000
+
+    get tournament_url(missing_id)
+
+    assert_response :not_found
+  end
+
+  test "options survives a tournament that no longer exists" do
+    missing_id = Tournament.maximum(:id).to_i + 1_000
+
+    get options_tournaments_url, params: { tournament_id: missing_id }
+
+    assert_redirected_to tournaments_path
+  end
+
   test "should redirect new when not authenticated" do
     get new_tournament_url
     assert_redirected_to new_session_path
