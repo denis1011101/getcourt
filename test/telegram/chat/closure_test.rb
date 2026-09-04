@@ -29,15 +29,15 @@ class Telegram::Chat::ClosureTest < ActiveSupport::TestCase
 
       sent = []
       broken = @owner.telegram_chat_id.to_s
-      stub_singleton(SendTelegramNotificationJob, :perform_later, lambda { |chat_id, _text|
+      stub_singleton(SendTelegramNotificationJob, :perform_later, lambda { |chat_id, _text, **opts|
         raise "telegram is down" if chat_id == broken
 
-        sent << chat_id
+        sent << [ chat_id, opts ]
       }) do
         assert_equal 1, Telegram::Chat::Closure.notify(@game, :chat_closed_finished)
       end
 
-      assert_equal [ @player.telegram_chat_id.to_s ], sent
+      assert_equal [ [ @player.telegram_chat_id.to_s, { silent: true } ] ], sent
       assert_nil Telegram::Chat::Session.active_game(@owner.telegram_chat_id.to_s, @owner)
       assert_nil Telegram::Chat::Session.active_game(@player.telegram_chat_id.to_s, @player)
     end

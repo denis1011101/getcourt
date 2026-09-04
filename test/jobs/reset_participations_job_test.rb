@@ -62,7 +62,7 @@ class ResetParticipationsJobTest < ActiveJob::TestCase
     with_memory_cache do
       Telegram::Chat::Session.start(player.telegram_chat_id.to_s, game)
 
-      stub_singleton(SendTelegramNotificationJob, :perform_later, ->(chat_id, text) { sent << [ chat_id, text ] }) do
+      stub_singleton(SendTelegramNotificationJob, :perform_later, ->(chat_id, text, **opts) { sent << [ chat_id, text, opts ] }) do
         ResetParticipationsJob.perform_now
       end
 
@@ -71,8 +71,9 @@ class ResetParticipationsJobTest < ActiveJob::TestCase
     end
 
     assert_equal [ player.telegram_chat_id.to_s ], sent.map(&:first)
-    assert_match "закрыт", sent.first.last
-    assert_no_match(/translation missing/i, sent.first.last)
+    assert_match "закрыт", sent.first[1]
+    assert_no_match(/translation missing/i, sent.first[1])
+    assert_equal({ silent: true }, sent.first[2], "письмо о закрытии чата приходит без звука")
   end
 
   # Организатор из состава не выпадает — ему закрывать нечего.
@@ -84,7 +85,7 @@ class ResetParticipationsJobTest < ActiveJob::TestCase
 
     sent = []
     with_memory_cache do
-      stub_singleton(SendTelegramNotificationJob, :perform_later, ->(chat_id, text) { sent << [ chat_id, text ] }) do
+      stub_singleton(SendTelegramNotificationJob, :perform_later, ->(chat_id, text, **opts) { sent << [ chat_id, text, opts ] }) do
         ResetParticipationsJob.perform_now
       end
     end
