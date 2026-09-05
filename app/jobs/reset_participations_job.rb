@@ -21,12 +21,31 @@ class ResetParticipationsJob < ApplicationJob
           Rails.logger.info "Reset participations for Game##{game.id} for occurrence #{nd}"
         end
 
+        reset_occurrence_content(game)
         close_chat_for_dropped(game, chat_members)
       end
     end
   end
 
   private
+
+  # Комментарий и вложения принадлежат прошедшей встрече ровно так же, как
+  # состав: «сегодня беру мячи» и ролик с прошлой субботы новой игре не нужны.
+  # Вложения сносим по одному через destroy, а не delete_all: только так Active
+  # Storage снимет файл с диска, а места на нём мало (см. GameMedium).
+  # update_columns — мимо колбэков: after_commit игры зовёт рассылку об
+  # изменениях, и сброс не должен будить ею людей в четыре утра.
+  def reset_occurrence_content(game)
+    game.update_columns(comment: nil, updated_at: Time.current) if game.comment.present?
+
+    game.game_media.find_each do |medium|
+      next if medium.destroy
+
+      Rails.logger.warn("[ResetParticipationsJob] failed to destroy GameMedium##{medium.id}: #{medium.errors.full_messages.join(", ")}")
+    end
+  rescue StandardError => e
+    Rails.logger.warn("[ResetParticipationsJob] content reset failed for Game##{game.id}: #{e.class}: #{e.message}")
+  end
 
   # delete_all идёт мимо колбэков Participation, поэтому режим чата у выбывших
   # гасим здесь — иначе они продолжат писать в состав, из которого их убрали.
