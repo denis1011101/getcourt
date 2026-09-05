@@ -69,13 +69,18 @@ class Telegram::Chat::RelayTest < ActiveSupport::TestCase
   test "a played game keeps its chat until the weekly reset" do
     enqueued = nil
 
-    in_chat_mode do
-      @game.update_columns(date: Date.current - 2, recurring: false)
+    # День недели фиксируем: в саму субботу после четырёх утра чат позавчерашней
+    # игры закрыт по-настоящему — сброс уже прошёл. Без этого тест раз в неделю
+    # ловил календарь, а не поведение.
+    travel_to Time.zone.parse("2026-09-02 12:00") do
+      in_chat_mode do
+        @game.update_columns(date: Date.current - 2, recurring: false)
 
-      stub_singleton(Telegram::RelayChatMessageJob, :perform_later, ->(*args) { enqueued = args }) do
-        assert Telegram::Chat::Relay.handle_message(tg_message("привет"))
+        stub_singleton(Telegram::RelayChatMessageJob, :perform_later, ->(*args) { enqueued = args }) do
+          assert Telegram::Chat::Relay.handle_message(tg_message("привет"))
+        end
+        assert_equal @game.id, Telegram::Chat::Session.game_id(@player.telegram_chat_id)
       end
-      assert_equal @game.id, Telegram::Chat::Session.game_id(@player.telegram_chat_id)
     end
 
     assert_equal [ @game.id, @player.id, "привет", nil ], enqueued&.first(4)

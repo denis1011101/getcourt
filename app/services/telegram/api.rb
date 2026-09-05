@@ -18,12 +18,12 @@ module Telegram
     end
 
     # Generic sender used by flows (keeps reply_markup as JSON when needed)
-    def self.send_api(path, params = {})
-      return false if TOKEN.to_s.empty?
+    def self.send_api(path, params = {}, silent: nil)
       params = params.transform_keys(&:to_s)
       if params["reply_markup"].is_a?(Hash)
         params["reply_markup"] = params["reply_markup"].to_json
       end
+      params = QuietHours.apply(params, silent: silent) if path.to_s.start_with?("send")
       post(path, params)
     rescue => e
       Rails.logger.error "[Telegram::Api] send_api failed: #{e.class}: #{e.message}"
@@ -35,23 +35,27 @@ module Telegram
     # Всё нужное и так есть в тексте, поэтому по умолчанию превью выключено.
     LINK_PREVIEW_DISABLED = { is_disabled: true }.to_json
 
-    def self.send_with_buttons(chat_id, text, buttons, parse_mode: "Markdown", link_preview: false)
+    # Ночная тишина живёт в именованных отправителях, а не в post: post — сырой
+    # транспорт, и через него же уходит сообщение чата, которому звенеть можно
+    # в любой час. Вызывающий может решить и сам — параметром silent.
+    def self.send_with_buttons(chat_id, text, buttons, parse_mode: "Markdown", link_preview: false, silent: nil)
       params = { "chat_id" => chat_id.to_s, "text" => text.to_s, "reply_markup" => { inline_keyboard: buttons }.to_json }
       params["parse_mode"] = parse_mode if parse_mode.present?
       params["link_preview_options"] = LINK_PREVIEW_DISABLED unless link_preview
-      post("sendMessage", params)
+      post("sendMessage", QuietHours.apply(params, silent: silent))
     end
 
-    def self.send_simple(chat_id, text, parse_mode: "Markdown", link_preview: false)
+    def self.send_simple(chat_id, text, parse_mode: "Markdown", link_preview: false, silent: nil)
       params = { "chat_id" => chat_id.to_s, "text" => text.to_s }
       params["parse_mode"] = parse_mode if parse_mode.present?
       params["link_preview_options"] = LINK_PREVIEW_DISABLED unless link_preview
-      post("sendMessage", params)
+      post("sendMessage", QuietHours.apply(params, silent: silent))
     end
 
-    def self.send_photo(chat_id, photo_path, caption: nil, parse_mode: nil)
+    def self.send_photo(chat_id, photo_path, caption: nil, parse_mode: nil, silent: nil)
       return false if TOKEN.to_s.empty?
 
+      silent = QuietHours.silent?(chat_id) if silent.nil?
       uri = URI("https://api.telegram.org/bot#{TOKEN}/sendPhoto")
       boundary = "----GetCourtTelegram#{SecureRandom.hex(12)}"
       body = String.new.b
@@ -59,6 +63,9 @@ module Telegram
       add_multipart_field(body, boundary, "chat_id", chat_id.to_s)
       add_multipart_field(body, boundary, "caption", caption.to_s) if caption.present?
       add_multipart_field(body, boundary, "parse_mode", parse_mode.to_s) if parse_mode.present?
+      # Тишину сюда приходится вписывать руками: картинка уходит своим
+      # multipart-запросом, мимо post и мимо QuietHours.apply.
+      add_multipart_field(body, boundary, "disable_notification", "true") if silent
       add_multipart_file(body, boundary, "photo", photo_path, "image/png")
       body << "--#{boundary}--\r\n".b
 

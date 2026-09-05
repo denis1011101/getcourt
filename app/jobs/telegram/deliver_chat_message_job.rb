@@ -116,6 +116,9 @@ module Telegram
       with_hint(text, hint)
     end
 
+    # Сырой post, а не именованный отправитель: ночная тишина сюда не
+    # распространяется. Сообщение написал живой участник игры, его ждут и в
+    # четыре утра — молчать о нём было бы хуже, чем разбудить.
     def deliver(path, params, game_id, recipient_id, text, media, origin)
       response = begin
         Telegram::Api.post(path, params)

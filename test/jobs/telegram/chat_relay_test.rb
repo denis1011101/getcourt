@@ -452,6 +452,22 @@ class Telegram::ChatRelayTest < ActiveSupport::TestCase
     end
   end
 
+  # Единственное исключение из ночной тишины: сообщение написал живой участник
+  # игры, и оно должно звенеть в любой час — иначе ответа не дождаться.
+  test "a chat message rings even at four in the morning" do
+    params = nil
+
+    travel_to Time.utc(2026, 9, 5, 23, 0) do
+      with_memory_cache do
+        stub_singleton(Telegram::Api, :post, ->(_path, sent) { params = sent; { "ok" => true } }) do
+          Telegram::DeliverChatMessageJob.perform_now(@game.id, @owner.id, "во сколько завтра?")
+        end
+      end
+    end
+
+    assert_not params.key?("disable_notification")
+  end
+
   private
 
   def unique_chat_id

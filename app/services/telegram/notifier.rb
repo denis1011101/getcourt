@@ -7,9 +7,12 @@ module Telegram
     TOKEN = ENV["TELEGRAM_BOT_TOKEN"].to_s
 
     # silent: письмо приходит без звука и вибрации — для того, что бот шлёт по
-    # расписанию среди ночи и что человеку достаточно прочитать утром.
-    def self.send_message(chat_id, text, parse_mode: "Markdown", link_preview: false, silent: false)
+    # расписанию среди ночи и что человеку достаточно прочитать утром. nil —
+    # решает Telegram::QuietHours по часовому поясу получателя.
+    def self.send_message(chat_id, text, parse_mode: "Markdown", link_preview: false, silent: nil)
       return false if TOKEN.empty? || chat_id.blank?
+
+      silent = Telegram::QuietHours.silent?(chat_id) if silent.nil?
 
       uri = URI("https://api.telegram.org/bot#{TOKEN}/sendMessage")
       payload = { "chat_id" => chat_id.to_s, "text" => text.to_s }
