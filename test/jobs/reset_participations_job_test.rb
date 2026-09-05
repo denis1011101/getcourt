@@ -116,6 +116,29 @@ class ResetParticipationsJobTest < ActiveJob::TestCase
     assert_equal "сегодня беру мячи", game.reload.comment
   end
 
+  # Маркер сброса закрывает игре повторный заход, поэтому ставить его до уборки
+  # нельзя: упавшее удаление ролика иначе не повторилось бы уже никогда.
+  test "a failed cleanup leaves the game to the next run" do
+    game = Game.create!(
+      court: courts(:one), user: @owner, date: Date.current - 14.days, time: "18:00",
+      recurring: true, comment: "сегодня беру мячи"
+    )
+    game.participations.create!(user: @player)
+    medium = create_medium(game)
+
+    with_failing_medium_destroy { ResetParticipationsJob.perform_now }
+
+    assert_nil game.reload.last_participations_reset_at, "маркер не ставим, пока уборка не удалась"
+    assert_equal 1, game.participations.count, "состав ждёт вместе с игрой"
+    assert_not_nil GameMedium.find_by(id: medium.id)
+
+    # Следующая ночь застаёт игру нетронутой и доводит сброс до конца.
+    ResetParticipationsJob.perform_now
+
+    assert_empty game.participations.reload
+    assert_nil GameMedium.find_by(id: medium.id)
+  end
+
   # Организатор из состава не выпадает — ему закрывать нечего.
   test "leaves the organiser alone" do
     @owner.update_column(:telegram_chat_id, 910_100_002)
@@ -136,6 +159,22 @@ class ResetParticipationsJobTest < ActiveJob::TestCase
   private
 
   SAMPLE_PNG = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=".freeze
+
+  # Неудачу удаления по-другому не подстроить: destroy у вложения падает только
+  # на сбое диска или базы.
+  def with_failing_medium_destroy
+    GameMedium.class_eval do
+      alias_method :destroy_without_failure, :destroy
+      define_method(:destroy) { false }
+    end
+    yield
+  ensure
+    GameMedium.class_eval do
+      remove_method :destroy
+      alias_method :destroy, :destroy_without_failure
+      remove_method :destroy_without_failure
+    end
+  end
 
   def create_medium(game)
     medium = GameMedium.new(game: game, user: @owner)

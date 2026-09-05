@@ -52,9 +52,10 @@ module Telegram
       post("sendMessage", QuietHours.apply(params, silent: silent))
     end
 
-    def self.send_photo(chat_id, photo_path, caption: nil, parse_mode: nil)
+    def self.send_photo(chat_id, photo_path, caption: nil, parse_mode: nil, silent: nil)
       return false if TOKEN.to_s.empty?
 
+      silent = QuietHours.silent?(chat_id) if silent.nil?
       uri = URI("https://api.telegram.org/bot#{TOKEN}/sendPhoto")
       boundary = "----GetCourtTelegram#{SecureRandom.hex(12)}"
       body = String.new.b
@@ -62,6 +63,9 @@ module Telegram
       add_multipart_field(body, boundary, "chat_id", chat_id.to_s)
       add_multipart_field(body, boundary, "caption", caption.to_s) if caption.present?
       add_multipart_field(body, boundary, "parse_mode", parse_mode.to_s) if parse_mode.present?
+      # Тишину сюда приходится вписывать руками: картинка уходит своим
+      # multipart-запросом, мимо post и мимо QuietHours.apply.
+      add_multipart_field(body, boundary, "disable_notification", "true") if silent
       add_multipart_file(body, boundary, "photo", photo_path, "image/png")
       body << "--#{boundary}--\r\n".b
 

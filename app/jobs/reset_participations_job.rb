@@ -11,6 +11,12 @@ class ResetParticipationsJob < ApplicationJob
         # часть людей вернётся в состав из предзаписи и никуда не выбывает.
         chat_members = game.chat_members.to_a
 
+        # Контент чистим до маркера: маркер закрывает игре повторный заход, и
+        # неудачная уборка должна дождаться следующей ночи, а не пропасть.
+        # Отсюда же и порядок: сброс предзаписей сдвигает даты на неделю вперёд,
+        # повторить его вторым заходом нельзя.
+        next unless reset_occurrence_content(game)
+
         if game.prebooking_enabled?
           apply_prebookings_for_occurrence!(game, nd)
           game.mark_participations_reset!(nd)
@@ -21,7 +27,6 @@ class ResetParticipationsJob < ApplicationJob
           Rails.logger.info "Reset participations for Game##{game.id} for occurrence #{nd}"
         end
 
-        reset_occurrence_content(game)
         close_chat_for_dropped(game, chat_members)
       end
     end
@@ -35,16 +40,25 @@ class ResetParticipationsJob < ApplicationJob
   # Storage снимет файл с диска, а места на нём мало (см. GameMedium).
   # update_columns — мимо колбэков: after_commit игры зовёт рассылку об
   # изменениях, и сброс не должен будить ею людей в четыре утра.
+  #
+  # false — «эту игру в этот раз не трогаем»: упавшую уборку повторит следующий
+  # запуск, а до тех пор состав остаётся на месте. Одна испорченная игра при
+  # этом не должна останавливать остальные, поэтому исключение наружу не идёт.
   def reset_occurrence_content(game)
     game.update_columns(comment: nil, updated_at: Time.current) if game.comment.present?
 
-    game.game_media.find_each do |medium|
-      next if medium.destroy
+    # map, а не all?: короткое замыкание на первой неудаче бросило бы остальные
+    # ролики лежать на диске.
+    dropped = game.game_media.to_a.map do |medium|
+      next true if medium.destroy
 
       Rails.logger.warn("[ResetParticipationsJob] failed to destroy GameMedium##{medium.id}: #{medium.errors.full_messages.join(", ")}")
+      false
     end
+    dropped.all?
   rescue StandardError => e
     Rails.logger.warn("[ResetParticipationsJob] content reset failed for Game##{game.id}: #{e.class}: #{e.message}")
+    false
   end
 
   # delete_all идёт мимо колбэков Participation, поэтому режим чата у выбывших
