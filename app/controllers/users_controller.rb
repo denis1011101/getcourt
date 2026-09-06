@@ -23,6 +23,8 @@ class UsersController < ApplicationController
 
   def security
     @user = current_user
+    # Токен показываем только после подтверждения владения в этой сессии.
+    @api_token = current_user.api_tokens.active.first if api_token_confirmed?
   end
 
   def courts

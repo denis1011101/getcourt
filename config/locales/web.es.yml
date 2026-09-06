@@ -272,7 +272,15 @@ es:
       full: Completo
     prebookings:
       title: Reservas previas
-      date: Fecha
+      weekdays: [dom, lun, mar, mié, jue, vie, sáb]
+      filled: "%{taken} de %{total} plazas ocupadas"
+      months: [Enero, Febrero, Marzo, Abril, Mayo, Junio, Julio, Agosto, Septiembre, Octubre, Noviembre, Diciembre]
+      legend_title: Qué significan los colores
+      legend_free: Partido con plazas libres
+      legend_full: Partido con todas las plazas ocupadas
+      legend_pending: Pendiente de aprobación del organizador
+      legend_cancelled: Fecha cancelada
+      legend_no_game: Ese día no hay partido
       slot: Plaza %{number}
       restore_date: Restaurar fecha
       cancel_date: Cancelar fecha

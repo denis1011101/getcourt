@@ -31,6 +31,29 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "a personal token opens the server even without the shared one" do
+    with_token(nil) do
+      personal = ApiToken.issue_for(User.create!(email: "mcp-personal@example.com"))
+
+      post mcp_url, params: request_body("tools/list"), headers: json_headers("Bearer #{personal.token}")
+
+      assert_response :success
+      assert_not_nil personal.reload.last_used_at
+    end
+  end
+
+  test "a revoked personal token is turned away while another one keeps the server visible" do
+    with_token(nil) do
+      revoked = ApiToken.issue_for(User.create!(email: "mcp-revoked@example.com"))
+      revoked.revoke!
+      ApiToken.issue_for(User.create!(email: "mcp-active@example.com"))
+
+      post mcp_url, params: request_body("tools/list"), headers: json_headers("Bearer #{revoked.token}")
+
+      assert_response :unauthorized
+    end
+  end
+
   test "reports malformed JSON as a parse error" do
     with_token(TOKEN) do
       post mcp_url, params: "{not json", headers: json_headers("Bearer #{TOKEN}")

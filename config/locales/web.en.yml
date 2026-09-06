@@ -268,7 +268,15 @@ en:
       full: Full
     prebookings:
       title: Prebookings
-      date: Date
+      weekdays: [Sun, Mon, Tue, Wed, Thu, Fri, Sat]
+      filled: "%{taken} of %{total} slots taken"
+      months: [January, February, March, April, May, June, July, August, September, October, November, December]
+      legend_title: What the colours mean
+      legend_free: Game date with free slots
+      legend_full: Game date, all slots taken
+      legend_pending: Waiting for the organizer to approve
+      legend_cancelled: Date cancelled
+      legend_no_game: No game on this day
       slot: Slot %{number}
       restore_date: Restore date
       cancel_date: Cancel date

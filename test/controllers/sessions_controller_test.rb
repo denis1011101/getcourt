@@ -109,8 +109,78 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
     user&.destroy
   end
 
+  # Проверка входа по коду: раньше почтовый метод пускал с любыми цифрами.
+  { "email" => "email", "telegram" => "telegram" }.each do |method, via|
+    test "a wrong code does not sign in a #{method} account with verification on" do
+      user = user_with_code(via)
+
+      post "/sign_in/verify", params: { email: user.email, code: "0000" }
+
+      assert_response :unprocessable_entity
+      assert_nil session[:user_id]
+    end
+
+    test "the right code signs in a #{method} account and cannot be reused" do
+      user = user_with_code(via)
+      code = user.login_code
+
+      post "/sign_in/verify", params: { email: user.email, code: code }
+
+      assert_redirected_to root_path
+      assert_equal user.id, session[:user_id]
+      assert_nil user.reload.login_code
+
+      delete destroy_session_url
+      post "/sign_in/verify", params: { email: user.email, code: code }
+
+      assert_response :unprocessable_entity
+      assert_nil session[:user_id]
+    end
+  end
+
+  test "an empty code does not sign in" do
+    user = user_with_code("email")
+
+    post "/sign_in/verify", params: { email: user.email, code: "" }
+
+    assert_response :unprocessable_entity
+    assert_nil session[:user_id]
+  end
+
+  test "a code older than its lifetime does not sign in" do
+    user = user_with_code("email")
+    user.update_columns(login_code_sent_at: 16.minutes.ago)
+
+    post "/sign_in/verify", params: { email: user.email, code: user.login_code }
+
+    assert_response :unprocessable_entity
+    assert_nil session[:user_id]
+  end
+
+  test "an account without verification still signs in without a code" do
+    user = User.create!(email: "sessions_no_verification@example.com")
+
+    post "/sign_in/verify", params: { email: user.email, code: "" }
+
+    assert_redirected_to root_path
+    assert_equal user.id, session[:user_id]
+  end
+
   test "should destroy session" do
     delete destroy_session_url
     assert_redirected_to new_session_path
+  end
+
+  private
+
+  def user_with_code(via)
+    user = User.create!(
+      email: "sessions_code_#{via}@example.com",
+      require_verification: true,
+      preferred_login_via: via,
+      telegram_chat_id: via == "telegram" ? 123_456_789 : nil
+    )
+    user.generate_login_code!(via: via)
+    user.reload
   end
 end

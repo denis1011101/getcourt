@@ -76,7 +76,12 @@ class SessionsController < ApplicationController
     code  = params[:code].to_s.strip
     user  = User.find_by(email: email)
 
-    if user && !(user.require_verification? && user.preferred_login_via == "telegram")
+    # Кто подтверждение не включал, тот и здесь входит по одной почте — как на
+    # /sign_in. А кто включил, тот проходит код, каким бы способом его ни
+    # получил: раньше условие требовало кода только от телеграма, и почтовый
+    # метод пускал с любым набором цифр, то есть защита не работала ровно у тех,
+    # кто её себе включил.
+    if user && !user.require_verification?
       sign_in(user)
       target = session.delete(:return_to) || root_path
       redirect_to target, notice: "Signed in as #{user.email}" and return

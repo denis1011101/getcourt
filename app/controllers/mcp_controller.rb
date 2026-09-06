@@ -41,16 +41,25 @@ class McpController < Api::BaseController
       error: { code: Mcp::Server::INVALID_REQUEST, message: "Invalid request" } }
   end
 
-  # Токен один на всех: инструменты только читают публичные данные, но эндпоинт
-  # закрыт, чтобы его не звали кто попало. Без заданного MCP_TOKEN сервер
-  # выключен целиком — иначе забытая переменная окружения открыла бы его всем.
+  # Токенов два сорта: общий из MCP_TOKEN — для наших собственных скриптов, и
+  # личные из api_tokens, которые человек выпускает себе сам в кабинете.
+  # Инструменты только читают публичные данные, но эндпоинт закрыт, чтобы его не
+  # звали кто попало. Пока не выдан ни один токен, сервера словно и нет: забытая
+  # переменная окружения не должна открывать его молча.
   def authenticate_mcp!
-    expected = ENV["MCP_TOKEN"].to_s
-    return head(:not_found) if expected.blank?
+    return head(:not_found) unless shared_token.present? || ApiToken.active.exists?
 
     provided = request.headers["Authorization"].to_s.delete_prefix("Bearer ").strip
-    return if provided.present? && ActiveSupport::SecurityUtils.secure_compare(provided, expected)
+    return if provided.present? && (shared_token?(provided) || ApiToken.authenticate(provided))
 
     head :unauthorized
+  end
+
+  def shared_token
+    @shared_token ||= ENV["MCP_TOKEN"].to_s
+  end
+
+  def shared_token?(provided)
+    shared_token.present? && ActiveSupport::SecurityUtils.secure_compare(provided, shared_token)
   end
 end

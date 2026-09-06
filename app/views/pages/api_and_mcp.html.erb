@@ -99,6 +99,7 @@ GET <%= host %>/api/v1/games/:id</pre>
         <li><%= t("pages.api.mcp_endpoint_html") %></li>
         <li><%= t("pages.api.mcp_protocol_html") %></li>
         <li><%= t("pages.api.mcp_auth_html") %></li>
+        <li><%= t("pages.api.mcp_token_html") %></li>
       </ul>
 
       <h3 class="text-sm font-medium text-gray-900 dark:text-slate-100 mb-2"><%= t("pages.api.tools_title") %></h3>
@@ -154,7 +155,7 @@ GET <%= host %>/api/v1/games/:id</pre>
     </div>
 
     <div class="flex flex-wrap gap-3">
-      <%= link_to t("pages.api.get_token"), contacts_path, class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-500" %>
+      <%= link_to t("pages.api.get_token"), security_account_path, class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-500" %>
       <%= link_to t("pages.api.source_code"), "https://github.com/denis1011101/getcourt/blob/main/docs/api-and-mcp.md", target: "_blank", rel: "noopener",
                   class: "inline-flex items-center rounded-md border dark:border-white/10 px-4 py-2 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/5" %>
     </div>

@@ -13,6 +13,8 @@
     <% end %>
   </div>
 
+  <%= render "users/api_token", api_token: @api_token %>
+
   <div class="rounded-lg border border-red-200 p-4 dark:border-red-500/20">
     <h2 class="text-sm font-semibold text-red-700 dark:text-red-400 mb-1">
       <%= t("users.delete_account_title") %>
