@@ -6,6 +6,7 @@ class ApiTokensController < ApplicationController
   FAILURE_WINDOW = 15.minutes
 
   before_action :require_verified_user
+  before_action :limit_code_delivery, only: :send_code
   before_action :require_confirmed_ownership, except: %i[send_code confirm]
 
   def show
@@ -94,13 +95,20 @@ class ApiTokensController < ApplicationController
   end
 
   def register_failed_confirmation
-    failures = Rails.cache.read(confirmation_failures_key).to_i + 1
-    Rails.cache.write(confirmation_failures_key, failures, expires_in: FAILURE_WINDOW)
+    failures = Rails.cache.increment(confirmation_failures_key, 1, expires_in: FAILURE_WINDOW).to_i
     current_user.clear_login_code! if failures >= MAX_CODE_ATTEMPTS
   end
 
   def confirmation_failures_key
     "api_token_confirm_failures:#{current_user.id}"
+  end
+
+  def limit_code_delivery
+    ip_count = Rails.cache.increment("api_token_code_delivery:ip:#{request.remote_ip}", 1, expires_in: 1.hour).to_i
+    return head(:too_many_requests) if ip_count > 10
+
+    user_count = Rails.cache.increment("api_token_code_delivery:user:#{current_user.id}", 1, expires_in: 15.minutes).to_i
+    head :too_many_requests if user_count > 3
   end
 
   def deliver_confirmation_code
