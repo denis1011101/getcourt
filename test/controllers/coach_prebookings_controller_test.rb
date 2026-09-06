@@ -75,4 +75,29 @@ class CoachPrebookingsControllerTest < ActionDispatch::IntegrationTest
   ensure
     coach&.destroy
   end
+
+  test "coach sees their confirmation inside the day card" do
+    coach = User.create!(email: "coach-calendar-card@example.com", coach: true, name: "Card Coach")
+    game = Game.create!(
+      court: courts(:one),
+      user: users(:one),
+      with_coach: true,
+      coach: coach,
+      recurring: true,
+      date: Date.current
+    )
+    game.update!(coach_invitation_status: "accepted")
+    game.coach_prebookings.create!(coach: coach, date: game.next_date)
+    post session_url, params: { email: coach.email }
+
+    get more_game_prebookings_url(game, horizon: 3)
+
+    assert_response :success
+    assert_select "[data-testid=?]", "prebooking-day", 3 do |cards|
+      assert_match I18n.t("games.prebookings.coach_confirmed"), cards.first.to_s
+      assert_match I18n.t("games.prebookings.coach_not_booked"), cards[1].to_s
+    end
+  ensure
+    coach&.destroy
+  end
 end

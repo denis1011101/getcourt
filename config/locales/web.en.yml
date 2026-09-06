@@ -268,7 +268,8 @@ en:
       full: Full
     prebookings:
       title: Prebookings
-      date: Date
+      weekdays: [Sun, Mon, Tue, Wed, Thu, Fri, Sat]
+      filled: "%{taken} of %{total} slots taken"
       slot: Slot %{number}
       restore_date: Restore date
       cancel_date: Cancel date

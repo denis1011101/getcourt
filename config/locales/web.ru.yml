@@ -273,7 +273,8 @@ ru:
       full: Мест нет
     prebookings:
       title: Предварительная запись
-      date: Дата
+      weekdays: [вс, пн, вт, ср, чт, пт, сб]
+      filled: "Занято %{taken} из %{total}"
       slot: Слот %{number}
       restore_date: Вернуть дату
       cancel_date: Отменить дату

@@ -272,7 +272,8 @@ es:
       full: Completo
     prebookings:
       title: Reservas previas
-      date: Fecha
+      weekdays: [dom, lun, mar, mié, jue, vie, sáb]
+      filled: "%{taken} de %{total} plazas ocupadas"
       slot: Plaza %{number}
       restore_date: Restaurar fecha
       cancel_date: Cancelar fecha
