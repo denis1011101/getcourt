@@ -48,6 +48,7 @@ GET <%= host %>/api/v1/games/:id</pre>
           </tbody>
         </table>
       </div>
+      <p class="text-sm text-gray-600 dark:text-slate-400 mb-4"><%= t("pages.api.recurring_note") %></p>
 
       <h3 class="text-sm font-medium text-gray-900 dark:text-slate-100 mb-2"><%= t("pages.api.example_title") %></h3>
       <pre class="<%= pre_class %> mb-4">curl "<%= host %>/api/v1/games?city=Belgrade&sport=Tennis&with_spots=true&limit=2"</pre>
