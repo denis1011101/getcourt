@@ -23,4 +23,20 @@ class Rack::Attack
   throttle("mcp/ip", limit: 120, period: 1.minute) do |request|
     request.ip if request.path == "/mcp"
   end
+
+  # Код входа четырёхзначный, живёт 15 минут, и неудачная попытка его не гасит:
+  # без лимита перебрать десять тысяч вариантов — вопрос нескольких минут, и
+  # проверка кода превращается в формальность. Лимит на почту закрывает подбор
+  # к конкретному аккаунту, лимит на адрес — веерный перебор по многим почтам.
+  def self.login_code_attempt?(request)
+    request.post? && request.path == "/sign_in/verify"
+  end
+
+  throttle("login_code/email", limit: 10, period: 15.minutes) do |request|
+    request.params["email"].to_s.strip.downcase.presence if login_code_attempt?(request)
+  end
+
+  throttle("login_code/ip", limit: 30, period: 1.hour) do |request|
+    request.ip if login_code_attempt?(request)
+  end
 end
