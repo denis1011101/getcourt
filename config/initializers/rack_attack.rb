@@ -4,6 +4,10 @@
 # when Ahoy.api is enabled. Throttle them per IP so a client can't flood the
 # database with arbitrary events. See https://github.com/ankane/ahoy#throttling
 class Rack::Attack
+  # Тело запроса читаем сами, поэтому ограничиваем: разбирать мегабайты ради
+  # одного поля незачем.
+  JSON_BODY_LIMIT = 4096
+
   throttle("ahoy/ip", limit: 20, period: 20.seconds) do |request|
     request.ip if request.path.start_with?("/ahoy")
   end
@@ -29,11 +33,35 @@ class Rack::Attack
   # проверка кода превращается в формальность. Лимит на почту закрывает подбор
   # к конкретному аккаунту, лимит на адрес — веерный перебор по многим почтам.
   def self.login_code_attempt?(request)
-    request.post? && request.path == "/sign_in/verify"
+    return false unless request.post?
+
+    # Rails узнаёт маршрут и в /sign_in/verify.html, и с лишними или хвостовыми
+    # слэшами, поэтому сравнивать сырой путь нельзя: любая из этих форм проходила
+    # мимо лимита.
+    path = request.path.to_s.squeeze("/").sub(/\.[a-z0-9]+\z/i, "").chomp("/")
+    path == "/sign_in/verify"
+  end
+
+  # Форму отправляют и как JSON: Rails разберёт такое тело и достанет из него
+  # почту, а Rack::Request#params видит только query и form-data.
+  def self.login_code_email(request)
+    email = request.params["email"]
+    email = json_body_email(request) if email.blank? && request.media_type.to_s.include?("json")
+    email.to_s.strip.downcase.presence
+  end
+
+  def self.json_body_email(request)
+    request.body.rewind
+    body = request.body.read(JSON_BODY_LIMIT)
+    request.body.rewind
+    parsed = JSON.parse(body.to_s)
+    parsed["email"] if parsed.is_a?(Hash)
+  rescue JSON::ParserError, IOError
+    nil
   end
 
   throttle("login_code/email", limit: 10, period: 15.minutes) do |request|
-    request.params["email"].to_s.strip.downcase.presence if login_code_attempt?(request)
+    login_code_email(request) if login_code_attempt?(request)
   end
 
   throttle("login_code/ip", limit: 30, period: 1.hour) do |request|
