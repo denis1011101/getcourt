@@ -15,7 +15,7 @@ GetCourt is a Ruby on Rails app for organizing local racket-sport games:
 - **Tournaments** and **matches** (stats/extensible JSON), **player statistics** and ratings
 - **Tennis Life** feed, **featured matches** and game **photos/clips**
 - **AI** assistant, opponent matching and score recognition on top of RubyLLM (Gemini)
-- Public games JSON API (`/api/v1/games`) and an **MCP** endpoint (`/mcp`) over it
+- Public games JSON API (`/api/v1/games`) and an **MCP** endpoint (`/mcp`) over it — see `docs/api-and-mcp.md`
 
 Main technologies:
 - Ruby 4.0 / Rails 8.1

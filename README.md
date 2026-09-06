@@ -22,6 +22,7 @@ Main features
 - Share photos and clips from a game and follow the Tennis Life feed
 - Telegram bot integration for notifications and registration tokens
 - Mobile-friendly UI with map integration and simple search
+- Public JSON API over upcoming games and an MCP server on top of it
 
 Main technologies
 - Ruby 4.0 / Ruby on Rails 8.1
@@ -32,6 +33,18 @@ Main technologies
 - Active Storage with libvips for photos and clips
 - RubyLLM (Gemini) for the AI features
 - Google / Nominatim geocoding for addresses, Google Maps for the pickers
+
+## Public API and MCP
+
+Upcoming games are readable from outside the app in two ways:
+
+- `GET /api/v1/games` and `GET /api/v1/games/:id` — public JSON, no key needed
+- `POST /mcp` — an MCP server (JSON-RPC 2.0 over Streamable HTTP) with `search_games` and
+  `get_game` tools, closed behind a `MCP_TOKEN` bearer token
+
+Both are read-only and expose only what a game page already shows in public. See
+[docs/api-and-mcp.md](docs/api-and-mcp.md) for parameters, examples and limits, or the same
+documentation for users at [getcourt.co/api-and-mcp](https://getcourt.co/api-and-mcp).
 
 ## Tests and coverage
 
