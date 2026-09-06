@@ -1,6 +1,6 @@
 class PagesController < ApplicationController
   # public pages
-  skip_before_action :authenticate_user!, only: %i[contacts mission partnership partnership_inquiry tennis_formats_and_rules ntrp_level_guide privacy_policy]
+  skip_before_action :authenticate_user!, only: %i[contacts mission partnership partnership_inquiry tennis_formats_and_rules ntrp_level_guide api_and_mcp privacy_policy]
 
   def contacts
   end
@@ -54,5 +54,8 @@ class PagesController < ApplicationController
   end
 
   def ntrp_level_guide
+  end
+
+  def api_and_mcp
   end
 end

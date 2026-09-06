@@ -1,0 +1,164 @@
+<% content_for :meta_title, t("pages.api.meta_title") %>
+<% content_for :meta_description, t("pages.api.meta_description") %>
+
+<% pre_class = "overflow-x-auto rounded-md bg-gray-900 text-slate-100 p-4 text-xs leading-relaxed dark:bg-slate-900/80" %>
+<% host = ENV.fetch("APP_HOST", "https://getcourt.co") %>
+
+<div class="max-w-5xl mx-auto px-4 py-6">
+  <div class="bg-white dark:bg-slate-800/80 rounded-lg border dark:border-white/10 p-6 shadow-sm mb-6">
+    <h1 class="text-2xl font-semibold mb-2"><%= t("pages.api.title") %></h1>
+    <p class="text-gray-600 dark:text-slate-400 mb-6"><%= t("pages.api.subtitle") %></p>
+
+    <p class="text-gray-700 dark:text-slate-300 mb-8"><%= t("pages.api.intro") %></p>
+
+    <%# ── REST ── %>
+    <div class="mb-8">
+      <h2 class="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2"><%= t("pages.api.rest_title") %></h2>
+      <p class="text-gray-700 dark:text-slate-300 mb-3"><%= t("pages.api.rest_text") %></p>
+
+      <pre class="<%= pre_class %> mb-4">GET <%= host %>/api/v1/games
+GET <%= host %>/api/v1/games/:id</pre>
+
+      <h3 class="text-sm font-medium text-gray-900 dark:text-slate-100 mb-2"><%= t("pages.api.params_title") %></h3>
+      <div class="overflow-x-auto mb-4">
+        <table class="min-w-full text-sm border-collapse">
+          <thead>
+            <tr class="bg-gray-50 dark:bg-slate-700/50">
+              <th class="border dark:border-white/10 px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-300 w-40"><%= t("pages.api.param") %></th>
+              <th class="border dark:border-white/10 px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-300"><%= t("pages.api.param_meaning") %></th>
+            </tr>
+          </thead>
+          <tbody class="text-gray-700 dark:text-slate-300">
+            <% [
+              [ "city",        t("pages.api.param_city") ],
+              [ "sport",       t("pages.api.param_sport") ],
+              [ "skill_level", t("pages.api.param_skill_level") ],
+              [ "with_spots",  t("pages.api.param_with_spots") ],
+              [ "urgent",      t("pages.api.param_urgent") ],
+              [ "from",        t("pages.api.param_from") ],
+              [ "to",          t("pages.api.param_to") ],
+              [ "upcoming",    t("pages.api.param_upcoming") ],
+              [ "limit",       t("pages.api.param_limit") ]
+            ].each_with_index do |(name, meaning), index| %>
+              <tr class="<%= "bg-gray-50 dark:bg-slate-700/50" if index.odd? %>">
+                <td class="border dark:border-white/10 px-3 py-2 font-mono text-xs"><%= name %></td>
+                <td class="border dark:border-white/10 px-3 py-2"><%= meaning %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <p class="text-sm text-gray-600 dark:text-slate-400 mb-4"><%= t("pages.api.recurring_note") %></p>
+
+      <h3 class="text-sm font-medium text-gray-900 dark:text-slate-100 mb-2"><%= t("pages.api.example_title") %></h3>
+      <pre class="<%= pre_class %> mb-4">curl "<%= host %>/api/v1/games?city=Belgrade&sport=Tennis&with_spots=true&limit=2"</pre>
+
+      <h3 class="text-sm font-medium text-gray-900 dark:text-slate-100 mb-2"><%= t("pages.api.response_title") %></h3>
+      <pre class="<%= pre_class %>">{
+  "games": [
+    {
+      "id": 1042,
+      "date": "2026-09-12",
+      "time": "19:00",
+      "duration_minutes": 90,
+      "recurring": false,
+      "sport": "Tennis",
+      "skill_level": "Intermediate",
+      "surface": "Hard",
+      "environment": "outdoor",
+      "kind": "game",
+      "with_coach": false,
+      "urgent_player_search": true,
+      "comment": "Doubles, bring a spare ball",
+      "players": { "taken": 3, "total": 4, "spots_left": 1 },
+      "court": {
+        "id": 17,
+        "name": "Tennis Club Ada",
+        "city": "Belgrade",
+        "country_code": "RS",
+        "latitude": 44.79,
+        "longitude": 20.41,
+        "indoor": false,
+        "outdoor": true,
+        "free": false,
+        "url": "<%= host %>/courts/17"
+      },
+      "url": "<%= host %>/games/1042"
+    }
+  ]
+}</pre>
+      <p class="text-sm text-gray-600 dark:text-slate-400 mt-3"><%= t("pages.api.privacy_note") %></p>
+    </div>
+
+    <%# ── MCP ── %>
+    <div class="mb-8">
+      <h2 class="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2"><%= t("pages.api.mcp_title") %></h2>
+      <p class="text-gray-700 dark:text-slate-300 mb-3"><%= t("pages.api.mcp_text") %></p>
+
+      <ul class="list-disc pl-5 text-gray-700 dark:text-slate-300 text-sm space-y-1 mb-4">
+        <li><%= t("pages.api.mcp_endpoint_html") %></li>
+        <li><%= t("pages.api.mcp_protocol_html") %></li>
+        <li><%= t("pages.api.mcp_auth_html") %></li>
+      </ul>
+
+      <h3 class="text-sm font-medium text-gray-900 dark:text-slate-100 mb-2"><%= t("pages.api.tools_title") %></h3>
+      <div class="overflow-x-auto mb-4">
+        <table class="min-w-full text-sm border-collapse">
+          <thead>
+            <tr class="bg-gray-50 dark:bg-slate-700/50">
+              <th class="border dark:border-white/10 px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-300 w-40"><%= t("pages.api.tool") %></th>
+              <th class="border dark:border-white/10 px-3 py-2 text-left font-medium text-gray-700 dark:text-slate-300"><%= t("pages.api.param_meaning") %></th>
+            </tr>
+          </thead>
+          <tbody class="text-gray-700 dark:text-slate-300">
+            <tr>
+              <td class="border dark:border-white/10 px-3 py-2 font-mono text-xs">search_games</td>
+              <td class="border dark:border-white/10 px-3 py-2"><%= t("pages.api.tool_search") %></td>
+            </tr>
+            <tr class="bg-gray-50 dark:bg-slate-700/50">
+              <td class="border dark:border-white/10 px-3 py-2 font-mono text-xs">get_game</td>
+              <td class="border dark:border-white/10 px-3 py-2"><%= t("pages.api.tool_get") %></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="text-sm font-medium text-gray-900 dark:text-slate-100 mb-2"><%= t("pages.api.client_title") %></h3>
+      <p class="text-gray-700 dark:text-slate-300 mb-3"><%= t("pages.api.client_text") %></p>
+      <pre class="<%= pre_class %> mb-4">{
+  "mcpServers": {
+    "getcourt": {
+      "type": "http",
+      "url": "<%= host %>/mcp",
+      "headers": { "Authorization": "Bearer YOUR_TOKEN" }
+    }
+  }
+}</pre>
+
+      <h3 class="text-sm font-medium text-gray-900 dark:text-slate-100 mb-2"><%= t("pages.api.raw_title") %></h3>
+      <pre class="<%= pre_class %>">curl -X POST <%= host %>/mcp \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call",
+       "params":{"name":"search_games","arguments":{"city":"Belgrade","with_spots":true}}}'</pre>
+    </div>
+
+    <%# ── Limits ── %>
+    <div class="mb-8">
+      <h2 class="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2"><%= t("pages.api.limits_title") %></h2>
+      <ul class="list-disc pl-5 text-gray-700 dark:text-slate-300 text-sm space-y-1">
+        <li><%= t("pages.api.limits_rest") %></li>
+        <li><%= t("pages.api.limits_mcp") %></li>
+        <li><%= t("pages.api.limits_read_only") %></li>
+      </ul>
+    </div>
+
+    <div class="flex flex-wrap gap-3">
+      <%= link_to t("pages.api.get_token"), contacts_path, class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-500" %>
+      <%= link_to t("pages.api.source_code"), "https://github.com/denis1011101/getcourt/blob/main/docs/api-and-mcp.md", target: "_blank", rel: "noopener",
+                  class: "inline-flex items-center rounded-md border dark:border-white/10 px-4 py-2 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/5" %>
+    </div>
+  </div>
+
+  <%= render "shared/pages_nav" %>
+</div>

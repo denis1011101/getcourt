@@ -17,7 +17,8 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     mission:               -> { mission_path },
     partnership:           -> { partnership_path },
     ntrp_level_guide:      -> { ntrp_level_guide_path },
-    tennis_formats_rules:  -> { tennis_formats_and_rules_path }
+    tennis_formats_rules:  -> { tennis_formats_and_rules_path },
+    api_and_mcp:           -> { api_and_mcp_path }
   }.each do |page, path_proc|
     test "#{page} renders pages_nav without self-link" do
       get instance_exec(&path_proc)
@@ -25,7 +26,7 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
 
       all_paths = [
         contacts_path, mission_path, partnership_path,
-        ntrp_level_guide_path, tennis_formats_and_rules_path, coaches_path
+        ntrp_level_guide_path, tennis_formats_and_rules_path, api_and_mcp_path, coaches_path
       ]
       current_path = instance_exec(&path_proc)
 
