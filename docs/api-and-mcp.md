@@ -89,13 +89,48 @@ JSON back. A batch of nothing but notifications answers `202` with an empty body
 
 ### Authorisation
 
-One shared token, taken from the `MCP_TOKEN` environment variable:
+Two kinds of token are accepted:
 
-- `MCP_TOKEN` unset or blank → every request answers `404`, so a forgotten variable
-  cannot silently open the endpoint;
-- wrong or missing `Authorization` header → `401`.
+- **personal**, from the `api_tokens` table — a signed-in user issues one in
+  *Account → Security*, once their email is verified or Telegram is linked;
+- **shared**, from the `MCP_TOKEN` environment variable — for our own scripts.
+
+Until at least one of them exists, every request answers `404`: a forgotten environment
+variable must not silently open the endpoint. A missing or wrong `Authorization` header
+answers `401`.
 
 The tools only read public data, but the endpoint stays closed so it is not called at random.
+
+### Issuing a token
+
+| Route | What it does |
+| --- | --- |
+| `POST /account/api_token` | Issues a token, revoking the caller's previous one. `.json` returns `{ token, expires_at, last_used_at, endpoint }`. |
+| `GET /account/api_token.json` | The caller's active token, or `404` if there is none. |
+| `DELETE /account/api_token` | Revokes it. |
+
+All three run inside the normal session — they are the account page's own buttons, so a
+script cannot call them with the MCP token alone. That is deliberate: a credential that
+mints credentials is the thing worth protecting, and here the only proof of identity we
+have is the account itself.
+
+Unverified accounts are turned away with `403 verification_required`: without a verified
+email or a linked Telegram there is nobody to revoke a token from — a fresh account takes a
+minute to make.
+
+### Expiry
+
+A token lasts **six months from its last request**, not from the day it was issued
+(`ApiToken::LIFETIME`). Every authenticated call pushes the date out, at most once a day
+(`REFRESH_AFTER`), so a token that is in use never expires, while an abandoned one dies on
+its own six months later.
+
+The sliding window is the point: the token lives in an MCP client's config file, where no
+refresh flow exists. A fixed deadline would eventually break a working integration with a
+`401` that nobody sees.
+
+One active token per user. Issuing a new one revokes the old, and `revoked_at` takes a
+token out immediately.
 
 ### Tools
 
@@ -145,13 +180,15 @@ Rack::Attack, per IP (`config/initializers/rack_attack.rb`):
 
 | Variable | Purpose |
 | --- | --- |
-| `MCP_TOKEN` | Bearer token for `/mcp`. Unset → the endpoint is off and answers `404`. |
+| `MCP_TOKEN` | Shared bearer token for `/mcp`, for our own scripts. Unset and no personal tokens issued → the endpoint is off and answers `404`. |
 | `APP_HOST` | Host used to build the `url` fields, `https://getcourt.co` by default. |
 
 ## Where the code lives
 
 - `app/controllers/api/v1/games_controller.rb` — the JSON endpoints
 - `app/controllers/mcp_controller.rb` — transport and authorisation for `/mcp`
+- `app/models/api_token.rb` — personal tokens, the sliding expiry and revocation
+- `app/controllers/api_tokens_controller.rb` — issuing and revoking from the account page
 - `app/services/mcp/server.rb` — the JSON-RPC layer and the tool definitions
 - `app/services/games/search.rb` — filters shared with the games page, so site and API cannot drift
 - `app/services/games/serializer.rb` — the public shape of a game

@@ -23,6 +23,7 @@ class UsersController < ApplicationController
 
   def security
     @user = current_user
+    @api_token = current_user.api_tokens.active.first
   end
 
   def courts

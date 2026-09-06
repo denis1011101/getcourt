@@ -1,0 +1,46 @@
+<div class="rounded-lg border bg-white p-4 dark:border-white/10 dark:bg-slate-800/80">
+  <h2 class="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-1"><%= t("api_tokens.title") %></h2>
+  <p class="text-xs text-gray-500 dark:text-slate-400 mb-3">
+    <%= t("api_tokens.body") %>
+    <%= link_to t("api_tokens.docs_link"), api_and_mcp_path, class: "text-indigo-600 hover:underline dark:text-indigo-400" %>
+  </p>
+
+  <% if current_user.verified? %>
+    <% if api_token %>
+      <div class="rounded border bg-gray-50 p-3 dark:border-white/10 dark:bg-slate-900/50">
+        <code class="block break-all text-xs text-gray-800 dark:text-slate-200"><%= api_token.token %></code>
+      </div>
+
+      <dl class="mt-3 grid grid-cols-1 gap-1 text-xs text-gray-500 dark:text-slate-400 sm:grid-cols-2">
+        <div>
+          <dt class="inline"><%= t("api_tokens.expires_at") %></dt>
+          <dd class="inline font-medium text-gray-700 dark:text-slate-300"><%= l(api_token.expires_at.to_date, format: :long) %></dd>
+        </div>
+        <div>
+          <dt class="inline"><%= t("api_tokens.last_used_at") %></dt>
+          <dd class="inline font-medium text-gray-700 dark:text-slate-300">
+            <%= api_token.last_used_at ? l(api_token.last_used_at.to_date, format: :long) : t("api_tokens.never_used") %>
+          </dd>
+        </div>
+      </dl>
+      <p class="mt-2 text-xs text-gray-500 dark:text-slate-400"><%= t("api_tokens.sliding_hint") %></p>
+
+      <div class="mt-3 flex flex-wrap gap-2">
+        <%= button_to t("api_tokens.reissue"), api_token_path, method: :post,
+              data: { turbo_confirm: t("api_tokens.reissue_confirm") },
+              class: "rounded-md border px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5" %>
+        <%= button_to t("api_tokens.revoke"), api_token_path, method: :delete,
+              data: { turbo_confirm: t("api_tokens.revoke_confirm") },
+              class: "rounded-md bg-red-600 px-3 py-2 text-sm text-white hover:bg-red-700 cursor-pointer" %>
+      </div>
+    <% else %>
+      <%= button_to t("api_tokens.issue"), api_token_path, method: :post,
+            class: "rounded-md bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-500 cursor-pointer" %>
+    <% end %>
+  <% else %>
+    <p class="text-xs text-gray-500 dark:text-slate-400">
+      <%= t("api_tokens.verification_required") %>
+      <%= link_to t("api_tokens.verify_now"), new_account_verification_path, class: "text-indigo-600 hover:underline dark:text-indigo-400" %>
+    </p>
+  <% end %>
+</div>

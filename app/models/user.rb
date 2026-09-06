@@ -93,6 +93,8 @@ class User < ApplicationRecord
   # Библиотека блоков тренировок принадлежит тренеру и уходит вместе с ним.
   has_many :training_blocks, dependent: :destroy
   has_many :training_plan_proposals, dependent: :destroy
+  # Токены к MCP-серверу уходят вместе с аккаунтом: доступ выдан человеку.
+  has_many :api_tokens, dependent: :destroy
   has_many :training_plan_votes, dependent: :destroy
   has_many :participations
   has_many :favorite_court_links, class_name: "FavoriteCourt", dependent: :destroy
