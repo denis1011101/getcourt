@@ -51,6 +51,26 @@ class PrebookingsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "more draws a month grid where only game dates lead to their card" do
+    owner = users(:one)
+    owner.update!(email: "prebooking-grid@example.com")
+    game = recurring_prebooking_game(owner)
+
+    post session_url, params: { email: owner.email }
+    get more_game_prebookings_url(game, horizon: 3)
+
+    assert_select "[data-testid=?]", "prebooking-calendar"
+    assert_select "[data-testid=?]", "calendar-day", { minimum: 28 }
+
+    game_date = game.prebooking_candidate_dates(3).first
+    assert_select "a[data-testid=?][href=?]", "calendar-day", "#prebooking-#{game_date.iso8601}"
+    assert_select "#prebooking-#{game_date.iso8601}"
+
+    # Соседний день игрой не занят, поэтому он просто серая клетка без ссылки.
+    assert_select "a[href=?]", "#prebooking-#{(game_date + 1).iso8601}", 0
+    assert_match I18n.t("games.prebookings.legend_no_game"), response.body
+  end
+
   test "more shows a cancelled date without booking buttons" do
     owner = users(:one)
     owner.update!(email: "prebooking-cancelled-date@example.com")
