@@ -19,7 +19,7 @@
 
     <%# Календарь показывает, куда попадают занятия среди обычных дней; бронируют
         уже в карточках под ним — в клетку 7-колоночной сетки кнопки не влезают. %>
-    <div class="w-full max-w-md rounded-lg border border-gray-200 p-3 dark:border-white/10" data-testid="prebooking-calendar">
+    <div class="rounded-lg border border-gray-200 p-3 dark:border-white/10" data-testid="prebooking-calendar">
       <% dates.map(&:beginning_of_month).uniq.each_with_index do |month, month_index| %>
         <p class="<%= "mt-3" if month_index.positive? %> mb-1.5 text-sm font-semibold text-gray-900 dark:text-slate-100">
           <%= month_names[month.month - 1] %> <%= month.year %>
@@ -50,7 +50,7 @@
                 <span class="text-[10px] tabular-nums"><%= taken %>/<%= required %></span>
               <% end %>
             <% end %>
-            <% cell_classes = "#{cell_classes} flex min-h-11 flex-col items-center justify-center rounded-md leading-tight sm:min-h-9 #{"opacity-40" unless in_month} #{"ring-2 ring-indigo-400 dark:ring-indigo-300" if day == Date.current}" %>
+            <% cell_classes = "#{cell_classes} flex min-h-11 flex-col items-center justify-center rounded-md leading-tight sm:min-h-14 #{"opacity-40" unless in_month} #{"ring-2 ring-indigo-400 dark:ring-indigo-300" if day == Date.current}" %>
 
             <% if game_day %>
               <%= link_to cell_body, "#prebooking-#{day.iso8601}",
