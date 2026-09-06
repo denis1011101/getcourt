@@ -664,6 +664,14 @@ en:
     sliding_hint: "Every request pushes the date six months out, so a token in use never expires. One left idle dies on its own."
     verification_required: "A token is issued once your email is verified or Telegram is linked."
     verify_now: "Verify now"
+    confirm_intro: "A token lives for six months and works outside the browser, so we send a code before showing or issuing one."
+    send_code: "Send the code"
+    code_label: "Code"
+    confirm: "Confirm"
+    code_sent: "Code sent."
+    code_invalid: "The code is wrong or has expired."
+    confirmed: "Confirmed. The token is available for 15 minutes."
+    confirmation_required: "Confirm it's you first."
   pages:
     contacts:
       meta_title: "Contact — GetCourt"

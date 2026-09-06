@@ -639,6 +639,14 @@ es:
     sliding_hint: "Cada petición aplaza la fecha seis meses, así que un token en uso no caduca. Uno olvidado muere solo."
     verification_required: "El token se emite cuando tu correo está verificado o Telegram está vinculado."
     verify_now: "Verificar"
+    confirm_intro: "El token dura seis meses y funciona fuera del navegador, así que enviamos un código antes de mostrarlo o emitirlo."
+    send_code: "Enviar el código"
+    code_label: "Código"
+    confirm: "Confirmar"
+    code_sent: "Código enviado."
+    code_invalid: "El código es incorrecto o ha caducado."
+    confirmed: "Confirmado. El token está disponible durante 15 minutos."
+    confirmation_required: "Primero confirma que eres tú."
   pages:
     contacts:
       meta_title: "Contacto — GetCourt"

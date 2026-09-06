@@ -6,7 +6,8 @@
 class Rack::Attack
   # Тело запроса читаем сами, поэтому ограничиваем: разбирать мегабайты ради
   # одного поля незачем.
-  JSON_BODY_LIMIT = 4096
+  JSON_BODY_LIMIT = 64.kilobytes
+  UNPARSED_EMAIL = "unparsed".freeze
 
   throttle("ahoy/ip", limit: 20, period: 20.seconds) do |request|
     request.ip if request.path.start_with?("/ahoy")
@@ -32,39 +33,75 @@ class Rack::Attack
   # без лимита перебрать десять тысяч вариантов — вопрос нескольких минут, и
   # проверка кода превращается в формальность. Лимит на почту закрывает подбор
   # к конкретному аккаунту, лимит на адрес — веерный перебор по многим почтам.
-  def self.login_code_attempt?(request)
+  #
+  # Тот же счётчик держит подтверждение владения аккаунтом перед выдачей токена:
+  # код там тот же самый.
+  CODE_ACTIONS = [ %w[sessions check], %w[api_tokens confirm] ].freeze
+
+  # Сравнивать путь строкой бесполезно: Rails узнаёт тот же маршрут и в
+  # /sign_in/verify.html, и в /sign_in/verify.ht%6dl, и в /sign_in/verify.html-foo,
+  # и с лишними или хвостовыми слэшами. Поэтому спрашиваем сам роутер.
+  def self.code_attempt?(request)
     return false unless request.post?
 
-    # Rails узнаёт маршрут и в /sign_in/verify.html, и с лишними или хвостовыми
-    # слэшами, поэтому сравнивать сырой путь нельзя: любая из этих форм проходила
-    # мимо лимита.
-    path = request.path.to_s.squeeze("/").sub(/\.[a-z0-9]+\z/i, "").chomp("/")
-    path == "/sign_in/verify"
+    route = recognized_route(request)
+    route.present? && CODE_ACTIONS.include?([ route[:controller], route[:action] ])
   end
 
-  # Форму отправляют и как JSON: Rails разберёт такое тело и достанет из него
-  # почту, а Rack::Request#params видит только query и form-data.
-  def self.login_code_email(request)
-    email = request.params["email"]
-    email = json_body_email(request) if email.blank? && request.media_type.to_s.include?("json")
-    email.to_s.strip.downcase.presence
+  def self.recognized_route(request)
+    request.env.fetch("getcourt.recognized_route") do
+      request.env["getcourt.recognized_route"] =
+        begin
+          Rails.application.routes.recognize_path(request.path, method: request.request_method)
+        rescue StandardError
+          nil
+        end
+    end
   end
 
-  def self.json_body_email(request)
-    request.body.rewind
-    body = request.body.read(JSON_BODY_LIMIT)
-    request.body.rewind
-    parsed = JSON.parse(body.to_s)
-    parsed["email"] if parsed.is_a?(Hash)
-  rescue JSON::ParserError, IOError
+  # Порядок тот же, что у Rails: query перекрывает тело, а не наоборот, как в
+  # Rack::Request#params. Иначе почту в счётчике и почту, по которой контроллер
+  # ищет пользователя, можно развести и перебирать код мимо лимита.
+  def self.attempt_email(request)
+    email = query_email(request)
+    email = body_email(request) if email.blank?
+    email.is_a?(String) ? email.strip.downcase.presence : nil
+  end
+
+  def self.query_email(request)
+    request.GET["email"]
+  rescue StandardError
     nil
   end
 
+  def self.body_email(request)
+    return json_body_email(request) if request.media_type.to_s.include?("json")
+
+    request.POST["email"]
+  rescue StandardError
+    UNPARSED_EMAIL
+  end
+
+  # Тело читаем сами, поэтому его размер приходится ограничивать. Всё, что не
+  # разобралось, попадает в общий счётчик: пропустить такую попытку — значит
+  # отдать лимит любому, кто добавит в JSON лишнее поле подлиннее.
+  def self.json_body_email(request)
+    request.body.rewind
+    body = request.body.read(JSON_BODY_LIMIT + 1).to_s
+    request.body.rewind
+    return UNPARSED_EMAIL if body.bytesize > JSON_BODY_LIMIT
+
+    parsed = JSON.parse(body)
+    parsed.is_a?(Hash) ? parsed["email"] : UNPARSED_EMAIL
+  rescue JSON::ParserError, IOError, ArgumentError
+    UNPARSED_EMAIL
+  end
+
   throttle("login_code/email", limit: 10, period: 15.minutes) do |request|
-    login_code_email(request) if login_code_attempt?(request)
+    attempt_email(request) if code_attempt?(request)
   end
 
   throttle("login_code/ip", limit: 30, period: 1.hour) do |request|
-    request.ip if login_code_attempt?(request)
+    request.ip if code_attempt?(request)
   end
 end

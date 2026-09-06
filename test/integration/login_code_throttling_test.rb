@@ -20,10 +20,10 @@ class LoginCodeThrottlingTest < ActionDispatch::IntegrationTest
   end
 
   test "wrong codes for one email run into the limit" do
-    10.times { attempt(code: "0000") }
+    10.times { attempt(code: wrong_code) }
     assert_response :unprocessable_entity
 
-    attempt(code: "0000")
+    attempt(code: wrong_code)
     assert_response :too_many_requests
 
     # Правильный код тоже упирается в лимит: иначе перебор просто доводят до конца.
@@ -32,9 +32,42 @@ class LoginCodeThrottlingTest < ActionDispatch::IntegrationTest
     assert_nil session[:user_id]
   end
 
-  test "the same limit covers the route with a format and stray slashes" do
-    [ "/sign_in/verify.html", "/sign_in/verify/", "//sign_in/verify", "/sign_in/verify" ].cycle.first(11).each do |path|
-      attempt(code: "0000", path: path)
+  # Rails узнаёт тот же маршрут во всех этих написаниях, включая закодированную
+  # букву в расширении и произвольный суффикс формата.
+  test "the same limit covers every spelling of the route Rails accepts" do
+    paths = [
+      "/sign_in/verify",
+      "/sign_in/verify.html",
+      "/sign_in/verify.ht%6dl",
+      "/sign_in/verify.html-foo",
+      "/sign_in/verify/",
+      "//sign_in/verify",
+      "/sign_in//verify"
+    ]
+    paths.cycle.first(11).each { |path| attempt(code: wrong_code, path: path) }
+
+    assert_response :too_many_requests
+  end
+
+  # Обрезанное по лимиту тело не разбирается, и раньше попытка проходила мимо
+  # счётчика: контроллер-то читает тело целиком.
+  test "an oversized JSON body does not buy extra attempts" do
+    padding = "x" * (70 * 1024)
+    11.times do
+      post "/sign_in/verify",
+           params: { email: @user.email, code: wrong_code, padding: padding }.to_json,
+           headers: { "CONTENT_TYPE" => "application/json" }
+    end
+
+    assert_response :too_many_requests
+  end
+
+  # Rails берёт почту из query поверх тела; счётчик должен смотреть туда же,
+  # иначе подставные адреса в теле уводят попытки в чужие корзины.
+  test "the counter follows the email Rails actually signs in with" do
+    11.times do |index|
+      post "/sign_in/verify?email=#{CGI.escape(@user.email)}",
+           params: { email: "decoy-#{index}@example.com", code: wrong_code }
     end
 
     assert_response :too_many_requests
@@ -43,16 +76,29 @@ class LoginCodeThrottlingTest < ActionDispatch::IntegrationTest
   test "an email sent as JSON counts towards the same limit" do
     11.times do
       post "/sign_in/verify",
-           params: { email: @user.email, code: "0000" }.to_json,
+           params: { email: @user.email, code: wrong_code }.to_json,
            headers: { "CONTENT_TYPE" => "application/json" }
     end
 
     assert_response :too_many_requests
   end
 
+  # На подтверждении токена почты в запросе нет, поэтому там работает лимит на
+  # адрес; сам подбор кода дополнительно упирается в счётчик промахов.
+  test "confirming token ownership runs into the address limit" do
+    owner = User.create!(email: "token-confirm-throttle@example.com", email_verified_at: Time.current)
+    post session_url, params: { email: owner.email }
+
+    31.times { post confirm_api_token_url, params: { code: "0000" } }
+
+    assert_response :too_many_requests
+  ensure
+    owner&.destroy
+  end
+
   test "one address cannot spray codes across many accounts" do
     31.times do |index|
-      post "/sign_in/verify", params: { email: "sprayed-#{index}@example.com", code: "0000" }
+      post "/sign_in/verify", params: { email: "sprayed-#{index}@example.com", code: wrong_code }
     end
 
     assert_response :too_many_requests
@@ -62,5 +108,10 @@ class LoginCodeThrottlingTest < ActionDispatch::IntegrationTest
 
   def attempt(code:, path: "/sign_in/verify")
     post path, params: { email: @user.email, code: code }
+  end
+
+  # Настоящий код случайный, поэтому «заведомо неверный» выбираем от него.
+  def wrong_code
+    @code == "0000" ? "1111" : "0000"
   end
 end

@@ -1,5 +1,6 @@
 class ApplicationController < ActionController::Base
   include Pagy::Method
+  include ApiTokenConfirmation
   # Browser support check (keeps tolerant policy; skips in development and for non-HTML requests).
   before_action :check_browser_support, if: -> { request.format.html? }
   before_action :set_locale_from_subdomain
@@ -74,10 +75,15 @@ class ApplicationController < ActionController::Base
 
   def sign_in(user)
     session[:user_id] = user.id
+    # Подтверждение владения токеном привязано к тому, кто вошёл: sign_out чистит
+    # только user_id, и без этого следующий вход в том же браузере унаследовал бы
+    # чужое подтверждение.
+    forget_api_token_confirmation!
   end
 
   def sign_out
     session.delete(:user_id)
+    forget_api_token_confirmation!
     @current_user = nil
   end
 

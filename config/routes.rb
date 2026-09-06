@@ -53,7 +53,10 @@ Rails.application.routes.draw do
   end
 
   # Личный токен к MCP-серверу: выпускает и отзывает его сам владелец аккаунта.
-  resource :api_token, only: %i[show create destroy], path: "account/api_token"
+  resource :api_token, only: %i[show create destroy], path: "account/api_token" do
+    post :send_code
+    post :confirm
+  end
 
   # Библиотека блоков тренировок — отдельный раздел личного кабинета.
   resources :training_blocks, only: %i[index create update destroy], path: "account/training_blocks"
