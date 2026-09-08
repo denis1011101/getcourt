@@ -58,6 +58,30 @@ class OutreachEmailJobTest < ActiveJob::TestCase
     assert_equal [ "club@example.org" ], ActionMailer::Base.deliveries.last.to
   end
 
+  test "an outage of the mail service does not eat the list, however long it lasts" do
+    3.times { |i| OutreachContact.create!(email: "club#{i}@example.org") }
+
+    OutreachContact::MAX_ATTEMPTS.times do
+      assert_raises(Net::SMTPServerBusy) do
+        with_mail_service_down { OutreachEmailJob.perform_now }
+      end
+    end
+
+    assert_equal 3, OutreachContact.pending.count
+    assert_equal [ 0, 0, 0 ], OutreachContact.order(:id).pluck(:attempts)
+    assert_match "421 service unavailable", OutreachContact.first.last_error
+  end
+
+  test "an outage frees the whole batch right away, without waiting out the reservation" do
+    3.times { |i| OutreachContact.create!(email: "club#{i}@example.org") }
+
+    assert_raises(Net::SMTPServerBusy) do
+      with_mail_service_down { OutreachEmailJob.perform_now }
+    end
+
+    assert_empty OutreachContact.where.not(reserved_at: nil)
+  end
+
   test "a rejected address is retried later and does not stop the batch" do
     OutreachContact.create!(email: "bad@example.org")
     good = OutreachContact.create!(email: "club@example.org")
@@ -121,15 +145,25 @@ class OutreachEmailJobTest < ActiveJob::TestCase
   end
 
   private
-    # Почта, где адрес bad@example.org отбивается, — так ведёт себя Resend, когда
-    # ящик на той стороне не существует.
+    # Почта, где адрес bad@example.org отбивается навсегда, — так отвечает Resend,
+    # когда ящика на той стороне нет.
     class RejectingDelivery
       def initialize(settings = {}); end
 
       def deliver!(mail)
-        raise StandardError, "550 mailbox unavailable" if mail.to.include?("bad@example.org")
+        raise Net::SMTPFatalError, "550 mailbox unavailable" if mail.to.include?("bad@example.org")
 
         ActionMailer::Base.deliveries << mail
+      end
+    end
+
+    # Почта, которая не принимает вообще ничего: авария на стороне сервиса, а не
+    # отказ конкретного ящика.
+    class UnavailableDelivery
+      def initialize(settings = {}); end
+
+      def deliver!(_mail)
+        raise Net::SMTPServerBusy, "421 service unavailable"
       end
     end
 
@@ -138,10 +172,18 @@ class OutreachEmailJobTest < ActiveJob::TestCase
       OutreachContact.pending.limit(count).each { |contact| contact.update!(reserved_at: Time.current) }
     end
 
-    def with_rejecting_delivery
-      ActionMailer::Base.add_delivery_method :rejecting, RejectingDelivery
+    def with_rejecting_delivery(&block)
+      with_delivery_method(:rejecting, RejectingDelivery, &block)
+    end
+
+    def with_mail_service_down(&block)
+      with_delivery_method(:unavailable, UnavailableDelivery, &block)
+    end
+
+    def with_delivery_method(name, implementation)
+      ActionMailer::Base.add_delivery_method name, implementation
       previous = ActionMailer::Base.delivery_method
-      ActionMailer::Base.delivery_method = :rejecting
+      ActionMailer::Base.delivery_method = name
       yield
     ensure
       ActionMailer::Base.delivery_method = previous
