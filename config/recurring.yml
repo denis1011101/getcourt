@@ -54,3 +54,9 @@ production:
   daily_social_post:
     class: PostDailySocialPostJob
     schedule: at 6pm every day
+  # Холодная рассылка про онлайн-бронь кортов: 10 писем в день, пока список не
+  # кончится. Час выбран под Европу — 1pm по config.time_zone (Asia/Yekaterinburg)
+  # это 10 утра в Берлине; при смене географии списка двигать надо эту строку.
+  outreach_emails:
+    class: OutreachEmailJob
+    schedule: at 1pm every day

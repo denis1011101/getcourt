@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_06_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_09_090000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -297,6 +297,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_120000) do
     t.index ["user_id", "mode", "played_at"], name: "index_matches_on_user_id_and_mode_and_played_at"
     t.index ["user_id", "played_at"], name: "index_matches_on_user_id_and_played_at"
     t.index ["user_id"], name: "index_matches_on_user_id"
+  end
+
+  create_table "outreach_contacts", force: :cascade do |t|
+    t.integer "attempts", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.string "email", null: false
+    t.string "last_error"
+    t.string "name"
+    t.datetime "reserved_at"
+    t.datetime "sent_at"
+    t.datetime "unsubscribed_at"
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_outreach_contacts_on_email", unique: true
+    t.index ["reserved_at"], name: "index_outreach_contacts_on_reserved_at"
+    t.index ["sent_at", "unsubscribed_at", "attempts", "reserved_at"], name: "idx_on_sent_at_unsubscribed_at_attempts_reserved_at_1343e8c30a"
   end
 
   create_table "participations", force: :cascade do |t|

@@ -895,3 +895,15 @@ en:
         player_month: "🥇 Most active player of the month: %{name} — %{count} matches."
         new_players_month: "👋 %{count} new players joined GetCourt this month."
         busiest_court: "🎾 Busiest court of the season: %{name} — %{count} games."
+  outreach_mailer:
+    court_booking_pitch:
+      subject: "Online booking for your club on GetCourt"
+      greeting: "Hello,"
+      intro: "I'm Denis, the creator of GetCourt, a service for tennis players."
+      offer: "I'd like to offer your club a free trial of online court booking through GetCourt while the feature is in testing."
+      why: "Fewer players want to call, or even write, to reserve a court these days. With your schedule on the club page they pick a free slot themselves, and the booking reaches you already filled in."
+      together: "If that sounds useful, I will set your club up myself and stay in touch while we test it."
+      link_intro: "More about working together:"
+      closing: "Thanks for your time,"
+      signature: "Denis, GetCourt"
+      unsubscribe: "If you would rather not hear from me again, reply with \"no\" and I will not write."
