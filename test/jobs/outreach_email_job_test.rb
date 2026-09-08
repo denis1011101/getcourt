@@ -82,6 +82,30 @@ class OutreachEmailJobTest < ActiveJob::TestCase
     assert_empty OutreachContact.where.not(reserved_at: nil)
   end
 
+  test "a complaint about our own sender address costs the contacts nothing" do
+    3.times { |i| OutreachContact.create!(email: "club#{i}@example.org") }
+
+    OutreachContact::MAX_ATTEMPTS.times do
+      assert_raises(Net::SMTPSyntaxError) do
+        with_delivery_refusing("501 5.1.7 bad sender mailbox address syntax") { OutreachEmailJob.perform_now }
+      end
+    end
+
+    assert_equal 3, OutreachContact.pending.count
+    assert_equal [ 0, 0, 0 ], OutreachContact.order(:id).pluck(:attempts)
+  end
+
+  test "a rejection we cannot read stops the batch instead of blaming the address" do
+    OutreachContact.create!(email: "club@example.org")
+
+    assert_raises(Net::SMTPFatalError) do
+      with_delivery_refusing("550 relaying denied") { OutreachEmailJob.perform_now }
+    end
+
+    assert_equal 0, OutreachContact.first.attempts
+    assert_equal 1, OutreachContact.pending.count
+  end
+
   test "a rejected address is retried later and does not stop the batch" do
     OutreachContact.create!(email: "bad@example.org")
     good = OutreachContact.create!(email: "club@example.org")
@@ -94,7 +118,7 @@ class OutreachEmailJobTest < ActiveJob::TestCase
     assert_nil bad.sent_at
     assert_nil bad.reserved_at
     assert_equal 1, bad.attempts
-    assert_match "550 mailbox unavailable", bad.last_error
+    assert_match "550 5.1.1 mailbox unavailable", bad.last_error
     assert_not_nil good.reload.sent_at
   end
 
@@ -151,7 +175,7 @@ class OutreachEmailJobTest < ActiveJob::TestCase
       def initialize(settings = {}); end
 
       def deliver!(mail)
-        raise Net::SMTPFatalError, "550 mailbox unavailable" if mail.to.include?("bad@example.org")
+        raise Net::SMTPFatalError, "550 5.1.1 mailbox unavailable" if mail.to.include?("bad@example.org")
 
         ActionMailer::Base.deliveries << mail
       end
@@ -174,6 +198,17 @@ class OutreachEmailJobTest < ActiveJob::TestCase
 
     def with_rejecting_delivery(&block)
       with_delivery_method(:rejecting, RejectingDelivery, &block)
+    end
+
+    # Почта, которая на любое письмо отвечает заданной строкой.
+    def with_delivery_refusing(response, &block)
+      error = response.start_with?("501") ? Net::SMTPSyntaxError : Net::SMTPFatalError
+      refusing = Class.new do
+        define_method(:initialize) { |settings = {}| }
+        define_method(:deliver!) { |_mail| raise error, response }
+      end
+
+      with_delivery_method(:refusing, refusing, &block)
     end
 
     def with_mail_service_down(&block)

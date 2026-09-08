@@ -8,10 +8,12 @@ require "net/smtp"
 class OutreachContact < ApplicationRecord
   DAILY_BATCH = 10
   MAX_ATTEMPTS = 3
-  # Отказ самого ящика: 5xx в ответ на письмо. Всё остальное — наша беда, а не
-  # адресат: Resend лежит, таймаут, ключ протух, шаблон упал. Такие сбои попыток
-  # контакта не жгут, иначе одна ночная авария вычеркнула бы весь список.
-  PERMANENT_FAILURES = [ Net::SMTPFatalError, Net::SMTPSyntaxError ].freeze
+  # Расширенные коды RFC 3463, которыми сервер говорит именно про адрес, куда мы
+  # пишем: ящика нет, он отключён, переехал, переполнен. Только они значат, что
+  # виноват контакт. Сам по себе класс ошибки этого не значит: 501 5.1.7 — это
+  # претензия к нашему адресу отправителя, 5.7.1 — к политике, и списывать их на
+  # клуб нельзя. Всё неопознанное считаем своей бедой, а не его.
+  RECIPIENT_REJECTIONS = %w[ 5.1.1 5.1.2 5.1.3 5.1.4 5.1.6 5.1.10 5.2.1 5.2.2 ].freeze
   # Столько ждём отправки зарезервированного адреса: если процесс упал между
   # резервом и письмом, через час контакт возвращается в очередь.
   RESERVATION_TTL = 1.hour
@@ -103,14 +105,16 @@ class OutreachContact < ApplicationRecord
     OutreachMailer.court_booking_pitch(self).deliver_now
     update!(sent_at: Time.current, attempts: attempts + 1, last_error: nil)
     true
-  rescue *PERMANENT_FAILURES => e
-    Rails.logger.warn "Outreach to #{email} rejected: #{e.class}: #{e.message}"
-    update!(attempts: attempts + 1, last_error: error_text(e), reserved_at: nil)
-    false
   rescue StandardError => e
-    Rails.logger.error "Outreach to #{email} failed: #{e.class}: #{e.message}"
-    update!(last_error: error_text(e), reserved_at: nil)
-    raise
+    if recipient_rejected?(e)
+      Rails.logger.warn "Outreach to #{email} rejected: #{e.class}: #{e.message}"
+      update!(attempts: attempts + 1, last_error: error_text(e), reserved_at: nil)
+      false
+    else
+      Rails.logger.error "Outreach to #{email} failed: #{e.class}: #{e.message}"
+      update!(last_error: error_text(e), reserved_at: nil)
+      raise
+    end
   end
 
   def unsubscribe
@@ -118,6 +122,16 @@ class OutreachContact < ApplicationRecord
   end
 
   private
+    def recipient_rejected?(error)
+      error.is_a?(Net::SMTPError) && RECIPIENT_REJECTIONS.include?(enhanced_status_code(error))
+    end
+
+    # Код вида 5.1.1 из ответа сервера; его может и не быть — тогда мы не знаем,
+    # чей адрес не понравился, и трогать счётчик контакта не станем.
+    def enhanced_status_code(error)
+      error.message.to_s[/\b5\.\d{1,3}\.\d{1,3}\b/]
+    end
+
     def error_text(error)
       "#{error.class}: #{error.message}".truncate(255)
     end
