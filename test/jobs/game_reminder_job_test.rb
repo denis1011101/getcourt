@@ -245,6 +245,30 @@ class GameReminderJobTest < ActiveJob::TestCase
     coach&.destroy
   end
 
+  # Предзапись выключили, а брони на будущие даты остались в базе: сбрасывать
+  # их в состав больше некому, значит и напоминать этим людям не о чем.
+  test "bookings left over from disabled prebooking get no reminder" do
+    booked = User.create!(
+      email: "leftover-booking-player@example.com", telegram_chat_id: 93_034,
+      notification_channel: "telegram", telegram_locale: "en"
+    )
+    game = Game.create!(
+      court: courts(:one), user: users(:two), date: Date.new(2026, 9, 7), time: "18:00",
+      recurring: true, recurrence_days: [ 1, 4 ], prebooking_enabled: true
+    )
+    game.prebookings.create!(date: Date.new(2026, 9, 10), slot_index: 1, user: booked)
+    game.update!(prebooking_enabled: false)
+    calls = []
+
+    travel_to Time.zone.local(2026, 9, 9, 14, 0) do
+      stub_singleton(SendTelegramNotificationJob, :perform_later, ->(*args) { calls << args }) do
+        GameReminderJob.perform_now(1)
+      end
+    end
+
+    assert_empty calls
+  end
+
   test "makes the court name a link in the telegram reminder" do
     coach = create_coach("court-link-reminder@example.com", 93_020, name: "Иван Петров")
     game = training_with(coaches: [ coach ])

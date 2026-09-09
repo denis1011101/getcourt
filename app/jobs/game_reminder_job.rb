@@ -70,6 +70,9 @@ class GameReminderJob < ApplicationJob
   # тех, кто записан именно на эту дату.
   def recipients_for(game, target_date)
     return participants_of(game) if game.display_date_for_show == target_date
+    # Предзапись выключили, а брони остались лежать: в состав эти люди уже не
+    # попадут, и звать их на занятие не за что.
+    return [] unless game.prebooking_enabled?
 
     booked_for(game, target_date)
   end
