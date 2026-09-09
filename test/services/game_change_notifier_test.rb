@@ -5,15 +5,16 @@ class GameChangeNotifierTest < ActiveSupport::TestCase
 
   setup do
     @owner = users(:one)
+    @owner.update!(email: "change-owner@example.com", notification_channel: "email", locale: "en")
     @participant = User.create!(email: "change-participant@example.com", notification_channel: "email", locale: "en")
     @game = Game.create!(court: courts(:one), user: @owner, date: Date.current + 3.days, time: "18:00")
     @game.participations.create!(user: @participant)
   end
 
-  test "tells participants what changed and skips whoever made the edit" do
+  test "tells everyone in the game what changed" do
     @game.update!(time: "19:30")
 
-    assert_enqueued_emails 1 do
+    assert_enqueued_emails 2 do
       GameChangeNotifier.notify(game: @game, actor: @owner, changes: @game.saved_changes)
     end
 
@@ -31,11 +32,27 @@ class GameChangeNotifierTest < ActiveSupport::TestCase
     end
   end
 
-  test "does not notify the editor even when they are a participant" do
+  # Организатор сидит в одном чате с составом, и текст правки у всех один и тот
+  # же — включая того, кто эту правку сделал.
+  test "notifies the organiser who made the edit as well" do
+    @game.update!(players_count: 2)
+
+    perform_enqueued_jobs do
+      GameChangeNotifier.notify(game: @game, actor: @owner, changes: @game.saved_changes)
+    end
+
+    recipients = ActionMailer::Base.deliveries.flat_map(&:to)
+
+    assert_includes recipients, @owner.email
+    assert_includes recipients, @participant.email
+  end
+
+  # А в составе он считается один раз, а не дважды — как организатор и как игрок.
+  test "counts the organiser playing in their own game once" do
     @game.participations.create!(user: @owner)
     @game.update!(players_count: 2)
 
-    assert_enqueued_emails 1 do
+    assert_enqueued_emails 2 do
       GameChangeNotifier.notify(game: @game, actor: @owner, changes: @game.saved_changes)
     end
   end
@@ -73,7 +90,7 @@ class GameChangeNotifierTest < ActiveSupport::TestCase
 
     @game.update!(time: "07:00")
 
-    assert_enqueued_emails 2 do
+    assert_enqueued_emails 3 do
       GameChangeNotifier.notify(game: @game, actor: @owner, changes: @game.saved_changes)
     end
   ensure

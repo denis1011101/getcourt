@@ -12,6 +12,8 @@ class GameChangeNotifier
 
   def initialize(game:, actor:, changes:)
     @game = game
+    # Автора правки больше не вычёркиваем (см. recipients), но помним: по нему
+    # GameChangeNotificationJob копит правки одной сессии редактирования.
     @actor = actor
     @changes = (changes || {}).slice(*TRACKED_FIELDS)
   end
@@ -31,15 +33,18 @@ class GameChangeNotifier
 
   private
 
-  # Everyone who planned their evening around this game, except whoever made the
-  # edit — they already know. Matched by id, not by channel: the organiser can
-  # edit from the bot and read notifications by email.
+  # Все, кто планировал вечер вокруг этой игры: состав, принятые тренеры и
+  # организатор. Автора правки тоже — он сидит с остальными в одном чате игры, и
+  # сообщение об изменении у всех должно быть одинаковым. Раньше его
+  # вычёркивали, и получалось, что единственный, кто не видел разосланного
+  # текста, — тот, кто эту правку и сделал.
   def recipients
     @recipients ||= begin
-      participants = @game.participations.includes(:user).reject(&:guest?).map(&:user)
-      participants.concat(@game.accepted_coaches)
+      people = @game.participations.includes(:user).reject(&:guest?).map(&:user)
+      people.concat(@game.accepted_coaches)
+      people << @game.user
 
-      participants.compact.uniq(&:id).reject { |user| user.id == @actor&.id }
+      people.compact.uniq(&:id)
     end
   end
 
