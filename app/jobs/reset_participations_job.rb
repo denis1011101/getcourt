@@ -6,14 +6,14 @@ class ResetParticipationsJob < ApplicationJob
       nd = game.next_date
       next unless nd
 
-      if game.should_reset_participations?(Date.current)
+      if game.participations_reset_due?(Date.current)
         # Снимок до сброса: кому чат закроется, видно только по разнице составов —
         # часть людей вернётся в состав из предзаписи и никуда не выбывает.
         chat_members = game.chat_members.to_a
 
         # Контент чистим до маркера: маркер закрывает игре повторный заход, и
         # неудачная уборка должна дождаться следующей ночи, а не пропасть.
-        # Отсюда же и порядок: сброс предзаписей сдвигает даты на неделю вперёд,
+        # Отсюда же и порядок: сброс предзаписей уносит людей с даты в состав,
         # повторить его вторым заходом нельзя.
         next unless reset_occurrence_content(game)
 
@@ -74,51 +74,24 @@ class ResetParticipationsJob < ApplicationJob
     Rails.logger.warn("[ResetParticipationsJob] chat cleanup failed for Game##{game.id}: #{e.class}: #{e.message}")
   end
 
-  # Promote users from prebookings on nd into participations, shift next prebookings up,
-  # and append a new empty prebooking date at the end.
+  # Кто записался на это занятие — тот и выходит на корт: людей с даты nd
+  # переносим в состав, а брони на другие даты не трогаем. Раньше очередь после
+  # переноса сдвигалась на занятие назад — бронь на 17-е становилась бронью на
+  # 14-е, — но человек записывается на конкретный день, а не в очередь.
   def apply_prebookings_for_occurrence!(game, nd)
     players_needed = (game.players_count.to_i > 0 ? game.players_count.to_i : 4)
 
-    # collect sorted future prebooking dates starting with nd
-    dates = game.prebookings.where("date >= ?", nd).distinct.pluck(:date).sort
-    # ensure current nd is present in dates (if no prebookings at nd, still include it)
-    dates = [ nd ] | dates
-
     ActiveRecord::Base.transaction do
-      # 1) create participations from prebookings on nd (up to players_needed)
-      nd_prebooks = game.prebookings.where(date: nd).order(:slot_index)
       game.participations.delete_all
-      nd_prebooks.limit(players_needed).each_with_index do |pb, idx|
-        next unless pb.user_id
-        game.participations.create!(user_id: pb.user_id)
-        # remove user from that prebooking slot (moved to participation)
-        pb.update!(user_id: nil)
+
+      game.prebookings.where(date: nd).where.not(user_id: nil).order(:slot_index).limit(players_needed).each do |prebooking|
+        game.participations.create!(user_id: prebooking.user_id)
+        prebooking.update!(user_id: nil)
       end
 
-      # 2) shift users from next dates → current, cascading forward
-      # iterate dates in order, for each date copy users from next date into current
-      dates.each_with_index do |cur_date, i|
-        next_date = dates[i + 1]
-        (1..players_needed).each do |slot_index|
-          src_user = nil
-          if next_date
-            src_pb = game.prebookings.find_by(date: next_date, slot_index: slot_index)
-            src_user = src_pb&.user_id
-          end
-          dest_pb = game.prebookings.find_or_initialize_by(date: cur_date, slot_index: slot_index)
-          dest_pb.user_id = src_user
-          dest_pb.save!
-        end
-      end
-
-      # 3) append a new empty date after the last known date
-      last_date = dates.max || nd
-      new_date = game.occurrence_after(last_date)
-      (1..players_needed).each do |slot_index|
-        game.prebookings.find_or_create_by!(date: new_date, slot_index: slot_index) do |pb|
-          pb.user_id = nil
-        end
-      end
+      # Горизонт едет вперёд вместе с игрой: место освободилось, и на дальние
+      # даты снова есть куда записываться.
+      game.ensure_prebookings_for_next_weeks
     end
   end
 end

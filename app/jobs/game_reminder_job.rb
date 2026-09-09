@@ -6,10 +6,9 @@ class GameReminderJob < ApplicationJob
     scope = Game.where("date = ? OR recurring = ?", target_date, true)
 
     scope.find_each do |game|
-      occurrence_date = game.recurring ? recurring_occurrence_date(game) : game.date
-      next unless occurrence_date == target_date
+      next unless occurrence_on?(game, target_date)
 
-      recipients = game.participations.includes(:user).map(&:user).compact.uniq
+      recipients = recipients_for(game, target_date)
       next if recipients.empty?
 
       recipients.each do |recipient|
@@ -65,8 +64,15 @@ class GameReminderJob < ApplicationJob
     hour < 14
   end
 
-  def recurring_occurrence_date(game)
-    game.date && game.date >= Date.current ? game.date : game.next_date
+  # Состав игры принадлежит ближайшему занятию. У серии с занятиями в соседние
+  # дни напоминание «на завтра» приходится уже на следующее из них: там зовём
+  # тех, кто записан на эту дату, а не тех, кто выходит на корт сегодня.
+  def recipients_for(game, target_date)
+    if game.prebooking_enabled? && game.next_date != target_date
+      game.prebookings.where(date: target_date).where.not(user_id: nil).includes(:user).map(&:user).compact.uniq
+    else
+      game.participations.includes(:user).map(&:user).compact.uniq
+    end
   end
 
   def notification_for(game, target_date, recipients, day_offset)

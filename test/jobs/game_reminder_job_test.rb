@@ -163,6 +163,57 @@ class GameReminderJobTest < ActiveJob::TestCase
     coach&.destroy
   end
 
+  # Серия «ср + чт»: в среду ближайшее занятие — сегодняшнее, и напоминание на
+  # завтра раньше проходило мимо четверга.
+  test "reminds about tomorrow when the series plays on two days in a row" do
+    player = User.create!(
+      email: "adjacent-days-player@example.com", telegram_chat_id: 93_030,
+      notification_channel: "telegram", telegram_locale: "en"
+    )
+    game = Game.create!(
+      court: courts(:one), user: users(:two), date: Date.new(2026, 9, 9), time: "18:00",
+      recurring: true, recurrence_days: [ 3, 4 ]
+    )
+    game.participations.create!(user: player)
+    calls = []
+
+    travel_to Time.zone.local(2026, 9, 9, 14, 0) do
+      stub_singleton(SendTelegramNotificationJob, :perform_later, ->(*args) { calls << args }) do
+        GameReminderJob.perform_now(1)
+      end
+    end
+
+    assert_includes calls.find { |call| call.first == player.telegram_chat_id }.second, "game tomorrow"
+  end
+
+  # Состав принадлежит сегодняшнему занятию, а зовём мы на завтрашнее: у игры с
+  # предзаписью на завтра выходят те, кто записан на завтра.
+  test "the reminder for the next occurrence goes to those booked for it" do
+    today_player = User.create!(
+      email: "booked-today-player@example.com", telegram_chat_id: 93_031,
+      notification_channel: "telegram", telegram_locale: "en"
+    )
+    tomorrow_player = User.create!(
+      email: "booked-tomorrow-player@example.com", telegram_chat_id: 93_032,
+      notification_channel: "telegram", telegram_locale: "en"
+    )
+    game = Game.create!(
+      court: courts(:one), user: users(:two), date: Date.new(2026, 9, 9), time: "18:00",
+      recurring: true, recurrence_days: [ 3, 4 ], prebooking_enabled: true
+    )
+    game.participations.create!(user: today_player)
+    game.prebookings.create!(date: Date.new(2026, 9, 10), slot_index: 1, user: tomorrow_player)
+    calls = []
+
+    travel_to Time.zone.local(2026, 9, 9, 14, 0) do
+      stub_singleton(SendTelegramNotificationJob, :perform_later, ->(*args) { calls << args }) do
+        GameReminderJob.perform_now(1)
+      end
+    end
+
+    assert_equal [ tomorrow_player.telegram_chat_id ], calls.map(&:first)
+  end
+
   test "makes the court name a link in the telegram reminder" do
     coach = create_coach("court-link-reminder@example.com", 93_020, name: "Иван Петров")
     game = training_with(coaches: [ coach ])

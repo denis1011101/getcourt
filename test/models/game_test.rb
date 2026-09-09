@@ -533,4 +533,34 @@ class GameTest < ActiveSupport::TestCase
   ensure
     game&.destroy
   end
+
+  # Чат живёт столько же, сколько состав: у серии «ср + чт» состав среды
+  # уступает место четвергу в ночь на четверг, а не в субботу.
+  test "the chat of a series with adjacent days closes in the night of the next one" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 9),
+                        recurring: true, recurrence_days: [ 3, 4 ], kind: "game")
+
+    travel_to Time.zone.local(2026, 9, 9, 21, 0) do
+      assert_equal Time.zone.local(2026, 9, 10, 4, 0), game.chat_open_until
+    end
+  ensure
+    game&.destroy
+  end
+
+  test "a coach booking on a weekday dropped from the calendar goes with it" do
+    coach = User.create!(email: "coach-dropped-weekday@example.com", coach: true)
+    game = Game.create!(court: courts(:one), user: users(:one), coach: coach, with_coach: true,
+                        recurring: true, recurrence_days: [ 1, 4 ], date: Date.new(2026, 9, 7))
+    game.update!(coach_invitation_status: "accepted")
+
+    travel_to Time.zone.local(2026, 9, 7, 9, 0) do
+      game.coach_prebookings.create!(coach: coach, date: Date.new(2026, 9, 10))
+
+      assert_difference -> { game.coach_prebookings.count }, -1 do
+        game.update!(recurrence_days: [ 1 ])
+      end
+    end
+  ensure
+    coach&.destroy
+  end
 end

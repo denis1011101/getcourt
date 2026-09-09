@@ -49,6 +49,72 @@ class ResetParticipationsJobTest < ActiveJob::TestCase
     assert_equal game.next_date, game.reload.last_participations_reset_at
   end
 
+  # Серия «пн + чт»: состав понедельника не может дожить до субботы — в четверг
+  # на корт выходит уже другой состав.
+  test "a series with two weekdays resets in the night of the next occurrence" do
+    game = Game.create!(
+      court: courts(:one), user: @owner, date: Date.new(2026, 9, 7), time: "18:00",
+      recurring: true, recurrence_days: [ 1, 4 ]
+    )
+    game.participations.create!(user: @player)
+
+    travel_to Time.zone.local(2026, 9, 8, 4, 0) do
+      ResetParticipationsJob.perform_now
+
+      assert_equal 1, game.participations.reload.count, "во вторник состав понедельника ещё живёт"
+    end
+
+    travel_to Time.zone.local(2026, 9, 10, 4, 0) do
+      ResetParticipationsJob.perform_now
+
+      assert_empty game.participations.reload
+      assert_equal Date.new(2026, 9, 10), game.reload.last_participations_reset_at
+    end
+  end
+
+  # А серия раз в неделю ждёт своей субботы, как и ждала: ежедневный запуск
+  # задачи ничего для неё не меняет.
+  test "a weekly series still waits for the night from friday to saturday" do
+    game = Game.create!(
+      court: courts(:one), user: @owner, date: Date.new(2026, 9, 7), time: "18:00", recurring: true
+    )
+    game.participations.create!(user: @player)
+
+    travel_to Time.zone.local(2026, 9, 9, 4, 0) do
+      ResetParticipationsJob.perform_now
+
+      assert_equal 1, game.participations.reload.count, "среди недели состав не трогаем"
+    end
+
+    travel_to Time.zone.local(2026, 9, 12, 4, 0) do
+      ResetParticipationsJob.perform_now
+
+      assert_empty game.participations.reload
+      assert_equal Date.new(2026, 9, 14), game.reload.last_participations_reset_at
+    end
+  end
+
+  # Человек записывается на конкретный день, а не в очередь: бронь на 17-е
+  # никуда не переезжает от того, что 10-е отыграли.
+  test "bookings on later dates keep their own dates" do
+    booked = User.create!(email: "reset-booked@example.com")
+    later = User.create!(email: "reset-booked-later@example.com")
+    game = Game.create!(
+      court: courts(:one), user: @owner, date: Date.new(2026, 9, 7), time: "18:00",
+      recurring: true, recurrence_days: [ 1, 4 ], players_count: 2, prebooking_enabled: true
+    )
+    game.prebookings.create!(date: Date.new(2026, 9, 10), slot_index: 1, user: booked)
+    game.prebookings.create!(date: Date.new(2026, 9, 17), slot_index: 1, user: later)
+
+    travel_to Time.zone.local(2026, 9, 10, 4, 0) do
+      ResetParticipationsJob.perform_now
+    end
+
+    assert_equal [ booked.id ], game.participations.reload.pluck(:user_id)
+    assert_nil game.prebookings.find_by(date: Date.new(2026, 9, 10), slot_index: 1).user_id
+    assert_equal later.id, game.prebookings.find_by(date: Date.new(2026, 9, 17), slot_index: 1).user_id
+  end
+
   # Сброс идёт ночью и уносит с собой чат. Без письма человек узнал бы об этом
   # только по тому, что его сообщение никому не дошло, — а оно уходит молча.
   test "tells the players it drops that their chat is gone" do
