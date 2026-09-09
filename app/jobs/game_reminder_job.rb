@@ -36,7 +36,7 @@ class GameReminderJob < ApplicationJob
       target_date = game_before_14_yekaterinburg?(game) ? today + 1.day : today
       next unless occurrence_on?(game, target_date)
 
-      participants = game.participations.includes(:user).map(&:user).compact.uniq
+      participants = recipients_for(game, target_date)
 
       game.accepted_coaches.each do |coach|
         next if game.recurring? && !game.coach_prebookings.exists?(coach_id: coach.id, date: target_date)
@@ -64,15 +64,22 @@ class GameReminderJob < ApplicationJob
     hour < 14
   end
 
-  # Состав игры принадлежит ближайшему занятию. У серии с занятиями в соседние
-  # дни напоминание «на завтра» приходится уже на следующее из них: там зовём
-  # тех, кто записан на эту дату, а не тех, кто выходит на корт сегодня.
+  # Состав принадлежит одному занятию — тому, что показывает карточка, и до
+  # ночи сброса это ещё отыгранное вхождение. Если напоминаем о другом — у
+  # серии с занятиями в соседние дни «завтра» уже следующее вхождение, — зовём
+  # тех, кто записан именно на эту дату.
   def recipients_for(game, target_date)
-    if game.prebooking_enabled? && game.next_date != target_date
-      game.prebookings.where(date: target_date).where.not(user_id: nil).includes(:user).map(&:user).compact.uniq
-    else
-      game.participations.includes(:user).map(&:user).compact.uniq
-    end
+    return participants_of(game) if game.display_date_for_show == target_date
+
+    booked_for(game, target_date)
+  end
+
+  def participants_of(game)
+    game.participations.includes(:user).map(&:user).compact.uniq
+  end
+
+  def booked_for(game, target_date)
+    game.prebookings.where(date: target_date).where.not(user_id: nil).includes(:user).map(&:user).compact.uniq
   end
 
   def notification_for(game, target_date, recipients, day_offset)

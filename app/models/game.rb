@@ -65,47 +65,15 @@ class Game < ApplicationRecord
     [ coach, second_coach ].compact
   end
 
-  # Чат живёт ровно столько же, сколько состав: до ночи сброса участий — с
-  # пятницы на субботу, 4 утра (ResetParticipationsJob в recurring.yml, там же
-  # чистка прошедших разовых игр), а у серии, где занятия идут чаще раза в
-  # неделю, — до ночи ближайшего следующего занятия. Раньше у серии режим
-  # протухал через сутки, и человек оставался без чата посреди недели, хотя
-  # состав, которому он писал, никуда не делся.
-  CHAT_RESET_WDAY = 6
-  CHAT_RESET_HOUR = 4
-
-  def self.next_weekly_reset_at(from = Time.current)
-    from = from.in_time_zone
-    reset = from.beginning_of_day.change(hour: CHAT_RESET_HOUR)
-    reset += 1.day while reset <= from || reset.wday != CHAT_RESET_WDAY
-    reset
+  # Цикл занятия — что и когда сменяется при сбросе состава — живёт в
+  # Game::OccurrenceCycle: одна граница отвечает и карточке, и напоминаниям, и
+  # чату, и самой задаче сброса.
+  def occurrence_cycle
+    @occurrence_cycle ||= OccurrenceCycle.new(self)
   end
 
-  # Считаем не «ближайшую субботу вообще», а ту ночь, которая действительно
-  # разберёт этот состав: сброс сносит участия уже отыгранного вхождения, а
-  # чистка — только прошедшую разовую игру. Игру, назначенную после ближайшей
-  # субботы, эта ночь не касается, и гасить её чат в 4 утра не за что.
   def chat_open_until
-    occurrence = chat_window_occurrence
-    return nil if occurrence.blank?
-
-    closes_at = participations_reset_at(occurrence)
-    closes_at > Time.current ? closes_at : nil
-  end
-
-  # Ночь, в которую состав занятия уступает место следующему: еженедельный
-  # сброс с пятницы на субботу, а если следующее занятие серии наступает
-  # раньше — его собственная ночь. У серии «пн + чт» это значит, что состав
-  # понедельника живёт до ночи четверга, а не до субботы: иначе четверг вышел
-  # бы на корт с составом, комментарием и роликами понедельника.
-  def participations_reset_at(occurrence)
-    return Time.current if occurrence.blank?
-
-    weekly = Game.next_weekly_reset_at(occurrence.end_of_day)
-    following = recurring? ? occurrence_after(occurrence) : nil
-    return weekly if following.blank?
-
-    [ weekly, following.in_time_zone.change(hour: CHAT_RESET_HOUR) ].min
+    occurrence_cycle.chat_open_until
   end
 
   def chat_open?
@@ -435,30 +403,10 @@ class Game < ApplicationRecord
     read_attribute(:time)
   end
 
-  # Choose which occurrence to show on the game page:
-  # - if previous occurrence already passed and participations haven't been reset => show prev
-  # - if next_date is today or in the future => show next_date
-  # - otherwise => show previous occurrence (if any), fallback to next_date
+  # Карточка показывает то занятие, которому принадлежит нынешний состав: пока
+  # сброс не прошёл — уже отыгранное, после — ближайшее.
   def display_date_for_show
-    nd = next_date
-    return date unless nd
-
-    prev = previous_occurrence_before_next_date
-
-    # if participations were reset for the previous occurrence, show that one
-    if prev && last_participations_reset_at.present? && last_participations_reset_at.to_date == prev
-      return prev
-    end
-
-    # if previous occurrence already passed but participations haven't been
-    # reset yet, we're still in that occurrence's cycle (stats should stay unlocked)
-    if prev && prev < Date.current && should_reset_participations?
-      return prev
-    end
-
-    return nd if nd >= Date.current
-
-    prev || nd
+    occurrence_cycle.roster_occurrence
   end
 
 
@@ -596,23 +544,14 @@ class Game < ApplicationRecord
   # ResetParticipationsJob в первую же ночь: маркер nil, next_date в будущем,
   # и состав вычищался за несколько дней до игры.
   def should_reset_participations?(as_of = Date.current)
-    return false unless recurring?
-    nd = next_date
-    return false unless nd
-
-    prev = previous_occurrence_before_next_date
-    return false unless prev && prev < as_of
-
-    last_participations_reset_at.nil? || last_participations_reset_at.to_date < nd
+    occurrence_cycle.pending?(as_of)
   end
 
   # Отдельно от should_reset_participations?: тот отвечает «состав всё ещё от
   # прошлого занятия» — по нему карточка показывает отыгранное вхождение, пока
   # сброс не прошёл, — а этот решает, пора ли задаче его наконец разобрать.
   def participations_reset_due?(as_of = Date.current)
-    return false unless should_reset_participations?(as_of)
-
-    participations_reset_at(previous_occurrence_before_next_date).to_date <= as_of
+    occurrence_cycle.due?(as_of)
   end
 
   def mark_participations_reset!(date = next_date)

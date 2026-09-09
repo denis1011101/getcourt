@@ -410,7 +410,7 @@ class GameTest < ActiveSupport::TestCase
 
     # Среда: игра в четверг, разберёт её состав ближайшая суббота.
     travel_to Time.zone.local(2026, 9, 2, 21, 0) do
-      assert_equal Time.zone.local(2026, 9, 5, 4, 0), Game.next_weekly_reset_at
+      assert_equal Time.zone.local(2026, 9, 5, 4, 0), Game::OccurrenceCycle.next_weekly_reset_at
       assert_equal Time.zone.local(2026, 9, 5, 4, 0), game.chat_open_until
       assert game.chat_open?
     end
@@ -448,11 +448,11 @@ class GameTest < ActiveSupport::TestCase
 
   test "the chat window rolls over to the next week right at the reset" do
     travel_to Time.zone.local(2026, 9, 5, 3, 59) do
-      assert_equal Time.zone.local(2026, 9, 5, 4, 0), Game.next_weekly_reset_at
+      assert_equal Time.zone.local(2026, 9, 5, 4, 0), Game::OccurrenceCycle.next_weekly_reset_at
     end
 
     travel_to Time.zone.local(2026, 9, 5, 4, 0) do
-      assert_equal Time.zone.local(2026, 9, 12, 4, 0), Game.next_weekly_reset_at
+      assert_equal Time.zone.local(2026, 9, 12, 4, 0), Game::OccurrenceCycle.next_weekly_reset_at
     end
   end
 
