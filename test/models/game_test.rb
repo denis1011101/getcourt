@@ -543,6 +543,13 @@ class GameTest < ActiveSupport::TestCase
         assert_equal 20, reset_at.hour, "восемь вечера — в поясе игры, а не вызывающего кода"
       end
     end
+
+    # Та же запись, прочитанная из другого окружения, начинается в тот же миг:
+    # колонка time зонозависимая, и часы с неё надо снимать в поясе игры.
+    from_moscow = Time.use_zone("Europe/Moscow") { Game.find(game.id).occurrence_starts_at(game.date) }
+    from_yekaterinburg = Time.use_zone("Asia/Yekaterinburg") { Game.find(game.id).occurrence_starts_at(game.date) }
+
+    assert_equal from_moscow, from_yekaterinburg
   ensure
     game&.destroy
     owner&.destroy
