@@ -91,7 +91,7 @@ class GameTest < ActiveSupport::TestCase
     end
   end
 
-  test "the card moves on to the next occurrence at the reset moment" do
+  test "the card moves on to the next occurrence once the reset has happened" do
     game = Game.create!(
       court: courts(:one),
       user: users(:one),
@@ -101,6 +101,11 @@ class GameTest < ActiveSupport::TestCase
     )
 
     travel_to Time.zone.local(2026, 9, 10, 20, 0) do
+      assert_equal Date.new(2026, 9, 7), game.display_date_for_show,
+                   "момент настал, но состав ещё прежний — карточке рано переезжать"
+
+      game.mark_participations_reset!(Date.new(2026, 9, 14))
+
       assert_equal Date.new(2026, 9, 14), game.display_date_for_show
       assert_not game.started_for_ui?, "stats should be locked until the next game starts"
     end
@@ -158,6 +163,8 @@ class GameTest < ActiveSupport::TestCase
     end
 
     travel_to Time.zone.local(2026, 9, 10, 20, 0) do
+      game.mark_participations_reset!(played + 1.week)
+
       assert_equal played + 1.week, game.display_date_for_show
     end
   end
@@ -515,6 +522,30 @@ class GameTest < ActiveSupport::TestCase
     assert_equal [ Date.new(2026, 9, 7), Date.new(2026, 9, 10) ], game.recurrence_seed_dates
   ensure
     game&.destroy
+  end
+
+  # Час занятия и «20:00» смены состава — это часы там, где выходят на корт.
+  # Сервер и открытая страница бывают в других поясах, и разница в два часа
+  # сдвинула бы сброс на время, когда игра ещё идёт.
+  test "the cycle is anchored to the time zone of the game owner" do
+    owner = User.create!(email: "moscow-owner@example.com", timezone: "Europe/Moscow")
+    game = Game.create!(court: courts(:one), user: owner, date: Date.new(2026, 9, 7), time: "18:00",
+                        recurring: true, kind: "game")
+
+    Time.use_zone("Asia/Yekaterinburg") do
+      travel_to Time.zone.local(2026, 9, 6, 12, 0) do
+        assert_equal game.start_at_for_ui, game.occurrence_starts_at(game.date),
+                     "начало занятия считаем так же, как его показывает карточка"
+
+        reset_at = game.occurrence_cycle.reset_at(game.date).in_time_zone("Europe/Moscow")
+
+        assert_equal Date.new(2026, 9, 10), reset_at.to_date
+        assert_equal 20, reset_at.hour, "восемь вечера — в поясе игры, а не вызывающего кода"
+      end
+    end
+  ensure
+    game&.destroy
+    owner&.destroy
   end
 
   # Чат живёт столько же, сколько состав: у серии «ср + чт» состав среды

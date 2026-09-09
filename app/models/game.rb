@@ -441,13 +441,15 @@ class Game < ApplicationRecord
   # умолчанию — час, как в анонсах срочного поиска.
   DEFAULT_DURATION_MINUTES = 60
 
+  # В поясе создателя, как и start_at_for_ui: 18:00 — это шесть вечера там, где
+  # выходят на корт, а не там, откуда пришёл запрос или где стоит сервер.
   def occurrence_starts_at(day)
     return nil if day.blank?
 
     day = day.to_date
     hour = time.respond_to?(:hour) ? time.hour : 0
     minute = time.respond_to?(:min) ? time.min : 0
-    Time.zone.local(day.year, day.month, day.day, hour, minute)
+    Time.use_zone(creator_time_zone) { Time.zone.local(day.year, day.month, day.day, hour, minute) }
   end
 
   def occurrence_ends_at(day)
