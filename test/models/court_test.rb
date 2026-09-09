@@ -10,6 +10,17 @@ class CourtTest < ActiveSupport::TestCase
     assert_includes court.errors[:name], "can't be blank"
   end
 
+  # Терафлекс кладут на модульных площадках, и корт должен уметь его выбрать —
+  # с названием на всех языках, иначе в форме галка подписана «translation missing».
+  test "teraflex is a surface a court can offer" do
+    court = Court.create!(name: "Teraflex court", surfaces: %w[teraflex])
+
+    assert_equal %w[teraflex], court.reload.surfaces
+    I18n.available_locales.each do |locale|
+      assert_no_match(/translation missing/i, I18n.t("courts.surfaces.teraflex", locale: locale))
+    end
+  end
+
   test "approved scope returns only approved courts" do
     courts(:one).update!(moderation_status: "approved")
     courts(:two).update!(moderation_status: "pending")

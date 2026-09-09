@@ -11,7 +11,9 @@ class Court < ApplicationRecord
 
   # `rubber` — резиновая крошка и наливная резина: их кладут вместо харда на
   # дворовых и школьных площадках, и на глаз это не хард, а отдельное покрытие.
-  SURFACES = %w[hard clay grass artificial_grass rubber].freeze
+  # `teraflex` — модульное покрытие из полипропиленовых плиток: тоже не хард,
+  # и мяч на нём ведёт себя по-своему, поэтому корт выбирает его отдельно.
+  SURFACES = %w[hard clay grass artificial_grass rubber teraflex].freeze
 
   before_validation :normalize_surfaces
   validate :surfaces_are_valid
