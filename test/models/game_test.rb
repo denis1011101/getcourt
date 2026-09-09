@@ -74,53 +74,36 @@ class GameTest < ActiveSupport::TestCase
     assert_equal Date.current + 7.days, game.next_date
   end
 
-  test "display_date_for_show returns previous occurrence when participations were reset there" do
+  # Серия по понедельникам в 18:00: состав понедельника уступает место
+  # следующему занятию в четверг в 20:00 — посередине между ними.
+  test "the card keeps the played occurrence until the reset moment" do
     game = Game.create!(
       court: courts(:one),
       user: users(:one),
-      date: Date.current - 21.days,
+      date: Date.new(2026, 8, 31),
+      time: "18:00",
       recurring: true
     )
 
-    next_date = game.next_date
-    previous_date = next_date - 7.days
-    game.update_column(:last_participations_reset_at, previous_date)
-
-    assert_equal previous_date, game.display_date_for_show
+    travel_to Time.zone.local(2026, 9, 10, 19, 59) do
+      assert_equal Date.new(2026, 9, 7), game.display_date_for_show
+      assert game.started_for_ui?, "stats should be unlocked while the played occurrence is still shown"
+    end
   end
 
-  test "display_date_for_show returns previous occurrence when not yet reset" do
-    # Bug fix: stats should stay unlocked until weekly participations reset happens
+  test "the card moves on to the next occurrence at the reset moment" do
     game = Game.create!(
       court: courts(:one),
       user: users(:one),
-      date: Date.current - 21.days,
+      date: Date.new(2026, 8, 31),
+      time: "18:00",
       recurring: true
     )
 
-    previous_date = game.next_date - 7.days
-    # no reset happened yet (last_participations_reset_at is nil or older)
-    assert_nil game.last_participations_reset_at
-    assert previous_date < Date.today, "previous occurrence should be in the past"
-
-    assert_equal previous_date, game.display_date_for_show
-    assert game.started_for_ui?, "stats should be unlocked while previous occurrence is not reset"
-  end
-
-  test "display_date_for_show returns next_date after participations are reset" do
-    game = Game.create!(
-      court: courts(:one),
-      user: users(:one),
-      date: Date.tomorrow - 21.days,
-      recurring: true
-    )
-
-    nd = game.next_date
-    assert_equal Date.tomorrow, nd
-    game.mark_participations_reset!(nd)
-
-    assert_equal nd, game.display_date_for_show
-    assert_not game.started_for_ui?, "stats should be locked after reset until next game starts"
+    travel_to Time.zone.local(2026, 9, 10, 20, 0) do
+      assert_equal Date.new(2026, 9, 14), game.display_date_for_show
+      assert_not game.started_for_ui?, "stats should be locked until the next game starts"
+    end
   end
 
   test "prebooking_candidate_dates returns weekly date sequence" do
@@ -166,15 +149,15 @@ class GameTest < ActiveSupport::TestCase
   end
 
   test "recurring game shows the occurrence that just passed until participations are reset" do
-    game = Game.create!(court: courts(:one), user: users(:one), date: 1.week.ago.to_date, recurring: true)
-    played = game.date
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 8, 31), time: "18:00", recurring: true)
+    played = Date.new(2026, 9, 7)
 
-    travel_to played + 1.day do
+    travel_to Time.zone.local(2026, 9, 8, 0, 1) do
       assert_equal played + 1.week, game.next_date
       assert_equal played, game.display_date_for_show, "card must not jump to next week at midnight"
+    end
 
-      game.mark_participations_reset!(game.next_date)
-
+    travel_to Time.zone.local(2026, 9, 10, 20, 0) do
       assert_equal played + 1.week, game.display_date_for_show
     end
   end
@@ -422,12 +405,12 @@ class GameTest < ActiveSupport::TestCase
   # чистка сносит только прошедшие разовые игры, сброс — только отыгранные серии.
   test "a game scheduled beyond the coming reset keeps its chat until its own" do
     one_off = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 20), kind: "game")
-    # Серия с ближайшим вхождением в воскресенье — уже за субботней границей.
-    series = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 6), recurring: true, kind: "game")
+    # Серия по воскресеньям: её состав уступит место следующему в среду вечером.
+    series = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 6), time: "18:00", recurring: true, kind: "game")
 
     travel_to Time.zone.local(2026, 9, 2, 21, 0) do
       assert_equal Time.zone.local(2026, 9, 26, 4, 0), one_off.chat_open_until
-      assert_equal Time.zone.local(2026, 9, 12, 4, 0), series.chat_open_until
+      assert_equal Time.zone.local(2026, 9, 9, 20, 0), series.chat_open_until
       assert one_off.chat_open?
       assert series.chat_open?
     end
@@ -535,13 +518,13 @@ class GameTest < ActiveSupport::TestCase
   end
 
   # Чат живёт столько же, сколько состав: у серии «ср + чт» состав среды
-  # уступает место четвергу в ночь на четверг, а не в субботу.
-  test "the chat of a series with adjacent days closes in the night of the next one" do
-    game = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 9),
+  # уступает место четвергу в тот же вечер, а не через несколько дней.
+  test "the chat of a series with adjacent days closes on the evening of the same day" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 9), time: "18:00",
                         recurring: true, recurrence_days: [ 3, 4 ], kind: "game")
 
-    travel_to Time.zone.local(2026, 9, 9, 21, 0) do
-      assert_equal Time.zone.local(2026, 9, 10, 4, 0), game.chat_open_until
+    travel_to Time.zone.local(2026, 9, 9, 19, 30) do
+      assert_equal Time.zone.local(2026, 9, 9, 20, 0), game.chat_open_until
     end
   ensure
     game&.destroy

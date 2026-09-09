@@ -97,6 +97,6 @@ class CleanupPastOneOffGamesJobTest < ActiveJob::TestCase
     assert notice, "участнику удалённой игры должно уйти письмо о закрытии чата"
     assert_match "чат", notice[1]
     assert_no_match(/translation missing/i, notice[1])
-    assert_equal({ silent: true }, notice[2], "письмо о закрытии чата приходит без звука")
+    assert_equal({}, notice[2], "звенеть ли письму, решает Telegram::QuietHours по времени получателя")
   end
 end

@@ -5,9 +5,21 @@ class ResetParticipationsJobTest < ActiveJob::TestCase
   include StubHelper
   include CacheHelper
 
+  # Серия по понедельникам в 18:00: состав понедельника уступает место
+  # следующему занятию в четверг в 20:00 — посередине между ними. Время в
+  # тестах фиксированное: момент сброса теперь зависит от часа, а не только
+  # от даты.
+  SERIES_START = Date.new(2026, 8, 31)
+  RESET_MOMENT = Time.zone.local(2026, 9, 10, 20, 0)
+  NEXT_OCCURRENCE = Date.new(2026, 9, 14)
+
   setup do
     @owner = users(:one)
     @player = User.create!(email: "reset-player@example.com", notification_channel: "email", locale: "en")
+  end
+
+  def weekly_series(**attributes)
+    Game.create!({ court: courts(:one), user: @owner, date: SERIES_START, time: "18:00", recurring: true }.merge(attributes))
   end
 
   # Регрессия: пока у задачи не было расписания, это не всплывало. С расписанием
@@ -23,7 +35,7 @@ class ResetParticipationsJobTest < ActiveJob::TestCase
     )
     game.participations.create!(user: @player)
 
-    assert_not game.should_reset_participations?, "серия ещё не отыграна — сбрасывать нечего"
+    assert_not game.participations_reset_due?, "серия ещё не отыграна — сбрасывать нечего"
 
     ResetParticipationsJob.perform_now
 
@@ -32,39 +44,36 @@ class ResetParticipationsJobTest < ActiveJob::TestCase
   end
 
   test "clears the lineup once the previous occurrence has passed" do
-    game = Game.create!(
-      court: courts(:one),
-      user: @owner,
-      date: Date.current - 14.days,
-      time: "18:00",
-      recurring: true
-    )
+    game = weekly_series
     game.participations.create!(user: @player)
 
-    assert game.should_reset_participations?
+    travel_to RESET_MOMENT do
+      assert game.participations_reset_due?
 
-    ResetParticipationsJob.perform_now
+      ResetParticipationsJob.perform_now
 
-    assert_empty game.participations.reload
-    assert_equal game.next_date, game.reload.last_participations_reset_at
+      assert_empty game.participations.reload
+      assert_equal NEXT_OCCURRENCE, game.reload.last_participations_reset_at
+    end
   end
 
-  # Серия «пн + чт»: состав понедельника не может дожить до субботы — в четверг
-  # на корт выходит уже другой состав.
-  test "a series with two weekdays resets in the night of the next occurrence" do
+  # Серия «пн + чт»: состав понедельника не может дожить до четверга — в четверг
+  # на корт выходит уже другой состав. Середина промежутка — ночь на среду,
+  # ближайшие к ней 20:00 — вечер вторника.
+  test "a series with two weekdays resets on the evening between them" do
     game = Game.create!(
       court: courts(:one), user: @owner, date: Date.new(2026, 9, 7), time: "18:00",
       recurring: true, recurrence_days: [ 1, 4 ]
     )
     game.participations.create!(user: @player)
 
-    travel_to Time.zone.local(2026, 9, 8, 4, 0) do
+    travel_to Time.zone.local(2026, 9, 8, 19, 59) do
       ResetParticipationsJob.perform_now
 
-      assert_equal 1, game.participations.reload.count, "во вторник состав понедельника ещё живёт"
+      assert_equal 1, game.participations.reload.count, "до вечера вторника состав понедельника ещё живёт"
     end
 
-    travel_to Time.zone.local(2026, 9, 10, 4, 0) do
+    travel_to Time.zone.local(2026, 9, 8, 20, 0) do
       ResetParticipationsJob.perform_now
 
       assert_empty game.participations.reload
@@ -72,25 +81,23 @@ class ResetParticipationsJobTest < ActiveJob::TestCase
     end
   end
 
-  # А серия раз в неделю ждёт своей субботы, как и ждала: ежедневный запуск
-  # задачи ничего для неё не меняет.
-  test "a weekly series still waits for the night from friday to saturday" do
-    game = Game.create!(
-      court: courts(:one), user: @owner, date: Date.new(2026, 9, 7), time: "18:00", recurring: true
-    )
+  # У серии раз в неделю промежуток длиннее, и его середина — ночь на пятницу:
+  # состав живёт до вечера четверга.
+  test "a weekly series resets on the evening halfway to the next occurrence" do
+    game = weekly_series
     game.participations.create!(user: @player)
 
-    travel_to Time.zone.local(2026, 9, 9, 4, 0) do
+    travel_to Time.zone.local(2026, 9, 9, 20, 0) do
       ResetParticipationsJob.perform_now
 
-      assert_equal 1, game.participations.reload.count, "среди недели состав не трогаем"
+      assert_equal 1, game.participations.reload.count, "в среду состав ещё не трогаем"
     end
 
-    travel_to Time.zone.local(2026, 9, 12, 4, 0) do
+    travel_to RESET_MOMENT do
       ResetParticipationsJob.perform_now
 
       assert_empty game.participations.reload
-      assert_equal Date.new(2026, 9, 14), game.reload.last_participations_reset_at
+      assert_equal NEXT_OCCURRENCE, game.reload.last_participations_reset_at
     end
   end
 
@@ -106,7 +113,7 @@ class ResetParticipationsJobTest < ActiveJob::TestCase
     game.prebookings.create!(date: Date.new(2026, 9, 10), slot_index: 1, user: booked)
     game.prebookings.create!(date: Date.new(2026, 9, 17), slot_index: 1, user: later)
 
-    travel_to Time.zone.local(2026, 9, 10, 4, 0) do
+    travel_to Time.zone.local(2026, 9, 8, 20, 0) do
       ResetParticipationsJob.perform_now
     end
 
@@ -115,43 +122,68 @@ class ResetParticipationsJobTest < ActiveJob::TestCase
     assert_equal later.id, game.prebookings.find_by(date: Date.new(2026, 9, 17), slot_index: 1).user_id
   end
 
-  # Сброс идёт ночью и уносит с собой чат. Без письма человек узнал бы об этом
-  # только по тому, что его сообщение никому не дошло, — а оно уходит молча.
+  # Сброс уносит с собой чат. Без письма человек узнал бы об этом только по
+  # тому, что его сообщение никому не дошло, — а оно уходит молча.
   test "tells the players it drops that their chat is gone" do
     player = User.create!(email: "reset-chat@example.com", telegram_chat_id: 910_100_001, telegram_locale: "ru")
-    game = Game.create!(
-      court: courts(:one), user: @owner, date: Date.current - 14.days, time: "18:00", recurring: true
-    )
+    game = weekly_series
     game.participations.create!(user: player, status: "approved", approved_at: Time.current)
 
     sent = []
-    with_memory_cache do
-      Telegram::Chat::Session.start(player.telegram_chat_id.to_s, game)
+    travel_to RESET_MOMENT do
+      with_memory_cache do
+        Telegram::Chat::Session.start(player.telegram_chat_id.to_s, game)
 
-      stub_singleton(SendTelegramNotificationJob, :perform_later, ->(chat_id, text, **opts) { sent << [ chat_id, text, opts ] }) do
-        ResetParticipationsJob.perform_now
+        stub_singleton(SendTelegramNotificationJob, :perform_later, ->(chat_id, text, **opts) { sent << [ chat_id, text, opts ] }) do
+          ResetParticipationsJob.perform_now
+        end
+
+        # Указатель гасим тут же: писать этому составу человек больше не вправе.
+        assert_nil Telegram::Chat::Session.active_game(player.telegram_chat_id.to_s, player)
       end
-
-      # Указатель гасим тут же: писать этому составу человек больше не вправе.
-      assert_nil Telegram::Chat::Session.active_game(player.telegram_chat_id.to_s, player)
     end
 
     assert_equal [ player.telegram_chat_id.to_s ], sent.map(&:first)
     assert_match "закрыт", sent.first[1]
     assert_no_match(/translation missing/i, sent.first[1])
-    assert_equal({ silent: true }, sent.first[2], "письмо о закрытии чата приходит без звука")
+    assert_equal({}, sent.first[2], "сброс идёт вечером — письмо приходит со звуком")
+  end
+
+  # Чат остаётся тем же, а занятие у него новое: составу об этом говорят, иначе
+  # непонятно, про какую игру теперь переписка.
+  test "tells the new lineup that the chat moved on to the next game" do
+    player = User.create!(email: "reset-chat-updated@example.com", telegram_chat_id: 910_100_003, telegram_locale: "ru")
+    game = weekly_series(players_count: 2, prebooking_enabled: true)
+    game.prebookings.create!(date: NEXT_OCCURRENCE, slot_index: 1, user: player)
+
+    sent = []
+    travel_to RESET_MOMENT do
+      with_memory_cache do
+        stub_singleton(SendTelegramNotificationJob, :perform_later, ->(chat_id, text, **opts) { sent << [ chat_id, text, opts ] }) do
+          ResetParticipationsJob.perform_now
+        end
+      end
+    end
+
+    notice = sent.find { |chat_id, _text, _opts| chat_id == player.telegram_chat_id.to_s }
+
+    assert notice, "тот, кто пришёл в состав из предзаписи, узнаёт об обновлённом чате"
+    assert_match "14.09.2026", notice[1]
+    assert_match "18:00", notice[1]
+    assert_match courts(:one).name, notice[1]
+    assert_no_match(/translation missing/i, notice[1])
   end
 
   # Ролик и комментарий живут в игре ровно один цикл: к новой встрече на карточке
   # не должно оставаться ни «сегодня беру мячи», ни видео с прошлой субботы.
   test "clears the comment and the attachments together with the lineup" do
     game = Game.create!(
-      court: courts(:one), user: @owner, date: Date.current - 14.days, time: "18:00",
+      court: courts(:one), user: @owner, date: SERIES_START, time: "18:00",
       recurring: true, comment: "сегодня беру мячи"
     )
     medium = create_medium(game)
 
-    ResetParticipationsJob.perform_now
+    travel_to(RESET_MOMENT) { ResetParticipationsJob.perform_now }
 
     assert_nil game.reload.comment
     assert_nil GameMedium.find_by(id: medium.id)
@@ -160,13 +192,11 @@ class ResetParticipationsJobTest < ActiveJob::TestCase
   # Файл лежит на диске прода, и место надо освобождать: без снятого вложения
   # сброс копил бы ролики до самой месячной уборки.
   test "detaches the file so Active Storage drops it from disk" do
-    game = Game.create!(
-      court: courts(:one), user: @owner, date: Date.current - 14.days, time: "18:00", recurring: true
-    )
+    game = weekly_series
     create_medium(game)
 
     assert_difference -> { ActiveStorage::Attachment.where(record_type: "GameMedium").count }, -1 do
-      ResetParticipationsJob.perform_now
+      travel_to(RESET_MOMENT) { ResetParticipationsJob.perform_now }
     end
   end
 
@@ -186,40 +216,46 @@ class ResetParticipationsJobTest < ActiveJob::TestCase
   # нельзя: упавшее удаление ролика иначе не повторилось бы уже никогда.
   test "a failed cleanup leaves the game to the next run" do
     game = Game.create!(
-      court: courts(:one), user: @owner, date: Date.current - 14.days, time: "18:00",
+      court: courts(:one), user: @owner, date: SERIES_START, time: "18:00",
       recurring: true, comment: "сегодня беру мячи"
     )
     game.participations.create!(user: @player)
     medium = create_medium(game)
 
-    with_failing_medium_destroy { ResetParticipationsJob.perform_now }
+    travel_to RESET_MOMENT do
+      with_failing_medium_destroy { ResetParticipationsJob.perform_now }
 
-    assert_nil game.reload.last_participations_reset_at, "маркер не ставим, пока уборка не удалась"
-    assert_equal 1, game.participations.count, "состав ждёт вместе с игрой"
-    assert_not_nil GameMedium.find_by(id: medium.id)
+      assert_nil game.reload.last_participations_reset_at, "маркер не ставим, пока уборка не удалась"
+      assert_equal 1, game.participations.count, "состав ждёт вместе с игрой"
+      assert_not_nil GameMedium.find_by(id: medium.id)
 
-    # Следующая ночь застаёт игру нетронутой и доводит сброс до конца.
-    ResetParticipationsJob.perform_now
+      # Следующий заход застаёт игру нетронутой и доводит сброс до конца.
+      ResetParticipationsJob.perform_now
 
-    assert_empty game.participations.reload
-    assert_nil GameMedium.find_by(id: medium.id)
+      assert_empty game.participations.reload
+      assert_nil GameMedium.find_by(id: medium.id)
+    end
   end
 
-  # Организатор из состава не выпадает — ему закрывать нечего.
+  # Организатор из состава не выпадает — закрывать ему нечего. Письмо об
+  # обновлённом чате он всё же получает: занятие у чата теперь новое.
   test "leaves the organiser alone" do
-    @owner.update_column(:telegram_chat_id, 910_100_002)
-    game = Game.create!(
-      court: courts(:one), user: @owner, date: Date.current - 14.days, time: "18:00", recurring: true
-    )
+    @owner.update_columns(telegram_chat_id: 910_100_002, telegram_locale: "ru")
+    weekly_series
 
     sent = []
-    with_memory_cache do
-      stub_singleton(SendTelegramNotificationJob, :perform_later, ->(chat_id, text, **opts) { sent << [ chat_id, text, opts ] }) do
-        ResetParticipationsJob.perform_now
+    travel_to RESET_MOMENT do
+      with_memory_cache do
+        stub_singleton(SendTelegramNotificationJob, :perform_later, ->(chat_id, text, **opts) { sent << [ chat_id, text, opts ] }) do
+          ResetParticipationsJob.perform_now
+        end
       end
     end
 
-    assert_not_includes sent.map(&:first), @owner.telegram_chat_id.to_s
+    owner_notices = sent.select { |chat_id, _text, _opts| chat_id == @owner.telegram_chat_id.to_s }
+
+    assert_equal 1, owner_notices.size
+    assert_match "обновлён", owner_notices.first[1]
   end
 
   private

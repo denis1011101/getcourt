@@ -436,6 +436,27 @@ class Game < ApplicationRecord
     end
   end
 
+  # Час игры известен не всегда, а делить промежуток между занятиями надо и
+  # тогда: у игры без времени занятие считаем с начала суток. Длительность по
+  # умолчанию — час, как в анонсах срочного поиска.
+  DEFAULT_DURATION_MINUTES = 60
+
+  def occurrence_starts_at(day)
+    return nil if day.blank?
+
+    day = day.to_date
+    hour = time.respond_to?(:hour) ? time.hour : 0
+    minute = time.respond_to?(:min) ? time.min : 0
+    Time.zone.local(day.year, day.month, day.day, hour, minute)
+  end
+
+  def occurrence_ends_at(day)
+    started_at = occurrence_starts_at(day)
+    return nil if started_at.nil?
+
+    started_at + (duration_minutes.to_i.positive? ? duration_minutes.to_i : DEFAULT_DURATION_MINUTES).minutes
+  end
+
   # Ближайшее вхождение серии не раньше указанного дня. Шагаем по дням, а не по
   # неделям: у серии их теперь несколько на неделе, и следующая игра может быть
   # хоть завтра.
@@ -539,19 +560,17 @@ class Game < ApplicationRecord
     prev
   end
 
-  # Сброс участий имеет смысл только когда предыдущее вхождение уже отыграно.
-  # Без этой проверки серия, у которой первая игра ещё впереди, попадала под
-  # ResetParticipationsJob в первую же ночь: маркер nil, next_date в будущем,
-  # и состав вычищался за несколько дней до игры.
-  def should_reset_participations?(as_of = Date.current)
-    occurrence_cycle.pending?(as_of)
+  # Пора ли сбрасывать состав: наступила ли ночь... вернее, вечер, в который
+  # состав отыгранного занятия уступает место следующему. Всё про эту границу —
+  # в Game::OccurrenceCycle.
+  def participations_reset_due?(now = Time.current)
+    occurrence_cycle.due?(now)
   end
 
-  # Отдельно от should_reset_participations?: тот отвечает «состав всё ещё от
-  # прошлого занятия» — по нему карточка показывает отыгранное вхождение, пока
-  # сброс не прошёл, — а этот решает, пора ли задаче его наконец разобрать.
-  def participations_reset_due?(as_of = Date.current)
-    occurrence_cycle.due?(as_of)
+  # Занятие, к которому относится состав после ближайшего сброса: на него
+  # переносится предзапись и им отмечается сам сброс.
+  def upcoming_occurrence(now = Time.current)
+    occurrence_cycle.upcoming_occurrence(now)
   end
 
   def mark_participations_reset!(date = next_date)

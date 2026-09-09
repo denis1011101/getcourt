@@ -3,32 +3,33 @@ class ResetParticipationsJob < ApplicationJob
 
   def perform
     Game.where(recurring: true).find_each do |game|
-      nd = game.next_date
-      next unless nd
+      next unless game.participations_reset_due?
 
-      if game.participations_reset_due?(Date.current)
-        # Снимок до сброса: кому чат закроется, видно только по разнице составов —
-        # часть людей вернётся в состав из предзаписи и никуда не выбывает.
-        chat_members = game.chat_members.to_a
+      upcoming = game.upcoming_occurrence
+      next if upcoming.blank?
 
-        # Контент чистим до маркера: маркер закрывает игре повторный заход, и
-        # неудачная уборка должна дождаться следующей ночи, а не пропасть.
-        # Отсюда же и порядок: сброс предзаписей уносит людей с даты в состав,
-        # повторить его вторым заходом нельзя.
-        next unless reset_occurrence_content(game)
+      # Снимок до сброса: кому чат закроется, видно только по разнице составов —
+      # часть людей вернётся в состав из предзаписи и никуда не выбывает.
+      chat_members = game.chat_members.to_a
 
-        if game.prebooking_enabled?
-          apply_prebookings_for_occurrence!(game, nd)
-          game.mark_participations_reset!(nd)
-          Rails.logger.info "Reset participations from prebookings for Game##{game.id} for occurrence #{nd}"
-        else
-          game.participations.delete_all
-          game.mark_participations_reset!(nd)
-          Rails.logger.info "Reset participations for Game##{game.id} for occurrence #{nd}"
-        end
+      # Контент чистим до маркера: маркер закрывает игре повторный заход, и
+      # неудачная уборка должна дождаться следующего часа, а не пропасть.
+      # Отсюда же и порядок: сброс предзаписей уносит людей с даты в состав,
+      # повторить его вторым заходом нельзя.
+      next unless reset_occurrence_content(game)
 
-        close_chat_for_dropped(game, chat_members)
+      if game.prebooking_enabled?
+        apply_prebookings_for_occurrence!(game, upcoming)
+        game.mark_participations_reset!(upcoming)
+        Rails.logger.info "Reset participations from prebookings for Game##{game.id} for occurrence #{upcoming}"
+      else
+        game.participations.delete_all
+        game.mark_participations_reset!(upcoming)
+        Rails.logger.info "Reset participations for Game##{game.id} for occurrence #{upcoming}"
       end
+
+      close_chat_for_dropped(game, chat_members)
+      announce_chat_update(game)
     end
   end
 
@@ -63,8 +64,8 @@ class ResetParticipationsJob < ApplicationJob
 
   # delete_all идёт мимо колбэков Participation, поэтому режим чата у выбывших
   # гасим здесь — иначе они продолжат писать в состав, из которого их убрали.
-  # Сброс идёт ночью, и без письма человек заметил бы это, только когда его
-  # сообщение уже никому не ушло.
+  # Без письма человек заметил бы это, только когда его сообщение уже никому
+  # не ушло.
   def close_chat_for_dropped(game, previous_members)
     game.participations.reset
     remaining = game.team_member_ids
@@ -72,6 +73,15 @@ class ResetParticipationsJob < ApplicationJob
     Telegram::Chat::Closure.notify(game, :chat_closed_reset, dropped)
   rescue StandardError => e
     Rails.logger.warn("[ResetParticipationsJob] chat cleanup failed for Game##{game.id}: #{e.class}: #{e.message}")
+  end
+
+  # Чат остаётся тем же, меняется занятие, к которому он относится: тем, кто в
+  # составе, переписку продолжать, и они должны видеть, про какую игру она
+  # теперь. Письмо уходит после закрытия — выбывшие своё уже получили.
+  def announce_chat_update(game)
+    Telegram::Chat::Announcement.notify(game, :chat_updated_reset)
+  rescue StandardError => e
+    Rails.logger.warn("[ResetParticipationsJob] chat update notice failed for Game##{game.id}: #{e.class}: #{e.message}")
   end
 
   # Кто записался на это занятие — тот и выходит на корт: людей с даты nd

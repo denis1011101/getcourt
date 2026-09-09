@@ -1,24 +1,32 @@
 # Что происходит при сбросе, в одном месте.
 #
 # Состав, чат, комментарий и медиа принадлежат одному занятию серии и живут до
-# ночи, когда их место занимает следующее. Ночь эта — еженедельный сброс с
-# пятницы на субботу (ResetParticipationsJob в recurring.yml, там же чистка
-# прошедших разовых игр), а у серии, где занятий несколько в неделю, — ночь
-# ближайшего следующего занятия, если она наступает раньше: иначе четверг вышел
-# бы на корт с составом, комментарием и роликами понедельника.
+# момента, когда их место занимает следующее. Момент этот — 20:00, ближайшие к
+# середине промежутка между концом отыгранного занятия и началом следующего
+# неотменённого: у серии «пн + чт» это вечер вторника, а после четверга —
+# вечер субботы; у серии раз в неделю — вечер четверга. Вечер, а не ночь:
+# письмо о закрытом чате и о новом составе человек получает бодрствующим, и до
+# следующего занятия у него остаётся день-два, чтобы собраться заново.
 #
 # Отсюда все вопросы про эту границу: какому занятию принадлежит нынешний
 # состав (его же показывает карточка и по нему выбираются адресаты
 # напоминания), пора ли сбрасывать и до какого момента открыт чат.
 class Game::OccurrenceCycle
-  RESET_WDAY = 6
-  RESET_HOUR = 4
+  RESET_HOUR = 20
 
-  # Ближайшая ночь еженедельного сброса после указанного момента.
+  # Разовой игре делить нечего: её состав и чат живут до той же ночи с пятницы
+  # на субботу, в которую CleanupPastOneOffGamesJob сносит саму игру.
+  WEEKLY_RESET_WDAY = 6
+  WEEKLY_RESET_HOUR = 4
+
+  # Отменить можно хоть год вперёд, но не бесконечно: цикл ищет живое занятие,
+  # а не перебирает даты до скончания веков.
+  MAX_SKIPPED_OCCURRENCES = 520
+
   def self.next_weekly_reset_at(from = Time.current)
     from = from.in_time_zone
-    reset = from.beginning_of_day.change(hour: RESET_HOUR)
-    reset += 1.day while reset <= from || reset.wday != RESET_WDAY
+    reset = from.beginning_of_day.change(hour: WEEKLY_RESET_HOUR)
+    reset += 1.day while reset <= from || reset.wday != WEEKLY_RESET_WDAY
     reset
   end
 
@@ -26,56 +34,61 @@ class Game::OccurrenceCycle
     @game = game
   end
 
-  # Занятие, которому принадлежит нынешний состав: пока сброс не прошёл — уже
-  # отыгранное вхождение, после — ближайшее. Прошедшую серию, у которой впереди
-  # ничего не осталось, показываем последним вхождением.
-  def roster_occurrence(as_of = Date.current)
-    nd = game.next_date
-    return game.date unless nd
+  # Занятие, которому принадлежит нынешний состав: отыгранное — пока не пришёл
+  # его сброс, дальше — следующее.
+  def roster_occurrence(now = Time.current)
+    played = played_occurrence(now)
+    return played if played && now < reset_at(played)
 
-    prev = game.previous_occurrence_before_next_date
-    return prev if prev && (reset_marked_for?(prev) || (prev < as_of && pending?(as_of)))
-    return nd if nd >= as_of
-
-    prev || nd
+    upcoming_occurrence(now) || played || game.date
   end
 
-  # Состав ещё от отыгранного вхождения — сбросить его только предстоит.
-  def pending?(as_of = Date.current)
-    return false unless game.recurring?
+  # Последнее занятие, которое уже началось.
+  def played_occurrence(now = Time.current)
+    day = occurrence_on_or_before(now.to_date)
+    return nil if day.blank?
+    return day if game.occurrence_starts_at(day) <= now
 
-    nd = game.next_date
-    return false unless nd
-
-    prev = game.previous_occurrence_before_next_date
-    return false unless prev && prev < as_of
-
-    marker = game.last_participations_reset_at
-    marker.nil? || marker.to_date < nd
+    previous_occurrence(day)
   end
 
-  # Пора: ночь, в которую состав уступает место следующему занятию, наступила.
-  def due?(as_of = Date.current)
-    pending?(as_of) && reset_at(game.previous_occurrence_before_next_date).to_date <= as_of
+  # Ближайшее занятие, которое ещё не началось.
+  def upcoming_occurrence(now = Time.current)
+    day = occurrence_on_or_after(now.to_date)
+    return nil if day.blank?
+    return day if game.occurrence_starts_at(day) > now
+
+    following_occurrence(day)
   end
 
-  # Ночь, в которую состав этого занятия уступит место следующему.
+  # Момент, когда состав этого занятия уступит место следующему.
   def reset_at(occurrence)
     return Time.current if occurrence.blank?
 
-    weekly = self.class.next_weekly_reset_at(occurrence.end_of_day)
-    following = game.recurring? ? game.occurrence_after(occurrence) : nil
-    return weekly if following.blank?
+    following = following_occurrence(occurrence)
+    return self.class.next_weekly_reset_at(occurrence.end_of_day) if following.blank?
 
-    [ weekly, following.in_time_zone.change(hour: RESET_HOUR) ].min
+    evening_between(game.occurrence_ends_at(occurrence), game.occurrence_starts_at(following))
   end
 
-  # Чат живёт ровно столько же, сколько состав, которому человек пишет. Считаем
-  # не «ближайшую субботу вообще», а ту ночь, которая действительно разберёт
-  # этот состав: игру, назначенную после ближайшей субботы, эта ночь не
-  # касается, и гасить её чат в 4 утра не за что.
+  # Пора: момент смены состава наступил, а сброс на это занятие ещё не отмечен.
+  def due?(now = Time.current)
+    return false unless game.recurring?
+
+    played = played_occurrence(now)
+    return false unless played && reset_at(played) <= now
+
+    upcoming = upcoming_occurrence(now)
+    return false if upcoming.blank?
+
+    marker = game.last_participations_reset_at
+    marker.nil? || marker.to_date < upcoming
+  end
+
+  # Чат живёт ровно столько же, сколько состав, которому человек пишет: до
+  # сброса того занятия, к которому этот состав относится.
   def chat_open_until
-    occurrence = game.recurring? ? (game.next_date || game.date) : game.date
+    occurrence = roster_occurrence
     return nil if occurrence.blank?
 
     closes_at = reset_at(occurrence)
@@ -85,8 +98,54 @@ class Game::OccurrenceCycle
   private
     attr_reader :game
 
-    def reset_marked_for?(occurrence)
-      marker = game.last_participations_reset_at
-      marker.present? && marker.to_date == occurrence
+    # Середину промежутка сдвигаем к ближайшим 20:00. Если ни одни в промежуток
+    # не попадают — занятия стоят впритык, — сбрасываем сразу, как первое
+    # закончилось: пока оно идёт, состав трогать нельзя.
+    def evening_between(ends_at, starts_at)
+      midpoint = ends_at + (starts_at - ends_at) / 2
+      evenings = (-1..1).map { |shift| (midpoint.to_date + shift).in_time_zone.change(hour: RESET_HOUR) }
+
+      evenings.select { |evening| evening > ends_at && evening < starts_at }
+              .min_by { |evening| (evening - midpoint).abs } || ends_at
+    end
+
+    def occurrence_on_or_before(day)
+      return nil if game.date.blank?
+      return (game.date if game.date <= day) unless game.recurring?
+      return nil if day < game.date
+
+      candidate = day
+      candidate -= 1 until game.recurrence_weekdays.include?(candidate.wday)
+      game.cancelled_on?(candidate) ? previous_occurrence(candidate) : candidate
+    end
+
+    def occurrence_on_or_after(day)
+      return nil if game.date.blank?
+      return (game.date if game.date >= day && !game.cancelled_on?(game.date)) unless game.recurring?
+
+      candidate = game.occurrence_on_or_after(day)
+      game.cancelled_on?(candidate) ? following_occurrence(candidate) : candidate
+    end
+
+    def previous_occurrence(day)
+      candidate = game.occurrence_before(day)
+      MAX_SKIPPED_OCCURRENCES.times do
+        break if candidate.blank? || !game.cancelled_on?(candidate)
+
+        candidate = game.occurrence_before(candidate)
+      end
+      candidate
+    end
+
+    def following_occurrence(day)
+      return nil unless game.recurring? && game.date.present?
+
+      candidate = game.occurrence_after(day)
+      MAX_SKIPPED_OCCURRENCES.times do
+        break if candidate.blank? || !game.cancelled_on?(candidate)
+
+        candidate = game.occurrence_after(candidate)
+      end
+      candidate
     end
 end
