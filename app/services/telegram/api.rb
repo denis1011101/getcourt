@@ -10,6 +10,7 @@ module Telegram
 
     def self.post(path, params = {})
       return false if TOKEN.to_s.empty?
+      params = without_link_preview(path, params)
       uri = URI("https://api.telegram.org/bot#{TOKEN}/#{path}")
       Rails.logger.debug "[Telegram::Api] POST #{path} params=#{params.inspect}"
       res = Net::HTTP.post_form(uri, params)
@@ -34,6 +35,19 @@ module Telegram
     # сочтёт нужным: под приглашением висела карточка чужого корта и чужой даты.
     # Всё нужное и так есть в тексте, поэтому по умолчанию превью выключено.
     LINK_PREVIEW_DISABLED = { is_disabled: true }.to_json
+    LINK_PREVIEW_ENABLED = { is_disabled: false }.to_json
+
+    # Текст бота уходит и через именованные отправители, и через send_api во
+    # флоу, и правкой уже отправленного сообщения. Выключаем превью в самом
+    # транспорте: иначе про него пришлось бы вспоминать в каждом новом флоу.
+    LINK_PREVIEW_METHODS = %w[sendMessage editMessageText].freeze
+
+    def self.without_link_preview(path, params)
+      return params unless LINK_PREVIEW_METHODS.include?(path.to_s)
+      return params if params.key?("link_preview_options") || params.key?(:link_preview_options)
+
+      params.merge("link_preview_options" => LINK_PREVIEW_DISABLED)
+    end
 
     # Ночная тишина живёт в именованных отправителях, а не в post: post — сырой
     # транспорт, и через него же уходит сообщение чата, которому звенеть можно
@@ -41,14 +55,14 @@ module Telegram
     def self.send_with_buttons(chat_id, text, buttons, parse_mode: "Markdown", link_preview: false, silent: nil)
       params = { "chat_id" => chat_id.to_s, "text" => text.to_s, "reply_markup" => { inline_keyboard: buttons }.to_json }
       params["parse_mode"] = parse_mode if parse_mode.present?
-      params["link_preview_options"] = LINK_PREVIEW_DISABLED unless link_preview
+      params["link_preview_options"] = link_preview ? LINK_PREVIEW_ENABLED : LINK_PREVIEW_DISABLED
       post("sendMessage", QuietHours.apply(params, silent: silent))
     end
 
     def self.send_simple(chat_id, text, parse_mode: "Markdown", link_preview: false, silent: nil)
       params = { "chat_id" => chat_id.to_s, "text" => text.to_s }
       params["parse_mode"] = parse_mode if parse_mode.present?
-      params["link_preview_options"] = LINK_PREVIEW_DISABLED unless link_preview
+      params["link_preview_options"] = link_preview ? LINK_PREVIEW_ENABLED : LINK_PREVIEW_DISABLED
       post("sendMessage", QuietHours.apply(params, silent: silent))
     end
 
