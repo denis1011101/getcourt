@@ -113,7 +113,7 @@ class ResetParticipationsJob < ApplicationJob
 
       # 3) append a new empty date after the last known date
       last_date = dates.max || nd
-      new_date = last_date + 1.week
+      new_date = game.occurrence_after(last_date)
       (1..players_needed).each do |slot_index|
         game.prebookings.find_or_create_by!(date: new_date, slot_index: slot_index) do |pb|
           pb.user_id = nil

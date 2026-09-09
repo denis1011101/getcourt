@@ -362,7 +362,7 @@ class GamesController < ApplicationController
   end
 
   def game_params
-    params.require(:game).permit(:court_id, :kind, :recurring, :occurrences_per_week, :with_coach, :coach_id, :second_coach_id, :date, :time, :players_count, :skill_level, :sport, :surface, :environment, :prebooking_enabled, :urgent_player_search, :duration_minutes, :comment)
+    params.require(:game).permit(:court_id, :kind, :recurring, :occurrences_per_week, :with_coach, :coach_id, :second_coach_id, :date, :dates, :time, :players_count, :skill_level, :sport, :surface, :environment, :prebooking_enabled, :urgent_player_search, :duration_minutes, :comment)
   end
 
   def display_date(game)
@@ -446,7 +446,7 @@ class GamesController < ApplicationController
   end
 
   def sanitized_game_params
-    gp = game_params.to_h
+    gp = apply_selected_dates(game_params.to_h)
     gp["date"] = gp["date"].presence
     gp["time"] = gp["time"].presence
     gp["recurring"] = ActiveModel::Type::Boolean.new.cast(gp["recurring"]) if gp.key?("recurring")
@@ -459,6 +459,19 @@ class GamesController < ApplicationController
     gp["skill_level"] = gp["skill_level"].presence if gp.key?("skill_level")
     gp["surface"] = gp["surface"].presence if gp.key?("surface")
     gp["environment"] = gp["environment"].presence if gp.key?("environment")
+    gp
+  end
+
+  # Календарь в форме отдаёт список отмеченных дат, а игра остаётся одной:
+  # самая ранняя дата становится её датой, а дни недели всех отмеченных —
+  # расписанием повторов. Так серия остаётся одной записью, у которой просто
+  # переезжает дата, а не рассыпается на копии.
+  def apply_selected_dates(gp)
+    dates = Array(gp.delete("dates").to_s.split(",")).filter_map { |value| Date.parse(value) rescue nil }.uniq.sort
+    return gp if dates.empty?
+
+    gp["date"] = dates.first
+    gp["recurrence_days"] = dates.map(&:wday)
     gp
   end
 

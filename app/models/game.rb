@@ -1,9 +1,12 @@
 class Game < ApplicationRecord
+  # Дни недели, по которым идёт серия: [1, 4] — понедельник и четверг.
+  serialize :recurrence_days, coder: JSON, type: Array
+
   after_commit :schedule_post_game_stats_reminder, on: %i[create update]
   after_commit :announce_urgent_player_search, on: %i[create update]
   after_update :drop_training_plan_from_plain_game, if: -> { saved_change_to_kind? && !training? }
   after_update :remove_stale_coach_prebookings,
-               if: -> { saved_change_to_coach_id? || saved_change_to_second_coach_id? || saved_change_to_date? || saved_change_to_recurring? }
+               if: -> { saved_change_to_coach_id? || saved_change_to_second_coach_id? || saved_change_to_date? || saved_change_to_recurring? || saved_change_to_recurrence_days? }
 
   belongs_to :tournament, optional: true
   belongs_to :court
@@ -36,6 +39,7 @@ class Game < ApplicationRecord
   # A tournament game follows the tournament schedule, so the standalone game options don't apply.
   before_validation :drop_options_managed_by_tournament, if: -> { tournament_id.present? }
   before_validation :normalize_coach_assignment
+  before_validation :normalize_recurrence_days
 
   validates :date, presence: { message: "must be present" }
   validates :comment, length: { maximum: 500 }, allow_blank: true
@@ -177,15 +181,37 @@ class Game < ApplicationRecord
     update!("#{slot}_invitation_status" => status)
   end
 
-  # Is this date one of the game's occurrences? A recurring game repeats weekly
-  # from its start date, a one-off game has exactly one.
+  # Календарь формы отдаёт дни строкой, а телеграм-флоу — массивом: нормализуем
+  # на входе, чтобы читатель всегда получал числа 0..6 без дублей.
+  def recurrence_days=(value)
+    days = value.is_a?(String) ? value.split(",") : Array(value)
+    super(days.filter_map { |day| Integer(day.to_s.strip, exception: false) }.select { |day| (0..6).cover?(day) }.uniq.sort)
+  end
+
+  # Пустое расписание значит «тот же день недели, что и дата»: так работали все
+  # серии до мультивыбора в календаре, и переписывать их не пришлось.
+  def recurrence_weekdays
+    days = Array(recurrence_days).map(&:to_i).select { |day| (0..6).cover?(day) }.uniq.sort
+    days.presence || Array(date&.wday)
+  end
+
+  # Даты, которыми серия показывается в календаре формы: по одной на каждый
+  # день недели, начиная с даты игры.
+  def recurrence_seed_dates
+    return Array(date) unless recurring? && date.present?
+
+    recurrence_weekdays.map { |wday| date + ((wday - date.wday) % 7) }.sort
+  end
+
+  # Is this date one of the game's occurrences? A recurring game repeats every
+  # week on each of its weekdays, a one-off game has exactly one.
   def occurrence_date?(candidate)
     return false if candidate.blank? || date.blank?
 
     candidate = candidate.to_date
     return candidate == date.to_date unless recurring?
 
-    candidate >= date && ((candidate - date.to_date).to_i % 7).zero?
+    candidate >= date && recurrence_weekdays.include?(candidate.wday)
   end
 
   def tournament_game?
@@ -284,6 +310,17 @@ class Game < ApplicationRecord
     update_column(:post_game_stats_reminder_job_id, nil)
   end
 
+  # Расписание живёт только у серии. И если дату перенесли мимо расписания —
+  # например, из телеграм-бота, где выбирают один день, — старые дни недели уже
+  # не про эту серию: оставляем день новой даты.
+  def normalize_recurrence_days
+    if !recurring?
+      self.recurrence_days = []
+    elsif date.present? && recurrence_days.present? && recurrence_days.exclude?(date.wday)
+      self.recurrence_days = [ date.wday ]
+    end
+  end
+
   def prebooking_requires_recurring
     if prebooking_enabled? && !recurring?
       errors.add(:prebooking_enabled, "can be enabled only for repeating (weekly) games")
@@ -321,6 +358,7 @@ class Game < ApplicationRecord
   def drop_options_managed_by_tournament
     self.kind = "game"
     self.recurring = false
+    self.recurrence_days = []
     self.prebooking_enabled = false
     self.with_coach = false
     self.urgent_player_search = false
@@ -411,7 +449,7 @@ class Game < ApplicationRecord
 
     if recurring?
       # advance to first occurrence >= today
-      d += 7 while d < Date.current
+      d = occurrence_on_or_after(Date.current)
 
       # skip cancelled occurrences
       max_iters = 520
@@ -419,7 +457,7 @@ class Game < ApplicationRecord
 
       # ОПТИМИЗАЦИЯ: используем cancelled_on? вместо prebooking_cancellations.exists?
       while cancelled_on?(d) && iter < max_iters
-        d += 7
+        d = occurrence_after(d)
         iter += 1
       end
 
@@ -431,12 +469,38 @@ class Game < ApplicationRecord
     end
   end
 
+  # Ближайшее вхождение серии не раньше указанного дня. Шагаем по дням, а не по
+  # неделям: у серии их теперь несколько на неделе, и следующая игра может быть
+  # хоть завтра.
+  def occurrence_on_or_after(day)
+    return nil if date.blank?
+
+    day = day.to_date
+    day = date if day < date
+    day += 1 until recurrence_weekdays.include?(day.wday)
+    day
+  end
+
+  def occurrence_after(day)
+    occurrence_on_or_after(day.to_date + 1)
+  end
+
+  # Предыдущее вхождение — до даты игры серии не существует.
+  def occurrence_before(day)
+    return nil if date.blank? || day.blank?
+
+    day = day.to_date - 1
+    day -= 1 while day >= date && !recurrence_weekdays.include?(day.wday)
+    day if day >= date
+  end
+
   def prebooking_horizon_dates(count = 3)
     return [] unless recurring?
 
     count = count.to_i.clamp(3, MAX_PREBOOKING_HORIZON)
-    base = (next_date.presence || date).to_date
-    Array.new(count) { |i| base + i.weeks }
+    dates = [ (next_date.presence || date).to_date ]
+    dates << occurrence_after(dates.last) while dates.size < count
+    dates
   end
 
   # Возвращает даты в заданном горизонте и даты с существующими бронями/отменами.
@@ -494,18 +558,17 @@ class Game < ApplicationRecord
   def previous_occurrence_before_next_date
     return nil unless recurring? && next_date.present?
 
-    prev = next_date - 7
+    prev = occurrence_before(next_date)
     max_iters = 520
     iter = 0
 
     # ОПТИМИЗАЦИЯ: используем cancelled_on?
-    while cancelled_on?(prev) && iter < max_iters
-      prev -= 7
+    while prev && cancelled_on?(prev) && iter < max_iters
+      prev = occurrence_before(prev)
       iter += 1
     end
 
-    return nil if cancelled_on?(prev)
-    return nil if date.present? && prev < date
+    return nil if prev.nil? || cancelled_on?(prev)
 
     prev
   end

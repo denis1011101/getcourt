@@ -200,7 +200,10 @@ en:
         many: "%{count} errors prohibited this game from being saved:"
         other: "%{count} errors prohibited this game from being saved:"
       recurring: Repeat weekly
-      recurring_hint: If checked, this date and time will recur every week.
+      recurring_hint: "The game repeats every week on the days ticked in the calendar. It stays one game: its date moves on to the next session by itself."
+      dates_hint: "Tick a day in the calendar. With “Repeat weekly” on you can tick several days of the week or the month at once — it still stays one game: after each session its date moves on to the next one, the line-up is reset, and prebooking lets players take a slot on any upcoming date."
+      dates_previous_month: Previous month
+      dates_next_month: Next month
       prebooking: Enable prebooking
       prebooking_hint: Players can reserve slots for upcoming dates.
       prebooking_note: 'Note: prebooking slots will be created after saving the game.'

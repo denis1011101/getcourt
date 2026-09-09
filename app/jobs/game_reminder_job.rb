@@ -51,10 +51,7 @@ class GameReminderJob < ApplicationJob
   end
 
   def occurrence_on?(game, target_date)
-    return game.date == target_date unless game.recurring?
-    return false if game.date.blank? || game.date > target_date
-
-    ((target_date - game.date).to_i % 7).zero? && !game.cancelled_on?(target_date)
+    game.occurrence_date?(target_date) && !game.cancelled_on?(target_date)
   end
 
   def game_before_14_yekaterinburg?(game)

@@ -123,6 +123,63 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to game_path(Game.order(:id).last)
   end
 
+  # Календарь формы отдаёт список отмеченных дат, а игра создаётся одна: самая
+  # ранняя дата становится её датой, остальные — расписанием повторов.
+  test "several dates picked in the calendar make one repeating game" do
+    post session_url, params: { email: "games_calendar_user@example.com" }
+
+    assert_difference("Game.count", 1) do
+      post games_url, params: {
+        game: {
+          court_id: courts(:one).id,
+          dates: "2026-09-10,2026-09-07",
+          date: "2026-09-07",
+          time: "18:00",
+          recurring: "1"
+        }
+      }
+    end
+
+    game = Game.order(:id).last
+    assert_equal Date.new(2026, 9, 7), game.date
+    assert_equal [ 1, 4 ], game.recurrence_days
+  end
+
+  test "a one-off game saved from the calendar keeps a single date" do
+    post session_url, params: { email: "games_calendar_one_off_user@example.com" }
+
+    post games_url, params: {
+      game: {
+        court_id: courts(:one).id,
+        dates: "2026-09-07",
+        date: "2026-09-07",
+        time: "18:00",
+        recurring: "0"
+      }
+    }
+
+    game = Game.order(:id).last
+    assert_equal Date.new(2026, 9, 7), game.date
+    assert_equal [], game.recurrence_days
+  end
+
+  test "editing the calendar rewrites the schedule of the same game" do
+    post session_url, params: { email: "games_calendar_edit_user@example.com" }
+    post games_url, params: {
+      game: { court_id: courts(:one).id, dates: "2026-09-07", date: "2026-09-07", time: "18:00", recurring: "1" }
+    }
+    game = Game.order(:id).last
+
+    assert_no_difference("Game.count") do
+      patch game_url(game), params: {
+        game: { court_id: courts(:one).id, dates: "2026-09-07,2026-09-09,2026-09-11", time: "18:00", recurring: "1" }
+      }
+    end
+
+    assert_equal Date.new(2026, 9, 7), game.reload.date
+    assert_equal [ 1, 3, 5 ], game.recurrence_days
+  end
+
   test "create rejects surface or environment not offered by the court" do
     post session_url, params: { email: "games_surface_user@example.com" }
     court = Court.create!(name: "Clay outdoor", surfaces: %w[clay], outdoor: true, indoor: false)

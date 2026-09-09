@@ -201,7 +201,10 @@ es:
         many: "%{count} errores impidieron guardar el partido:"
         other: "%{count} errores impidieron guardar el partido:"
       recurring: Repetir cada semana
-      recurring_hint: Si lo marcas, esta fecha y hora se repetirán cada semana.
+      recurring_hint: "El partido se repite cada semana en los días marcados en el calendario. Sigue siendo un único partido: su fecha pasa sola a la próxima sesión."
+      dates_hint: "Marca un día en el calendario. Con «Repetir cada semana» puedes marcar varios días de la semana o del mes a la vez: sigue siendo un único partido, cuya fecha pasa a la siguiente sesión, la lista de jugadores se reinicia y en la reserva previa se puede ocupar una plaza en cualquier fecha futura."
+      dates_previous_month: Mes anterior
+      dates_next_month: Mes siguiente
       prebooking: Activar reserva previa
       prebooking_hint: Los jugadores podrán reservar plazas para las próximas fechas.
       prebooking_note: 'Nota: las plazas de reserva previa se crearán al guardar el

@@ -455,4 +455,82 @@ class GameTest < ActiveSupport::TestCase
       assert_equal Time.zone.local(2026, 9, 12, 4, 0), Game.next_weekly_reset_at
     end
   end
+
+  # Календарь в форме даёт отметить несколько дней: игра остаётся одной, а её
+  # дата переезжает с занятия на занятие.
+  test "a series with several weekdays moves to the nearest of them" do
+    # 7 сентября 2026 — понедельник, серия идёт по понедельникам и четвергам.
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 7),
+                        recurring: true, recurrence_days: [ 1, 4 ], kind: "game")
+
+    assert game.occurrence_date?(Date.new(2026, 9, 10))
+    assert_not game.occurrence_date?(Date.new(2026, 9, 9))
+
+    travel_to Time.zone.local(2026, 9, 8, 12, 0) do
+      assert_equal Date.new(2026, 9, 10), game.next_date
+    end
+
+    travel_to Time.zone.local(2026, 9, 11, 12, 0) do
+      assert_equal Date.new(2026, 9, 14), game.next_date
+      assert_equal Date.new(2026, 9, 10), game.previous_occurrence_before_next_date
+    end
+  ensure
+    game&.destroy
+  end
+
+  test "prebooking dates follow every weekday of the series" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 7),
+                        recurring: true, recurrence_days: [ 1, 4 ], prebooking_enabled: true, kind: "game")
+
+    travel_to Time.zone.local(2026, 9, 7, 9, 0) do
+      assert_equal [ Date.new(2026, 9, 7), Date.new(2026, 9, 10), Date.new(2026, 9, 14), Date.new(2026, 9, 17) ],
+                   game.prebooking_horizon_dates(4)
+    end
+  ensure
+    game&.destroy
+  end
+
+  # Серии, заведённые до мультивыбора, живут с пустым расписанием: их день
+  # недели — день их же даты.
+  test "an empty schedule still means weekly on the day of the date" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 7), recurring: true, kind: "game")
+
+    assert_equal [ 1 ], game.recurrence_weekdays
+    assert game.occurrence_date?(Date.new(2026, 9, 14))
+    assert_not game.occurrence_date?(Date.new(2026, 9, 10))
+  ensure
+    game&.destroy
+  end
+
+  # Дату переносят и из телеграм-бота, где выбирают один день: расписание,
+  # оставшееся от календаря, там уже не про эту серию.
+  test "moving the date off the schedule leaves the weekday of the new date" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 7),
+                        recurring: true, recurrence_days: [ 1, 4 ], kind: "game")
+
+    game.update!(date: Date.new(2026, 9, 9))
+
+    assert_equal [ 3 ], game.recurrence_days
+  ensure
+    game&.destroy
+  end
+
+  test "a one-off game keeps no schedule" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 7),
+                        recurring: false, recurrence_days: [ 1, 4 ], kind: "game")
+
+    assert_equal [], game.recurrence_days
+    assert_equal [ Date.new(2026, 9, 7) ], game.recurrence_seed_dates
+  ensure
+    game&.destroy
+  end
+
+  test "the form calendar shows one date per weekday of the series" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 7),
+                        recurring: true, recurrence_days: [ 1, 4 ], kind: "game")
+
+    assert_equal [ Date.new(2026, 9, 7), Date.new(2026, 9, 10) ], game.recurrence_seed_dates
+  ensure
+    game&.destroy
+  end
 end
