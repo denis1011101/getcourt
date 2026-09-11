@@ -14,7 +14,7 @@ module TennisLife
 
         def available_games
           snapshotted(Game)
-            .where("games.date >= ? OR games.recurring = ?", snapshot_ts.to_date, true)
+            .merge(Game.still_running(snapshot_ts.to_date))
             .left_joins(:participations)
             .group("games.id")
             .having("SUM(CASE WHEN participations.status = 'approved' THEN 1 ELSE 0 END) < games.players_count")

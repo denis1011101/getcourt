@@ -142,6 +142,7 @@
               <% if block.description.present? %>
                 <span class="mt-0.5 block text-xs text-gray-500 dark:text-slate-400"><%= block.description %></span>
               <% end %>
+              <%= render "training_blocks/video_link", block: block %>
               <%# Схему показываем свёрнутой: в плане из пяти блоков пять кортов подряд не читаются. %>
               <% if block.diagram? %>
                 <details class="mt-1">
@@ -268,8 +269,8 @@
       </div>
     <% end %>
 
-    <% if @game.prebooking_enabled? || (@game.recurring? && @game.coach_accepted?) %>
-      <%= render "prebookings", game: @game, horizon: 3 %>
+    <% if @game.prebooking_enabled? || (@game.series? && @game.coach_accepted?) %>
+      <%= render "prebookings", game: @game %>
     <% end %>
 
     <% can_fill_stats = false %>

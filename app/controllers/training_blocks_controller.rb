@@ -38,6 +38,6 @@ class TrainingBlocksController < ApplicationController
   end
 
   def training_block_params
-    params.require(:training_block).permit(:title, :description, :duration_minutes, :shared, :diagram)
+    params.require(:training_block).permit(:title, :description, :duration_minutes, :video_url, :shared, :diagram)
   end
 end

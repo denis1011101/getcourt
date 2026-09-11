@@ -22,7 +22,7 @@ module Telegram
                 return
               end
 
-              unless game.prebooking_enabled? && game.recurring?
+              unless game.prebooking_enabled? && game.series?
                 poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Prebooking is not available for this game", show_alert: false }) rescue nil
                 return
               end
@@ -72,7 +72,7 @@ module Telegram
                 return
               end
 
-              unless game.prebooking_enabled? && game.recurring?
+              unless game.prebooking_enabled? && game.series?
                 poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Prebooking is not available for this game", show_alert: false }) rescue nil
                 return
               end
@@ -157,7 +157,7 @@ module Telegram
                 return
               end
 
-              unless game.prebooking_enabled? && game.recurring?
+              unless game.prebooking_enabled? && game.series?
                 poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Prebooking is not available for this game", show_alert: false }) rescue nil
                 return
               end

@@ -1,5 +1,6 @@
-<% horizon = local_assigns.fetch(:horizon, 3) %>
-<% dates = game.prebooking_candidate_dates(horizon) %>
+<% month = game.prebooking_month(local_assigns[:month]) %>
+<% month_range = game.prebooking_month_range %>
+<% dates = month ? game.prebooking_dates_in(month) : [] %>
 <% required = game.prebooking_required_players %>
 <% prebookings_by_date_and_slot = game.prebookings.where(date: dates).includes(:user).index_by { |prebooking| [prebooking.date, prebooking.slot_index] } %>
 <% cancellations_by_date = game.prebooking_cancellations.where(date: dates).index_by(&:date) %>
@@ -12,57 +13,87 @@
 <% taken_by_date = dates.index_with { |d| (1..required).count { |slot_index| prebookings_by_date_and_slot[[ d, slot_index ]]&.user } } %>
 
 <%= turbo_frame_tag "prebookings-#{game.id}", class: "block mt-6" do %>
-  <% if game.prebooking_enabled? || accepted_coaches.any? %>
+  <% if month && (game.prebooking_enabled? || accepted_coaches.any?) %>
     <h3 class="mb-2 text-sm font-semibold text-gray-700 dark:text-slate-300">
       <%= game.prebooking_enabled? ? t("games.prebookings.title") : t("games.prebookings.coach_title") %>
     </h3>
 
     <%# Календарь показывает, куда попадают занятия среди обычных дней; бронируют
         уже в карточках под ним — в клетку 7-колоночной сетки кнопки не влезают. %>
-    <div class="rounded-lg border border-gray-200 p-3 dark:border-white/10" data-testid="prebooking-calendar">
-      <% dates.map(&:beginning_of_month).uniq.each_with_index do |month, month_index| %>
-        <p class="<%= "mt-3" if month_index.positive? %> mb-1.5 text-sm font-semibold text-gray-900 dark:text-slate-100">
+    <div class="rounded-lg border border-gray-200 p-3 dark:border-white/10" data-testid="prebooking-calendar"
+         data-controller="scroll-to" data-scroll-to-highlight-class="ring-2 ring-indigo-400 dark:ring-indigo-300">
+      <%# Месяцы листаются стрелками внутри turbo-frame, как в календаре формы;
+          за границы серии — раньше ближайшего занятия и дальше последнего или
+          года вперёд — стрелка не ведёт. %>
+      <% arrow_classes = "flex h-10 w-10 items-center justify-center rounded-md text-gray-600 transition dark:text-slate-300" %>
+      <% arrow_active = "cursor-pointer hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white" %>
+      <% arrow_idle = "cursor-not-allowed opacity-30" %>
+      <div class="mb-2 flex items-center justify-between">
+        <% if month > month_range.first %>
+          <%= link_to more_game_prebookings_path(game, month: (month - 1.month).strftime("%Y-%m")),
+                      class: "#{arrow_classes} #{arrow_active}", "aria-label": t("games.form.dates_previous_month"), data: { testid: "prebooking-previous-month" } do %>
+            <svg class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 0 1-.02 1.06L8.832 10l3.938 3.71a.75.75 0 1 1-1.04 1.08l-4.5-4.25a.75.75 0 0 1 0-1.08l4.5-4.25a.75.75 0 0 1 1.06.02Z" clip-rule="evenodd"/></svg>
+          <% end %>
+        <% else %>
+          <span class="<%= arrow_classes %> <%= arrow_idle %>" aria-hidden="true">
+            <svg class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 0 1-.02 1.06L8.832 10l3.938 3.71a.75.75 0 1 1-1.04 1.08l-4.5-4.25a.75.75 0 0 1 0-1.08l4.5-4.25a.75.75 0 0 1 1.06.02Z" clip-rule="evenodd"/></svg>
+          </span>
+        <% end %>
+        <p class="text-base font-semibold text-gray-900 dark:text-slate-100" data-testid="prebooking-month">
           <%= month_names[month.month - 1] %> <%= month.year %>
         </p>
-        <div class="grid grid-cols-7 gap-1">
-          <% (1..7).each do |wday| %>
-            <span class="pb-1 text-center text-[10px] uppercase tracking-wide text-gray-400 dark:text-slate-500"><%= weekdays[wday % 7] %></span>
+        <% if month < month_range.last %>
+          <%= link_to more_game_prebookings_path(game, month: (month + 1.month).strftime("%Y-%m")),
+                      class: "#{arrow_classes} #{arrow_active}", "aria-label": t("games.form.dates_next_month"), data: { testid: "prebooking-next-month" } do %>
+            <svg class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.168 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" clip-rule="evenodd"/></svg>
           <% end %>
+        <% else %>
+          <span class="<%= arrow_classes %> <%= arrow_idle %>" aria-hidden="true">
+            <svg class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.168 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" clip-rule="evenodd"/></svg>
+          </span>
+        <% end %>
+      </div>
+      <div class="grid grid-cols-7 gap-1">
+        <% (1..7).each do |wday| %>
+          <span class="pb-1 text-center text-[10px] uppercase tracking-wide text-gray-400 dark:text-slate-500"><%= weekdays[wday % 7] %></span>
+        <% end %>
 
-          <% (month.beginning_of_week(:monday)..month.end_of_month.end_of_week(:monday)).each do |day| %>
-            <% in_month = day.month == month.month %>
-            <% cancellation = cancellations_by_date[day] %>
-            <% game_day = dates.include?(day) %>
-            <% taken = taken_by_date[day].to_i %>
-            <% cell_classes =
-                 if !game_day
-                   "bg-gray-50 text-gray-400 dark:bg-white/5 dark:text-slate-500"
-                 elsif cancellation
-                   "bg-red-100 text-red-700 line-through dark:bg-red-500/25 dark:text-red-200"
-                 elsif game.prebooking_enabled? && taken >= required
-                   "bg-emerald-100 font-semibold text-emerald-800 dark:bg-emerald-500/30 dark:text-emerald-100"
-                 else
-                   "bg-indigo-100 font-semibold text-indigo-800 dark:bg-indigo-500/35 dark:text-indigo-50"
-                 end %>
-            <% cell_body = capture do %>
-              <span class="text-sm"><%= day.day %></span>
-              <% if game_day && game.prebooking_enabled? && !cancellation %>
-                <span class="text-[10px] tabular-nums"><%= taken %>/<%= required %></span>
-              <% end %>
-            <% end %>
-            <% cell_classes = "#{cell_classes} flex min-h-11 flex-col items-center justify-center rounded-md leading-tight sm:min-h-14 #{"opacity-40" unless in_month} #{"ring-2 ring-indigo-400 dark:ring-indigo-300" if day == Date.current}" %>
-
-            <% if game_day %>
-              <%= link_to cell_body, "#prebooking-#{day.iso8601}",
-                          class: "#{cell_classes} transition hover:brightness-95",
-                          title: l(day, format: :long),
-                          data: { testid: "calendar-day" } %>
-            <% else %>
-              <span class="<%= cell_classes %>" data-testid="calendar-day"><%= cell_body %></span>
+        <% (month.beginning_of_week(:monday)..month.end_of_month.end_of_week(:monday)).each do |day| %>
+          <% in_month = day.month == month.month %>
+          <% cancellation = cancellations_by_date[day] %>
+          <% game_day = dates.include?(day) %>
+          <% taken = taken_by_date[day].to_i %>
+          <% cell_classes =
+               if !game_day
+                 "bg-gray-50 text-gray-400 dark:bg-white/5 dark:text-slate-500"
+               elsif cancellation
+                 "bg-red-100 text-red-700 line-through dark:bg-red-500/25 dark:text-red-200"
+               elsif game.prebooking_enabled? && taken >= required
+                 "bg-emerald-100 font-semibold text-emerald-800 dark:bg-emerald-500/30 dark:text-emerald-100"
+               else
+                 "bg-indigo-100 font-semibold text-indigo-800 dark:bg-indigo-500/35 dark:text-indigo-50"
+               end %>
+          <% cell_body = capture do %>
+            <span class="text-sm"><%= day.day %></span>
+            <% if game_day && game.prebooking_enabled? && !cancellation %>
+              <span class="text-[10px] tabular-nums"><%= taken %>/<%= required %></span>
             <% end %>
           <% end %>
-        </div>
-      <% end %>
+          <% cell_classes = "#{cell_classes} flex min-h-11 flex-col items-center justify-center rounded-md leading-tight sm:min-h-14 #{"opacity-40" unless in_month} #{"ring-2 ring-indigo-400 dark:ring-indigo-300" if day == Date.current}" %>
+
+          <% if game_day %>
+            <%# Якорь ведёт к карточке дня; с JS её ставит по центру экрана
+                scroll-to. Turbo снимаем: внутри фрейма он перехватывал клик как
+                навигацию и перерисовывал календарь, а до карточки не доезжал. %>
+            <%= link_to cell_body, "#prebooking-#{day.iso8601}",
+                        class: "#{cell_classes} cursor-pointer transition hover:brightness-95",
+                        title: l(day, format: :long),
+                        data: { testid: "calendar-day", turbo: false, action: "scroll-to#center" } %>
+          <% else %>
+            <span class="<%= cell_classes %>" data-testid="calendar-day"><%= cell_body %></span>
+          <% end %>
+        <% end %>
+      </div>
 
       <ul class="mt-3 flex flex-wrap gap-x-3 gap-y-1 border-t border-gray-200 pt-2 text-[11px] text-gray-600 dark:border-white/10 dark:text-slate-400">
         <li class="w-full font-medium text-gray-700 dark:text-slate-300"><%= t("games.prebookings.legend_title") %></li>
@@ -90,9 +121,12 @@
         <% cancellation = cancellations_by_date[d] %>
         <% slots = (1..required).map { |slot_index| [ slot_index, prebookings_by_date_and_slot[[ d, slot_index ]] ] } %>
         <% taken = taken_by_date[d].to_i %>
+        <%# Без JS работает сам якорь: подсветка через :target, а запас при
+            прокрутке — высота липкой шапки (h-16) плюс отступ, иначе карточка
+            уезжает под неё. %>
         <article id="prebooking-<%= d.iso8601 %>"
                  data-testid="prebooking-day"
-                 class="scroll-mt-4 rounded-lg border p-3 <%= cancellation ? "border-red-200 bg-red-50/60 dark:border-red-400/20 dark:bg-red-500/10" : "border-gray-200 bg-gray-50/60 dark:border-white/10 dark:bg-white/5" %>">
+                 class="scroll-mt-20 rounded-lg border p-3 target:ring-2 target:ring-indigo-400 dark:target:ring-indigo-300 <%= cancellation ? "border-red-200 bg-red-50/60 dark:border-red-400/20 dark:bg-red-500/10" : "border-gray-200 bg-gray-50/60 dark:border-white/10 dark:bg-white/5" %>">
           <header class="flex items-start justify-between gap-2">
             <div>
               <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-slate-400"><%= weekdays[d.wday] %></p>
@@ -180,7 +214,4 @@
     </div>
   <% end %>
 
-  <% if horizon < Game::MAX_PREBOOKING_HORIZON %>
-    <%= link_to t("games.prebookings.show_more"), more_game_prebookings_path(game, horizon: [ horizon + 3, Game::MAX_PREBOOKING_HORIZON ].min), class: "mt-3 inline-flex text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400" %>
-  <% end %>
 <% end %>

@@ -65,7 +65,7 @@ class GameChangeNotifier
     lines += @changes.map { |field, (from, to)| change_line(field, from, to, locale) }
     # A weekly game moves as a series, so say it — otherwise people read it as
     # "the nearest date moved" and keep the old time for the week after.
-    lines << Telegram::I18n.t(:game_changed_series_note, locale: locale) if @game.recurring?
+    lines << Telegram::I18n.t(:game_changed_series_note, locale: locale) if @game.series?
 
     "#{lines.compact.join("\n")}\n\n#{game_url}"
   end

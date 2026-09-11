@@ -3,7 +3,7 @@ class GameReminderJob < ApplicationJob
 
   def perform(day_offset = 0)
     target_date = Date.current + day_offset
-    scope = Game.where("date = ? OR recurring = ?", target_date, true)
+    scope = Game.where(date: target_date).or(Game.still_running(target_date))
 
     scope.find_each do |game|
       next unless occurrence_on?(game, target_date)
@@ -39,7 +39,7 @@ class GameReminderJob < ApplicationJob
       participants = recipients_for(game, target_date)
 
       game.accepted_coaches.each do |coach|
-        next if game.recurring? && !game.coach_prebookings.exists?(coach_id: coach.id, date: target_date)
+        next if game.series? && !game.coach_prebookings.exists?(coach_id: coach.id, date: target_date)
 
         NotificationDelivery.deliver(
           user: coach,
@@ -81,8 +81,11 @@ class GameReminderJob < ApplicationJob
     game.participations.includes(:user).map(&:user).compact.uniq
   end
 
+  # Только подтверждённые: чужая заявка ждёт ответа организатора, и звать
+  # человека на игру, в состав которой его ещё не взяли, рано — как и называть
+  # его участником в чужих напоминаниях.
   def booked_for(game, target_date)
-    game.prebookings.where(date: target_date).where.not(user_id: nil).includes(:user).map(&:user).compact.uniq
+    game.prebookings.approved.where(date: target_date).where.not(user_id: nil).includes(:user).map(&:user).compact.uniq
   end
 
   def notification_for(game, target_date, recipients, day_offset)

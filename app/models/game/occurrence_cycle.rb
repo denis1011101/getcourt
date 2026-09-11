@@ -80,7 +80,7 @@ class Game::OccurrenceCycle
 
   # Пора: момент смены состава наступил, а сброс на это занятие ещё не отмечен.
   def due?(now = Time.current)
-    return false unless game.recurring?
+    return false unless game.series?
 
     played = played_occurrence(now)
     return false unless played && reset_at(played) <= now
@@ -132,19 +132,19 @@ class Game::OccurrenceCycle
               .min_by { |evening| (evening - midpoint).abs } || ends_at
     end
 
+    # Расписание знает сама игра: у серии из отмеченных дат последнее занятие
+    # может быть месяц назад, и шагать сюда по дням недели нельзя — так цикл
+    # находил занятие там, где его давно нет.
     def occurrence_on_or_before(day)
-      return nil if game.date.blank?
-      return (game.date if game.date <= day) unless game.recurring?
-      return nil if day < game.date
+      candidate = game.occurrence_on_or_before(day)
+      return nil if candidate.blank?
 
-      candidate = day
-      candidate -= 1 until game.recurrence_weekdays.include?(candidate.wday)
       game.cancelled_on?(candidate) ? previous_occurrence(candidate) : candidate
     end
 
     def occurrence_on_or_after(day)
       return nil if game.date.blank?
-      return (game.date if game.date >= day && !game.cancelled_on?(game.date)) unless game.recurring?
+      return (game.date if game.date >= day && !game.cancelled_on?(game.date)) unless game.series?
 
       candidate = game.occurrence_on_or_after(day)
       game.cancelled_on?(candidate) ? following_occurrence(candidate) : candidate
@@ -161,7 +161,7 @@ class Game::OccurrenceCycle
     end
 
     def following_occurrence(day)
-      return nil unless game.recurring? && game.date.present?
+      return nil unless game.series? && game.date.present?
 
       candidate = game.occurrence_after(day)
       MAX_SKIPPED_OCCURRENCES.times do

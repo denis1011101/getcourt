@@ -16,7 +16,7 @@ class CoachPrebooking < ApplicationRecord
   def date_is_bookable_occurrence
     return if date.blank? || game.blank?
 
-    valid = game.recurring? && game.occurrence_date?(date) &&
+    valid = game.series? && game.occurrence_date?(date) &&
       date >= Date.current && !game.cancelled_on?(date)
     errors.add(:date, "must be an upcoming game occurrence") unless valid
   end

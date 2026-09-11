@@ -16,6 +16,26 @@ class CleanupPastOneOffGamesJobTest < ActiveJob::TestCase
     assert_nil Game.find_by(id: game.id)
   end
 
+  # У конечной серии первая дата уходит в прошлое задолго до последней: пока
+  # впереди есть занятия, сносить её нельзя.
+  test "keeps a schedule whose later dates are still ahead" do
+    game = Game.create!(user: @user, court: @court, date: Date.yesterday,
+                        occurrence_dates: [ Date.yesterday.to_s, (Date.current + 3.days).to_s ])
+
+    CleanupPastOneOffGamesJob.perform_now
+
+    assert_equal game, Game.find_by(id: game.id)
+  end
+
+  test "destroys a schedule once its last date has passed" do
+    game = Game.create!(user: @user, court: @court, date: Date.current - 10.days,
+                        occurrence_dates: [ (Date.current - 10.days).to_s, Date.yesterday.to_s ])
+
+    CleanupPastOneOffGamesJob.perform_now
+
+    assert_nil Game.find_by(id: game.id)
+  end
+
   test "destroys a past one-off game that has matches, nullifying game_id on those matches" do
     game = Game.create!(user: @user, court: @court, date: Date.yesterday, recurring: false)
     match = Match.create!(

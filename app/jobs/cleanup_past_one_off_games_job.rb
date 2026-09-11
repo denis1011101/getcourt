@@ -6,7 +6,7 @@ class CleanupPastOneOffGamesJob < ApplicationJob
   # Remove participations for non-recurring games that are strictly in the past,
   # then destroy the one-off game record.
   def perform
-    Game.where(recurring: false).where("date < ?", Date.current).find_each do |game|
+    Game.where(recurring: false, recurring_monthly: false).where(ends_on: ...Date.current).find_each do |game|
       # Чат уходит вместе с игрой, а текст письма ссылается на её город и дату —
       # поэтому готовим его до удаления, а шлём только если удаление удалось.
       notices = Telegram::Chat::Closure.prepare(game, :chat_closed_finished)

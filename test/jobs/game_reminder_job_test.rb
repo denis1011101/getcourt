@@ -269,6 +269,29 @@ class GameReminderJobTest < ActiveJob::TestCase
     assert_empty calls
   end
 
+  # Заявка ждёт ответа организатора: звать человека на игру, в состав которой
+  # его ещё не взяли, рано — как и называть его участником в чужих письмах.
+  test "a booking waiting for approval gets no reminder" do
+    pending_player = User.create!(
+      email: "pending-booking-player@example.com", telegram_chat_id: 93_035,
+      notification_channel: "telegram", telegram_locale: "en"
+    )
+    game = Game.create!(
+      court: courts(:one), user: users(:two), date: Date.new(2026, 9, 9), time: "18:00",
+      recurring: true, recurrence_days: [ 3, 4 ], prebooking_enabled: true
+    )
+    game.prebookings.create!(date: Date.new(2026, 9, 10), slot_index: 1, user: pending_player, status: "pending")
+    calls = []
+
+    travel_to Time.zone.local(2026, 9, 9, 14, 0) do
+      stub_singleton(SendTelegramNotificationJob, :perform_later, ->(*args) { calls << args }) do
+        GameReminderJob.perform_now(1)
+      end
+    end
+
+    assert_empty calls
+  end
+
   test "makes the court name a link in the telegram reminder" do
     coach = create_coach("court-link-reminder@example.com", 93_020, name: "Иван Петров")
     game = training_with(coaches: [ coach ])

@@ -122,6 +122,22 @@ class ResetParticipationsJobTest < ActiveJob::TestCase
     assert_equal later.id, game.prebookings.find_by(date: Date.new(2026, 9, 17), slot_index: 1).user_id
   end
 
+  # Предзапись заведена ради подтверждения организатором: неодобренная заявка
+  # не должна попадать в состав в обход него.
+  test "a booking waiting for approval is not promoted into the lineup" do
+    approved = User.create!(email: "reset-approved@example.com")
+    waiting = User.create!(email: "reset-waiting@example.com")
+    game = weekly_series(players_count: 2, prebooking_enabled: true)
+    game.prebookings.create!(date: NEXT_OCCURRENCE, slot_index: 1, user: approved)
+    game.prebookings.create!(date: NEXT_OCCURRENCE, slot_index: 2, user: waiting, status: "pending")
+
+    travel_to RESET_MOMENT do
+      ResetParticipationsJob.perform_now
+    end
+
+    assert_equal [ approved.id ], game.participations.reload.pluck(:user_id)
+  end
+
   # Сброс уносит с собой чат. Без письма человек узнал бы об этом только по
   # тому, что его сообщение никому не дошло, — а оно уходит молча.
   test "tells the players it drops that their chat is gone" do

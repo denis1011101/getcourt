@@ -66,6 +66,7 @@ class GamesController < ApplicationController
 
   def show
     prepare_training_plan_proposals
+    prepare_prebooking_slots
   end
 
   def new
@@ -134,6 +135,15 @@ class GamesController < ApplicationController
     @game.update!(urgent_player_search: !was_enabled)
     state = @game.urgent_player_search? ? "enabled" : "disabled"
     redirect_to @game, notice: "Players search #{state}."
+  end
+
+  # Слоты под занятия показанного месяца: на создании игры их заводят только на
+  # ближайшие даты, а в месяце занятий может быть больше.
+  def prepare_prebooking_slots
+    return unless user_signed_in? && @game.prebooking_enabled?
+
+    month = @game.prebooking_month
+    @game.ensure_prebookings_for_dates(@game.prebooking_dates_in(month)) if month
   end
 
   # GET /games/training_plan_fragment
@@ -236,7 +246,7 @@ class GamesController < ApplicationController
 
     @training_plan_params ||= {
       ids: Array(raw[:training_block_ids]).map(&:to_i),
-      new_blocks: Array(submitted).filter_map { |block| block.permit(:title, :description, :duration_minutes, :shared) if block.respond_to?(:permit) }
+      new_blocks: Array(submitted).filter_map { |block| block.permit(:title, :description, :duration_minutes, :video_url, :shared) if block.respond_to?(:permit) }
     }
   end
 
@@ -362,7 +372,7 @@ class GamesController < ApplicationController
   end
 
   def game_params
-    params.require(:game).permit(:court_id, :kind, :recurring, :occurrences_per_week, :with_coach, :coach_id, :second_coach_id, :date, :dates, :time, :players_count, :skill_level, :sport, :surface, :environment, :prebooking_enabled, :urgent_player_search, :duration_minutes, :comment)
+    params.require(:game).permit(:court_id, :kind, :recurring, :recurring_monthly, :occurrences_per_week, :with_coach, :coach_id, :second_coach_id, :date, :dates, :time, :players_count, :skill_level, :sport, :surface, :environment, :prebooking_enabled, :urgent_player_search, :duration_minutes, :comment)
   end
 
   def display_date(game)
@@ -450,6 +460,7 @@ class GamesController < ApplicationController
     gp["date"] = gp["date"].presence
     gp["time"] = gp["time"].presence
     gp["recurring"] = ActiveModel::Type::Boolean.new.cast(gp["recurring"]) if gp.key?("recurring")
+    gp["recurring_monthly"] = ActiveModel::Type::Boolean.new.cast(gp["recurring_monthly"]) if gp.key?("recurring_monthly")
     gp["kind"] = gp["kind"].presence || "game" if gp.key?("kind")
     gp["with_coach"] = ActiveModel::Type::Boolean.new.cast(gp["with_coach"]) if gp.key?("with_coach")
     gp["urgent_player_search"] = ActiveModel::Type::Boolean.new.cast(gp["urgent_player_search"]) if gp.key?("urgent_player_search")
@@ -462,15 +473,16 @@ class GamesController < ApplicationController
     gp
   end
 
-  # Календарь в форме отдаёт список отмеченных дат, а игра остаётся одной:
-  # самая ранняя дата становится её датой, а дни недели всех отмеченных —
-  # расписанием повторов. Так серия остаётся одной записью, у которой просто
-  # переезжает дата, а не рассыпается на копии.
+  # Календарь в форме отдаёт список отмеченных дат — он и есть расписание. Игра
+  # остаётся одной записью, у которой переезжает дата, а не рассыпается на
+  # копии: самая ранняя отметка становится её датой, все отметки — занятиями, а
+  # их дни недели — правилом еженедельного повтора, если он включён.
   def apply_selected_dates(gp)
     dates = Array(gp.delete("dates").to_s.split(",")).filter_map { |value| Date.parse(value) rescue nil }.uniq.sort
     return gp if dates.empty?
 
     gp["date"] = dates.first
+    gp["occurrence_dates"] = dates.map(&:to_s)
     gp["recurrence_days"] = dates.map(&:wday)
     gp
   end

@@ -98,26 +98,34 @@
       </div>
 
       <div class="mb-4">
-        <%# recurring toggle — Apply button removed, Stimulus will submit hidden turbo form %>
-        <label class="inline-flex items-center gap-2">
-          <%= form.check_box :recurring,
-                { class: "h-4 w-4 text-indigo-600", id: "game_recurring",
-                  data: { controller: "recurring", action: "change->recurring#toggle" } },
-                "1", "0" %>
+        <%# Сами занятия задаёт календарь ниже, а эти галки — только продолжение
+            расписания за последней отметкой. Обе сразу не имеют смысла, поэтому
+            календарь снимает вторую. %>
+        <span class="block text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("games.form.repeat") %></span>
+        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.repeat_hint") %></p>
+
+        <label class="mt-2 inline-flex items-center gap-2">
+          <%= form.check_box :recurring, { class: "h-4 w-4 text-indigo-600", id: "game_recurring" }, "1", "0" %>
           <span class="text-sm text-gray-700 dark:text-slate-300"><%= t("games.form.recurring") %></span>
         </label>
         <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.recurring_hint") %></p>
+
+        <label class="mt-2 inline-flex items-center gap-2">
+          <%= form.check_box :recurring_monthly, { class: "h-4 w-4 text-indigo-600", id: "game_recurring_monthly" }, "1", "0" %>
+          <span class="text-sm text-gray-700 dark:text-slate-300"><%= t("games.form.recurring_monthly") %></span>
+        </label>
+        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.recurring_monthly_hint") %></p>
       </div>
 
       <div class="mb-4">
         <label class="inline-flex items-center gap-2">
           <%= hidden_field_tag "game[prebooking_enabled]", "0", id: nil %>
           <%= check_box_tag "game[prebooking_enabled]", "1", game.prebooking_enabled?,
-                class: "h-4 w-4 text-indigo-600", id: "game_prebooking_enabled", disabled: !game.recurring? %>
+                class: "h-4 w-4 text-indigo-600", id: "game_prebooking_enabled", disabled: !game.series? %>
           <span class="text-sm text-gray-700 dark:text-slate-300"><%= t("games.form.prebooking") %></span>
         </label>
         <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.prebooking_hint") %></p>
-        <% unless game.recurring? %>
+        <% unless game.series? %>
           <p class="mt-1 text-xs text-gray-600 dark:text-slate-400"><%= t("games.form.prebooking_locked") %> <%= t("games.form.prebooking_locked_hint") %></p>
         <% end %>
       </div>
@@ -142,6 +150,10 @@
              data-date-picker-selected-value="<%= json_escape(seed_dates.to_json) %>"
              data-date-picker-weekdays-value="<%= json_escape(t("games.prebookings.weekdays").to_json) %>"
              data-date-picker-months-value="<%= json_escape(t("games.prebookings.months").to_json) %>"
+             data-date-picker-mode-dates-value="<%= t("games.form.dates_mode_dates") %>"
+             data-date-picker-mode-weekly-value="<%= t("games.form.dates_mode_weekly") %>"
+             data-date-picker-mode-monthly-value="<%= t("games.form.dates_mode_monthly") %>"
+             data-date-picker-mode-finite-value="<%= t("games.form.dates_mode_finite") %>"
              data-date-picker-min-value="<%= tournament&.start_date %>"
              data-date-picker-max-value="<%= tournament&.end_date %>">
           <%# Список дат заполняет календарь. Пустым он и уходит, если JS не
@@ -155,14 +167,24 @@
 
           <div class="mt-2 hidden rounded-lg border border-gray-200 p-3 dark:border-white/10"
                data-date-picker-target="calendar" data-testid="game-date-calendar">
+            <%# Стрелки — полноценные кнопки под палец, а не типографские
+                кавычки: в календаре листают месяцы чаще, чем кажется. %>
             <div class="mb-2 flex items-center justify-between">
               <button type="button" data-action="date-picker#previousMonth" aria-label="<%= t("games.form.dates_previous_month") %>"
-                      class="rounded-md px-2 py-1 text-gray-500 transition hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-white/10">&lsaquo;</button>
-              <span class="text-sm font-semibold text-gray-900 dark:text-slate-100" data-date-picker-target="title"></span>
+                      class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md text-gray-600 transition hover:bg-gray-100 hover:text-gray-900 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white">
+                <svg class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 0 1-.02 1.06L8.832 10l3.938 3.71a.75.75 0 1 1-1.04 1.08l-4.5-4.25a.75.75 0 0 1 0-1.08l4.5-4.25a.75.75 0 0 1 1.06.02Z" clip-rule="evenodd"/></svg>
+              </button>
+              <span class="text-base font-semibold text-gray-900 dark:text-slate-100" data-date-picker-target="title"></span>
               <button type="button" data-action="date-picker#nextMonth" aria-label="<%= t("games.form.dates_next_month") %>"
-                      class="rounded-md px-2 py-1 text-gray-500 transition hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-white/10">&rsaquo;</button>
+                      class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md text-gray-600 transition hover:bg-gray-100 hover:text-gray-900 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white">
+                <svg class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.168 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" clip-rule="evenodd"/></svg>
+              </button>
             </div>
             <div class="grid grid-cols-7 gap-1" data-date-picker-target="grid"></div>
+
+            <%# Что получилось, видно там же, где кликают: сколько занятий
+                отмечено и что будет после последнего. %>
+            <p class="mt-3 text-xs text-gray-600 dark:text-slate-300" data-date-picker-target="mode"></p>
           </div>
 
           <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.dates_hint") %></p>

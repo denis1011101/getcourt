@@ -200,9 +200,17 @@ es:
         few: "%{count} errores impidieron guardar el partido:"
         many: "%{count} errores impidieron guardar el partido:"
         other: "%{count} errores impidieron guardar el partido:"
+      repeat: Repetición del calendario
+      repeat_hint: "Las sesiones se marcan en el calendario de abajo, tantas como haga falta. Estas casillas continúan el calendario después de la última fecha marcada; sin ellas la serie termina ahí."
       recurring: Repetir cada semana
-      recurring_hint: "El partido se repite cada semana en los días marcados en el calendario. Sigue siendo un único partido: su fecha pasa sola a la próxima sesión."
-      dates_hint: "Marca un día en el calendario. Con «Repetir cada semana» puedes marcar varios días de la semana o del mes a la vez: sigue siendo un único partido, cuya fecha pasa a la siguiente sesión, la lista de jugadores se reinicia y en la reserva previa se puede ocupar una plaza en cualquier fecha futura."
+      recurring_hint: "Tras la última fecha marcada el partido sigue cada semana en los mismos días de la semana."
+      recurring_monthly: Repetir cada mes
+      recurring_monthly_hint: "Tras la última fecha marcada el partido sigue cada mes en los mismos días del mes."
+      dates_hint: "Marca tantos días como necesites, incluso «lun y jue esta semana, lun y mié la siguiente». Sigue siendo un único partido: tras cada sesión su fecha pasa a la siguiente, la lista de jugadores se reinicia y en la reserva previa se puede ocupar una plaza en cualquier fecha futura."
+      dates_mode_dates: "Sesiones marcadas: %{count}"
+      dates_mode_weekly: "después cada semana: %{days}"
+      dates_mode_monthly: "después cada mes, días %{days}"
+      dates_mode_finite: "sin repetición: la serie termina tras la última fecha"
       dates_previous_month: Mes anterior
       dates_next_month: Mes siguiente
       prebooking: Activar reserva previa
@@ -294,7 +302,6 @@ es:
       book: Reservar
       request: Solicitar
       sign_in_to_book: Inicia sesión para reservar
-      show_more: Mostrar más fechas
       coach_title: Disponibilidad del entrenador
       coach_confirmed: Confirmada
       coach_not_booked: Sin confirmar
@@ -846,6 +853,8 @@ es:
     destroyed: "Bloque eliminado"
     minutes_short: "min"
     shared_badge: "GetCourt"
+    watch_video: "Vídeo · %{host}"
+    video_url_unsupported: "debe llevar a un servicio de vídeo: YouTube, Vimeo, TikTok, Instagram, Twitch o Dailymotion"
     shared_hint: "Los bloques comunes de GetCourt los ve todo el mundo: se pueden añadir a un entrenamiento aunque no haya entrenador elegido."
     diagram:
       title: "Esquema de la pista"
@@ -874,3 +883,4 @@ es:
       duration_minutes: "Minutos"
       description: "Descripción"
       shared: "A los entrenamientos comunes de GetCourt"
+      video_url: "Enlace al vídeo: YouTube, Vimeo, TikTok, Instagram (opcional)"

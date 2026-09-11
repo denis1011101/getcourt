@@ -1,0 +1,10 @@
+<%# Ссылка на ролик к упражнению: подпись — хостер, а не адрес, и в новой
+    вкладке — план тренировки при этом остаётся открытым. %>
+<% if block.video? %>
+  <%= link_to block.video_url, target: "_blank", rel: "noopener",
+        class: "inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400",
+        data: { testid: "training-block-video" } do %>
+    <svg class="h-3.5 w-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M6.3 2.84A1.5 1.5 0 0 0 4 4.11v11.78a1.5 1.5 0 0 0 2.3 1.27l9.344-5.891a1.5 1.5 0 0 0 0-2.538L6.3 2.841Z"/></svg>
+    <%= t("training_blocks.watch_video", host: block.video_host) %>
+  <% end %>
+<% end %>

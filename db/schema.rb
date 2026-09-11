@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_09_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_12_120000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -245,15 +245,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_09_120000) do
     t.datetime "created_at", null: false
     t.date "date"
     t.integer "duration_minutes"
+    t.date "ends_on"
     t.string "environment"
     t.string "kind", default: "game", null: false
     t.date "last_participations_reset_at"
+    t.text "occurrence_dates"
     t.integer "occurrences_per_week", default: 1, null: false
     t.integer "players_count", default: 4, null: false
     t.string "post_game_stats_reminder_job_id"
     t.boolean "prebooking_enabled", default: false, null: false
     t.text "recurrence_days"
     t.boolean "recurring", default: false, null: false
+    t.boolean "recurring_monthly", default: false, null: false
     t.integer "second_coach_id"
     t.string "second_coach_invitation_status"
     t.string "skill_level"
@@ -271,6 +274,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_09_120000) do
     t.boolean "with_coach", default: false, null: false
     t.index ["coach_id"], name: "index_games_on_coach_id"
     t.index ["court_id"], name: "index_games_on_court_id"
+    t.index ["ends_on"], name: "index_games_on_ends_on"
     t.index ["kind"], name: "index_games_on_kind"
     t.index ["prebooking_enabled"], name: "index_games_on_prebooking_enabled"
     t.index ["recurring"], name: "index_games_on_recurring"
@@ -516,6 +520,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_09_120000) do
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
+    t.string "video_url"
     t.index ["shared"], name: "index_training_blocks_on_shared"
     t.index ["user_id", "title"], name: "index_training_blocks_on_user_id_and_title", unique: true
     t.index ["user_id"], name: "index_training_blocks_on_user_id"

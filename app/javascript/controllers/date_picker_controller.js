@@ -1,16 +1,20 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Календарь игры: вместо нативного поля даты показывает месяц, в котором можно
-// отметить несколько дней. Игра при этом остаётся одной — сервер берёт самую
-// раннюю отметку как дату, а дни недели всех отметок становятся расписанием
-// повторов. Пока «повторять еженедельно» не отмечено, день выбирается один:
-// иначе клик по соседней дате молча превращал бы разовую игру в серию.
+// Календарь игры: вместо нативного поля даты показывает месяц, в котором
+// отмечают все занятия сразу — хоть «пн и чт на этой неделе, пн и ср на
+// следующей». Отмеченные даты и есть расписание; галки повтора только
+// продолжают его за последней отметкой — каждую неделю по тем же дням недели
+// или каждый месяц по тем же числам.
 export default class extends Controller {
-  static targets = ["input", "dateField", "calendar", "title", "grid"]
+  static targets = ["input", "dateField", "calendar", "title", "grid", "mode"]
   static values = {
     selected: Array,
     weekdays: Array,
     months: Array,
+    modeDates: String,
+    modeWeekly: String,
+    modeMonthly: String,
+    modeFinite: String,
     min: String,
     max: String
   }
@@ -18,9 +22,9 @@ export default class extends Controller {
   connect() {
     this.selected = new Set(this.selectedValue.filter(Boolean))
     this.month = this.startOfMonth(this.earliest() || this.today())
-    this.recurringInput = document.getElementById("game_recurring")
-    this.recurringListener = () => this.recurringChanged()
-    this.recurringInput?.addEventListener("change", this.recurringListener)
+    this.repeatInputs = [ document.getElementById("game_recurring"), document.getElementById("game_recurring_monthly") ].filter(Boolean)
+    this.repeatListener = (event) => this.repeatChanged(event)
+    this.repeatInputs.forEach((input) => input.addEventListener("change", this.repeatListener))
 
     // Нативное поле остаётся в форме и продолжает возить дату на сервер, но с
     // включённым JS его место занимает календарь.
@@ -30,7 +34,7 @@ export default class extends Controller {
   }
 
   disconnect() {
-    this.recurringInput?.removeEventListener("change", this.recurringListener)
+    this.repeatInputs.forEach((input) => input.removeEventListener("change", this.repeatListener))
   }
 
   previousMonth() {
@@ -43,12 +47,12 @@ export default class extends Controller {
     this.render()
   }
 
+  // Отметка — это занятие: клик добавляет день и снимает его обратно. Последнюю
+  // отметку снять нельзя, иначе у игры не осталось бы даты.
   toggle(event) {
     const iso = event.currentTarget.dataset.date
 
-    if (!this.recurring) {
-      this.selected = new Set([iso])
-    } else if (!this.selected.has(iso)) {
+    if (!this.selected.has(iso)) {
       this.selected.add(iso)
     } else if (this.selected.size > 1) {
       this.selected.delete(iso)
@@ -57,17 +61,22 @@ export default class extends Controller {
     this.render()
   }
 
-  // Снятая галочка повтора оставляет одну дату: расписания у разовой игры нет.
-  recurringChanged() {
-    if (!this.recurring && this.selected.size > 1) {
-      this.selected = new Set([this.iso(this.earliest())])
+  // Еженедельно и ежемесячно — это два разных продолжения одного расписания,
+  // вместе они читались бы как загадка.
+  repeatChanged(event) {
+    if (event.target.checked) {
+      this.repeatInputs.filter((input) => input !== event.target).forEach((input) => { input.checked = false })
     }
 
     this.render()
   }
 
-  get recurring() {
-    return Boolean(this.recurringInput?.checked)
+  get weekly() {
+    return Boolean(document.getElementById("game_recurring")?.checked)
+  }
+
+  get monthly() {
+    return Boolean(document.getElementById("game_recurring_monthly")?.checked)
   }
 
   render() {
@@ -77,6 +86,45 @@ export default class extends Controller {
     const dates = this.sortedDates()
     this.inputTarget.value = dates.map((date) => this.iso(date)).join(",")
     this.dateFieldTarget.value = dates.length ? this.iso(dates[0]) : ""
+    this.renderMode(dates)
+    this.syncPrebooking(dates)
+  }
+
+  // Строка под сеткой пересказывает расписание словами: сколько занятий
+  // отмечено и что будет после последнего.
+  renderMode(dates) {
+    const parts = [ this.modeDatesValue.replace("%{count}", dates.length) ]
+
+    if (this.weekly) {
+      parts.push(this.modeWeeklyValue.replace("%{days}", this.weekdayNames(dates)))
+    } else if (this.monthly) {
+      parts.push(this.modeMonthlyValue.replace("%{days}", this.monthDayNames(dates)))
+    } else {
+      parts.push(this.modeFiniteValue)
+    }
+
+    this.modeTarget.textContent = parts.join(" · ")
+  }
+
+  // Предзапись живёт у серии: одна дата без повтора — обычная разовая игра.
+  syncPrebooking(dates) {
+    const prebooking = document.getElementById("game_prebooking_enabled")
+    if (!prebooking) return
+
+    const series = dates.length > 1 || this.weekly || this.monthly
+    prebooking.disabled = !series
+    if (!series) prebooking.checked = false
+  }
+
+  weekdayNames(dates) {
+    return [ ...new Set(dates.map((date) => date.getDay())) ]
+      .sort((left, right) => ((left + 6) % 7) - ((right + 6) % 7))
+      .map((wday) => this.weekdaysValue[wday])
+      .join(", ")
+  }
+
+  monthDayNames(dates) {
+    return [ ...new Set(dates.map((date) => date.getDate())) ].sort((left, right) => left - right).join(", ")
   }
 
   weekdayHeaders() {
@@ -119,25 +167,32 @@ export default class extends Controller {
   }
 
   cellClasses(date, iso) {
-    const base = "flex min-h-11 items-center justify-center rounded-md text-sm leading-tight transition sm:min-h-12"
+    // cursor-pointer явно: у кнопок в Tailwind v4 курсор по умолчанию обычный.
+    const base = "flex min-h-11 cursor-pointer items-center justify-center rounded-md text-sm leading-tight transition disabled:cursor-not-allowed sm:min-h-12"
 
     if (this.selected.has(iso)) {
       return `${base} bg-indigo-600 font-semibold text-white hover:bg-indigo-700`
     }
     if (this.repeats(date)) {
-      // Тень повтора: в этот день игра тоже состоится, но отметку с неё не снять
-      // — снимают её с самого дня недели, то есть с первой, отмеченной даты.
+      // Тень повтора: в этот день игра тоже состоится, но отметки на нём нет —
+      // он приходит из галки, а не из календаря.
       return `${base} bg-indigo-100 text-indigo-800 hover:bg-indigo-200 dark:bg-indigo-500/30 dark:text-indigo-50`
     }
 
     return `${base} bg-gray-50 text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-gray-50 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10`
   }
 
+  // Продолжение расписания начинается за последней отметкой — до неё занятия
+  // ровно те, что отмечены руками.
   repeats(date) {
-    if (!this.recurring) return false
+    const dates = this.sortedDates()
+    const last = dates[dates.length - 1]
+    if (!last || date <= last) return false
 
-    const first = this.earliest()
-    return Boolean(first) && date > first && this.sortedDates().some((selected) => selected.getDay() === date.getDay())
+    if (this.weekly) return dates.some((selected) => selected.getDay() === date.getDay())
+    if (this.monthly) return dates.some((selected) => selected.getDate() === date.getDate())
+
+    return false
   }
 
   outOfRange(iso) {

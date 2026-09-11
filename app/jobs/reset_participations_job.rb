@@ -2,7 +2,7 @@ class ResetParticipationsJob < ApplicationJob
   queue_as :default
 
   def perform
-    Game.where(recurring: true).find_each do |game|
+    Game.series.find_each do |game|
       next unless game.participations_reset_due?
 
       upcoming = game.upcoming_occurrence
@@ -94,7 +94,9 @@ class ResetParticipationsJob < ApplicationJob
     ActiveRecord::Base.transaction do
       game.participations.delete_all
 
-      game.prebookings.where(date: nd).where.not(user_id: nil).order(:slot_index).limit(players_needed).each do |prebooking|
+      # Заявка, которую организатор ещё не одобрил, в состав не идёт: иначе
+      # предзапись обходила бы подтверждение, ради которого она и заведена.
+      game.prebookings.approved.where(date: nd).where.not(user_id: nil).order(:slot_index).limit(players_needed).each do |prebooking|
         game.participations.create!(user_id: prebooking.user_id)
         prebooking.update!(user_id: nil)
       end

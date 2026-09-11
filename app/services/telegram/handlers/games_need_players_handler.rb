@@ -17,7 +17,7 @@ module Telegram
           # Future games where players search is enabled
           open_games = Game.includes(:user, :participations, :court)
                            .where(urgent_player_search: true)
-                           .where("recurring = ? OR date >= ?", true, Date.current)
+                           .merge(Game.still_running)
                            .to_a
 
           # Sort by favorite courts first, then by date (nearest first)
