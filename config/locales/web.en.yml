@@ -199,8 +199,19 @@ en:
         few: "%{count} errors prohibited this game from being saved:"
         many: "%{count} errors prohibited this game from being saved:"
         other: "%{count} errors prohibited this game from being saved:"
+      repeat: Repeating the schedule
+      repeat_hint: "The sessions themselves are ticked in the calendar below — as many days as you need. These boxes continue the schedule after the last ticked date; without them the series ends there."
       recurring: Repeat weekly
-      recurring_hint: If checked, this date and time will recur every week.
+      recurring_hint: "After the last ticked date the game carries on every week on the same weekdays."
+      recurring_monthly: Repeat monthly
+      recurring_monthly_hint: "After the last ticked date the game carries on every month on the same days of the month."
+      dates_hint: "Tick as many days as you need — even “Mon and Thu this week, Mon and Wed the next”. It still stays one game: after each session its date moves on to the next one, the line-up is reset, and prebooking lets players take a slot on any upcoming date."
+      dates_mode_dates: "Sessions ticked: %{count}"
+      dates_mode_weekly: "then every week on %{days}"
+      dates_mode_monthly: "then every month on days %{days}"
+      dates_mode_finite: "no repeat — the series ends after the last date"
+      dates_previous_month: Previous month
+      dates_next_month: Next month
       prebooking: Enable prebooking
       prebooking_hint: Players can reserve slots for upcoming dates.
       prebooking_note: 'Note: prebooking slots will be created after saving the game.'
@@ -287,7 +298,6 @@ en:
       book: Book
       request: Request
       sign_in_to_book: Sign in to book
-      show_more: Show more dates
       coach_title: Coach availability
       coach_confirmed: Confirmed
       coach_not_booked: Not confirmed
@@ -830,6 +840,8 @@ en:
     destroyed: "Block deleted"
     minutes_short: "min"
     shared_badge: "GetCourt"
+    watch_video: "Video · %{host}"
+    video_url_unsupported: "must point to a video host — YouTube, Vimeo, TikTok, Instagram, Twitch or Dailymotion"
     shared_hint: "Shared GetCourt blocks are visible to everyone: they can be added to a training even with no coach picked."
     diagram:
       title: "Court diagram"
@@ -858,3 +870,4 @@ en:
       duration_minutes: "Minutes"
       description: "Description"
       shared: "Share with GetCourt trainings"
+      video_url: "Video link: YouTube, Vimeo, TikTok, Instagram (optional)"

@@ -57,6 +57,49 @@ class PostGameStatsReminderJobTest < ActiveJob::TestCase
       assert_equal "new-job-id", game.reload.post_game_stats_reminder_job_id
     end
 
+    # Серия «пн + чт»: после понедельника напоминание должно ждать четверга, а
+    # не следующего понедельника — шаг в неделю проскакивал занятие.
+    test "the next reminder lands on the next session of the schedule" do
+      game = Game.create!(
+        court: courts(:one), user: users(:one), time: "18:00",
+        date: Date.new(2026, 9, 7), occurrence_dates: %w[2026-09-07 2026-09-10]
+      )
+
+      travel_to Time.zone.local(2026, 9, 7, 22, 0) do
+        reminder_at = PostGameStatsReminderJob.new.send(:next_recurring_reminder_at, game)
+
+        assert_equal game.occurrence_starts_at(Date.new(2026, 9, 10)) + 4.hours, reminder_at
+      end
+    end
+
+    # У занятия в 22:00 напоминание приходится на два часа ночи следующих
+    # суток: сегодняшний вечер к этому моменту ещё впереди, и вычёркивать
+    # сегодняшний день целиком нельзя.
+    test "a reminder that fires after midnight still sees today's session" do
+      game = Game.create!(
+        court: courts(:one), user: users(:one), time: "22:00",
+        date: Date.new(2026, 9, 7), occurrence_dates: %w[2026-09-07 2026-09-08]
+      )
+
+      travel_to game.occurrence_starts_at(Date.new(2026, 9, 7)) + 4.hours do
+        reminder_at = PostGameStatsReminderJob.new.send(:next_recurring_reminder_at, game)
+
+        assert_equal game.occurrence_starts_at(Date.new(2026, 9, 8)) + 4.hours, reminder_at
+      end
+    end
+
+    # Расписание кончилось — напоминать больше не о чем.
+    test "a finished schedule gets no further reminder" do
+      game = Game.create!(
+        court: courts(:one), user: users(:one), time: "18:00",
+        date: Date.new(2026, 9, 7), occurrence_dates: %w[2026-09-07 2026-09-10]
+      )
+
+      travel_to Time.zone.local(2026, 9, 10, 22, 0) do
+        assert_nil PostGameStatsReminderJob.new.send(:next_recurring_reminder_at, game)
+      end
+    end
+
     test "does not send reminder when creator has no telegram chat id" do
       game = games(:one)
       game.user.update_columns(telegram_chat_id: nil, notification_channel: "telegram")

@@ -1,9 +1,17 @@
 class Game < ApplicationRecord
+  # Дни недели, по которым идёт серия: [1, 4] — понедельник и четверг.
+  serialize :recurrence_days, coder: JSON, type: Array
+  # Сами отмеченные в календаре даты: они и есть расписание, а галки повтора
+  # только продолжают его за последней из них.
+  serialize :occurrence_dates, coder: JSON, type: Array
+
   after_commit :schedule_post_game_stats_reminder, on: %i[create update]
   after_commit :announce_urgent_player_search, on: %i[create update]
   after_update :drop_training_plan_from_plain_game, if: -> { saved_change_to_kind? && !training? }
-  after_update :remove_stale_coach_prebookings,
-               if: -> { saved_change_to_coach_id? || saved_change_to_second_coach_id? || saved_change_to_date? || saved_change_to_recurring? }
+  after_update :remove_stale_bookings,
+               if: -> { saved_change_to_coach_id? || saved_change_to_second_coach_id? || saved_change_to_date? ||
+                        saved_change_to_recurring? || saved_change_to_recurring_monthly? ||
+                        saved_change_to_recurrence_days? || saved_change_to_occurrence_dates? }
 
   belongs_to :tournament, optional: true
   belongs_to :court
@@ -26,16 +34,35 @@ class Game < ApplicationRecord
   # Правки плана, которые предложили участники тренировки.
   has_many :training_plan_proposals, dependent: :destroy
 
+  # Игры, которые ещё впереди: бесконечная серия — всегда, конечная — пока не
+  # прошла её последняя отметка. Списки и уборка спрашивают именно это, а не
+  # одну галку недельного повтора.
+  scope :still_running, ->(day = Date.current) {
+    # ends_on проставляет колбэк, поэтому у записей, заведённых мимо него
+    # (фикстуры, ручные вставки), его нет — для них спрашиваем саму дату.
+    where(recurring: true)
+      .or(where(recurring_monthly: true))
+      .or(where(ends_on: day..))
+      .or(where(ends_on: nil).where(date: day..))
+  }
+  scope :series, -> {
+    where(recurring: true).or(where(recurring_monthly: true)).or(where.not(occurrence_dates: [ nil, "[]" ]))
+  }
+
   SURFACES = Court::SURFACES
   KINDS = %w[game training].freeze
   ENVIRONMENTS = %w[indoor outdoor].freeze
   DEFAULT_PLAYERS = 4
   COACH_INVITATION_STATUSES = %w[pending accepted declined].freeze
   MAX_PREBOOKING_HORIZON = 52
+  # Год поисков вперёд или назад: дальше расписание уже не ищем.
+  MAX_OCCURRENCE_SEARCH_DAYS = 400
 
   # A tournament game follows the tournament schedule, so the standalone game options don't apply.
   before_validation :drop_options_managed_by_tournament, if: -> { tournament_id.present? }
   before_validation :normalize_coach_assignment
+  before_validation :normalize_recurrence_days
+  before_save :remember_last_occurrence
 
   validates :date, presence: { message: "must be present" }
   validates :comment, length: { maximum: 500 }, allow_blank: true
@@ -61,28 +88,15 @@ class Game < ApplicationRecord
     [ coach, second_coach ].compact
   end
 
-  # Чат живёт ровно столько же, сколько состав: до еженедельного сброса участий —
-  # ночь с пятницы на субботу, 4 утра (ResetParticipationsJob в recurring.yml,
-  # там же чистка прошедших разовых игр). Раньше у серии режим протухал через
-  # сутки, и человек оставался без чата посреди недели, хотя состав, которому он
-  # писал, никуда не делся.
-  CHAT_RESET_WDAY = 6
-  CHAT_RESET_HOUR = 4
-
-  def self.next_weekly_reset_at(from = Time.current)
-    from = from.in_time_zone
-    reset = from.beginning_of_day.change(hour: CHAT_RESET_HOUR)
-    reset += 1.day while reset <= from || reset.wday != CHAT_RESET_WDAY
-    reset
+  # Цикл занятия — что и когда сменяется при сбросе состава — живёт в
+  # Game::OccurrenceCycle: одна граница отвечает и карточке, и напоминаниям, и
+  # чату, и самой задаче сброса.
+  def occurrence_cycle
+    @occurrence_cycle ||= OccurrenceCycle.new(self)
   end
 
-  # Считаем не «ближайшую субботу вообще», а ту, что действительно разберёт этот
-  # состав: сброс сносит участия уже отыгранного вхождения, а чистка — только
-  # прошедшую разовую игру. Игру, назначенную после ближайшей субботы, эта ночь
-  # не касается, и гасить её чат в 4 утра не за что.
   def chat_open_until
-    closes_at = Game.next_weekly_reset_at(chat_window_anchor)
-    closes_at > Time.current ? closes_at : nil
+    occurrence_cycle.chat_open_until
   end
 
   def chat_open?
@@ -177,15 +191,68 @@ class Game < ApplicationRecord
     update!("#{slot}_invitation_status" => status)
   end
 
-  # Is this date one of the game's occurrences? A recurring game repeats weekly
-  # from its start date, a one-off game has exactly one.
+  # Календарь формы отдаёт дни строкой, а телеграм-флоу — массивом: нормализуем
+  # на входе, чтобы читатель всегда получал числа 0..6 без дублей.
+  def recurrence_days=(value)
+    days = value.is_a?(String) ? value.split(",") : Array(value)
+    super(days.filter_map { |day| Integer(day.to_s.strip, exception: false) }.select { |day| (0..6).cover?(day) }.uniq.sort)
+  end
+
+  # Пустое правило значит «те же дни недели, что у отмеченных дат»: у серий,
+  # заведённых до календаря, отметка одна — день их даты, как и было.
+  def recurrence_weekdays
+    days = Array(recurrence_days).map(&:to_i).select { |day| (0..6).cover?(day) }.uniq.sort
+    days.presence || scheduled_dates.map(&:wday).uniq.sort
+  end
+
+  # Расписание игры — это отмеченные в календаре даты. У записей, заведённых до
+  # календаря, отмеченных дат нет: их расписание — одна дата игры, дальше по
+  # галке повтора.
+  def scheduled_dates
+    dates = Array(occurrence_dates).filter_map { |value| value.to_date rescue nil }.uniq.sort
+    dates.presence || Array(date)
+  end
+
+  # Серия — игра, у которой занятий больше одного: несколько отмеченных дат или
+  # повтор за последней из них. По этому же признаку живут состав, чат и
+  # предзапись, поэтому спрашивать надо его, а не одну галку недельного повтора.
+  def series?
+    recurring? || recurring_monthly? || scheduled_dates.many?
+  end
+
+  # Даты, которыми расписание показывается в календаре формы. У серий,
+  # заведённых до календаря, отмеченных дат нет — разворачиваем их расписание в
+  # по одной дате на каждый день недели, иначе правка формы схлопнула бы серию
+  # «пн + чт» до одних понедельников.
+  def recurrence_seed_dates
+    return scheduled_dates.compact if occurrence_dates.present?
+    return Array(date) unless recurring? && date.present?
+
+    recurrence_weekdays.map { |wday| date + ((wday - date.wday) % 7) }.sort
+  end
+
+  # Числа месяца, по которым идёт ежемесячный повтор: 7-е и 21-е — [7, 21].
+  def recurrence_month_days
+    scheduled_dates.map(&:day).uniq.sort
+  end
+
+  # Занятие ли это? Отмеченные даты — всегда, а за последней из них расписание
+  # продолжают галки: еженедельно по тем же дням недели, ежемесячно по тем же
+  # числам.
   def occurrence_date?(candidate)
     return false if candidate.blank? || date.blank?
 
     candidate = candidate.to_date
-    return candidate == date.to_date unless recurring?
+    return true if scheduled_dates.include?(candidate)
 
-    candidate >= date && ((candidate - date.to_date).to_i % 7).zero?
+    candidate > scheduled_dates.last && repeats_on?(candidate)
+  end
+
+  # Продолжает ли расписание эту дату за своей последней отметкой.
+  def repeats_on?(candidate)
+    return true if recurring? && recurrence_weekdays.include?(candidate.wday)
+
+    recurring_monthly? && recurrence_month_days.include?(candidate.day)
   end
 
   def tournament_game?
@@ -284,8 +351,32 @@ class Game < ApplicationRecord
     update_column(:post_game_stats_reminder_job_id, nil)
   end
 
+  # Расписание живёт только у серии. И если дату перенесли мимо расписания —
+  # например, из телеграм-бота, где выбирают один день, — старые дни недели уже
+  # не про эту серию: оставляем день новой даты.
+  def normalize_recurrence_days
+    if date.present?
+      # Дату переносят и из телеграм-бота, где выбирают один день: расписание,
+      # оставшееся от календаря, там уже не про эту серию.
+      self.occurrence_dates = [] if occurrence_dates.present? && scheduled_dates.exclude?(date)
+      self.occurrence_dates = recurrence_seed_dates.compact.map(&:to_s) if occurrence_dates.blank?
+    end
+
+    if !recurring?
+      self.recurrence_days = []
+    elsif date.present? && recurrence_days.present? && recurrence_days.exclude?(date.wday)
+      self.recurrence_days = [ date.wday ]
+    end
+  end
+
+  # Последнее занятие конечной серии: по нему списки и уборка понимают, что она
+  # отыграна. У бесконечной его нет.
+  def remember_last_occurrence
+    self.ends_on = (recurring? || recurring_monthly?) ? nil : scheduled_dates.last
+  end
+
   def prebooking_requires_recurring
-    if prebooking_enabled? && !recurring?
+    if prebooking_enabled? && !series?
       errors.add(:prebooking_enabled, "can be enabled only for repeating (weekly) games")
     end
   end
@@ -321,6 +412,9 @@ class Game < ApplicationRecord
   def drop_options_managed_by_tournament
     self.kind = "game"
     self.recurring = false
+    self.recurring_monthly = false
+    self.recurrence_days = []
+    self.occurrence_dates = []
     self.prebooking_enabled = false
     self.with_coach = false
     self.urgent_player_search = false
@@ -342,7 +436,7 @@ class Game < ApplicationRecord
     return unless prebooking_enabled?
 
     dates =
-      if recurring?
+      if series?
         prebooking_horizon_dates(n)
       else
         [ date ].compact
@@ -378,30 +472,10 @@ class Game < ApplicationRecord
     read_attribute(:time)
   end
 
-  # Choose which occurrence to show on the game page:
-  # - if previous occurrence already passed and participations haven't been reset => show prev
-  # - if next_date is today or in the future => show next_date
-  # - otherwise => show previous occurrence (if any), fallback to next_date
+  # Карточка показывает то занятие, которому принадлежит нынешний состав: пока
+  # сброс не прошёл — уже отыгранное, после — ближайшее.
   def display_date_for_show
-    nd = next_date
-    return date unless nd
-
-    prev = previous_occurrence_before_next_date
-
-    # if participations were reset for the previous occurrence, show that one
-    if prev && last_participations_reset_at.present? && last_participations_reset_at.to_date == prev
-      return prev
-    end
-
-    # if previous occurrence already passed but participations haven't been
-    # reset yet, we're still in that occurrence's cycle (stats should stay unlocked)
-    if prev && prev < Date.current && should_reset_participations?
-      return prev
-    end
-
-    return nd if nd >= Date.current
-
-    prev || nd
+    occurrence_cycle.roster_occurrence
   end
 
 
@@ -409,9 +483,9 @@ class Game < ApplicationRecord
     d = date
     return nil unless d
 
-    if recurring?
+    if series?
       # advance to first occurrence >= today
-      d += 7 while d < Date.current
+      d = occurrence_on_or_after(Date.current)
 
       # skip cancelled occurrences
       max_iters = 520
@@ -419,7 +493,7 @@ class Game < ApplicationRecord
 
       # ОПТИМИЗАЦИЯ: используем cancelled_on? вместо prebooking_cancellations.exists?
       while cancelled_on?(d) && iter < max_iters
-        d += 7
+        d = occurrence_after(d)
         iter += 1
       end
 
@@ -431,27 +505,155 @@ class Game < ApplicationRecord
     end
   end
 
-  def prebooking_horizon_dates(count = 3)
-    return [] unless recurring?
+  # Час игры известен не всегда, а делить промежуток между занятиями надо и
+  # тогда: у игры без времени занятие считаем с начала суток. Длительность по
+  # умолчанию — час, как в анонсах срочного поиска.
+  DEFAULT_DURATION_MINUTES = 60
 
-    count = count.to_i.clamp(3, MAX_PREBOOKING_HORIZON)
-    base = (next_date.presence || date).to_date
-    Array.new(count) { |i| base + i.weeks }
+  # Час занятия — в поясе создателя, ровно как его показывает start_at_for_ui.
+  # Стрелки снимаем уже после перехода в этот пояс: колонка time зонозависимая,
+  # и её значение — момент времени, а не циферблат. Считать часы у вызывающего
+  # кода нельзя: одна и та же игра, открытая из московского и екатеринбургского
+  # окружения, начиналась бы в разное время.
+  def occurrence_starts_at(day)
+    return nil if day.blank?
+
+    day = day.to_date
+
+    Time.use_zone(creator_time_zone) do
+      at = time.present? ? time.in_time_zone : nil
+      Time.zone.local(day.year, day.month, day.day, at&.hour.to_i, at&.min.to_i)
+    end
   end
 
-  # Возвращает даты в заданном горизонте и даты с существующими бронями/отменами.
-  def prebooking_candidate_dates(count = 3)
-    return [] unless recurring?
+  def occurrence_ends_at(day)
+    started_at = occurrence_starts_at(day)
+    return nil if started_at.nil?
 
-    horizon_dates = prebooking_horizon_dates(count)
-    # Only from the current occurrence onwards: a long-lived weekly game accumulates
-    # years of bookings and cancellations, and none of the past ones are bookable.
-    from = horizon_dates.first
-    booked_dates = prebookings.where.not(user_id: nil).where(date: from..).distinct.pluck(:date)
-    cancelled_dates = prebooking_cancellations.where(date: from..).distinct.pluck(:date)
-    coach_dates = coach_prebookings.where(date: from..).distinct.pluck(:date)
+    started_at + (duration_minutes.to_i.positive? ? duration_minutes.to_i : DEFAULT_DURATION_MINUTES).minutes
+  end
 
-    (horizon_dates + booked_dates + cancelled_dates + coach_dates).compact.map(&:to_date).uniq.sort
+  # Ближайшее вхождение серии не раньше указанного дня. Шагаем по дням, а не по
+  # неделям: у серии их теперь несколько на неделе, и следующая игра может быть
+  # хоть завтра.
+  def occurrence_on_or_after(day)
+    return nil if date.blank?
+
+    day = day.to_date
+    day = date if day < date
+    listed = scheduled_dates.find { |scheduled| scheduled >= day }
+    return listed if listed
+    return nil unless recurring? || recurring_monthly?
+
+    # За последней отметкой шагаем по дням: ежемесячное число выпадает не в
+    # каждом месяце (31-е февраля не бывает), но за год встречается наверняка.
+    day = scheduled_dates.last + 1 if day <= scheduled_dates.last
+    MAX_OCCURRENCE_SEARCH_DAYS.times do
+      break if repeats_on?(day)
+
+      day += 1
+    end
+    day if repeats_on?(day)
+  end
+
+  def occurrence_after(day)
+    occurrence_on_or_after(day.to_date + 1)
+  end
+
+  # Ближайшее вхождение не позже указанного дня — до первой отметки серии не
+  # существует.
+  def occurrence_on_or_before(day)
+    return nil if date.blank? || day.blank?
+
+    day = day.to_date
+    last_scheduled = scheduled_dates.last
+
+    if day > last_scheduled && (recurring? || recurring_monthly?)
+      MAX_OCCURRENCE_SEARCH_DAYS.times do
+        break if day <= last_scheduled || repeats_on?(day)
+
+        day -= 1
+      end
+      return day if day > last_scheduled && repeats_on?(day)
+    end
+
+    scheduled_dates.reverse.find { |scheduled| scheduled <= day }
+  end
+
+  def occurrence_before(day)
+    return nil if day.blank?
+
+    occurrence_on_or_before(day.to_date - 1)
+  end
+
+  def prebooking_horizon_dates(count = 3)
+    return [] unless series?
+
+    # Серия кончилась — записываться больше некуда: без этой проверки горизонт
+    # начинался заново с первой даты расписания, то есть с уже отыгранной.
+    start = next_date
+    return [] if start.blank?
+
+    count = count.to_i.clamp(3, MAX_PREBOOKING_HORIZON)
+    dates = [ start.to_date ]
+    # У конечной серии горизонт кончается вместе с расписанием.
+    dates << occurrence_after(dates.last) while dates.size < count && occurrence_after(dates.last)
+    dates
+  end
+
+  # Календарь предзаписи листается по месяцам: от месяца ближайшего занятия и
+  # на год вперёд, а у конечной серии — до месяца её последней даты.
+  MAX_PREBOOKING_MONTHS = 12
+
+  def prebooking_month_range
+    # По расписанию, а не по next_date: тот пропускает отменённые занятия, и
+    # серия, у которой отменили всё оставшееся, лишалась бы календаря — а
+    # вернуть дату можно только из него.
+    first = occurrence_on_or_after(Date.current)&.beginning_of_month
+    return nil if first.nil?
+
+    last = ends_on ? [ ends_on.beginning_of_month, first ].max : first + (MAX_PREBOOKING_MONTHS - 1).months
+    first..last
+  end
+
+  # Месяц для показа по запросу вроде «2026-10»: мусор и выход за границы
+  # превращаются в ближайший допустимый, а не в ошибку.
+  def prebooking_month(requested = nil)
+    range = prebooking_month_range
+    return nil unless range
+
+    month = (Date.strptime(requested.to_s, "%Y-%m") rescue nil)
+    month ? month.beginning_of_month.clamp(range.first, range.last) : range.first
+  end
+
+  # Даты предзаписи внутри месяца: занятия начиная с сегодняшнего дня — прошлые
+  # уже не забронировать, — плюс те, где есть брони, отмены или тренер.
+  # Отменённое занятие, которое ещё впереди, тоже показываем: его можно вернуть.
+  def prebooking_dates_in(month)
+    return [] unless series?
+
+    from = [ month.beginning_of_month, Date.current ].max
+    to = month.end_of_month
+    return [] if from > to
+
+    booked_dates = prebookings.where.not(user_id: nil).where(date: from..to).distinct.pluck(:date)
+    cancelled_dates = prebooking_cancellations.where(date: from..to).distinct.pluck(:date)
+    coach_dates = coach_prebookings.where(date: from..to).distinct.pluck(:date)
+
+    (occurrences_between(from, to) + booked_dates + cancelled_dates + coach_dates).map(&:to_date).uniq.sort
+  end
+
+  # Все занятия в промежутке, включая отменённые.
+  def occurrences_between(from, to)
+    dates = []
+    day = occurrence_on_or_after(from)
+
+    while day && day <= to
+      dates << day
+      day = occurrence_after(day)
+    end
+
+    dates
   end
 
   # Сколько игроков нужно на игру (по умолчанию 4). Это же число — количество
@@ -484,45 +686,41 @@ class Game < ApplicationRecord
     time
   end
 
-  # День, после которого состав этой игры пойдёт под нож: у серии — ближайшее
-  # вхождение, у разовой — её дата.
-  def chat_window_anchor
-    occurrence = recurring? ? (next_date || date) : date
-    occurrence ? occurrence.end_of_day : Time.current
+  # Занятие, чей состав сейчас в игре: у серии — ближайшее вхождение, у
+  # разовой — её дата.
+  def chat_window_occurrence
+    recurring? ? (next_date || date) : date
   end
 
   def previous_occurrence_before_next_date
-    return nil unless recurring? && next_date.present?
+    return nil unless series? && next_date.present?
 
-    prev = next_date - 7
+    prev = occurrence_before(next_date)
     max_iters = 520
     iter = 0
 
     # ОПТИМИЗАЦИЯ: используем cancelled_on?
-    while cancelled_on?(prev) && iter < max_iters
-      prev -= 7
+    while prev && cancelled_on?(prev) && iter < max_iters
+      prev = occurrence_before(prev)
       iter += 1
     end
 
-    return nil if cancelled_on?(prev)
-    return nil if date.present? && prev < date
+    return nil if prev.nil? || cancelled_on?(prev)
 
     prev
   end
 
-  # Сброс участий имеет смысл только когда предыдущее вхождение уже отыграно.
-  # Без этой проверки серия, у которой первая игра ещё впереди, попадала под
-  # ResetParticipationsJob в первую же ночь: маркер nil, next_date в будущем,
-  # и состав вычищался за несколько дней до игры.
-  def should_reset_participations?(as_of = Date.current)
-    return false unless recurring?
-    nd = next_date
-    return false unless nd
+  # Пора ли сбрасывать состав: наступила ли ночь... вернее, вечер, в который
+  # состав отыгранного занятия уступает место следующему. Всё про эту границу —
+  # в Game::OccurrenceCycle.
+  def participations_reset_due?(now = Time.current)
+    occurrence_cycle.due?(now)
+  end
 
-    prev = previous_occurrence_before_next_date
-    return false unless prev && prev < as_of
-
-    last_participations_reset_at.nil? || last_participations_reset_at.to_date < nd
+  # Занятие, к которому относится состав после ближайшего сброса: на него
+  # переносится предзапись и им отмечается сам сброс.
+  def upcoming_occurrence(now = Time.current)
+    occurrence_cycle.upcoming_occurrence(now)
   end
 
   def mark_participations_reset!(date = next_date)
@@ -628,19 +826,31 @@ class Game < ApplicationRecord
     end
   end
 
-  # Coach bookings hang off concrete occurrences, so they go stale when the coach
-  # changes, and also when the game moves to another date or stops repeating.
-  def remove_stale_coach_prebookings
+  # Брони и отмены висят на конкретных занятиях, поэтому протухают, когда игра
+  # переезжает на другую дату, перестаёт повторяться или теряет день из
+  # расписания — а с календарём снять день стало обычным делом. Брать их с
+  # собой нельзя: слот на несуществующем занятии остаётся в календаре
+  # предзаписи, на него продолжают записываться, а в состав он уже не попадёт.
+  def remove_stale_bookings
     coach_prebookings.where.not(coach_id: assigned_coach_ids).delete_all
-    return unless saved_change_to_date? || saved_change_to_recurring?
+    return unless saved_change_to_date? || saved_change_to_recurring? || saved_change_to_recurring_monthly? ||
+                  saved_change_to_recurrence_days? || saved_change_to_occurrence_dates?
 
-    unless recurring? && date.present?
+    unless series? && date.present?
       coach_prebookings.delete_all
+      prebookings.delete_all
+      prebooking_cancellations.delete_all
       return
     end
 
-    stale_ids = coach_prebookings.reject { |booking| occurrence_date?(booking.date) }.map(&:id)
-    coach_prebookings.where(id: stale_ids).delete_all if stale_ids.any?
+    drop_bookings_outside_schedule(coach_prebookings)
+    drop_bookings_outside_schedule(prebookings)
+    drop_bookings_outside_schedule(prebooking_cancellations)
+  end
+
+  def drop_bookings_outside_schedule(relation)
+    stale_ids = relation.reject { |booking| occurrence_date?(booking.date) }.map(&:id)
+    relation.where(id: stale_ids).delete_all if stale_ids.any?
   end
 
   # Срочный поиск включают и с сайта, и из телеграм-бота, поэтому оба канала —

@@ -1,11 +1,16 @@
 class PostGameStatsReminderJob < ApplicationJob
   queue_as :default
 
+  # Через столько после начала занятия просим внести счёт.
+  REMINDER_DELAY = 4.hours
+  # Столько отменённых дат подряд ещё перешагиваем, дальше не ищем.
+  MAX_SKIPPED_OCCURRENCES = 520
+
   def perform(game_id)
     game = Game.find_by(id: game_id)
     return unless game
 
-    reschedule_recurring_reminder(game) if game.recurring?
+    reschedule_recurring_reminder(game) if game.series?
     return if stats_already_filled?(game)
 
     creator = game.user
@@ -67,41 +72,32 @@ class PostGameStatsReminderJob < ApplicationJob
     game.update_column(:post_game_stats_reminder_job_id, jid) if jid
   end
 
+  # Следующее занятие спрашиваем у самого расписания: шаг в неделю проскакивал
+  # занятие у серии «пн + чт» и назначал напоминание там, где занятий уже нет, —
+  # у серии, которая кончилась последней отмеченной датой.
+  #
+  # Ищем по времени самого напоминания, а не по календарному дню: у занятия в
+  # 22:00 оно приходится на два часа ночи следующих суток, и сегодняшний день
+  # к этому моменту ещё не отыгран. Отсчёт ведём от вчерашнего дня в поясе игры
+  # — прошедшие занятия отсеет то же сравнение.
   def next_recurring_reminder_at(game)
-    occurrence_date = game.next_date || game.date
-    return unless occurrence_date
+    occurrence_date = game.occurrence_on_or_after(game_day(game) - 1)
 
-    max_iters = 520
-    iter = 0
+    MAX_SKIPPED_OCCURRENCES.times do
+      return nil if occurrence_date.blank?
 
-    while occurrence_date <= Date.today && iter < max_iters
-      occurrence_date += 7
-      iter += 1
+      reminder_at = game.occurrence_starts_at(occurrence_date) + REMINDER_DELAY
+      return reminder_at if reminder_at > Time.current && !game.cancelled_on?(occurrence_date)
+
+      occurrence_date = game.occurrence_after(occurrence_date)
     end
 
-    while game.cancelled_on?(occurrence_date) && iter < max_iters
-      occurrence_date += 7
-      iter += 1
-    end
-
-    return if iter >= max_iters || game.cancelled_on?(occurrence_date)
-
-    Time.use_zone(game.creator_time_zone) do
-      hour = 0
-      minute = 0
-      time = game.time
-      if time.respond_to?(:strftime)
-        hour = time.strftime("%H").to_i
-        minute = time.strftime("%M").to_i
-      elsif time.present?
-        parts = time.to_s.strip.split(":")
-        hour = parts[0].to_i
-        minute = parts[1].to_i
-      end
-
-      Time.zone.local(occurrence_date.year, occurrence_date.month, occurrence_date.day, hour, minute, 0) + 4.hours
-    end
+    nil
   rescue
     nil
+  end
+
+  def game_day(game)
+    Time.current.in_time_zone(game.creator_time_zone).to_date
   end
 end

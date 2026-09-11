@@ -3,11 +3,12 @@ class PrebookingsController < ApplicationController
   before_action :set_game
   before_action :set_prebooking, only: %i[book cancel approve reject]
 
+  # Календарь на месяц; слоты под его занятия заводим лениво, когда до месяца
+  # кто-то долистал.
   def more
-    @horizon = params[:horizon].to_i.clamp(3, Game::MAX_PREBOOKING_HORIZON)
-    dates = @game.prebooking_candidate_dates(@horizon)
-    @game.ensure_prebookings_for_dates(@game.prebooking_horizon_dates(@horizon)) if current_user.present?
-    render partial: "games/prebookings", locals: { game: @game, horizon: @horizon }
+    month = @game.prebooking_month(params[:month])
+    @game.ensure_prebookings_for_dates(@game.prebooking_dates_in(month)) if current_user.present? && month
+    render partial: "games/prebookings", locals: { game: @game, month: params[:month] }
   end
 
   def book
@@ -79,6 +80,9 @@ class PrebookingsController < ApplicationController
 
   def can_participate?(game, date = nil)
     return false unless game&.prebooking_enabled?
+    # Записаться можно только на занятие: слот мог остаться от даты, которую
+    # организатор убрал из расписания, — игры в этот день уже не будет.
+    return false if date.present? && !game.occurrence_date?(date)
 
     # запрещаем, если дата отменена
     if date.present? && PrebookingCancellation.exists?(game_id: game.id, date: date)

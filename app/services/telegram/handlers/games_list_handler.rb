@@ -16,7 +16,7 @@ module Telegram
           user_city = user&.city_name.to_s.strip.downcase.presence
 
           all_games = Game.includes(:user, :participations, :prebooking_cancellations)
-                          .where("recurring = ? OR date >= ?", true, Date.current)
+                          .merge(Game.still_running)
                           .to_a
 
           today = Date.current

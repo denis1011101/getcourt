@@ -32,25 +32,25 @@ class MatchTest < ActiveSupport::TestCase
     assert_not match.game_page_relevant?
   end
 
+  # Серия по понедельникам: до вечера четверга карточка держится за отыгранный
+  # понедельник, потом переезжает на следующий.
   test "a recurring game drops the link once its cycle moves on" do
-    game = Game.create!(user: @user, court: @court, date: 3.weeks.ago.to_date, recurring: true)
-    # Пятничный ResetParticipationsJob уже перевёл игру на ближайшее вхождение.
-    game.mark_participations_reset!(game.next_date)
-    played_at = (game.next_date - 2.weeks).in_time_zone.change(hour: 18)
+    game = Game.create!(user: @user, court: @court, date: Date.new(2026, 8, 31), time: "18:00", recurring: true)
+    match = build_match(game: game, played_at: Time.zone.local(2026, 8, 31, 18, 0))
 
-    match = build_match(game: game.reload, played_at: played_at)
-
-    assert_not match.game_page_relevant?,
-               "матч из прошлого цикла не должен вести на перезатёртую карточку игры"
+    travel_to Time.zone.local(2026, 9, 9, 12, 0) do
+      assert_not match.game_page_relevant?,
+                 "матч из прошлого цикла не должен вести на перезатёртую карточку игры"
+    end
   end
 
   test "a recurring game keeps the link inside the current cycle" do
-    game = Game.create!(user: @user, court: @court, date: 3.weeks.ago.to_date, recurring: true)
-    previous = game.next_date - 1.week
-    game.mark_participations_reset!(previous)
-    match = build_match(game: game.reload, played_at: previous.in_time_zone.change(hour: 18))
+    game = Game.create!(user: @user, court: @court, date: Date.new(2026, 8, 31), time: "18:00", recurring: true)
+    match = build_match(game: game, played_at: Time.zone.local(2026, 9, 7, 18, 0))
 
-    assert match.game_page_relevant?
+    travel_to Time.zone.local(2026, 9, 9, 12, 0) do
+      assert match.game_page_relevant?
+    end
   end
 
   private

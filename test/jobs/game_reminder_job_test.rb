@@ -163,6 +163,135 @@ class GameReminderJobTest < ActiveJob::TestCase
     coach&.destroy
   end
 
+  # Напоминание на завтра доходит до состава, которому завтрашнее занятие и
+  # принадлежит: у серии раз в неделю состав уже сброшен под него.
+  test "the tomorrow reminder goes to the lineup of that very occurrence" do
+    player = User.create!(
+      email: "weekly-tomorrow-player@example.com", telegram_chat_id: 93_030,
+      notification_channel: "telegram", telegram_locale: "en"
+    )
+    game = Game.create!(
+      court: courts(:one), user: users(:two), date: Date.new(2026, 9, 7), time: "18:00", recurring: true
+    )
+    game.participations.create!(user: player)
+    game.mark_participations_reset!(Date.new(2026, 9, 14))
+    calls = []
+
+    travel_to Time.zone.local(2026, 9, 13, 14, 0) do
+      stub_singleton(SendTelegramNotificationJob, :perform_later, ->(*args) { calls << args }) do
+        GameReminderJob.perform_now(1)
+      end
+    end
+
+    assert_includes calls.find { |call| call.first == player.telegram_chat_id }.second, "game tomorrow"
+  end
+
+  # Состав принадлежит сегодняшнему занятию, а зовём мы на завтрашнее: у игры с
+  # предзаписью на завтра выходят те, кто записан на завтра.
+  test "the reminder for the next occurrence goes to those booked for it" do
+    today_player = User.create!(
+      email: "booked-today-player@example.com", telegram_chat_id: 93_031,
+      notification_channel: "telegram", telegram_locale: "en"
+    )
+    tomorrow_player = User.create!(
+      email: "booked-tomorrow-player@example.com", telegram_chat_id: 93_032,
+      notification_channel: "telegram", telegram_locale: "en"
+    )
+    game = Game.create!(
+      court: courts(:one), user: users(:two), date: Date.new(2026, 9, 9), time: "18:00",
+      recurring: true, recurrence_days: [ 3, 4 ], prebooking_enabled: true
+    )
+    game.participations.create!(user: today_player)
+    game.prebookings.create!(date: Date.new(2026, 9, 10), slot_index: 1, user: tomorrow_player)
+    calls = []
+
+    travel_to Time.zone.local(2026, 9, 9, 14, 0) do
+      stub_singleton(SendTelegramNotificationJob, :perform_later, ->(*args) { calls << args }) do
+        GameReminderJob.perform_now(1)
+      end
+    end
+
+    assert_equal [ tomorrow_player.telegram_chat_id ], calls.map(&:first)
+  end
+
+  # Тренеру уходит тот же список: в среду состав ещё понедельничный, а зовём мы
+  # на четверг — значит, перечислять надо записанных на четверг.
+  test "the coach sees the lineup of the day the reminder is about" do
+    coach = create_coach("coach-next-occurrence@example.com", 93_033, name: "Иван Петров")
+    today_player = User.create!(email: "coach-today-player@example.com", name: "Среда Игрокова")
+    tomorrow_player = User.create!(email: "coach-tomorrow-player@example.com", name: "Четверг Игроков")
+    game = Game.create!(
+      court: courts(:one), user: users(:two), coach: coach, with_coach: true, kind: "training",
+      date: Date.new(2026, 9, 9), time: "10:00", recurring: true, recurrence_days: [ 3, 4 ],
+      prebooking_enabled: true
+    )
+    game.update!(coach_invitation_status: "accepted")
+    game.participations.create!(user: today_player)
+    calls = []
+
+    travel_to Time.zone.local(2026, 9, 9, 14, 0) do
+      game.prebookings.create!(date: Date.new(2026, 9, 10), slot_index: 1, user: tomorrow_player)
+      game.coach_prebookings.create!(coach: coach, date: Date.new(2026, 9, 10))
+
+      stub_singleton(SendTelegramNotificationJob, :perform_later, ->(*args) { calls << args }) do
+        GameReminderJob.perform_now
+      end
+    end
+
+    coach_text = calls.find { |call| call.first == coach.telegram_chat_id }.second
+    assert_includes coach_text, "Четверг Игроков"
+    assert_not_includes coach_text, "Среда Игрокова"
+  ensure
+    coach&.destroy
+  end
+
+  # Предзапись выключили, а брони на будущие даты остались в базе: сбрасывать
+  # их в состав больше некому, значит и напоминать этим людям не о чем.
+  test "bookings left over from disabled prebooking get no reminder" do
+    booked = User.create!(
+      email: "leftover-booking-player@example.com", telegram_chat_id: 93_034,
+      notification_channel: "telegram", telegram_locale: "en"
+    )
+    game = Game.create!(
+      court: courts(:one), user: users(:two), date: Date.new(2026, 9, 7), time: "18:00",
+      recurring: true, recurrence_days: [ 1, 4 ], prebooking_enabled: true
+    )
+    game.prebookings.create!(date: Date.new(2026, 9, 10), slot_index: 1, user: booked)
+    game.update!(prebooking_enabled: false)
+    calls = []
+
+    travel_to Time.zone.local(2026, 9, 9, 14, 0) do
+      stub_singleton(SendTelegramNotificationJob, :perform_later, ->(*args) { calls << args }) do
+        GameReminderJob.perform_now(1)
+      end
+    end
+
+    assert_empty calls
+  end
+
+  # Заявка ждёт ответа организатора: звать человека на игру, в состав которой
+  # его ещё не взяли, рано — как и называть его участником в чужих письмах.
+  test "a booking waiting for approval gets no reminder" do
+    pending_player = User.create!(
+      email: "pending-booking-player@example.com", telegram_chat_id: 93_035,
+      notification_channel: "telegram", telegram_locale: "en"
+    )
+    game = Game.create!(
+      court: courts(:one), user: users(:two), date: Date.new(2026, 9, 9), time: "18:00",
+      recurring: true, recurrence_days: [ 3, 4 ], prebooking_enabled: true
+    )
+    game.prebookings.create!(date: Date.new(2026, 9, 10), slot_index: 1, user: pending_player, status: "pending")
+    calls = []
+
+    travel_to Time.zone.local(2026, 9, 9, 14, 0) do
+      stub_singleton(SendTelegramNotificationJob, :perform_later, ->(*args) { calls << args }) do
+        GameReminderJob.perform_now(1)
+      end
+    end
+
+    assert_empty calls
+  end
+
   test "makes the court name a link in the telegram reminder" do
     coach = create_coach("court-link-reminder@example.com", 93_020, name: "Иван Петров")
     game = training_with(coaches: [ coach ])

@@ -23,7 +23,7 @@ module PlayerStatistics
         ).call
       end
 
-      @game.cancel_post_game_stats_reminder if !@game.recurring? && @game.post_game_stats_reminder_job_id.present?
+      @game.cancel_post_game_stats_reminder if !@game.series? && @game.post_game_stats_reminder_job_id.present?
 
       result
     end

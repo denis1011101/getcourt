@@ -25,6 +25,7 @@
             <% if block.description.present? %>
               <span class="block text-xs text-gray-500 dark:text-slate-400"><%= block.description %></span>
             <% end %>
+            <%= render "training_blocks/video_link", block: block %>
           </span>
         </label>
         <span class="flex shrink-0 items-center gap-1" data-training-plan-target="moveControls">

@@ -37,7 +37,7 @@ class Telegram::Chat::ClosureTest < ActiveSupport::TestCase
         assert_equal 1, Telegram::Chat::Closure.notify(@game, :chat_closed_finished)
       end
 
-      assert_equal [ [ @player.telegram_chat_id.to_s, { silent: true } ] ], sent
+      assert_equal [ [ @player.telegram_chat_id.to_s, {} ] ], sent
       assert_nil Telegram::Chat::Session.active_game(@owner.telegram_chat_id.to_s, @owner)
       assert_nil Telegram::Chat::Session.active_game(@player.telegram_chat_id.to_s, @player)
     end

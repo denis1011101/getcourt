@@ -74,76 +74,97 @@ class GameTest < ActiveSupport::TestCase
     assert_equal Date.current + 7.days, game.next_date
   end
 
-  test "display_date_for_show returns previous occurrence when participations were reset there" do
+  # Серия по понедельникам в 18:00: состав понедельника уступает место
+  # следующему занятию в четверг в 20:00 — посередине между ними.
+  test "the card keeps the played occurrence until the reset moment" do
     game = Game.create!(
       court: courts(:one),
       user: users(:one),
-      date: Date.current - 21.days,
+      date: Date.new(2026, 8, 31),
+      time: "18:00",
       recurring: true
     )
 
-    next_date = game.next_date
-    previous_date = next_date - 7.days
-    game.update_column(:last_participations_reset_at, previous_date)
-
-    assert_equal previous_date, game.display_date_for_show
+    travel_to Time.zone.local(2026, 9, 10, 19, 59) do
+      assert_equal Date.new(2026, 9, 7), game.display_date_for_show
+      assert game.started_for_ui?, "stats should be unlocked while the played occurrence is still shown"
+    end
   end
 
-  test "display_date_for_show returns previous occurrence when not yet reset" do
-    # Bug fix: stats should stay unlocked until weekly participations reset happens
+  test "the card moves on to the next occurrence once the reset has happened" do
     game = Game.create!(
       court: courts(:one),
       user: users(:one),
-      date: Date.current - 21.days,
+      date: Date.new(2026, 8, 31),
+      time: "18:00",
       recurring: true
     )
 
-    previous_date = game.next_date - 7.days
-    # no reset happened yet (last_participations_reset_at is nil or older)
-    assert_nil game.last_participations_reset_at
-    assert previous_date < Date.today, "previous occurrence should be in the past"
+    travel_to Time.zone.local(2026, 9, 10, 20, 0) do
+      assert_equal Date.new(2026, 9, 7), game.display_date_for_show,
+                   "момент настал, но состав ещё прежний — карточке рано переезжать"
 
-    assert_equal previous_date, game.display_date_for_show
-    assert game.started_for_ui?, "stats should be unlocked while previous occurrence is not reset"
+      game.mark_participations_reset!(Date.new(2026, 9, 14))
+
+      assert_equal Date.new(2026, 9, 14), game.display_date_for_show
+      assert_not game.started_for_ui?, "stats should be locked until the next game starts"
+    end
   end
 
-  test "display_date_for_show returns next_date after participations are reset" do
-    game = Game.create!(
-      court: courts(:one),
-      user: users(:one),
-      date: Date.tomorrow - 21.days,
-      recurring: true
-    )
-
-    nd = game.next_date
-    assert_equal Date.tomorrow, nd
-    game.mark_participations_reset!(nd)
-
-    assert_equal nd, game.display_date_for_show
-    assert_not game.started_for_ui?, "stats should be locked after reset until next game starts"
-  end
-
-  test "prebooking_candidate_dates returns weekly date sequence" do
+  test "prebooking_horizon_dates returns weekly date sequence" do
     game = Game.new(court: courts(:one), user: users(:one), date: Date.current - 14.days, recurring: true)
 
-    dates = game.prebooking_candidate_dates(3)
+    dates = game.prebooking_horizon_dates(3)
 
     assert_equal 3, dates.size
     assert_equal 7, (dates[1] - dates[0]).to_i
     assert_equal 7, (dates[2] - dates[1]).to_i
   end
-  test "prebooking_candidate_dates includes booked and cancelled dates outside horizon" do
-    game = Game.create!(court: courts(:one), user: users(:one), date: Date.current, recurring: true, prebooking_enabled: true)
-    booked_date = game.next_date + 8.weeks
-    cancelled_date = game.next_date + 9.weeks
-    booked_user = User.create!(email: "booked-outside-horizon@example.com")
-    game.prebookings.create!(date: booked_date, slot_index: 1, user: booked_user)
-    game.prebooking_cancellations.create!(date: cancelled_date, user: booked_user)
+  # Календарь предзаписи листается по месяцам: показываем занятия месяца
+  # начиная с сегодняшнего дня — включая отменённое, которое ещё можно вернуть.
+  test "prebooking_dates_in lists this month's sessions from today on" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 8, 31), recurring: true, prebooking_enabled: true)
 
-    dates = game.prebooking_candidate_dates(3)
+    travel_to Time.zone.local(2026, 9, 12, 12, 0) do
+      game.prebooking_cancellations.create!(date: Date.new(2026, 9, 14), user: users(:one))
 
-    assert_includes dates, booked_date
-    assert_includes dates, cancelled_date
+      assert_equal [ Date.new(2026, 9, 14), Date.new(2026, 9, 21), Date.new(2026, 9, 28) ],
+                   game.prebooking_dates_in(Date.new(2026, 9, 1))
+      assert_equal [ Date.new(2026, 10, 5), Date.new(2026, 10, 12), Date.new(2026, 10, 19), Date.new(2026, 10, 26) ],
+                   game.prebooking_dates_in(Date.new(2026, 10, 1))
+    end
+  end
+
+  # Отменили всё, что оставалось, — календарь всё равно нужен: вернуть дату
+  # можно только из него.
+  test "a series with every remaining session cancelled keeps its calendar" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 7), players_count: 2,
+                        occurrence_dates: %w[2026-09-07 2026-09-14], prebooking_enabled: true)
+
+    travel_to Time.zone.local(2026, 9, 12, 12, 0) do
+      game.prebooking_cancellations.create!(date: Date.new(2026, 9, 14), user: users(:one))
+
+      assert_nil game.next_date
+      assert_equal Date.new(2026, 9, 1), game.prebooking_month
+      assert_equal [ Date.new(2026, 9, 14) ], game.prebooking_dates_in(Date.new(2026, 9, 1))
+    end
+  end
+
+  # Листать можно от месяца ближайшего занятия на год вперёд, у конечной серии
+  # — до месяца последней даты; просьба показать что-то за границей возвращает
+  # ближайший допустимый месяц.
+  test "prebooking months run from the next session up to a year ahead" do
+    endless = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 8, 31), recurring: true)
+    finite = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 7),
+                          occurrence_dates: %w[2026-09-07 2026-11-10])
+
+    travel_to Time.zone.local(2026, 9, 12, 12, 0) do
+      assert_equal Date.new(2026, 9, 1)..Date.new(2027, 8, 1), endless.prebooking_month_range
+      assert_equal Date.new(2027, 8, 1), endless.prebooking_month("2030-01")
+      assert_equal Date.new(2026, 9, 1), endless.prebooking_month("мусор")
+
+      assert_equal Date.new(2026, 11, 1)..Date.new(2026, 11, 1), finite.prebooking_month_range
+    end
   end
 
   test "prebooking horizon is capped" do
@@ -152,28 +173,17 @@ class GameTest < ActiveSupport::TestCase
     assert_equal Game::MAX_PREBOOKING_HORIZON, game.prebooking_horizon_dates(10_000).size
   end
 
-  test "prebooking_candidate_dates drops occurrences that already passed" do
-    game = Game.create!(court: courts(:one), user: users(:one), date: 10.weeks.ago.to_date, recurring: true, prebooking_enabled: true)
-    past_date = game.next_date - 4.weeks
-    booked_user = User.create!(email: "booked-in-the-past@example.com")
-    game.prebookings.create!(date: past_date, slot_index: 1, user: booked_user)
-    game.prebooking_cancellations.create!(date: past_date - 1.week, user: booked_user)
-
-    dates = game.prebooking_candidate_dates(3)
-
-    assert_not_includes dates, past_date
-    assert_equal game.next_date, dates.first
-  end
-
   test "recurring game shows the occurrence that just passed until participations are reset" do
-    game = Game.create!(court: courts(:one), user: users(:one), date: 1.week.ago.to_date, recurring: true)
-    played = game.date
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 8, 31), time: "18:00", recurring: true)
+    played = Date.new(2026, 9, 7)
 
-    travel_to played + 1.day do
+    travel_to Time.zone.local(2026, 9, 8, 0, 1) do
       assert_equal played + 1.week, game.next_date
       assert_equal played, game.display_date_for_show, "card must not jump to next week at midnight"
+    end
 
-      game.mark_participations_reset!(game.next_date)
+    travel_to Time.zone.local(2026, 9, 10, 20, 0) do
+      game.mark_participations_reset!(played + 1.week)
 
       assert_equal played + 1.week, game.display_date_for_show
     end
@@ -410,7 +420,7 @@ class GameTest < ActiveSupport::TestCase
 
     # Среда: игра в четверг, разберёт её состав ближайшая суббота.
     travel_to Time.zone.local(2026, 9, 2, 21, 0) do
-      assert_equal Time.zone.local(2026, 9, 5, 4, 0), Game.next_weekly_reset_at
+      assert_equal Time.zone.local(2026, 9, 5, 4, 0), Game::OccurrenceCycle.next_weekly_reset_at
       assert_equal Time.zone.local(2026, 9, 5, 4, 0), game.chat_open_until
       assert game.chat_open?
     end
@@ -422,12 +432,12 @@ class GameTest < ActiveSupport::TestCase
   # чистка сносит только прошедшие разовые игры, сброс — только отыгранные серии.
   test "a game scheduled beyond the coming reset keeps its chat until its own" do
     one_off = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 20), kind: "game")
-    # Серия с ближайшим вхождением в воскресенье — уже за субботней границей.
-    series = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 6), recurring: true, kind: "game")
+    # Серия по воскресеньям: её состав уступит место следующему в среду вечером.
+    series = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 6), time: "18:00", recurring: true, kind: "game")
 
     travel_to Time.zone.local(2026, 9, 2, 21, 0) do
       assert_equal Time.zone.local(2026, 9, 26, 4, 0), one_off.chat_open_until
-      assert_equal Time.zone.local(2026, 9, 12, 4, 0), series.chat_open_until
+      assert_equal Time.zone.local(2026, 9, 9, 20, 0), series.chat_open_until
       assert one_off.chat_open?
       assert series.chat_open?
     end
@@ -448,11 +458,261 @@ class GameTest < ActiveSupport::TestCase
 
   test "the chat window rolls over to the next week right at the reset" do
     travel_to Time.zone.local(2026, 9, 5, 3, 59) do
-      assert_equal Time.zone.local(2026, 9, 5, 4, 0), Game.next_weekly_reset_at
+      assert_equal Time.zone.local(2026, 9, 5, 4, 0), Game::OccurrenceCycle.next_weekly_reset_at
     end
 
     travel_to Time.zone.local(2026, 9, 5, 4, 0) do
-      assert_equal Time.zone.local(2026, 9, 12, 4, 0), Game.next_weekly_reset_at
+      assert_equal Time.zone.local(2026, 9, 12, 4, 0), Game::OccurrenceCycle.next_weekly_reset_at
     end
+  end
+
+  # Календарь в форме даёт отметить несколько дней: игра остаётся одной, а её
+  # дата переезжает с занятия на занятие.
+  test "a series with several weekdays moves to the nearest of them" do
+    # 7 сентября 2026 — понедельник, серия идёт по понедельникам и четвергам.
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 7),
+                        recurring: true, recurrence_days: [ 1, 4 ], kind: "game")
+
+    assert game.occurrence_date?(Date.new(2026, 9, 10))
+    assert_not game.occurrence_date?(Date.new(2026, 9, 9))
+
+    travel_to Time.zone.local(2026, 9, 8, 12, 0) do
+      assert_equal Date.new(2026, 9, 10), game.next_date
+    end
+
+    travel_to Time.zone.local(2026, 9, 11, 12, 0) do
+      assert_equal Date.new(2026, 9, 14), game.next_date
+      assert_equal Date.new(2026, 9, 10), game.previous_occurrence_before_next_date
+    end
+  ensure
+    game&.destroy
+  end
+
+  test "prebooking dates follow every weekday of the series" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 7),
+                        recurring: true, recurrence_days: [ 1, 4 ], prebooking_enabled: true, kind: "game")
+
+    travel_to Time.zone.local(2026, 9, 7, 9, 0) do
+      assert_equal [ Date.new(2026, 9, 7), Date.new(2026, 9, 10), Date.new(2026, 9, 14), Date.new(2026, 9, 17) ],
+                   game.prebooking_horizon_dates(4)
+    end
+  ensure
+    game&.destroy
+  end
+
+  # Серии, заведённые до мультивыбора, живут с пустым расписанием: их день
+  # недели — день их же даты.
+  test "an empty schedule still means weekly on the day of the date" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 7), recurring: true, kind: "game")
+
+    assert_equal [ 1 ], game.recurrence_weekdays
+    assert game.occurrence_date?(Date.new(2026, 9, 14))
+    assert_not game.occurrence_date?(Date.new(2026, 9, 10))
+  ensure
+    game&.destroy
+  end
+
+  # Дату переносят и из телеграм-бота, где выбирают один день: расписание,
+  # оставшееся от календаря, там уже не про эту серию.
+  test "moving the date off the schedule leaves the weekday of the new date" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 7),
+                        recurring: true, recurrence_days: [ 1, 4 ], kind: "game")
+
+    game.update!(date: Date.new(2026, 9, 9))
+
+    assert_equal [ 3 ], game.recurrence_days
+  ensure
+    game&.destroy
+  end
+
+  test "a one-off game keeps no schedule" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 7),
+                        recurring: false, recurrence_days: [ 1, 4 ], kind: "game")
+
+    assert_equal [], game.recurrence_days
+    assert_equal [ Date.new(2026, 9, 7) ], game.recurrence_seed_dates
+  ensure
+    game&.destroy
+  end
+
+  test "the form calendar shows one date per weekday of the series" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 7),
+                        recurring: true, recurrence_days: [ 1, 4 ], kind: "game")
+
+    assert_equal [ Date.new(2026, 9, 7), Date.new(2026, 9, 10) ], game.recurrence_seed_dates
+  ensure
+    game&.destroy
+  end
+
+  # Час занятия и «20:00» смены состава — это часы там, где выходят на корт.
+  # Сервер и открытая страница бывают в других поясах, и разница в два часа
+  # сдвинула бы сброс на время, когда игра ещё идёт.
+  test "the cycle is anchored to the time zone of the game owner" do
+    owner = User.create!(email: "moscow-owner@example.com", timezone: "Europe/Moscow")
+    game = Game.create!(court: courts(:one), user: owner, date: Date.new(2026, 9, 7), time: "18:00",
+                        recurring: true, kind: "game")
+
+    Time.use_zone("Asia/Yekaterinburg") do
+      travel_to Time.zone.local(2026, 9, 6, 12, 0) do
+        assert_equal game.start_at_for_ui, game.occurrence_starts_at(game.date),
+                     "начало занятия считаем так же, как его показывает карточка"
+
+        reset_at = game.occurrence_cycle.reset_at(game.date).in_time_zone("Europe/Moscow")
+
+        assert_equal Date.new(2026, 9, 10), reset_at.to_date
+        assert_equal 20, reset_at.hour, "восемь вечера — в поясе игры, а не вызывающего кода"
+      end
+    end
+
+    # Та же запись, прочитанная из другого окружения, начинается в тот же миг:
+    # колонка time зонозависимая, и часы с неё надо снимать в поясе игры.
+    from_moscow = Time.use_zone("Europe/Moscow") { Game.find(game.id).occurrence_starts_at(game.date) }
+    from_yekaterinburg = Time.use_zone("Asia/Yekaterinburg") { Game.find(game.id).occurrence_starts_at(game.date) }
+
+    assert_equal from_moscow, from_yekaterinburg
+  ensure
+    game&.destroy
+    owner&.destroy
+  end
+
+  # Чат живёт столько же, сколько состав: у серии «ср + чт» состав среды
+  # уступает место четвергу в тот же вечер, а не через несколько дней.
+  test "the chat of a series with adjacent days closes on the evening of the same day" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 9), time: "18:00",
+                        recurring: true, recurrence_days: [ 3, 4 ], kind: "game")
+
+    travel_to Time.zone.local(2026, 9, 9, 19, 30) do
+      assert_equal Time.zone.local(2026, 9, 9, 20, 0), game.chat_open_until
+    end
+  ensure
+    game&.destroy
+  end
+
+  # Снятый день уносит с собой не только брони тренера: слот на несуществующем
+  # занятии остался бы в календаре предзаписи, и на него продолжали бы
+  # записываться.
+  test "dropping a date from the schedule clears its bookings and cancellations" do
+    player = User.create!(email: "dropped-date-player@example.com")
+    game = Game.create!(court: courts(:one), user: users(:one), time: "18:00", kind: "game",
+                        date: Date.new(2026, 9, 7), occurrence_dates: %w[2026-09-07 2026-09-10 2026-09-14],
+                        players_count: 2, prebooking_enabled: true)
+    game.prebookings.create!(date: Date.new(2026, 9, 10), slot_index: 1, user: player)
+    game.prebooking_cancellations.create!(date: Date.new(2026, 9, 10), user: users(:one))
+    kept = game.prebookings.create!(date: Date.new(2026, 9, 7), slot_index: 1, user: player)
+
+    game.update!(occurrence_dates: %w[2026-09-07 2026-09-14])
+
+    assert_empty game.prebookings.reload.where(date: Date.new(2026, 9, 10))
+    assert_empty game.prebooking_cancellations.reload
+    assert_equal kept, game.prebookings.find_by(date: Date.new(2026, 9, 7), slot_index: 1)
+  end
+
+  test "a coach booking on a weekday dropped from the calendar goes with it" do
+    coach = User.create!(email: "coach-dropped-weekday@example.com", coach: true)
+    game = Game.create!(court: courts(:one), user: users(:one), coach: coach, with_coach: true,
+                        recurring: true, recurrence_days: [ 1, 4 ], date: Date.new(2026, 9, 7))
+    game.update!(coach_invitation_status: "accepted")
+
+    travel_to Time.zone.local(2026, 9, 7, 9, 0) do
+      game.coach_prebookings.create!(coach: coach, date: Date.new(2026, 9, 10))
+
+      # Так снимает день сам календарь: занятие уходит из расписания, а не из
+      # правила недельного повтора.
+      assert_difference -> { game.coach_prebookings.count }, -1 do
+        game.update!(occurrence_dates: [ "2026-09-07" ], recurrence_days: [ 1 ])
+      end
+    end
+  ensure
+    coach&.destroy
+  end
+
+  # Расписание из самих отмеченных дат: «пн и чт на этой неделе, пн и ср на
+  # следующей» в дни недели не укладывается.
+  test "an irregular schedule happens exactly on the ticked dates" do
+    game = Game.create!(court: courts(:one), user: users(:one), time: "18:00", kind: "game",
+                        date: Date.new(2026, 9, 7),
+                        occurrence_dates: %w[2026-09-07 2026-09-10 2026-09-14 2026-09-16])
+
+    assert game.series?, "четыре занятия — это серия, даже без галок повтора"
+    assert game.occurrence_date?(Date.new(2026, 9, 16))
+    assert_not game.occurrence_date?(Date.new(2026, 9, 17)), "четверг следующей недели не отмечали"
+
+    travel_to Time.zone.local(2026, 9, 11, 12, 0) do
+      assert_equal Date.new(2026, 9, 14), game.next_date
+      assert_equal Date.new(2026, 9, 10), game.previous_occurrence_before_next_date
+    end
+
+    # После последней отметки серия заканчивается: повтора у неё нет.
+    travel_to Time.zone.local(2026, 9, 17, 12, 0) do
+      assert_nil game.next_date
+    end
+
+    assert_equal Date.new(2026, 9, 16), game.reload.ends_on
+  end
+
+  # Отыгранная серия не должна «находить» занятие там, где его нет: у
+  # расписания из отмеченных дат последнее занятие может быть месяц назад.
+  test "a finished schedule keeps its last session as the current one" do
+    game = Game.create!(court: courts(:one), user: users(:one), time: "18:00", kind: "game",
+                        date: Date.new(2026, 9, 7), occurrence_dates: %w[2026-09-07 2026-09-10])
+
+    # 5 октября — понедельник, но серия закончилась 10 сентября.
+    travel_to Time.zone.local(2026, 10, 5, 12, 0) do
+      assert_equal Date.new(2026, 9, 10), game.display_date_for_show
+      assert_nil game.chat_open_until
+      assert_not game.participations_reset_due?
+    end
+  end
+
+  # Записываться в отыгранную серию некуда: горизонт начинался заново с первой
+  # даты расписания и предлагал брони на прошедшие занятия.
+  test "a finished schedule offers no prebooking dates" do
+    game = Game.create!(court: courts(:one), user: users(:one), time: "18:00", kind: "game",
+                        date: Date.new(2026, 9, 7), occurrence_dates: %w[2026-09-07 2026-09-10],
+                        prebooking_enabled: true)
+
+    travel_to Time.zone.local(2026, 9, 17, 12, 0) do
+      assert_empty game.prebooking_horizon_dates(3)
+      assert_nil game.prebooking_month
+    end
+  end
+
+  test "the weekly box carries the schedule on by weekdays" do
+    game = Game.create!(court: courts(:one), user: users(:one), time: "18:00", kind: "game", recurring: true,
+                        date: Date.new(2026, 9, 7), occurrence_dates: %w[2026-09-07 2026-09-10])
+
+    assert game.occurrence_date?(Date.new(2026, 9, 14))
+    assert game.occurrence_date?(Date.new(2026, 9, 17))
+    assert_not game.occurrence_date?(Date.new(2026, 9, 15))
+    assert_nil game.reload.ends_on, "бесконечная серия не заканчивается"
+  end
+
+  test "the monthly box carries the schedule on by days of the month" do
+    game = Game.create!(court: courts(:one), user: users(:one), time: "18:00", kind: "game", recurring_monthly: true,
+                        date: Date.new(2026, 9, 7), occurrence_dates: %w[2026-09-07 2026-09-10])
+
+    assert game.occurrence_date?(Date.new(2026, 10, 7))
+    assert game.occurrence_date?(Date.new(2026, 11, 10))
+    assert_not game.occurrence_date?(Date.new(2026, 10, 8))
+
+    travel_to Time.zone.local(2026, 9, 11, 12, 0) do
+      assert_equal Date.new(2026, 10, 7), game.next_date
+    end
+  end
+
+  # Предзапись раньше зависела от галки недельного повтора: у расписания из
+  # нескольких дат она нужна ровно так же.
+  test "prebooking is allowed for a schedule of several dates" do
+    game = Game.new(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 7),
+                    occurrence_dates: %w[2026-09-07 2026-09-10], prebooking_enabled: true)
+
+    assert game.valid?, game.errors.full_messages.to_sentence
+  end
+
+  test "prebooking still needs more than one occurrence" do
+    game = Game.new(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 7), prebooking_enabled: true)
+
+    assert_not game.valid?
+    assert_includes game.errors[:prebooking_enabled], "can be enabled only for repeating (weekly) games"
   end
 end

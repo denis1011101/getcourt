@@ -3,13 +3,12 @@ class GameReminderJob < ApplicationJob
 
   def perform(day_offset = 0)
     target_date = Date.current + day_offset
-    scope = Game.where("date = ? OR recurring = ?", target_date, true)
+    scope = Game.where(date: target_date).or(Game.still_running(target_date))
 
     scope.find_each do |game|
-      occurrence_date = game.recurring ? recurring_occurrence_date(game) : game.date
-      next unless occurrence_date == target_date
+      next unless occurrence_on?(game, target_date)
 
-      recipients = game.participations.includes(:user).map(&:user).compact.uniq
+      recipients = recipients_for(game, target_date)
       next if recipients.empty?
 
       recipients.each do |recipient|
@@ -37,10 +36,10 @@ class GameReminderJob < ApplicationJob
       target_date = game_before_14_yekaterinburg?(game) ? today + 1.day : today
       next unless occurrence_on?(game, target_date)
 
-      participants = game.participations.includes(:user).map(&:user).compact.uniq
+      participants = recipients_for(game, target_date)
 
       game.accepted_coaches.each do |coach|
-        next if game.recurring? && !game.coach_prebookings.exists?(coach_id: coach.id, date: target_date)
+        next if game.series? && !game.coach_prebookings.exists?(coach_id: coach.id, date: target_date)
 
         NotificationDelivery.deliver(
           user: coach,
@@ -51,10 +50,7 @@ class GameReminderJob < ApplicationJob
   end
 
   def occurrence_on?(game, target_date)
-    return game.date == target_date unless game.recurring?
-    return false if game.date.blank? || game.date > target_date
-
-    ((target_date - game.date).to_i % 7).zero? && !game.cancelled_on?(target_date)
+    game.occurrence_date?(target_date) && !game.cancelled_on?(target_date)
   end
 
   def game_before_14_yekaterinburg?(game)
@@ -68,8 +64,28 @@ class GameReminderJob < ApplicationJob
     hour < 14
   end
 
-  def recurring_occurrence_date(game)
-    game.date && game.date >= Date.current ? game.date : game.next_date
+  # Состав принадлежит одному занятию — тому, что показывает карточка, и до
+  # ночи сброса это ещё отыгранное вхождение. Если напоминаем о другом — у
+  # серии с занятиями в соседние дни «завтра» уже следующее вхождение, — зовём
+  # тех, кто записан именно на эту дату.
+  def recipients_for(game, target_date)
+    return participants_of(game) if game.display_date_for_show == target_date
+    # Предзапись выключили, а брони остались лежать: в состав эти люди уже не
+    # попадут, и звать их на занятие не за что.
+    return [] unless game.prebooking_enabled?
+
+    booked_for(game, target_date)
+  end
+
+  def participants_of(game)
+    game.participations.includes(:user).map(&:user).compact.uniq
+  end
+
+  # Только подтверждённые: чужая заявка ждёт ответа организатора, и звать
+  # человека на игру, в состав которой его ещё не взяли, рано — как и называть
+  # его участником в чужих напоминаниях.
+  def booked_for(game, target_date)
+    game.prebookings.approved.where(date: target_date).where.not(user_id: nil).includes(:user).map(&:user).compact.uniq
   end
 
   def notification_for(game, target_date, recipients, day_offset)

@@ -96,4 +96,48 @@ class TrainingBlockTest < ActiveSupport::TestCase
   ensure
     coach&.destroy
   end
+
+  # Видео к упражнению — ссылка на известный хостинг: её увидят все участники
+  # тренировки, и вести она должна к ролику, а не куда угодно.
+  test "a video link is kept for a known video host" do
+    coach = User.create!(email: "block-video@example.com", coach: true)
+    block = TrainingBlock.new(user: coach, title: "Подача", video_url: " youtu.be/dQw4w9WgXcQ ")
+
+    assert block.valid?, block.errors.full_messages.to_sentence
+    assert_equal "https://youtu.be/dQw4w9WgXcQ", block.video_url, "схему дописываем, пробелы убираем"
+    assert_equal "YouTube", block.video_host
+
+    block.video_url = "https://www.instagram.com/reel/C1a2b3c4d5e/"
+    assert block.valid?
+    assert_equal "Instagram", block.video_host
+
+    block.video_url = "https://vm.tiktok.com/ZM1abc/"
+    assert block.valid?, "поддомен хостера — тот же хостер"
+    assert_equal "TikTok", block.video_host
+  ensure
+    coach&.destroy
+  end
+
+  test "a link to anything but a video host is refused" do
+    coach = User.create!(email: "block-video-bad@example.com", coach: true)
+    block = TrainingBlock.new(user: coach, title: "Подача", video_url: "https://example.com/watch?v=1")
+
+    assert_not block.valid?
+    assert_includes block.errors.attribute_names, :video_url
+
+    block.video_url = "https://evil.example/youtube.com/x"
+    assert_not block.valid?, "хостер ищем в хосте, а не в пути"
+
+    block.video_url = "https://vk.com/video-1_2"
+    assert_not block.valid?, "VK, Rutube и Facebook в список сознательно не входят"
+
+    block.video_url = "not a url at all"
+    assert_not block.valid?
+
+    block.video_url = ""
+    assert block.valid?, "без видео блок как и был"
+    assert_nil block.video_url
+  ensure
+    coach&.destroy
+  end
 end

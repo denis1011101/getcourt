@@ -24,12 +24,21 @@ module Games
     # потом прошедшие (свежие сверху).
     def ordered
       today = ActiveRecord::Base.connection.quote(Date.current)
+      # Тот же вопрос, что и у Game.still_running, но внутри ORDER BY: серия
+      # идёт сверху, пока её расписание не кончилось.
+      running_sql = "(games.recurring = 1 OR games.recurring_monthly = 1 OR games.ends_on >= #{today})"
+      # А по сегодняшнему дню сортируются только те, чья ближайшая дата уже не
+      # лежит в колонке: бесконечная серия и та, что идёт прямо сейчас. У
+      # будущей игры — хоть разовой, хоть серии — ключ её собственная дата,
+      # иначе октябрьская утренняя вставала бы выше сентябрьской вечерней.
+      started_sql = "(games.recurring = 1 OR games.recurring_monthly = 1 OR " \
+                    "(games.date < #{today} AND games.ends_on >= #{today}))"
 
       @scope.order(
         Arel.sql(
-          "CASE WHEN games.recurring = true OR games.date IS NULL OR games.date >= #{today} THEN 0 ELSE 1 END, " \
-          "CASE WHEN games.recurring = true OR games.date IS NULL THEN #{today} WHEN games.date >= #{today} THEN games.date END ASC NULLS LAST, " \
-          "CASE WHEN games.recurring = false AND games.date IS NOT NULL AND games.date < #{today} THEN games.date END DESC NULLS LAST, " \
+          "CASE WHEN #{running_sql} OR games.date IS NULL OR games.date >= #{today} THEN 0 ELSE 1 END, " \
+          "CASE WHEN #{started_sql} OR games.date IS NULL THEN #{today} WHEN games.date >= #{today} THEN games.date END ASC NULLS LAST, " \
+          "CASE WHEN NOT (#{running_sql}) AND games.date IS NOT NULL AND games.date < #{today} THEN games.date END DESC NULLS LAST, " \
           "games.time ASC"
         )
       )
@@ -56,15 +65,15 @@ module Games
       chain(flag.present? ? @scope.where.not(tournament_id: nil) : @scope)
     end
 
-    # Только игры, которые ещё впереди. Повторяющиеся идут всегда: у них
-    # следующее вхождение считается на лету, а не лежит в колонке.
+    # Только игры, которые ещё впереди. Бесконечная серия идёт всегда, у
+    # конечной впереди занятия, пока не прошла её последняя отметка.
     def upcoming_only(flag)
-      chain(flag.present? ? @scope.where("games.recurring = ? OR games.date >= ?", true, Date.current) : @scope)
+      chain(flag.present? ? @scope.merge(Game.still_running) : @scope)
     end
 
     def from_date(value)
       date = parse_date(value)
-      chain(date ? @scope.where("games.recurring = ? OR games.date >= ?", true, date) : @scope)
+      chain(date ? @scope.merge(Game.still_running(date)) : @scope)
     end
 
     def to_date(value)

@@ -539,6 +539,7 @@ es:
       grass: "Hierba"
       artificial_grass: "Hierba artificial"
       rubber: "Caucho (granulado)"
+      teraflex: "Teraflex (baldosas modulares)"
     form:
       free: "Pista gratuita (sin tarifa)"
       outdoor: "Pista al aire libre"

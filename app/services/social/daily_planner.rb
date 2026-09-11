@@ -46,7 +46,7 @@ module Social
       target = date + 1
 
       games = Game.where(urgent_player_search: false)
-        .where("games.date = ? OR games.recurring = ?", target, true)
+        .where("games.date = ? OR games.recurring = ? OR games.recurring_monthly = ? OR games.ends_on >= ?", target, true, true, target)
         .includes(:court, :participations)
         .select { |game| game.occurrence_date?(target) && !game.cancelled_on?(target) }
 

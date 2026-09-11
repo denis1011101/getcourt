@@ -123,6 +123,123 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to game_path(Game.order(:id).last)
   end
 
+  # Календарь формы отдаёт список отмеченных дат, а игра создаётся одна: самая
+  # ранняя дата становится её датой, остальные — расписанием повторов.
+  test "several dates picked in the calendar make one repeating game" do
+    post session_url, params: { email: "games_calendar_user@example.com" }
+
+    assert_difference("Game.count", 1) do
+      post games_url, params: {
+        game: {
+          court_id: courts(:one).id,
+          dates: "2026-09-10,2026-09-07",
+          date: "2026-09-07",
+          time: "18:00",
+          recurring: "1"
+        }
+      }
+    end
+
+    game = Game.order(:id).last
+    assert_equal Date.new(2026, 9, 7), game.date
+    assert_equal [ 1, 4 ], game.recurrence_days
+  end
+
+  # «Пн и чт на этой неделе, пн и ср на следующей» — расписание, которое в дни
+  # недели не укладывается: сохраняем сами отмеченные даты.
+  test "an irregular set of dates is saved as the schedule of one game" do
+    post session_url, params: { email: "games_calendar_irregular_user@example.com" }
+
+    assert_difference("Game.count", 1) do
+      post games_url, params: {
+        game: {
+          court_id: courts(:one).id,
+          dates: "2026-09-07,2026-09-10,2026-09-14,2026-09-16",
+          time: "18:00",
+          recurring: "0"
+        }
+      }
+    end
+
+    game = Game.order(:id).last
+    assert_equal Date.new(2026, 9, 7), game.date
+    assert_equal %w[2026-09-07 2026-09-10 2026-09-14 2026-09-16], game.occurrence_dates
+    assert_equal Date.new(2026, 9, 16), game.ends_on
+    assert game.series?
+  end
+
+  test "the monthly box carries the ticked dates into the next months" do
+    post session_url, params: { email: "games_calendar_monthly_user@example.com" }
+    post games_url, params: {
+      game: {
+        court_id: courts(:one).id,
+        dates: "2026-09-07,2026-09-10",
+        time: "18:00",
+        recurring: "0",
+        recurring_monthly: "1"
+      }
+    }
+
+    game = Game.order(:id).last
+    assert game.recurring_monthly?
+    assert_nil game.ends_on
+    assert game.occurrence_date?(Date.new(2026, 10, 10))
+  end
+
+  test "a one-off game saved from the calendar keeps a single date" do
+    post session_url, params: { email: "games_calendar_one_off_user@example.com" }
+
+    post games_url, params: {
+      game: {
+        court_id: courts(:one).id,
+        dates: "2026-09-07",
+        date: "2026-09-07",
+        time: "18:00",
+        recurring: "0"
+      }
+    }
+
+    game = Game.order(:id).last
+    assert_equal Date.new(2026, 9, 7), game.date
+    assert_equal [], game.recurrence_days
+  end
+
+  test "editing the calendar rewrites the schedule of the same game" do
+    post session_url, params: { email: "games_calendar_edit_user@example.com" }
+    post games_url, params: {
+      game: { court_id: courts(:one).id, dates: "2026-09-07", date: "2026-09-07", time: "18:00", recurring: "1" }
+    }
+    game = Game.order(:id).last
+
+    assert_no_difference("Game.count") do
+      patch game_url(game), params: {
+        game: { court_id: courts(:one).id, dates: "2026-09-07,2026-09-09,2026-09-11", time: "18:00", recurring: "1" }
+      }
+    end
+
+    assert_equal Date.new(2026, 9, 7), game.reload.date
+    assert_equal [ 1, 3, 5 ], game.recurrence_days
+  end
+
+  # Тренер подтверждает даты в том же календаре, что и предзапись игроков, и
+  # видеть его должен у любой серии — не только у недельной.
+  test "show draws the coach calendar for a monthly series without player prebooking" do
+    coach = User.create!(email: "monthly-series-coach@example.com", coach: true)
+    game = Game.create!(court: courts(:one), user: users(:one), coach: coach, with_coach: true, time: "18:00",
+                        date: Date.new(2026, 9, 7), occurrence_dates: %w[2026-09-07], recurring_monthly: true)
+    game.update!(coach_invitation_status: "accepted")
+    post session_url, params: { email: coach.email }
+
+    travel_to Time.zone.local(2026, 9, 8, 12, 0) do
+      get game_url(game)
+    end
+
+    assert_response :success
+    assert_select "[data-testid=?]", "prebooking-calendar"
+  ensure
+    coach&.destroy
+  end
+
   test "create rejects surface or environment not offered by the court" do
     post session_url, params: { email: "games_surface_user@example.com" }
     court = Court.create!(name: "Clay outdoor", surfaces: %w[clay], outdoor: true, indoor: false)
@@ -1062,6 +1179,54 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
   ensure
     game&.destroy
     owner&.destroy
+  end
+
+  # Видео к упражнению добавляют прямо из формы игры, а на странице игры оно
+  # показывается ссылкой с именем хостера.
+  test "a new block from the game form keeps its video and the game page links to it" do
+    post session_url, params: { email: "plan-video-owner@example.com" }
+    owner = User.find_by!(email: "plan-video-owner@example.com")
+
+    post games_url, params: {
+      game: {
+        court_id: courts(:one).id,
+        date: Date.current + 1.day,
+        time: "18:00",
+        kind: "training",
+        training_block_ids: [ "" ],
+        new_training_blocks: { "0" => { title: "Подача", video_url: "https://youtu.be/dQw4w9WgXcQ" } }
+      }
+    }
+
+    game = Game.order(:id).last
+    assert_equal "https://youtu.be/dQw4w9WgXcQ", owner.training_blocks.find_by(title: "Подача").video_url
+
+    get game_path(game)
+
+    assert_select "a[data-testid=?][href=?]", "training-block-video", "https://youtu.be/dQw4w9WgXcQ", text: /YouTube/
+  ensure
+    game&.destroy
+    owner&.destroy
+  end
+
+  test "a new block with a link to a non-video site is rejected with the form re-rendered" do
+    post session_url, params: { email: "plan-video-bad-owner@example.com" }
+
+    assert_no_difference("Game.count") do
+      post games_url, params: {
+        game: {
+          court_id: courts(:one).id,
+          date: Date.current + 1.day,
+          time: "18:00",
+          kind: "training",
+          training_block_ids: [ "" ],
+          new_training_blocks: { "0" => { title: "Подача", video_url: "https://example.com/video" } }
+        }
+      }
+    end
+
+    assert_response :unprocessable_entity
+    assert_select "input[name=?][value=?]", "game[new_training_blocks][0][video_url]", "https://example.com/video"
   end
 
   test "a block from someone else's library never lands in the plan" do
