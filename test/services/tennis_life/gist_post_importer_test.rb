@@ -36,14 +36,18 @@ class TennisLife::GistPostImporterTest < ActiveSupport::TestCase
 
   # The whole point of the import: these rows have to clear the filters the feed
   # source applies (message_id, non-blank text, channel username).
+  # Часы прибиты к датам самих постов: источник отдаёт не старше 30 дней, и без
+  # travel_to тест разваливался бы через месяц после их правки.
   test "imported posts are picked up by the feed source" do
-    imported = TennisLife::GistPostImporter.call(posts: POSTS)
-    assert_equal 2, imported.created
+    travel_to Time.utc(2026, 8, 10, 20, 11, 9) do
+      imported = TennisLife::GistPostImporter.call(posts: POSTS)
+      assert_equal 2, imported.created
 
-    ids = TennisLife::Feed::Sources::TelegramPosts.new(snapshot_ts: 1.minute.from_now).ids
+      ids = TennisLife::Feed::Sources::TelegramPosts.new(snapshot_ts: 1.minute.from_now).ids
 
-    TelegramPost.where(message_id: [ 36_322, 17_623 ]).each do |post|
-      assert_includes ids, post.id
+      TelegramPost.where(message_id: [ 36_322, 17_623 ]).each do |post|
+        assert_includes ids, post.id
+      end
     end
   end
 
