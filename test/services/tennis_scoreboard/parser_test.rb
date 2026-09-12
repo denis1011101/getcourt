@@ -44,9 +44,12 @@ class TennisScoreboard::ParserTest < ActiveSupport::TestCase
     assert_equal :finished, finished.status
     assert_equal "2:0", finished.score
 
-    # Непонятная строка не теряется: она остаётся в сыром тексте карточки.
+    # Непонятная строка не теряется: она остаётся в сыром тексте карточки,
+    # а блок помнит, что разобран не целиком.
     assert_includes us_open.raw, "something the parser does not understand"
     assert_equal 3, us_open.matches.size
+    assert_equal [ true, false ], us_open.blocks.map(&:complete?)
+    assert_equal 540, TennisScoreboard::Parser::Match.new(time: "9:00").minutes_of_day
   end
 
   test "tournaments outside the major list are ordinary" do

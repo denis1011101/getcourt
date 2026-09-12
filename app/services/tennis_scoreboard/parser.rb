@@ -23,7 +23,12 @@ module TennisScoreboard
       end
     end
 
-    Block = Struct.new(:tour, :discipline, :surface, :matches, :raw, keyword_init: true)
+    Block = Struct.new(:tour, :discipline, :surface, :matches, :unparsed, :raw, keyword_init: true) do
+      # Все ли строки блока разобраны: только тогда длине списка можно верить.
+      def complete?
+        unparsed.zero?
+      end
+    end
 
     Match = Struct.new(:status, :label, :time, :left, :right, :score, keyword_init: true) do
       def live?
@@ -32,6 +37,14 @@ module TennisScoreboard
 
       def scheduled?
         status == :scheduled
+      end
+
+      # Минуты от начала суток, чтобы 9:00 стояло раньше 12:00, а не после.
+      def minutes_of_day
+        return nil unless time
+
+        hours, minutes = time.split(":").map(&:to_i)
+        hours * 60 + minutes
       end
     end
 
@@ -63,11 +76,13 @@ module TennisScoreboard
           slug: slug, name: name, country: country.presence, blocks: [],
           major: major?(name)
         )
+        matches = lines.drop(1).filter_map { |line| parse_match(line) }
         tournament.blocks << Block.new(
           tour: header[:tour].strip,
           discipline: header[:discipline].strip,
           surface: header[:surface].strip,
-          matches: lines.drop(1).filter_map { |line| parse_match(line) },
+          matches: matches,
+          unparsed: lines.size - 1 - matches.size,
           raw: lines.join("\n")
         )
       end
