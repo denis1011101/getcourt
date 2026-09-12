@@ -716,8 +716,10 @@ class Game < ApplicationRecord
     required_players - spots_taken
   end
 
+  # Пока число игроков не выбрано, лимита нет — места есть всегда, сколько бы
+  # ни записалось; иначе фильтр «есть места» молча считал бы вместимость за 4.
   def spots_available?
-    spots_left.positive?
+    !players_count_chosen? || spots_left.positive?
   end
 
   def next_time

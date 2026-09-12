@@ -50,7 +50,9 @@ module Social
         .includes(:court, :participations)
         .select { |game| game.occurrence_date?(target) && !game.cancelled_on?(target) }
 
-      game = games.select { |candidate| candidate.spots_left.positive? }
+      # Анонс говорит «осталось N мест», так что игры без выбранного числа
+      # игроков пропускаем: считать не от чего.
+      game = games.select { |candidate| candidate.players_count_chosen? && candidate.spots_left.positive? }
         .max_by { |candidate| [ candidate.spots_left, candidate.id ] }
       return nil unless game
 

@@ -50,6 +50,10 @@ class GameTest < ActiveSupport::TestCase
     assert game.valid?, game.errors.full_messages.to_sentence
     assert_not game.players_count_chosen?
     assert_equal Game::DEFAULT_PLAYERS, game.required_players
+
+    game.save!
+    5.times { |i| game.participations.create!(user: User.create!(email: "unlimited-#{i}@example.com")) }
+    assert game.spots_available?, "unknown capacity must not cap the game at the default"
   end
 
   test "prebooking cannot be enabled until players count is chosen" do

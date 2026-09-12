@@ -623,6 +623,17 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 6, game.reload.players_count
   end
 
+  test "edit form keeps a saved players count outside the 2/4 presets" do
+    post session_url, params: { email: "owner_players_six@example.com" }
+    owner = User.find_by!(email: "owner_players_six@example.com")
+    game = Game.create!(court: courts(:one), user: owner, date: Date.current + 2.days, time: "10:00", players_count: 6)
+
+    get edit_game_url(game)
+
+    assert_response :success
+    assert_select "select#game_players_count option[selected][value='6']"
+  end
+
   test "owner can leave players count unchosen and the game page says so" do
     post session_url, params: { email: "owner_players_blank@example.com" }
     owner = User.find_by!(email: "owner_players_blank@example.com")
