@@ -1,3 +1,6 @@
+<% tournament = card.record %>
 <div class="p-4">
-  <%= render "tennis_life/scoreboard", tennis_score_html: tennis_scoreboard_html(card.record) %>
+  <%= render "tennis_life/scoreboard",
+        tennis_score_html: tennis_scoreboard_html(tournament.raw),
+        title: [ tournament.name, tournament.country ].compact.join(" · ") %>
 </div>

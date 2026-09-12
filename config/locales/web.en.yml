@@ -534,6 +534,10 @@ en:
     reset: Reset quota
     reset_title: Reset geocoding quota
   tennis_life:
+    highlight:
+      title: Today in pro tennis
+      live: Live
+      at: "at %{time}"
     total_players: "Players on GetCourt: %{count}"
     scoreboard:
       title: Tennis Scoreboard

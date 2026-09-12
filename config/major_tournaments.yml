@@ -1,0 +1,29 @@
+# Турниры, которые табло считает главными: их матч уходит на главную страницу
+# и закрепляется в начале ленты Tennis Life. Сравнивается подстрокой без учёта
+# регистра с названием турнира из гиста — «US Open (USA)», «Cincinnati (USA)».
+# Шлемы, итоговые, Олимпиада, командные финалы и «тысячники» ATP/WTA.
+- US Open
+- Australian Open
+- Roland Garros
+- French Open
+- Wimbledon
+- ATP Finals
+- WTA Finals
+- Olympic
+- Davis Cup
+- Billie Jean King Cup
+- Indian Wells
+- Miami
+- Monte Carlo
+- Monte-Carlo
+- Madrid
+- Rome
+- Toronto
+- Montreal
+- Cincinnati
+- Shanghai
+- Paris
+- Doha
+- Dubai
+- Beijing
+- Wuhan

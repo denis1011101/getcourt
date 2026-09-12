@@ -1,0 +1,22 @@
+<%= turbo_frame_tag "scoreboard-highlight" do %>
+  <% if highlight %>
+    <% match = highlight.match %>
+    <%= link_to tennis_life_path, class: "mb-6 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900 transition hover:bg-emerald-100 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-100 dark:hover:bg-emerald-500/15", data: { turbo_frame: "_top" } do %>
+      <span class="font-semibold"><%= t("tennis_life.highlight.title") %></span>
+      <span class="text-emerald-700 dark:text-emerald-300"><%= [ highlight.tournament.name, highlight.block.tour ].join(" · ") %></span>
+      <span class="font-medium">
+        <%= [ match.left.flag, match.left.name ].compact.join(" ") %>
+        <span class="text-emerald-500 dark:text-emerald-400">—</span>
+        <%= [ match.right.flag, match.right.name ].compact.join(" ") %>
+      </span>
+      <% if match.live? %>
+        <span class="inline-flex items-center gap-1 rounded-full bg-rose-500 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
+          <span class="h-1.5 w-1.5 rounded-full bg-white animate-pulse"></span>
+          <%= t("tennis_life.highlight.live") %> · <%= match.label %> · <%= match.score %>
+        </span>
+      <% else %>
+        <span class="text-emerald-700 dark:text-emerald-300"><%= t("tennis_life.highlight.at", time: match.time) %></span>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

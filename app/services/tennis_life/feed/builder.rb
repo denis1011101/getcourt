@@ -1,7 +1,11 @@
 module TennisLife
   module Feed
     class Builder
-      CACHE_VERSION = 1
+      CACHE_VERSION = 2
+      # Куда встаёт ведущий турнир табло: третья карточка, чтобы табло было на
+      # первом экране, а не на 32-й позиции, куда его отправляет интерливер с
+      # одной-двумя карточками против сотен постов.
+      PINNED_SCOREBOARD_POSITION = 2
 
       SOURCE_CLASSES = [
         Sources::TelegramPosts,
@@ -38,7 +42,18 @@ module TennisLife
 
       def build_order
         queues = sources.map { |source| [ source.kind, source.ids, source.weight ] }
-        Interleaver.new(queues, seed: seed).call
+        pin_lead_scoreboard(Interleaver.new(queues, seed: seed).call)
+      end
+
+      def pin_lead_scoreboard(order)
+        lead = TennisScoreboard::Board.at(snapshot_ts).lead or return order
+        entry = [ "scoreboard", lead.slug ]
+        index = order.index(entry) or return order
+
+        order.dup.tap do |pinned|
+          pinned.delete_at(index)
+          pinned.insert([ PINNED_SCOREBOARD_POSITION, pinned.size ].min, entry)
+        end
       end
 
       def sources
