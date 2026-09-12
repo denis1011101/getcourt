@@ -57,6 +57,41 @@ class TennisScoreboard::BoardTest < ActiveSupport::TestCase
     assert_equal "Alcaraz C.", board(text).highlight.match.left.name
   end
 
+  test "a snapshot keeps the tournaments it saw even after the gist changes" do
+    previous_cache = Rails.cache
+    Rails.cache = ActiveSupport::Cache::MemoryStore.new
+    snapshot = Time.current.beginning_of_hour
+    first = "<b>ATP - SINGLES, US Open (USA), hard</b>\n23:00 - <i>Zverev A.</i> - : - <i>Shelton B.</i>\n"
+    later = "<b>WTA - SINGLES, Wuhan (China), hard</b>\n12:00 - <i>Gauff C.</i> - : - <i>Zheng Q.</i>\n"
+
+    stub_singleton(TennisScoreboard::Fetcher, :raw_text, first) do
+      assert_equal %w[us-open-usa], TennisScoreboard::Board.at(snapshot).tournaments.map(&:slug)
+    end
+    stub_singleton(TennisScoreboard::Fetcher, :raw_text, later) do
+      assert_equal %w[us-open-usa], TennisScoreboard::Board.at(snapshot).tournaments.map(&:slug)
+      assert_equal %w[wuhan-china], TennisScoreboard::Board.current.tournaments.map(&:slug)
+      assert_equal %w[wuhan-china], TennisScoreboard::Board.at(snapshot + 1.hour).tournaments.map(&:slug)
+    end
+  ensure
+    Rails.cache = previous_cache
+  end
+
+  test "a failed fetch is not frozen into the snapshot" do
+    previous_cache = Rails.cache
+    Rails.cache = ActiveSupport::Cache::MemoryStore.new
+    snapshot = Time.current.beginning_of_hour
+    text = "<b>ATP - SINGLES, US Open (USA), hard</b>\n23:00 - <i>Zverev A.</i> - : - <i>Shelton B.</i>\n"
+
+    stub_singleton(TennisScoreboard::Fetcher, :raw_text, nil) do
+      assert TennisScoreboard::Board.at(snapshot).empty?
+    end
+    stub_singleton(TennisScoreboard::Fetcher, :raw_text, text) do
+      assert_equal %w[us-open-usa], TennisScoreboard::Board.at(snapshot).tournaments.map(&:slug)
+    end
+  ensure
+    Rails.cache = previous_cache
+  end
+
   test "finished matches are not highlighted and an empty board has no lead" do
     text = <<~TEXT
       <b>WTA - SINGLES, Wimbledon (Great Britain), grass</b>

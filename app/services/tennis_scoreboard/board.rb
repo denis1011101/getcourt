@@ -8,6 +8,20 @@ module TennisScoreboard
       new(Fetcher.tennis_block(Fetcher.raw_text))
     end
 
+    # Табло, каким его увидела лента в момент снимка. Курсор живёт сутки, а
+    # гист обновляется каждые полчаса: бери источник, загрузчик и закреп из
+    # живого табло — и через полчаса те же страницы курсора соберутся из других
+    # турниров, сдвинув и потеряв соседние карточки. Поэтому текст табло
+    # запоминаем на время жизни курсора по snapshot_ts. Пустой ответ не
+    # запоминаем: сбой гиста не должен прятать табло от всех курсоров часа.
+    def self.at(snapshot_ts)
+      key = [ "tennis_scoreboard/snapshot", snapshot_ts.to_i ]
+      text = Rails.cache.fetch(key, expires_in: TennisLife::Feed::Cursor::MAX_AGE + 1.hour, skip_nil: true) do
+        Fetcher.tennis_block(Fetcher.raw_text).presence
+      end
+      new(text)
+    end
+
     attr_reader :tournaments
 
     def initialize(text)

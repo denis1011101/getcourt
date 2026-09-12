@@ -46,7 +46,7 @@ module TennisLife
       end
 
       def pin_lead_scoreboard(order)
-        lead = TennisScoreboard::Board.current.lead or return order
+        lead = TennisScoreboard::Board.at(snapshot_ts).lead or return order
         entry = [ "scoreboard", lead.slug ]
         index = order.index(entry) or return order
 
