@@ -582,7 +582,7 @@ ru:
           many: Осталось %{count} мест
           other: Осталось %{count} места
       urgent:
-        title: Срочно нужны игроки
+        title: Ищут игроков
       tournament:
         title: Турнир
         view: Открыть турнир

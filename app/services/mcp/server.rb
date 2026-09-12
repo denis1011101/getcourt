@@ -29,7 +29,7 @@ module Mcp
             sport: { type: "string", description: "Sport name, e.g. \"Tennis\", \"Padel\", \"Squash\"." },
             skill_level: { type: "string", description: "Skill level filter, e.g. \"Beginner\"." },
             with_spots: { type: "boolean", description: "Only games that still have a free spot." },
-            urgent: { type: "boolean", description: "Only games whose organiser flagged an urgent player search." },
+            urgent: { type: "boolean", description: "Only games whose organiser announced a player search." },
             from: { type: "string", description: "Earliest date, ISO 8601 (YYYY-MM-DD)." },
             to: { type: "string", description: "Latest date, ISO 8601 (YYYY-MM-DD)." },
             limit: { type: "integer", description: "How many games to return (1-100, default 25)." }

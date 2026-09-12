@@ -22,7 +22,7 @@ GET /api/v1/games/:id
 | `sport` | Sport name, e.g. `Tennis`, `Padel`, `Squash`. |
 | `skill_level` | Skill level, e.g. `Beginner`. |
 | `with_spots` | `true` — only games that still have a free spot. |
-| `urgent` | `true` — only games with an urgent player search. |
+| `urgent` | `true` — only games with an announced player search. |
 | `from`, `to` | Date bounds, ISO 8601 (`YYYY-MM-DD`). |
 | `upcoming` | `false` — include games already played. Upcoming only by default. |
 | `limit` | 1–100, 25 by default (`Games::Search::DEFAULT_LIMIT` / `MAX_LIMIT`). |

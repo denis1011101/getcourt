@@ -579,7 +579,7 @@ en:
           many: "%{count} spots left"
           other: "%{count} spots left"
       urgent:
-        title: Players needed urgently
+        title: Looking for players
       tournament:
         title: Tournament
         view: View tournament
