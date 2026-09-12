@@ -1,5 +1,5 @@
 <section class="bg-white dark:bg-slate-800/80 border dark:border-white/10 rounded-lg p-4">
-  <h2 class="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-3"><%= t("tennis_life.scoreboard.title") %></h2>
+  <h2 class="text-sm font-semibold text-gray-900 dark:text-slate-100 mb-3"><%= local_assigns[:title].presence || t("tennis_life.scoreboard.title") %></h2>
 
   <% if tennis_score_html.present? %>
     <div class="text-sm leading-7 text-gray-900 dark:text-slate-100">

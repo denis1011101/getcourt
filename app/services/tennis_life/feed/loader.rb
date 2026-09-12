@@ -43,7 +43,8 @@ module TennisLife
         when "featured_match"
           index_records(::FeaturedMatch.includes(:court).where(id: ids))
         when "scoreboard"
-          { "current" => [ TennisScoreboard::Fetcher.raw_text, {} ] }
+          board = TennisScoreboard::Board.current
+          ids.filter_map { |slug| board.find(slug) }.to_h { |tournament| [ tournament.slug, [ tournament, {} ] ] }
         when "court_update"
           index_records(CourtSuggestion.includes(:court, :user).where(id: ids, status: "approved"))
         when "game_media"

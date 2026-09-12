@@ -17,6 +17,28 @@ class TennisLife::Feed::BuilderTest < ActiveSupport::TestCase
     Rails.cache = previous_cache
   end
 
+  test "lead scoreboard tournament is pinned near the top, the rest interleave" do
+    channel = TelegramChannel.create!(username: "@scoreboard_pin")
+    40.times do |index|
+      TelegramPost.create!(telegram_channel: channel, message_id: 995_000 + index, text: "Post #{index}", published_at: Time.current)
+    end
+    scoreboard = <<~TEXT
+      <b>ATP - SINGLES, US Open (USA), hard</b>
+      23:00 - <i>Zverev A.</i> - : - <i>Shelton B.</i>
+
+      <b>WTA - SINGLES, Guadalajara (Mexico), hard</b>
+      21:00 - <i>Bucsa C.</i> - : - <i>Andreescu B.</i>
+    TEXT
+
+    order = stub_singleton(TennisScoreboard::Fetcher, :raw_text, scoreboard) do
+      TennisLife::Feed::Builder.new(seed: 7, snapshot_ts: Time.current).send(:build_order)
+    end
+
+    assert_equal [ "scoreboard", "us-open-usa" ], order[TennisLife::Feed::Builder::PINNED_SCOREBOARD_POSITION]
+    assert_includes order, [ "scoreboard", "guadalajara-mexico" ]
+    assert_equal 1, order.count { |entry| entry == [ "scoreboard", "us-open-usa" ] }
+  end
+
   test "snapshot excludes records created later" do
     snapshot = Time.current.change(usec: 0)
     channel = TelegramChannel.create!(username: "@snapshot_feed")

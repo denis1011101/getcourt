@@ -1,7 +1,7 @@
 require "digest"
 
 class TennisLifeController < ApplicationController
-  skip_before_action :authenticate_user!, only: %i[index classic feed statistics featured_translation]
+  skip_before_action :authenticate_user!, only: %i[index classic feed statistics featured_translation highlight]
   before_action :set_secondary_page_meta, only: %i[classic feed]
   helper_method :total_players
 
@@ -47,6 +47,13 @@ class TennisLifeController < ApplicationController
     @season_label = Season.current_label
     @rating_rows = build_rating_rows
     @pagy, @recent_matches = pagy_array(build_recent_match_events)
+  end
+
+  # Главный матч табло для полоски на главной. Ленивый turbo-frame: главная
+  # не ждёт GitHub, когда кэш гиста протух и его тянут заново.
+  def highlight
+    @highlight = TennisScoreboard::Board.current.highlight
+    render partial: "tennis_life/highlight", locals: { highlight: @highlight }
   end
 
   def featured_translation
@@ -108,7 +115,8 @@ class TennisLifeController < ApplicationController
   #   urgent_search  — same, but the organiser flagged an urgent player search
   #   tournament     — a tournament with its participants
   #   featured_match — the active promo match behind the homepage banner
-  #   scoreboard     — the live scoreboard fetched from the gist
+  #   scoreboard     — one tournament of the live scoreboard fetched from the gist; the
+  #                    lead tournament is pinned near the top of the first page
   #   court_update   — a court correction the community got approved
   #   game_media     — a photo or clip someone attached to a game (tournament games excluded)
   #   fact           — a computed community stat (hours played, courts, players)

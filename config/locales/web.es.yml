@@ -537,6 +537,10 @@ es:
     reset: Restablecer cuota
     reset_title: Restablecer la cuota de geocodificación
   tennis_life:
+    highlight:
+      title: Hoy en el tenis profesional
+      live: En juego
+      at: "a las %{time}"
     total_players: "Jugadores en GetCourt: %{count}"
     scoreboard:
       title: Marcador de tenis

@@ -533,6 +533,10 @@ ru:
     reset: Сбросить квоту
     reset_title: Сброс квоты геокодирования
   tennis_life:
+    highlight:
+      title: Сегодня в большом теннисе
+      live: Идёт
+      at: "в %{time}"
     total_players: "Игроков на GetCourt: %{count}"
     scoreboard:
       title: Теннисное табло

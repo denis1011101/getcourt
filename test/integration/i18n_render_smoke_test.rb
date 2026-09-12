@@ -20,9 +20,11 @@ class I18nRenderSmokeTest < ActionDispatch::IntegrationTest
       cursor = TennisLife::Feed::Cursor.start(seed: 123, snapshot_ts: Time.current)
       path = tennis_life_feed_path(cursor: cursor.to_param)
       kinds = []
+      # Табло в ленте — карточки по турнирам из гиста; без него источник пуст.
+      scoreboard = "<b>ATP - SINGLES, US Open (USA), hard</b>\n23:00 - <i>Zverev A.</i> - : - <i>Shelton B.</i>\n"
 
       20.times do
-        get path
+        stub_singleton(TennisScoreboard::Fetcher, :raw_text, scoreboard) { get path }
         assert_response :success
         assert_no_match(/translation missing/i, response.body, "#{loc} tennis life feed")
         kinds.concat(response.body.scan(/data-feed-card-id="([^"]+)"/).flatten.map { |id| id.split(":", 2).first })

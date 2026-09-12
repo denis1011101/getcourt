@@ -426,9 +426,10 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     seen = []
     kinds = []
     path = tennis_life_feed_path(seed: 123)
+    scoreboard = "<b>ATP - SINGLES, US Open (USA), hard</b>\n23:00 - <i>Zverev A.</i> - : - <i>Shelton B.</i>\n"
 
     20.times do
-      get path, as: :turbo_stream
+      stub_singleton(TennisScoreboard::Fetcher, :raw_text, scoreboard) { get path, as: :turbo_stream }
       assert_response :success
 
       ids = response.body.scan(/data-feed-card-id="([^"]+)"/).flatten
@@ -447,6 +448,21 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     assert_operator seen.size, :>=, 25
     assert_equal %w[court_update fact featured_match match player scoreboard telegram_post tournament upcoming_game urgent_search], kinds.uniq.sort
     assert_not_includes response.body, "telegram-widget.js"
+  end
+
+  test "homepage highlight frame shows the lead match and stays empty without one" do
+    scoreboard = "<b>WTA - SINGLES, US Open (USA), hard</b>\nSet 1 - <i>Sabalenka A.</i> 0 : 0 🇰🇿 <i>Rybakina E.</i>\n"
+
+    stub_singleton(TennisScoreboard::Fetcher, :raw_text, scoreboard) { get tennis_life_highlight_url }
+    assert_response :success
+    assert_select "turbo-frame#scoreboard-highlight a[href='#{tennis_life_path}']"
+    assert_includes response.body, "Sabalenka A."
+    assert_includes response.body, I18n.t("tennis_life.highlight.live")
+
+    stub_singleton(TennisScoreboard::Fetcher, :raw_text, nil) { get tennis_life_highlight_url }
+    assert_response :success
+    assert_select "turbo-frame#scoreboard-highlight"
+    assert_select "turbo-frame#scoreboard-highlight a", count: 0
   end
 
   test "feed HTML is noindex and canonical to tennis life" do
