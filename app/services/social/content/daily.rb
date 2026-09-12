@@ -39,7 +39,7 @@ module Social
         # оставаться завтрашним днём, иначе анонс уйдёт задним числом.
         when "upcoming"
           game.present? && game.occurrence_date?(date + 1) && !game.cancelled_on?(date + 1) &&
-            game.players_count_chosen? && game.spots_left.positive?
+            game.court.present? && game.players_count_chosen? && game.spots_left.positive?
         when "result" then match.present? && winner_name.present?
         when "fact" then fact_ready?
         else false

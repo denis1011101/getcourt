@@ -30,6 +30,27 @@ class Social::DailyPlannerTest < ActiveSupport::TestCase
     assert_not_equal "upcoming", Social::DailyPlanner.new.pick&.variant
   end
 
+  test "a game without a court or without a players count is not announced" do
+    Game.destroy_all
+    Game.create!(court: nil, user: @user, date: Date.tomorrow, time: "18:00", sport: "Tennis", players_count: 4)
+    Game.create!(court: @court, user: @user, date: Date.tomorrow, time: "19:00", sport: "Tennis", players_count: nil)
+
+    assert_not_equal "upcoming", Social::DailyPlanner.new.pick&.variant
+  end
+
+  test "upcoming content goes unavailable once the court is dropped after planning" do
+    Game.destroy_all
+    game = Game.create!(court: @court, user: @user, date: Date.tomorrow, time: "18:00", sport: "Tennis", players_count: 4)
+    content = Social::DailyPlanner.new.pick
+
+    game.update!(court: nil)
+
+    # Джоба собирает материал заново по dedup_key — проверяем ровно тот же путь.
+    rebuilt = Social::Content.build("daily", content.dedup_key)
+    assert_equal game.id.to_s, rebuilt.subject
+    assert_not rebuilt.available?
+  end
+
   test "upcoming content becomes unavailable when the game is cancelled after planning" do
     Game.destroy_all
     game = Game.create!(court: @court, user: @user, date: Date.tomorrow, time: "18:00",
