@@ -44,6 +44,25 @@ class GameTest < ActiveSupport::TestCase
     assert_equal I18n.t("games.court_pending"), game.court_name
   end
 
+  test "players count may be left unchosen and then does not cap anything" do
+    game = Game.new(court: courts(:one), user: users(:one), date: Date.current, time: "10:00", players_count: nil)
+
+    assert game.valid?, game.errors.full_messages.to_sentence
+    assert_not game.players_count_chosen?
+    assert_equal Game::DEFAULT_PLAYERS, game.required_players
+  end
+
+  test "prebooking cannot be enabled until players count is chosen" do
+    game = Game.new(court: courts(:one), user: users(:one), date: Date.current, time: "10:00",
+                    recurring: true, prebooking_enabled: true, players_count: nil)
+
+    assert_not game.valid?
+    assert_includes game.errors.full_messages, "Pre-booking cannot be enabled until the number of players is chosen: that many slots are handed out per date"
+
+    game.players_count = 4
+    assert game.valid?, game.errors.full_messages.to_sentence
+  end
+
   test "player search cannot be announced until a court is chosen" do
     game = Game.new(user: users(:one), date: Date.current, time: "10:00", urgent_player_search: true)
 

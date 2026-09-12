@@ -201,7 +201,7 @@ module Games
           body << player_dot(dot_x, y)
           dot_x += 20
         end
-        if spots_left.positive?
+        if game.players_count_chosen? && spots_left.positive?
           [ spots_left, 3 ].min.times do
             body << empty_dot(dot_x, y)
             dot_x += 20
@@ -209,9 +209,13 @@ module Games
         end
 
         counter_x = dot_x + (dot_x > x ? 10 : 0)
-        body << text(counter_x, y + 17, "#{taken}/#{required}", size: 13, color: MUTED_COLOR)
+        counter = game.players_count_chosen? ? "#{taken}/#{required}" : taken.to_s
+        body << text(counter_x, y + 17, counter, size: 13, color: MUTED_COLOR)
 
-        if spots_left.positive?
+        if !game.players_count_chosen?
+          label = I18n.t("games.card.players_count_pending")
+          color = MUTED_COLOR
+        elsif spots_left.positive?
           label = I18n.t("games.card.spots_left", count: spots_left)
           color = OPEN_COLOR
         else
@@ -262,7 +266,7 @@ module Games
       def participation_counts(game)
         participations = game.participations.loaded? ? game.participations.target : game.participations.to_a
         taken = participations.count(&:approved?)
-        required = game.players_count.to_i.positive? ? game.players_count.to_i : 4
+        required = game.required_players
         [ taken, required ]
       end
 

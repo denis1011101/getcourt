@@ -204,9 +204,10 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
       <div>
         <%= form.label :players_count, t("games.form.players_count"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+        <%# Число игроков можно оставить «пока не выбрано»; у новой игры по умолчанию 4. %>
         <%= form.select :players_count,
-              options_for_select([[2,2],[4,4]], (game.players_count || 4)),
-              {}, class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+              options_for_select([[2,2],[4,4]], game.players_count),
+              { include_blank: t("games.form.players_count_blank") }, class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
         <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.players_count_hint") %></p>
       </div>
     </div>

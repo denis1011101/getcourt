@@ -441,7 +441,12 @@ class GamesController < ApplicationController
                   classes: "inline-flex items-center rounded-full bg-blue-50/20 px-2 py-0.5 text-xs font-medium text-blue-700 mr-2" }
     end
 
-    if game.respond_to?(:participations)
+    if game.respond_to?(:participations) && !game.players_count_chosen?
+      badges << {
+        text: I18n.t("games.badges.players_count_pending", taken: game.spots_taken),
+        classes: "inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 mr-2"
+      }
+    elsif game.respond_to?(:participations)
       required = game.required_players
       taken = game.spots_taken
       spots_left = game.spots_left
@@ -470,7 +475,7 @@ class GamesController < ApplicationController
     gp["with_coach"] = ActiveModel::Type::Boolean.new.cast(gp["with_coach"]) if gp.key?("with_coach")
     gp["urgent_player_search"] = ActiveModel::Type::Boolean.new.cast(gp["urgent_player_search"]) if gp.key?("urgent_player_search")
     gp["occurrences_per_week"] = gp["occurrences_per_week"].to_i if gp.key?("occurrences_per_week")
-    gp["players_count"] = gp["players_count"].to_i if gp.key?("players_count")
+    gp["players_count"] = gp["players_count"].presence&.to_i if gp.key?("players_count")
     gp["sport"] = gp["sport"].presence if gp.key?("sport")
     gp["skill_level"] = gp["skill_level"].presence if gp.key?("skill_level")
     gp["surface"] = gp["surface"].presence if gp.key?("surface")

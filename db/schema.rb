@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_13_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_13_100000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -251,7 +251,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_13_090000) do
     t.date "last_participations_reset_at"
     t.text "occurrence_dates"
     t.integer "occurrences_per_week", default: 1, null: false
-    t.integer "players_count", default: 4, null: false
+    t.integer "players_count", default: 4
     t.string "post_game_stats_reminder_job_id"
     t.boolean "prebooking_enabled", default: false, null: false
     t.text "recurrence_days"

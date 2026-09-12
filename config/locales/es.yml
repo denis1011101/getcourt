@@ -2,6 +2,7 @@ es:
   activerecord:
     attributes:
       game:
+        prebooking_enabled: "Reserva previa"
         urgent_player_search: "Búsqueda de jugadores"
       game_medium:
         file: "Archivo"
@@ -9,6 +10,8 @@ es:
       models:
         game:
           attributes:
+            prebooking_enabled:
+              players_count_required: "no se puede activar hasta elegir el número de jugadores: se reparten tantas plazas por fecha"
             urgent_player_search:
               court_required: "no se puede anunciar hasta elegir una pista: se avisa a los jugadores por la ciudad de la pista"
         game_medium:
@@ -306,6 +309,7 @@ es:
       comment_placeholder: "Buscamos a un jugador más, cualquier nivel. Llevo las pelotas, jugamos 1,5 horas"
       comment_hint: "Todo lo que no cubren los campos de arriba. Hasta 500 caracteres, visible para todos."
     badges:
+      players_count_pending: "Jugadores: aún sin elegir, %{taken} apuntados"
       with_coach: "Con entrenador"
       need_coach: "Se necesita entrenador"
       spots_left:
@@ -804,6 +808,7 @@ es:
       example_title: "Petición"
       response_title: "Respuesta"
       privacy_note: "Los participantes no salen de la app: la respuesta dice cuántas plazas están ocupadas, nunca quién las ocupa."
+      nullable_note_html: "<code>court</code> es <code>null</code> mientras el organizador no haya elegido pista; <code>players.total</code> y <code>players.spots_left</code> son <code>null</code> mientras no se haya elegido el número de jugadores."
       mcp_title: "Servidor MCP"
       mcp_text: "Los mismos datos como servidor Model Context Protocol, para que un asistente busque partidos por su cuenta en vez de leer páginas."
       mcp_endpoint_html: "Endpoint: <code>POST /mcp</code>, Streamable HTTP sobre JSON-RPC 2.0, con lotes incluidos."

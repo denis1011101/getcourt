@@ -88,6 +88,7 @@ class Game < ApplicationRecord
   validate :surface_available_at_court
   validate :environment_available_at_court
   validate :court_chosen_for_player_search
+  validate :players_count_chosen_for_prebooking
   validate :within_tournament_dates_and_courts, if: -> { tournament.present? }
 
   def training?
@@ -396,6 +397,14 @@ class Game < ApplicationRecord
     end
   end
 
+  # Слоты пребукинга — это ровно players_count штук на дату; без числа игроков
+  # раздавать нечего.
+  def players_count_chosen_for_prebooking
+    return unless prebooking_enabled? && !players_count_chosen?
+
+    errors.add(:prebooking_enabled, :players_count_required)
+  end
+
   # Покрытие игры должно быть среди покрытий выбранного корта
   def surface_available_at_court
     return if surface.blank? || court.blank?
@@ -679,10 +688,16 @@ class Game < ApplicationRecord
     dates
   end
 
+  # Число игроков организатор может оставить «пока не выбрано»: тогда карточки
+  # не считают свободные места, а слотов пребукинга не бывает вовсе.
+  def players_count_chosen?
+    players_count.to_i > 0
+  end
+
   # Сколько игроков нужно на игру (по умолчанию 4). Это же число — количество
   # слотов на дату в пребукинге.
   def required_players
-    players_count.to_i > 0 ? players_count.to_i : DEFAULT_PLAYERS
+    players_count_chosen? ? players_count.to_i : DEFAULT_PLAYERS
   end
   alias_method :prebooking_required_players, :required_players
 

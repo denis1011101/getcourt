@@ -70,6 +70,9 @@ curl "https://getcourt.co/api/v1/games?city=Belgrade&sport=Tennis&with_spots=tru
 }
 ```
 
+`court` is `null` while the organiser has not chosen a court yet; `players.total` and
+`players.spots_left` are `null` while the number of players is not chosen.
+
 A missing game answers `404` with `{"error":"not_found"}`.
 
 ## MCP server

@@ -623,6 +623,21 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_equal 6, game.reload.players_count
   end
 
+  test "owner can leave players count unchosen and the game page says so" do
+    post session_url, params: { email: "owner_players_blank@example.com" }
+    owner = User.find_by!(email: "owner_players_blank@example.com")
+    game = Game.create!(court: courts(:one), user: owner, date: Date.current + 2.days, time: "10:00", players_count: 4)
+
+    patch game_url(game), params: { game: { court_id: game.court_id, date: game.date, time: "10:00", players_count: "" } }
+
+    assert_redirected_to game_path(game)
+    assert_nil game.reload.players_count
+
+    get game_url(game)
+    assert_response :success
+    assert_includes response.body, I18n.t("games.badges.players_count_pending", taken: 0)
+  end
+
   test "owner can save a comment and it is rendered escaped on the game page" do
     post session_url, params: { email: "comment_owner@example.com" }
     owner = User.find_by!(email: "comment_owner@example.com")

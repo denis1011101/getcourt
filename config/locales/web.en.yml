@@ -245,7 +245,8 @@ en:
       urgent_player_search_hint: Show this game in "Games looking for player" and
         notify users with enabled nearby alerts.
       players_count: Players
-      players_count_hint: Select required number of players (2 or 4).
+      players_count_hint: Select the required number of players (2 or 4) or leave it unchosen for now.
+      players_count_blank: "— not chosen yet —"
       sport: Sport
       sport_any: "— select sport —"
       skill_level: Required level
@@ -273,6 +274,7 @@ en:
       training: Training
       player_search: Players search
     card:
+      players_count_pending: Number of players not chosen yet
       spots_left:
         one: 1 spot left
         few: "%{count} spots left"
