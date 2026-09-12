@@ -30,10 +30,16 @@
 en:
   activerecord:
     attributes:
+      game:
+        urgent_player_search: "Player search"
       game_medium:
         file: "File"
     errors:
       models:
+        game:
+          attributes:
+            urgent_player_search:
+              court_required: "cannot be announced until a court is chosen: players are notified by the court’s city"
         game_medium:
           attributes:
             file:

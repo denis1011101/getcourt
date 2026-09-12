@@ -1,10 +1,16 @@
 ru:
   activerecord:
     attributes:
+      game:
+        urgent_player_search: "Поиск игроков"
       game_medium:
         file: "Файл"
     errors:
       models:
+        game:
+          attributes:
+            urgent_player_search:
+              court_required: "нельзя объявить, пока не выбран корт: уведомления уходят игрокам из города корта"
         game_medium:
           attributes:
             file:

@@ -88,6 +88,7 @@ es:
       body_by_titled: "%{author} ha compartido el vídeo «%{title}»."
       action: Ver vídeo
   games:
+    court_pending: Pista aún sin elegir
     show:
       win_chances:
         title: Probabilidades de victoria
@@ -259,6 +260,7 @@ es:
         tiempo estará ocupada la pista.
       court: Lugar
       court_hint: Elige una pista de la lista o pulsa un marcador en el mapa.
+      court_blank: "— pista aún sin elegir —"
       submit_create: Crear partido
       submit_update: Guardar partido
       view_game: Ver partido

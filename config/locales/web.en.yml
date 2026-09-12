@@ -88,6 +88,7 @@ en:
       body_by_titled: "%{author} shared the video \u201C%{title}\u201D."
       action: Watch video
   games:
+    court_pending: Court not chosen yet
     show:
       win_chances:
         title: Win chances
@@ -255,6 +256,7 @@ en:
         the court will be busy.
       court: Place
       court_hint: Choose court from list or click marker on the map.
+      court_blank: "— court not chosen yet —"
       submit_create: Create Game
       submit_update: Update Game
       view_game: View Game

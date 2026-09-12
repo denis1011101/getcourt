@@ -135,7 +135,7 @@ module Mcp
     end
 
     def visible_games
-      Game.joins(:court).merge(Court.approved)
+      Game.publicly_visible
     end
 
     def result_response(id, result)

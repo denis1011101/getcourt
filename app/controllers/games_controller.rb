@@ -132,7 +132,12 @@ class GamesController < ApplicationController
 
   def toggle_urgent_player_search
     was_enabled = @game.urgent_player_search?
-    @game.update!(urgent_player_search: !was_enabled)
+    # Без корта поиск не объявить (см. Game#court_chosen_for_player_search) —
+    # причину показываем словами, а не падаем 500.
+    unless @game.update(urgent_player_search: !was_enabled)
+      return redirect_to @game, alert: @game.errors.full_messages.to_sentence
+    end
+
     state = @game.urgent_player_search? ? "enabled" : "disabled"
     redirect_to @game, notice: "Players search #{state}."
   end

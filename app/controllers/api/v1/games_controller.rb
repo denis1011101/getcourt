@@ -30,7 +30,7 @@ module Api
       # Корты на модерации не показываем никому: страница такой игры и на сайте
       # доступна только админу.
       def visible_games
-        Game.joins(:court).merge(Court.approved)
+        Game.publicly_visible
       end
 
       def host

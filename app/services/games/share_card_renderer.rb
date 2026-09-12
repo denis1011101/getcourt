@@ -139,7 +139,7 @@ module Games
       end
 
       def draw_title(body, game, x, y)
-        lines = wrap(game.court&.name.to_s, CONTENT_WIDTH, size: 20, weight: 700, max_lines: 2)
+        lines = wrap(game.court_name, CONTENT_WIDTH, size: 20, weight: 700, max_lines: 2)
         lines.each_with_index do |line, i|
           body << text(x, y + 18 + i * 26, line, size: 20, weight: 700, color: TITLE_COLOR)
         end

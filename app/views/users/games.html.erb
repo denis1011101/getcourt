@@ -22,7 +22,7 @@
               · <%= game.time&.strftime("%H:%M") %>
             </p>
             <p class="text-lg font-medium">
-              <%= link_to game.court&.name, game_path(game), class: "hover:underline" %>
+              <%= link_to game.court_name, game_path(game), class: "hover:underline" %>
             </p>
           </div>
           <%= link_to t("users.games.open_game"), game_path(game), class: "text-sm text-indigo-600 hover:underline dark:text-indigo-400" %>

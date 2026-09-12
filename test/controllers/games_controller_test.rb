@@ -781,6 +781,18 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_not game.reload.urgent_player_search?
   end
 
+  test "players search stays off and explains itself while the court is unchosen" do
+    post session_url, params: { email: "owner_urgent_no_court@example.com" }
+    owner = User.find_by!(email: "owner_urgent_no_court@example.com")
+    game = Game.create!(user: owner, date: Date.current + 2.days, time: "10:00")
+
+    post toggle_urgent_player_search_game_url(game)
+
+    assert_redirected_to game_path(game)
+    assert_not game.reload.urgent_player_search?
+    assert_match(/until a court is chosen/, flash[:alert])
+  end
+
   test "non-owner cannot toggle players search" do
     owner = User.create!(email: "owner_forbidden_urgent@example.com")
     game = Game.create!(court: courts(:one), user: owner, date: Date.current + 2.days, time: "10:00")

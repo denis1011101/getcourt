@@ -13,6 +13,16 @@ class Api::V1::GamesControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes ids, games(:one).id
   end
 
+  test "hands out a game whose court is not chosen yet with a null court" do
+    game = Game.create!(user: users(:one), date: 3.days.from_now.to_date, time: "10:00", players_count: 4)
+
+    get api_v1_games_url
+    body = JSON.parse(response.body)["games"].find { |row| row["id"] == game.id }
+
+    assert body, "game without a court is missing from the list"
+    assert_nil body["court"]
+  end
+
   test "does not leak anything about the people in the game" do
     player = User.create!(
       name: "Api Leak Probe",
