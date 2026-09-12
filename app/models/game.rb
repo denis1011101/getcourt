@@ -14,7 +14,10 @@ class Game < ApplicationRecord
                         saved_change_to_recurrence_days? || saved_change_to_occurrence_dates? }
 
   belongs_to :tournament, optional: true
-  belongs_to :court
+  # Корт можно оставить «пока не выбран»: игру часто объявляют раньше, чем знают,
+  # где она пройдёт. Всё, что от корта зависит (город, карта, погода, поиск
+  # игроков), просто ждёт, пока его выберут.
+  belongs_to :court, optional: true
   belongs_to :user
   belongs_to :coach, class_name: "User", optional: true
   # У тренировки может быть второй тренер, у обычной игры тренеров нет вовсе.
@@ -37,6 +40,12 @@ class Game < ApplicationRecord
   # Игры, которые ещё впереди: бесконечная серия — всегда, конечная — пока не
   # прошла её последняя отметка. Списки и уборка спрашивают именно это, а не
   # одну галку недельного повтора.
+  # Что можно показывать наружу (API, MCP): корты на модерации скрыты, а игра,
+  # у которой корт ещё не выбран, — обычная и видна. NULL в moderation_status
+  # берётся из LEFT JOIN — у самого корта он NOT NULL.
+  scope :publicly_visible, -> {
+    left_outer_joins(:court).where(courts: { moderation_status: [ nil, "approved" ] })
+  }
   scope :still_running, ->(day = Date.current) {
     # ends_on проставляет колбэк, поэтому у записей, заведённых мимо него
     # (фикстуры, ручные вставки), его нет — для них спрашиваем саму дату.
@@ -78,6 +87,8 @@ class Game < ApplicationRecord
   validate :prebooking_requires_recurring
   validate :surface_available_at_court
   validate :environment_available_at_court
+  validate :court_chosen_for_player_search
+  validate :players_count_chosen_for_prebooking
   validate :within_tournament_dates_and_courts, if: -> { tournament.present? }
 
   def training?
@@ -259,6 +270,11 @@ class Game < ApplicationRecord
     tournament_id.present?
   end
 
+  # Имя корта для заголовков и карточек; пока корт не выбран — так и пишем.
+  def court_name
+    court&.name.presence || I18n.t("games.court_pending")
+  end
+
   def surface_label
     return nil if surface.blank?
 
@@ -381,6 +397,14 @@ class Game < ApplicationRecord
     end
   end
 
+  # Слоты пребукинга — это ровно players_count штук на дату; без числа игроков
+  # раздавать нечего.
+  def players_count_chosen_for_prebooking
+    return unless prebooking_enabled? && !players_count_chosen?
+
+    errors.add(:prebooking_enabled, :players_count_required)
+  end
+
   # Покрытие игры должно быть среди покрытий выбранного корта
   def surface_available_at_court
     return if surface.blank? || court.blank?
@@ -390,6 +414,14 @@ class Game < ApplicationRecord
   end
 
   # Среда (indoor/outdoor) должна быть доступна на выбранном корте
+  # Поиск игроков рассылается по городу корта и рисует карточку с адресом —
+  # без корта ни того, ни другого не будет, так что и объявлять нечего.
+  def court_chosen_for_player_search
+    return unless urgent_player_search? && court_id.blank?
+
+    errors.add(:urgent_player_search, :court_required)
+  end
+
   def environment_available_at_court
     return if environment.blank? || court.blank?
     return if court.environments.include?(environment)
@@ -656,10 +688,16 @@ class Game < ApplicationRecord
     dates
   end
 
+  # Число игроков организатор может оставить «пока не выбрано»: тогда карточки
+  # не считают свободные места, а слотов пребукинга не бывает вовсе.
+  def players_count_chosen?
+    players_count.to_i > 0
+  end
+
   # Сколько игроков нужно на игру (по умолчанию 4). Это же число — количество
   # слотов на дату в пребукинге.
   def required_players
-    players_count.to_i > 0 ? players_count.to_i : DEFAULT_PLAYERS
+    players_count_chosen? ? players_count.to_i : DEFAULT_PLAYERS
   end
   alias_method :prebooking_required_players, :required_players
 
@@ -678,8 +716,10 @@ class Game < ApplicationRecord
     required_players - spots_taken
   end
 
+  # Пока число игроков не выбрано, лимита нет — места есть всегда, сколько бы
+  # ни записалось; иначе фильтр «есть места» молча считал бы вместимость за 4.
   def spots_available?
-    spots_left.positive?
+    !players_count_chosen? || spots_left.positive?
   end
 
   def next_time

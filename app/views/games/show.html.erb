@@ -1,6 +1,6 @@
 <% approved_count = @game.participations.respond_to?(:approved) ? @game.participations.approved.count : @game.participations.count %>
-<% content_for :meta_title, t("games.show.meta_title", court: @game.court&.name, date: l((@game.display_date_for_show || @game.date).to_date, format: :long)) %>
-<% content_for :meta_description, t("games.show.meta_description", count: approved_count, court: @game.court&.name) %>
+<% content_for :meta_title, t("games.show.meta_title", court: @game.court_name, date: l((@game.display_date_for_show || @game.date).to_date, format: :long)) %>
+<% content_for :meta_description, t("games.show.meta_description", count: approved_count, court: @game.court_name) %>
 <% content_for :head do %>
   <script type="application/ld+json">
     <%= json_escape({
@@ -72,9 +72,13 @@
 
       <div class="sm:col-span-2">
         <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("games.show.court") %></p>
-        <p class="text-lg font-medium text-indigo-700 dark:text-indigo-400">
-          <%= link_to @game.court.name, court_path(@game.court), class: "transition-colors hover:text-indigo-800 hover:underline dark:hover:text-indigo-300" %>
-        </p>
+        <% if @game.court %>
+          <p class="text-lg font-medium text-indigo-700 dark:text-indigo-400">
+            <%= link_to @game.court.name, court_path(@game.court), class: "transition-colors hover:text-indigo-800 hover:underline dark:hover:text-indigo-300" %>
+          </p>
+        <% else %>
+          <p class="text-lg font-medium text-gray-500 dark:text-slate-400"><%= t("games.court_pending") %></p>
+        <% end %>
       </div>
 
       <% if @game.court&.coordinates_pair && @game.environment.to_s != "indoor" %>

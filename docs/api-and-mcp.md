@@ -22,7 +22,7 @@ GET /api/v1/games/:id
 | `sport` | Sport name, e.g. `Tennis`, `Padel`, `Squash`. |
 | `skill_level` | Skill level, e.g. `Beginner`. |
 | `with_spots` | `true` — only games that still have a free spot. |
-| `urgent` | `true` — only games with an urgent player search. |
+| `urgent` | `true` — only games with an announced player search. |
 | `from`, `to` | Date bounds, ISO 8601 (`YYYY-MM-DD`). |
 | `upcoming` | `false` — include games already played. Upcoming only by default. |
 | `limit` | 1–100, 25 by default (`Games::Search::DEFAULT_LIMIT` / `MAX_LIMIT`). |
@@ -69,6 +69,9 @@ curl "https://getcourt.co/api/v1/games?city=Belgrade&sport=Tennis&with_spots=tru
   ]
 }
 ```
+
+`court` is `null` while the organiser has not chosen a court yet; `players.total` and
+`players.spots_left` are `null` while the number of players is not chosen.
 
 A missing game answers `404` with `{"error":"not_found"}`.
 

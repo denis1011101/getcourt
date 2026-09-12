@@ -88,6 +88,7 @@ es:
       body_by_titled: "%{author} ha compartido el vídeo «%{title}»."
       action: Ver vídeo
   games:
+    court_pending: Pista aún sin elegir
     show:
       win_chances:
         title: Probabilidades de victoria
@@ -248,7 +249,8 @@ es:
       urgent_player_search_hint: Muestra este partido en «Partidos que buscan jugadores»
         y notifica a los usuarios con alertas cercanas activadas.
       players_count: Jugadores
-      players_count_hint: Elige el número de jugadores necesario (2 o 4).
+      players_count_hint: Elige el número de jugadores necesario (2 o 4) o déjalo sin elegir por ahora.
+      players_count_blank: "— aún sin elegir —"
       sport: Deporte
       sport_any: "— elige un deporte —"
       skill_level: Nivel requerido
@@ -259,6 +261,7 @@ es:
         tiempo estará ocupada la pista.
       court: Lugar
       court_hint: Elige una pista de la lista o pulsa un marcador en el mapa.
+      court_blank: "— pista aún sin elegir —"
       submit_create: Crear partido
       submit_update: Guardar partido
       view_game: Ver partido
@@ -275,6 +278,7 @@ es:
       training: Entrenamiento
       player_search: Buscando jugadores
     card:
+      players_count_pending: Número de jugadores aún sin elegir
       spots_left:
         one: 1 plaza libre
         few: "%{count} plazas libres"

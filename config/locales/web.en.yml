@@ -88,6 +88,7 @@ en:
       body_by_titled: "%{author} shared the video \u201C%{title}\u201D."
       action: Watch video
   games:
+    court_pending: Court not chosen yet
     show:
       win_chances:
         title: Win chances
@@ -244,7 +245,8 @@ en:
       urgent_player_search_hint: Show this game in "Games looking for player" and
         notify users with enabled nearby alerts.
       players_count: Players
-      players_count_hint: Select required number of players (2 or 4).
+      players_count_hint: Select the required number of players (2 or 4) or leave it unchosen for now.
+      players_count_blank: "— not chosen yet —"
       sport: Sport
       sport_any: "— select sport —"
       skill_level: Required level
@@ -255,6 +257,7 @@ en:
         the court will be busy.
       court: Place
       court_hint: Choose court from list or click marker on the map.
+      court_blank: "— court not chosen yet —"
       submit_create: Create Game
       submit_update: Update Game
       view_game: View Game
@@ -271,6 +274,7 @@ en:
       training: Training
       player_search: Players search
     card:
+      players_count_pending: Number of players not chosen yet
       spots_left:
         one: 1 spot left
         few: "%{count} spots left"
@@ -579,7 +583,7 @@ en:
           many: "%{count} spots left"
           other: "%{count} spots left"
       urgent:
-        title: Players needed urgently
+        title: Looking for players
       tournament:
         title: Tournament
         view: View tournament

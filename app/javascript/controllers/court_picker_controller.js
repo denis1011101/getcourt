@@ -67,7 +67,8 @@ export default class extends Controller {
   }
 
   // Оставляет в списке корты выбранной страны/города, группируя их по городам.
-  // Если выбранный корт отфильтровался, берём первый доступный.
+  // Если выбранный корт отфильтровался, берём первый пункт: «корт пока не
+  // выбран», когда он есть, иначе первый доступный корт.
   filterCourts() {
     const country = this.hasCountrySelectTarget ? this.countrySelectTarget.value : ""
     const city = this.hasCitySelectTarget ? this.citySelectTarget.value : ""
@@ -77,7 +78,9 @@ export default class extends Controller {
     // Города разделяем заголовками только когда их несколько — иначе это лишний шум.
     const grouped = groups.length > 1
 
+    const blank = this.selectTarget.querySelector('option[value=""]')
     this.selectTarget.innerHTML = ""
+    if (blank) this.selectTarget.appendChild(blank)
     groups.forEach(([cityName, cityCourts]) => {
       const parent = grouped && cityName ? this._appendGroup(cityName) : this.selectTarget
       const ambiguous = this._ambiguousNames(cityCourts)

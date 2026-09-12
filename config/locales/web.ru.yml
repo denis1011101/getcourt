@@ -88,6 +88,7 @@ ru:
       body_by_titled: "%{author} поделился видео «%{title}»."
       action: Смотреть видео
   games:
+    court_pending: Корт пока не выбран
     show:
       win_chances:
         title: Шансы на победу
@@ -249,7 +250,8 @@ ru:
       urgent_player_search_hint: Показывать эту игру в разделе «Игры, где ищут игроков»
         и уведомить пользователей с включёнными уведомлениями поблизости.
       players_count: Игроки
-      players_count_hint: Выберите нужное количество игроков (2 или 4).
+      players_count_hint: Выберите нужное количество игроков (2 или 4) или оставьте «пока не выбрано».
+      players_count_blank: "— пока не выбрано —"
       sport: Вид спорта
       sport_any: "— выберите вид спорта —"
       skill_level: Требуемый уровень
@@ -260,6 +262,7 @@ ru:
         корт будет занят.
       court: Место
       court_hint: Выберите корт из списка или нажмите на маркер на карте.
+      court_blank: "— корт пока не выбран —"
       submit_create: Создать игру
       submit_update: Сохранить игру
       view_game: Открыть игру
@@ -276,6 +279,7 @@ ru:
       training: Тренировка
       player_search: Ищем игроков
     card:
+      players_count_pending: Число игроков пока не выбрано
       spots_left:
         one: "%{count} место свободно"
         few: "%{count} места свободно"
@@ -582,7 +586,7 @@ ru:
           many: Осталось %{count} мест
           other: Осталось %{count} места
       urgent:
-        title: Срочно нужны игроки
+        title: Ищут игроков
       tournament:
         title: Турнир
         view: Открыть турнир

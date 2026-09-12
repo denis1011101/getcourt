@@ -89,7 +89,9 @@ class GameChangeNotifier
     when "time"
       Telegram::Helpers::GameFormatting.format_time_hhmm(value, locale: locale) || value.to_s
     when "court_id"
-      Court.find_by(id: value)&.name || "##{value}"
+      # Корт могли и снять: «был X, стал „пока не выбран“» — тоже новость.
+      next_court = value.nil? ? I18n.t("games.court_pending", locale: locale, default: "—") : Court.find_by(id: value)&.name
+      next_court || "##{value}"
     when "sport"
       Telegram::Helpers::GameFormatting.sport_label(value, locale: locale) || value.to_s
     when "kind"

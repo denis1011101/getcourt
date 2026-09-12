@@ -30,10 +30,19 @@
 en:
   activerecord:
     attributes:
+      game:
+        prebooking_enabled: "Pre-booking"
+        urgent_player_search: "Player search"
       game_medium:
         file: "File"
     errors:
       models:
+        game:
+          attributes:
+            prebooking_enabled:
+              players_count_required: "cannot be enabled until the number of players is chosen: that many slots are handed out per date"
+            urgent_player_search:
+              court_required: "cannot be announced until a court is chosen: players are notified by the court’s city"
         game_medium:
           attributes:
             file:
@@ -325,6 +334,7 @@ en:
       comment_placeholder: "Looking for one more player, any level. Balls are on me, we play 1.5 hours"
       comment_hint: "Anything the fields above do not cover. Up to 500 characters, everyone can see it."
     badges:
+      players_count_pending: "Players: not chosen yet, %{taken} joined"
       with_coach: "With coach"
       need_coach: "Need coach"
       spots_left:
@@ -814,7 +824,7 @@ en:
       param_sport: "Sport name, e.g. Tennis, Padel, Squash."
       param_skill_level: "Skill level, e.g. Beginner."
       param_with_spots: "true — only games that still have a free spot."
-      param_urgent: "true — only games with an urgent player search."
+      param_urgent: "true — only games with an announced player search."
       param_from: "Earliest date, ISO 8601 (YYYY-MM-DD)."
       param_to: "Latest date, ISO 8601 (YYYY-MM-DD)."
       param_upcoming: "false — include games that have already been played. Upcoming only by default."
@@ -823,6 +833,7 @@ en:
       example_title: "Request"
       response_title: "Response"
       privacy_note: "Participants never leave the app: the answer says how many spots are taken, never who took them."
+      nullable_note_html: "<code>court</code> is <code>null</code> while the organiser has not chosen a court yet; <code>players.total</code> and <code>players.spots_left</code> are <code>null</code> while the number of players is not chosen."
       mcp_title: "MCP server"
       mcp_text: "The same data as a Model Context Protocol server, so an assistant can look for games itself instead of reading pages."
       mcp_endpoint_html: "Endpoint: <code>POST /mcp</code>, Streamable HTTP over JSON-RPC 2.0, batches included."
@@ -831,7 +842,7 @@ en:
       mcp_token_html: "Getting a token: issue it yourself in <b>Account → Security</b> once your email is verified or Telegram is linked. It lasts six months from your last request, so a token in use never expires — and you can revoke it there at any time."
       tools_title: "Tools"
       tool: "Tool"
-      tool_search: "Search upcoming games by city, sport, level, date range, free spots and urgent search."
+      tool_search: "Search upcoming games by city, sport, level, date range, free spots and announced player search."
       tool_get: "Fetch one game by its numeric id."
       client_title: "Client configuration"
       client_text: "Most MCP clients take a JSON config like this:"
@@ -850,10 +861,10 @@ en:
     delete_account_button: "Delete my account"
     notifications:
       delivery_title: "Notification delivery"
-      delivery_help: "Use this channel for game reminders, requests, participant updates, statistics and urgent player searches."
-      nearby_title: "Urgent player search alerts"
-      nearby_help: "Get notified when an organizer urgently needs players in your city."
-      nearby_enabled: "Notify me about urgent player searches nearby"
+      delivery_help: "Use this channel for game reminders, requests, participant updates, statistics and player searches."
+      nearby_title: "Player search alerts"
+      nearby_help: "Get notified when an organizer is looking for players in your city."
+      nearby_enabled: "Notify me about player searches nearby"
       channel: "Notification channel"
       channel_email: "Email"
       channel_telegram: "Telegram"

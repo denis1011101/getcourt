@@ -32,10 +32,12 @@ module Games
         with_coach: game.with_coach?,
         urgent_player_search: game.urgent_player_search?,
         comment: game.comment.presence,
+        # Пока число игроков не выбрано, total и spots_left — null: считать
+        # свободные места не от чего.
         players: {
           taken: game.spots_taken,
-          total: game.required_players,
-          spots_left: game.spots_left
+          total: game.players_count_chosen? ? game.required_players : nil,
+          spots_left: game.players_count_chosen? ? game.spots_left : nil
         },
         court: court_json(game.court),
         url: "#{@host}/games/#{game.id}"
