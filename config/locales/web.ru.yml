@@ -540,10 +540,11 @@ ru:
     highlight:
       title: Сегодня в большом теннисе
       live: Идёт
-      at: "в %{time}"
+      at: "в %{time} мск"
     total_players: "Игроков на GetCourt: %{count}"
     scoreboard:
       title: Теннисное табло
+      timezone_note: Время московское (UTC+3)
       empty: Данных табло пока нет.
     statistics:
       telegram: Telegram

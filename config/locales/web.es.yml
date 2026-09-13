@@ -544,10 +544,11 @@ es:
     highlight:
       title: Hoy en el tenis profesional
       live: En juego
-      at: "a las %{time}"
+      at: "a las %{time} MSK"
     total_players: "Jugadores en GetCourt: %{count}"
     scoreboard:
       title: Marcador de tenis
+      timezone_note: Horarios en hora de Moscú (UTC+3)
       empty: Todavía no hay datos del marcador.
     statistics:
       telegram: Telegram

@@ -465,6 +465,22 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     assert_select "turbo-frame#scoreboard-highlight a", count: 0
   end
 
+  test "highlight time and scoreboard are labelled as Moscow time" do
+    scoreboard = "<b>ATP - SINGLES, US Open (USA), hard</b>\n23:00 - <i>Zverev A.</i> - : - <i>Shelton B.</i>\n"
+
+    stub_singleton(TennisScoreboard::Fetcher, :raw_text, scoreboard) { get tennis_life_highlight_url }
+    assert_response :success
+    assert_includes response.body, I18n.t("tennis_life.highlight.at", time: "23:00")
+
+    stub_singleton(TennisScoreboard::Fetcher, :raw_text, scoreboard) { get tennis_life_classic_url }
+    assert_response :success
+    assert_includes response.body, I18n.t("tennis_life.scoreboard.timezone_note")
+
+    stub_singleton(TennisScoreboard::Fetcher, :raw_text, nil) { get tennis_life_classic_url }
+    assert_response :success
+    assert_not_includes response.body, I18n.t("tennis_life.scoreboard.timezone_note")
+  end
+
   test "feed HTML is noindex and canonical to tennis life" do
     get tennis_life_feed_url, headers: { "HTTP_ACCEPT" => "*/*" }
 
