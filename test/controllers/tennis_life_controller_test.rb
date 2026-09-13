@@ -465,6 +465,39 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     assert_select "turbo-frame#scoreboard-highlight a", count: 0
   end
 
+  # Times in the gist are Moscow time, and the pages are read from other zones,
+  # so the highlight and every scoreboard say so. Literal strings on purpose:
+  # comparing against the same translation would not notice the label vanishing.
+  test "highlight time and scoreboards are labelled as Moscow time" do
+    scoreboard = "<b>ATP - SINGLES, US Open (USA), hard</b>\n23:00 - <i>Zverev A.</i> - : - <i>Shelton B.</i>\n"
+
+    stub_singleton(TennisScoreboard::Fetcher, :raw_text, scoreboard) { get tennis_life_highlight_url(host: "getcourt.co") }
+    assert_response :success
+    assert_includes response.body, "at 23:00 MSK"
+
+    stub_singleton(TennisScoreboard::Fetcher, :raw_text, scoreboard) { get tennis_life_highlight_url(host: "ru.getcourt.co") }
+    assert_response :success
+    assert_includes response.body, "в 23:00 мск"
+
+    stub_singleton(TennisScoreboard::Fetcher, :raw_text, scoreboard) { get tennis_life_classic_url(host: "getcourt.co") }
+    assert_response :success
+    assert_includes response.body, "Moscow time (UTC+3)"
+
+    stub_singleton(TennisScoreboard::Fetcher, :raw_text, scoreboard) { get tennis_life_classic_url(host: "ru.getcourt.co") }
+    assert_response :success
+    assert_includes response.body, "Время московское (UTC+3)"
+
+    stub_singleton(TennisScoreboard::Fetcher, :raw_text, nil) { get tennis_life_classic_url(host: "getcourt.co") }
+    assert_response :success
+    assert_not_includes response.body, "UTC+3"
+
+    # The feed pins the lead tournament's scoreboard on the first page.
+    stub_singleton(TennisScoreboard::Fetcher, :raw_text, scoreboard) { get tennis_life_feed_url(seed: 123, host: "getcourt.co"), as: :turbo_stream }
+    assert_response :success
+    assert_includes response.body, 'data-feed-card-id="scoreboard:'
+    assert_includes response.body, "Moscow time (UTC+3)"
+  end
+
   test "feed HTML is noindex and canonical to tennis life" do
     get tennis_life_feed_url, headers: { "HTTP_ACCEPT" => "*/*" }
 

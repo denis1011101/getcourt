@@ -537,10 +537,11 @@ en:
     highlight:
       title: Today in pro tennis
       live: Live
-      at: "at %{time}"
+      at: "at %{time} MSK"
     total_players: "Players on GetCourt: %{count}"
     scoreboard:
       title: Tennis Scoreboard
+      timezone_note: Times are Moscow time (UTC+3)
       empty: No tennis scoreboard data yet.
     statistics:
       telegram: Telegram
