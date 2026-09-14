@@ -28,6 +28,37 @@ class UserPickerTest < ApplicationSystemTestCase
     assert_equal @player, game.prebookings.order(:date, :slot_index).first.reload.user
   end
 
+  # Между правкой текста и ответом сервера проходит 200 мс, и прежние подсказки
+  # в это время не должны отвечать на Enter — иначе форма ушла бы не с тем.
+  test "enter right after retyping does not pick a suggestion for the old text" do
+    igor = User.create!(email: "picker_igor@example.com", name: "Игорь Иванов")
+    game = Game.create!(court: courts(:one), user: @owner, date: Date.current.next_occurring(:monday),
+                        recurring: true, prebooking_enabled: true, players_count: 2)
+    sign_in @owner
+
+    visit game_path(game)
+    within("[data-testid=prebooking-day]", match: :first) do
+      find("[data-testid=user-picker] input[type=text]").fill_in with: "иго"
+      assert_selector "[role=option]", text: "Игорь Иванов", count: 1
+
+      # Ввод и Enter одним скриптом — так между ними точно не успеет прийти
+      # ответ на новый текст.
+      page.execute_script(<<~JS, find("[data-testid=user-picker] input[type=text]").native)
+        const input = arguments[0]
+        input.value = "ири"
+        input.dispatchEvent(new Event("input", { bubbles: true }))
+        input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }))
+      JS
+
+      assert_no_selector "[role=option]", text: "Игорь Иванов"
+      assert_selector "[role=option]", text: "Ирина Подсказка (@irina_tg)", count: 1
+      assert_equal "", find("[data-testid=user-picker] input[name=user_id]", visible: false).value
+    end
+
+    assert_nil game.prebookings.order(:date, :slot_index).first.reload.user
+    assert_not_equal igor, game.prebookings.find_by(user: igor)&.user
+  end
+
   test "stats form turns a picked player into a checked team checkbox" do
     game = Game.create!(court: courts(:one), user: @owner, date: Date.yesterday, time: "10:00", with_coach: false)
     sign_in @owner

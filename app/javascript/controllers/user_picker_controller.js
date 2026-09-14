@@ -34,15 +34,16 @@ export default class extends Controller {
     document.removeEventListener("click", this.onDocumentClick)
   }
 
+  // Прежние подсказки убираем сразу, не дожидаясь ответа: иначе Enter в те
+  // 200 мс до запроса брал бы подсвеченного из списка под старый текст — и в
+  // предзаписи форма уходила бы не с тем человеком.
   search() {
     this.userIdTarget.value = ""
     this.startRequest()
+    this.clearResults()
 
     const query = this.inputTarget.value.trim()
-    if (query.length < 1) {
-      this.hide()
-      return
-    }
+    if (query.length < 1) return
 
     this.searchTimeout = setTimeout(() => this.fetchUsers(query), 200)
   }
@@ -151,6 +152,12 @@ export default class extends Controller {
     this.startRequest()
     this.userIdTarget.value = ""
     this.inputTarget.value = ""
+    this.clearResults()
+  }
+
+  // Спрятанный список для стрелок и Enter всё ещё список — потому чистим.
+  clearResults() {
+    this.resultsTarget.innerHTML = ""
     this.hide()
   }
 
