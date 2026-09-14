@@ -19,6 +19,14 @@ class GameRequestNotification
     )
   end
 
+  # Организатор записал человека на занятие сам — тот ничего не просил, поэтому
+  # и текст не про «одобрено», а про «вас записали».
+  def self.prebooking_assigned(user:, game:, date:)
+    return unless user
+
+    deliver(user, game, :prebooking_assigned_user, "prebooking_assigned", dates: [ date ])
+  end
+
   def self.deliver(user, game, text_key, subject_key, dates: nil)
     game_url = Rails.application.routes.url_helpers.game_url(game, host: app_host)
     notification = NotificationDelivery::Notification.new(

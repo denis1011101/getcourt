@@ -184,6 +184,7 @@ en:
       participation_rejected_subject: "Your request to join Game #%{game_id} was rejected"
       prebooking_approved_subject: "Your prebooking for Game #%{game_id} was approved"
       prebooking_rejected_subject: "Your prebooking for Game #%{game_id} was rejected"
+      prebooking_assigned_subject: "You were booked for Game #%{game_id}"
   sessions:
     privacy_consent_html: "I agree to the <a href='%{url}' class='text-indigo-600 dark:text-indigo-400 hover:underline' target='_blank'>Privacy Policy</a> and consent to processing my email for authentication"
     age_consent: "I confirm I am at least 16 years old"

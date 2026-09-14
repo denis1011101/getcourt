@@ -1,0 +1,31 @@
+<%# Поле выбора игрока с подсказками по первым буквам — одно на статистику и
+    предзапись. Выбранный человек уходит в hidden-поле field_name (пустое —
+    когда ничего не выбрано; без field_name поле в форму не попадает — когда
+    выбор забирает событие), видимый текст — лишь то, что человек читает.
+      submit: true — выбор отправляет форму, в которой стоит поле;
+      clear: true  — после выбора поле очищается под следующего;
+    о выборе поле сообщает событием user-picker:selected (detail: id, label). %>
+<% placeholder = local_assigns[:placeholder] || t("shared.user_picker.placeholder") %>
+<div data-controller="user-picker"
+     data-user-picker-url-value="<%= search_users_path %>"
+     data-user-picker-searching-value="<%= t("shared.user_picker.searching") %>"
+     data-user-picker-no-matches-value="<%= t("shared.user_picker.no_matches") %>"
+     data-user-picker-error-value="<%= t("shared.user_picker.error") %>"
+     data-user-picker-submit-value="<%= local_assigns[:submit] ? "true" : "false" %>"
+     data-user-picker-clear-value="<%= local_assigns[:clear] ? "true" : "false" %>"
+     data-testid="user-picker"
+     class="relative <%= local_assigns[:class] %>">
+  <input type="hidden" <%= tag.attributes(name: local_assigns[:field_name].presence) %> data-user-picker-target="userId">
+  <input type="text"
+         placeholder="<%= placeholder %>"
+         autocomplete="off"
+         role="combobox"
+         aria-autocomplete="list"
+         aria-expanded="false"
+         aria-label="<%= local_assigns[:aria_label] || placeholder %>"
+         data-user-picker-target="input"
+         data-action="input->user-picker#search focus->user-picker#reopen keydown->user-picker#keydown"
+         class="w-full rounded border-gray-300 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100">
+  <div data-user-picker-target="results" role="listbox"
+       class="hidden absolute z-10 mt-1 w-full overflow-hidden rounded border bg-white shadow dark:border-white/15 dark:bg-slate-700"></div>
+</div>

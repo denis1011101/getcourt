@@ -648,6 +648,23 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "search needs a signed-in user" do
+    get search_users_url, params: { q: "a" }
+
+    assert_redirected_to new_session_path
+  end
+
+  # Подсказки подписаны так же, как люди везде в списках: имя и @ник в скобках.
+  test "search answers with ids and display labels" do
+    post session_url, params: { email: "user-search-#{SecureRandom.hex(4)}@example.com" }
+    player = User.create!(email: "user-search-player@example.com", name: "Search Me", telegram_username: "search_me_tg")
+
+    get search_users_url, params: { q: "search m" }
+
+    assert_response :success
+    assert_equal [ { "id" => player.id, "label" => "Search Me (@search_me_tg)" } ], JSON.parse(response.body)
+  end
+
   private
 
   def with_city_user

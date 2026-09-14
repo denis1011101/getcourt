@@ -175,6 +175,15 @@
                 </li>
               <% end %>
             </ul>
+            <%# Организатор записывает человека сам — по имени, в первый
+                свободный слот: людям всё равно, под каким номером они стоят. %>
+            <% free_slot = slots.map(&:last).find { |slot| slot && slot.user.nil? } %>
+            <% if can_manage && free_slot %>
+              <%= form_with url: assign_game_prebooking_path(game, free_slot), method: :post, class: "mt-2", data: { testid: "prebooking-assign" } do %>
+                <%= render "shared/user_picker", field_name: "user_id", submit: true,
+                           placeholder: t("games.prebookings.assign_placeholder"), aria_label: t("games.prebookings.assign_player") %>
+              <% end %>
+            <% end %>
           <% end %>
 
           <% if accepted_coaches.any? %>
