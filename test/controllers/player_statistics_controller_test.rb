@@ -22,6 +22,24 @@ class PlayerStatisticsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Add registered player"
   end
 
+  # Игрока добавляют через поле с подсказками, а не select со всеми людьми:
+  # список некуда листать, и в страницу он больше не попадает.
+  test "game show adds players to a match through the user picker" do
+    post session_url, params: { email: "stats_picker_owner@example.com" }
+    owner = User.find_by!(email: "stats_picker_owner@example.com")
+    User.create!(name: "Addable Picker Player", email: "stats_picker_addable@example.com")
+    game = Game.create!(court: courts(:one), user: owner, date: Date.yesterday, time: "10:00", with_coach: false)
+
+    get game_url(game)
+
+    assert_response :success
+    # По полю на команду в первом блоке и столько же в шаблоне нового матча.
+    assert_select "[data-controller=team-players][data-action=?]", "user-picker:selected->team-players#add", 4
+    assert_select "[data-controller=team-players] [data-testid=user-picker][data-user-picker-url-value=?]", search_users_path, 4
+    assert_select "[data-controller=team-players] select", 0
+    assert_not_includes response.body, "Addable Picker Player"
+  end
+
   test "game show renders saved guest as stats checkbox" do
     post session_url, params: { email: "stats_saved_guest_owner@example.com" }
     owner = User.find_by!(email: "stats_saved_guest_owner@example.com")

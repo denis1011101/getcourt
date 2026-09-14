@@ -1,6 +1,8 @@
 require "test_helper"
 
 class PrebookingsControllerTest < ActionDispatch::IntegrationTest
+  include ActionMailer::TestHelper
+
   test "should redirect book when not authenticated" do
     post book_game_prebooking_url(games(:one), prebookings(:one))
     assert_redirected_to new_session_path
@@ -139,6 +141,102 @@ class PrebookingsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # Организатор записывает человека сам: договорились вне сайта. Заявку
+  # подтверждать нечего, а человек узнаёт о записи из уведомления.
+  test "assign books a chosen player into the slot and tells them" do
+    travel_to SEPTEMBER do
+      owner = users(:one)
+      owner.update!(email: "prebooking-assign@example.com")
+      game = recurring_prebooking_game(owner)
+      player = User.create!(email: "prebooking-assigned@example.com", name: "Assigned Player", notification_channel: "email", locale: "en")
+
+      post session_url, params: { email: owner.email }
+      slot = first_slot(game)
+
+      assert_enqueued_emails 1 do
+        post assign_game_prebooking_url(game, slot), params: { user_id: player.id }
+      end
+
+      assert_redirected_to game_path(game)
+      slot.reload
+      assert_equal player, slot.user
+      assert slot.approved?
+      assert_equal I18n.t("games.prebookings.assigned", name: "Assigned Player (prebooking-assigned@example.com)"), flash[:notice]
+    end
+  end
+
+  test "assign is for the organizer or an admin only" do
+    travel_to SEPTEMBER do
+      game = recurring_prebooking_game(users(:one))
+      stranger = users(:two)
+      stranger.update!(email: "prebooking-assign-stranger@example.com")
+      player = User.create!(email: "prebooking-assign-target@example.com", name: "Target")
+
+      post session_url, params: { email: stranger.email }
+      slot = first_slot(game)
+      post assign_game_prebooking_url(game, slot), params: { user_id: player.id }
+
+      assert_response :forbidden
+      assert_nil slot.reload.user_id
+    end
+  end
+
+  test "assign refuses a taken slot, a second slot on the same date and an unknown player" do
+    travel_to SEPTEMBER do
+      owner = users(:one)
+      owner.update!(email: "prebooking-assign-twice@example.com")
+      game = recurring_prebooking_game(owner)
+      player = User.create!(email: "prebooking-assign-twice-player@example.com", name: "Twice")
+
+      post session_url, params: { email: owner.email }
+      slot = first_slot(game)
+      second = game.prebookings.find_by!(date: slot.date, slot_index: 2)
+
+      post assign_game_prebooking_url(game, slot), params: { user_id: player.id }
+      post assign_game_prebooking_url(game, slot), params: { user_id: users(:two).id }
+      assert_equal "Slot already taken.", flash[:alert]
+      assert_equal player, slot.reload.user
+
+      post assign_game_prebooking_url(game, second), params: { user_id: player.id }
+      assert_equal I18n.t("games.prebookings.assign_already_booked", name: "Twice (prebooking-assign-twice-player@example.com)"), flash[:alert]
+      assert_nil second.reload.user_id
+
+      post assign_game_prebooking_url(game, second), params: { user_id: 0 }
+      assert_equal I18n.t("games.prebookings.assign_no_user"), flash[:alert]
+      assert_nil second.reload.user_id
+    end
+  end
+
+  # Поле записи видит только организатор, и только пока в дне есть свободный
+  # слот: ведёт оно в первый свободный.
+  test "more shows the organizer a player picker for the first free slot" do
+    travel_to SEPTEMBER do
+      owner = users(:one)
+      owner.update!(email: "prebooking-picker@example.com")
+      game = recurring_prebooking_game(owner)
+
+      post session_url, params: { email: owner.email }
+      get more_game_prebookings_url(game, month: "2026-09")
+
+      slot = first_slot(game)
+      assert_select "form[data-testid=?][action=?]", "prebooking-assign", assign_game_prebooking_path(game, slot) do
+        assert_select "[data-testid=?] input[name=user_id]", "user-picker"
+      end
+
+      post assign_game_prebooking_url(game, slot), params: { user_id: users(:two).id }
+      get more_game_prebookings_url(game, month: "2026-09")
+
+      second = game.prebookings.find_by!(date: slot.date, slot_index: 2)
+      assert_select "form[data-testid=?][action=?]", "prebooking-assign", assign_game_prebooking_path(game, second)
+
+      users(:two).update!(email: "prebooking-picker-guest@example.com")
+      post session_url, params: { email: users(:two).email }
+      get more_game_prebookings_url(game, month: "2026-09")
+
+      assert_select "form[data-testid=?]", "prebooking-assign", 0
+    end
+  end
+
   private
 
   def recurring_prebooking_game(owner)
@@ -152,7 +250,10 @@ class PrebookingsControllerTest < ActionDispatch::IntegrationTest
     )
   end
 
+  # Слоты заводятся лениво, когда месяц кто-то открыл, — здесь заводим сами.
   def first_slot(game)
-    game.prebookings.find_by!(date: game.prebooking_dates_in(Date.new(2026, 9, 1)).first, slot_index: 1)
+    dates = game.prebooking_dates_in(Date.new(2026, 9, 1))
+    game.ensure_prebookings_for_dates(dates)
+    game.prebookings.find_by!(date: dates.first, slot_index: 1)
   end
 end

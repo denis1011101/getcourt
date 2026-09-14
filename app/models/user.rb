@@ -21,6 +21,29 @@ class User < ApplicationRecord
     order(Arel.sql("LOWER(COALESCE(NULLIF(users.name, ''), users.telegram_username, users.email))"))
   }
 
+  # Подсказки для поля выбора игрока: по первым буквам имени, @ника или почты.
+  # Фильтруем в Ruby, а не через LIKE: lower() в SQLite складывает регистр
+  # только у латиницы, и «денис» не находил бы «Денис». Людей в базе десятки,
+  # так что перебор дешевле, чем тащить ICU. Совпадения с начала слова идут
+  # первыми — их и ждут, набирая первые буквы.
+  def self.search_pickable(query, limit: 10)
+    q = query.to_s.strip.downcase.delete_prefix("@")
+    return [] if q.empty?
+
+    matches = not_merged.identifiable.by_display_label.filter_map do |user|
+      terms = user.picker_terms
+      next unless terms.any? { |term| term.include?(q) }
+
+      [ terms.any? { |term| term.start_with?(q) || term.split(/[\s._-]+/).any? { |word| word.start_with?(q) } } ? 0 : 1, user ]
+    end
+    matches.sort_by.with_index { |(rank, _user), index| [ rank, index ] }.map(&:last).first(limit)
+  end
+
+  # Всё, по чему человека ищут в подсказках, в нижнем регистре.
+  def picker_terms
+    [ name, User.normalize_telegram_username(telegram_username), email ].compact_blank.map(&:downcase)
+  end
+
   SKILL_LEVELS = %w[beginner intermediate advanced pro].freeze
   SPORTS = SportCatalog::SPORTS
 

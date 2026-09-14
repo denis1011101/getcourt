@@ -314,6 +314,11 @@ ru:
       coach_cancel: Отменить
       coach_booked: Дата тренера подтверждена.
       coach_cancelled: Дата тренера отменена.
+      assign_player: Записать игрока
+      assign_placeholder: Записать игрока по имени…
+      assigned: "%{name} записан(а)."
+      assign_no_user: Игрок не найден — выберите из подсказок.
+      assign_already_booked: "%{name} уже записан(а) на эту дату."
     ai_chat:
       title: Теннисный ассистент
       subtitle: На базе ИИ
@@ -518,6 +523,11 @@ ru:
         search_error: Ошибка поиска. Попробуйте снова.
         rate_limited: Слишком много запросов. Попробуйте позже.
   shared:
+    user_picker:
+      placeholder: Начните вводить имя…
+      searching: Ищем…
+      no_matches: Никого не нашли.
+      error: Не удалось загрузить игроков.
     pagy:
       label: Пагинация
     results_summary:

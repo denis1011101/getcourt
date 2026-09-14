@@ -88,4 +88,42 @@ class UserTest < ActiveSupport::TestCase
     assert_equal "@marina_tg", handle_only.broadcast_label
     assert_equal "Marina", name_only.broadcast_label
   end
+
+  # Подсказки в поле выбора игрока: первые буквы имени, ника или почты, без
+  # оглядки на регистр — в том числе кириллицы, которую lower() SQLite не берёт.
+  test "search_pickable matches the start of a name in any case, cyrillic included" do
+    denis = User.create!(email: "picker-denis@example.com", name: "Денис Левенко")
+    other = User.create!(email: "picker-other@example.com", name: "Марина")
+
+    assert_equal [ denis ], User.search_pickable("ден")
+    assert_equal [ denis ], User.search_pickable("ЛЕВ")
+    assert_equal [ other ], User.search_pickable("мар")
+  end
+
+  test "search_pickable finds people by telegram nick with or without @ and by email" do
+    user = User.create!(email: "picker-nick@example.com", telegram_username: "court_rat")
+
+    assert_equal [ user ], User.search_pickable("@cou")
+    assert_equal [ user ], User.search_pickable("court_r")
+    assert_equal [ user ], User.search_pickable("picker-nick@")
+  end
+
+  test "search_pickable ranks matches at the start of a word above the rest" do
+    inside = User.create!(email: "picker-inside@example.com", name: "Adrian")
+    word_start = User.create!(email: "picker-word@example.com", name: "Peter Ian")
+    start = User.create!(email: "picker-start@example.com", name: "Ian Smith")
+
+    assert_equal [ start, word_start, inside ], User.search_pickable("ian")
+  end
+
+  test "search_pickable skips merged and nameless accounts and caps the list" do
+    merged = User.create!(email: "picker-merged@example.com", name: "Zed Merged", merged_at: Time.current)
+    User.create!(email: "picker-zed-nameless@example.com")
+    kept = 3.times.map { |i| User.create!(email: "picker-zed-#{i}@example.com", name: "Zed #{i}") }
+
+    assert_equal kept.first(2), User.search_pickable("zed", limit: 2)
+    assert_not_includes User.search_pickable("zed"), merged
+    assert_not_includes User.search_pickable("picker-zed-nameless"), User.find_by!(email: "picker-zed-nameless@example.com")
+    assert_empty User.search_pickable("   ")
+  end
 end

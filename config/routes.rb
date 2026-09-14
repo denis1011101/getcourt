@@ -67,6 +67,8 @@ Rails.application.routes.draw do
   get "wasm/court_diagram.rb" => "court_diagram_sources#show", as: :court_diagram_source
 
   resources :users, only: [ :index, :show ] do
+    # Подсказки для поля выбора игрока (shared/user_picker).
+    get :search, on: :collection
     resource :player_statistic, only: [ :show ]
   end
 
@@ -140,6 +142,7 @@ Rails.application.routes.draw do
 
       member do
         post :book
+        post :assign
         post :cancel
         post :approve
         post :reject

@@ -313,6 +313,11 @@ es:
       coach_cancel: Cancelar
       coach_booked: Fecha del entrenador confirmada.
       coach_cancelled: Fecha del entrenador cancelada.
+      assign_player: Reservar a un jugador
+      assign_placeholder: Reservar a un jugador por nombre…
+      assigned: "%{name} reservado."
+      assign_no_user: Jugador no encontrado — elige uno de las sugerencias.
+      assign_already_booked: "%{name} ya tiene plaza en esa fecha."
     ai_chat:
       title: Asistente de tenis
       subtitle: Con IA
@@ -521,6 +526,11 @@ es:
         search_error: Error de búsqueda. Inténtalo de nuevo.
         rate_limited: Demasiadas solicitudes. Inténtalo más tarde.
   shared:
+    user_picker:
+      placeholder: Empieza a escribir un nombre…
+      searching: Buscando…
+      no_matches: Nadie encontrado.
+      error: No se pudo cargar la lista de jugadores.
     pagy:
       label: Paginación
     results_summary:

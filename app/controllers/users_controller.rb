@@ -3,6 +3,7 @@ class UsersController < ApplicationController
 
   CITY_SEARCH_DEFAULT_LIMIT = 5
   CITY_SEARCH_MAX_LIMIT = 20
+  USER_SEARCH_LIMIT = 8
 
   before_action :authenticate_user!
 
@@ -103,6 +104,13 @@ class UsersController < ApplicationController
     render json: cities.map { |city|
       { id: city.id, name: city.canonical_name, hint: [ city.country_code, city.timezone ].compact_blank.join(" · ") }
     }
+  end
+
+  # Подсказки для поля выбора игрока: первые совпадения по имени, @нику или
+  # почте. Подписи те же, что везде в списках людей (user_display_label).
+  def search
+    users = User.search_pickable(params[:q], limit: USER_SEARCH_LIMIT)
+    render json: users.map { |user| { id: user.id, label: helpers.user_display_label(user) } }
   end
 
   def clear_city

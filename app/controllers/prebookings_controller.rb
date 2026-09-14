@@ -1,7 +1,7 @@
 class PrebookingsController < ApplicationController
   before_action :authenticate_user!, except: :more
   before_action :set_game
-  before_action :set_prebooking, only: %i[book cancel approve reject]
+  before_action :set_prebooking, only: %i[book assign cancel approve reject]
 
   # Календарь на месяц; слоты под его занятия заводим лениво, когда до месяца
   # кто-то долистал.
@@ -35,6 +35,35 @@ class PrebookingsController < ApplicationController
     else
       redirect_back fallback_location: game_path(@game), notice: "You booked a slot."
     end
+  end
+
+  # Организатор записывает человека сам: договорились в чате или по телефону,
+  # а на сайт тот не заходит. Заявку подтверждать нечего — она сразу одобрена,
+  # а человеку уходит письмо, что его записали.
+  def assign
+    return head :forbidden unless can_manage_game?
+
+    user = User.not_merged.find_by(id: params[:user_id])
+    if user.nil?
+      redirect_back fallback_location: game_path(@game), alert: t("games.prebookings.assign_no_user")
+      return
+    end
+
+    return head :forbidden unless can_participate?(@game, @prebooking.date)
+
+    if @prebooking.user_id.present?
+      redirect_back fallback_location: game_path(@game), alert: "Slot already taken."
+      return
+    end
+
+    if @game.prebookings.where(user_id: user.id, date: @prebooking.date).exists?
+      redirect_back fallback_location: game_path(@game), alert: t("games.prebookings.assign_already_booked", name: helpers.user_display_label(user))
+      return
+    end
+
+    @prebooking.update!(user: user, status: "approved", approved_at: Time.current)
+    GameRequestNotification.prebooking_assigned(user: user, game: @game, date: @prebooking.date) unless user == current_user
+    redirect_back fallback_location: game_path(@game), notice: t("games.prebookings.assigned", name: helpers.user_display_label(user))
   end
 
   def cancel

@@ -309,6 +309,11 @@ en:
       coach_cancel: Cancel
       coach_booked: Coach date confirmed.
       coach_cancelled: Coach date cancelled.
+      assign_player: Book a player
+      assign_placeholder: Book a player by name…
+      assigned: "%{name} booked."
+      assign_no_user: Player not found — pick one from the suggestions.
+      assign_already_booked: "%{name} already has a slot on that date."
     ai_chat:
       title: Tennis Assistant
       subtitle: Powered by AI
@@ -515,6 +520,11 @@ en:
         search_error: Error searching. Please try again.
         rate_limited: Too many requests. Please try again later.
   shared:
+    user_picker:
+      placeholder: Start typing a name…
+      searching: Searching…
+      no_matches: No one found.
+      error: Could not load players.
     pagy:
       label: Pagination
     results_summary:
