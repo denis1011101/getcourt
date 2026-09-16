@@ -9,6 +9,7 @@ module Social
       when "welcome" then Welcome.new
       when "urgent" then UrgentSearch.from_key(dedup_key)
       when "daily" then Daily.from_key(dedup_key)
+      when "release" then Release.from_key(dedup_key)
       end
     end
   end

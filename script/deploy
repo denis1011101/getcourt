@@ -1,11 +1,16 @@
 #!/bin/bash
 # =============================================================================
 # GetCourt auto-deploy script
-# Pulls latest code from GitHub, checks CI, runs build steps, restarts the app.
+# Deploys the latest GitHub Release: checks CI on its commit, runs build steps,
+# restarts the app and announces the release in social networks. A merge into
+# main deploys nothing by itself — releases are cut by .github/workflows/release.yml.
 #
 # Usage:
-#   script/deploy           # normal deploy (checks CI)
-#   script/deploy --force   # skip CI check
+#   script/deploy                 # deploy the latest release (checks CI)
+#   script/deploy --tag v1.2.3    # roll back to / pin a release: cron keeps it
+#                                 # until --unpin, newer releases are ignored
+#   script/deploy --unpin         # drop the pin and follow the latest release again
+#   script/deploy --force         # skip CI check
 #
 # Configuration is read from .env (see .env-example for all variables).
 # See README-INTERNAL.md for server setup and cron instructions.
@@ -30,11 +35,13 @@ APP_DIR="${APP_DIR:-$DEFAULT_APP_DIR}"
 APP_USER="${APP_USER:-www-data}"
 RVM_SCRIPT="${RVM_SCRIPT:-/usr/local/rvm/scripts/rvm}"
 GITHUB_REPO="${GITHUB_REPO:-denis1011101/getcourt}"
-BRANCH="${BRANCH:-main}"
 SERVICE="${SERVICE:-getcourt-web}"
 LOG_FILE="$APP_DIR/log/deploy.log"
 LOCK_FILE="/tmp/getcourt-deploy.lock"
 CI_FAIL_FILE="/tmp/getcourt-last-ci-fail"
+# Lives next to deploy.log rather than in /tmp: a reboot must not turn a
+# rollback back into "follow latest".
+PIN_FILE="${DEPLOY_PIN_FILE:-$APP_DIR/log/deploy.pin}"
 RAILS_ENV="${RAILS_ENV:-production}"
 HEALTHCHECK_URL="${HEALTHCHECK_URL:-https://getcourt.co/up}"
 GITHUB_TOKEN="${GITHUB_TOKEN:-}"
@@ -47,9 +54,27 @@ TELEGRAM_CHAT_ID_DEPLOY="${TELEGRAM_CHAT_ID_DEPLOY:-}"
 # -----------------------------------------------------------------------------
 
 FORCE=false
-if [[ "${1:-}" == "--force" ]]; then
-  FORCE=true
-fi
+TAG_ARG=""
+UNPIN=false
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --force) FORCE=true ;;
+    --unpin) UNPIN=true ;;
+    --tag)
+      TAG_ARG="${2:-}"
+      if [[ -z "$TAG_ARG" ]]; then
+        echo "--tag needs a value, e.g. --tag v1.2.3" >&2
+        exit 2
+      fi
+      shift
+      ;;
+    *)
+      echo "Unknown argument: $1" >&2
+      exit 2
+      ;;
+  esac
+  shift
+done
 
 log() {
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
@@ -126,6 +151,7 @@ DEPLOY_FAILED=false
 DEPLOY_START_TS=$(date +%s)
 DEPLOY_OLD_HEAD=""
 DEPLOY_NEW_HEAD=""
+TARGET_TAG=""
 
 on_error() {
   local line="$1"
@@ -136,7 +162,7 @@ on_error() {
   if [[ "$DEPLOY_STARTED" == true ]]; then
     tg_notify "DEPLOY FAILED
 Repo: $GITHUB_REPO
-Branch: $BRANCH
+Release: ${TARGET_TAG:-unknown}
 From: ${DEPLOY_OLD_HEAD:-unknown}
 To: ${DEPLOY_NEW_HEAD:-unknown}
 Error: line $line: $cmd
@@ -166,19 +192,57 @@ if [[ "$(stat -c '%U' "$APP_DIR/.git/objects")" != "$APP_USER" ]]; then
   chown -R "$APP_USER":"$APP_USER" "$APP_DIR/.git"
 fi
 
-# ---- Check for updates ------------------------------------------------------
-log "Fetching origin/$BRANCH..."
-sudo -u "$APP_USER" git fetch origin "$BRANCH" --quiet
+# ---- Find the release to deploy -------------------------------------------
+# --tag pins: without the pin the next cron run would take releases/latest and
+# quietly undo a rollback five minutes later. The pin outlives this run and is
+# dropped only by --unpin.
+if [[ "$UNPIN" == true && -f "$PIN_FILE" ]]; then
+  log "Dropping the pin on $(cat "$PIN_FILE"), following the latest release again."
+  rm -f "$PIN_FILE"
+fi
+
+if [[ -n "$TAG_ARG" ]]; then
+  TARGET_TAG="$TAG_ARG"
+  log "Deploying requested release $TARGET_TAG and pinning it (script/deploy --unpin to release the pin)."
+elif [[ -f "$PIN_FILE" ]]; then
+  TARGET_TAG=$(tr -d '[:space:]' < "$PIN_FILE")
+  log "Pinned to $TARGET_TAG — newer releases are ignored until script/deploy --unpin."
+else
+  # /releases/latest already skips drafts and prereleases. A 404 here means the
+  # repo has no releases yet — not an error, just nothing to do.
+  if ! gh_api "https://api.github.com/repos/$GITHUB_REPO/releases/latest"; then
+    if [[ "$GH_API_CODE" == "404" ]]; then
+      log "No releases yet. Nothing to deploy."
+    else
+      log "$(gh_api_error) Skipping deploy (will retry next run)."
+    fi
+    exit 0
+  fi
+  TARGET_TAG=$(echo "$GH_API_BODY" | python3 -c "import sys,json; print(json.load(sys.stdin).get('tag_name',''))" 2>/dev/null || echo "")
+  if [[ -z "$TARGET_TAG" ]]; then
+    log "Latest release has no tag_name. Skipping deploy."
+    exit 0
+  fi
+fi
+
+# --force keeps the local tag in step with GitHub should a tag ever be re-cut.
+sudo -u "$APP_USER" git fetch origin --force "refs/tags/$TARGET_TAG:refs/tags/$TARGET_TAG" --quiet
+
+# Pin only a tag that GitHub actually has — a typo must not wedge every later
+# cron run on a fetch of nothing.
+if [[ -n "$TAG_ARG" ]]; then
+  echo "$TARGET_TAG" > "$PIN_FILE"
+fi
 
 LOCAL_HEAD=$(git rev-parse HEAD)
-REMOTE_HEAD=$(git rev-parse "origin/$BRANCH")
+REMOTE_HEAD=$(git rev-parse "refs/tags/$TARGET_TAG^{commit}")
 
 if [[ "$LOCAL_HEAD" == "$REMOTE_HEAD" ]]; then
-  log "Already up to date ($LOCAL_HEAD). Nothing to deploy."
+  log "Already running $TARGET_TAG ($LOCAL_HEAD). Nothing to deploy."
   exit 0
 fi
 
-log "Update available: $LOCAL_HEAD -> $REMOTE_HEAD"
+log "Update available: $LOCAL_HEAD -> $REMOTE_HEAD ($TARGET_TAG)"
 DEPLOY_OLD_HEAD="$LOCAL_HEAD"
 DEPLOY_NEW_HEAD="$REMOTE_HEAD"
 
@@ -186,7 +250,9 @@ DEPLOY_NEW_HEAD="$REMOTE_HEAD"
 if [[ "$FORCE" == false ]]; then
   log "Checking GitHub Actions CI status..."
 
-  if ! gh_api "https://api.github.com/repos/$GITHUB_REPO/actions/workflows/$CI_WORKFLOW/runs?branch=$BRANCH&per_page=1&status=completed"; then
+  # Ask for runs on the release commit itself: the newest run on main may
+  # belong to a commit merged after the release was cut.
+  if ! gh_api "https://api.github.com/repos/$GITHUB_REPO/actions/workflows/$CI_WORKFLOW/runs?head_sha=$REMOTE_HEAD&per_page=1&status=completed"; then
     log "$(gh_api_error) Skipping deploy (will retry next run)."
     exit 0
   fi
@@ -195,6 +261,11 @@ if [[ "$FORCE" == false ]]; then
   CI_STATUS=$(echo "$CI_JSON" | python3 -c "import sys,json; runs=json.load(sys.stdin).get('workflow_runs',[]); print(runs[0]['conclusion'] if runs else 'none')" 2>/dev/null || echo "error")
   CI_HEAD_SHA=$(echo "$CI_JSON" | python3 -c "import sys,json; runs=json.load(sys.stdin).get('workflow_runs',[]); print(runs[0]['head_sha'] if runs else '')" 2>/dev/null || echo "")
   CI_RUN_ID=$(echo "$CI_JSON" | python3 -c "import sys,json; runs=json.load(sys.stdin).get('workflow_runs',[]); print(runs[0]['id'] if runs else '')" 2>/dev/null || echo "")
+
+  if [[ "$CI_STATUS" == "none" ]]; then
+    log "CI has not finished for $TARGET_TAG ($REMOTE_HEAD) yet. Waiting."
+    exit 0
+  fi
 
   if [[ "$CI_STATUS" != "success" ]]; then
     log "CI status: $CI_STATUS. Skipping deploy (CI must pass)."
@@ -229,7 +300,7 @@ print('\n'.join(failed) if failed else '')
       CI_URL="https://github.com/$GITHUB_REPO/actions/runs/$CI_RUN_ID"
       tg_notify "CI FAILED — deploy blocked
 Repo: $GITHUB_REPO
-Branch: $BRANCH
+Release: $TARGET_TAG
 Commit: ${CI_HEAD_SHA:0:8}
 Status: $CI_STATUS
 ${CI_ERRORS:+Failed jobs:
@@ -240,11 +311,6 @@ $CI_ERRORS
     exit 0
   fi
 
-  if [[ "$CI_HEAD_SHA" != "$REMOTE_HEAD" ]]; then
-    log "CI ran for $CI_HEAD_SHA but remote is $REMOTE_HEAD. Waiting for CI to finish."
-    exit 0
-  fi
-
   log "CI passed for $REMOTE_HEAD."
 fi
 
@@ -252,13 +318,15 @@ fi
 DEPLOY_STARTED=true
 tg_notify "DEPLOY STARTED
 Repo: $GITHUB_REPO
-Branch: $BRANCH
+Release: $TARGET_TAG
 From: $LOCAL_HEAD
 To: $REMOTE_HEAD"
 
-# ---- Pull latest code -------------------------------------------------------
-log "Pulling origin/$BRANCH..."
-sudo -u "$APP_USER" git pull origin "$BRANCH" --quiet
+# ---- Check out the release ---------------------------------------------------
+# Detached HEAD on the tag: the tree tracks releases, not a branch, so there is
+# nothing to pull and rolling back is the same command with another --tag.
+log "Checking out $TARGET_TAG..."
+sudo -u "$APP_USER" git checkout --detach --quiet "$REMOTE_HEAD"
 
 # ---- Detect what changed ----------------------------------------------------
 CHANGED_FILES=$(git diff --name-only "$LOCAL_HEAD" "$REMOTE_HEAD")
@@ -350,15 +418,32 @@ log "Health check passed: $HEALTHCHECK_URL returned HTTP $HEALTH_HTTP_CODE"
 
 # ---- Done --------------------------------------------------------------------
 NEW_HEAD=$(git rev-parse --short HEAD)
-log "Deploy complete! Now running: $NEW_HEAD"
+log "Deploy complete! Now running: $TARGET_TAG ($NEW_HEAD)"
+
+# ---- Announce the release ----------------------------------------------------
+# Only after a healthy restart: the post says "is out", and it is out only now.
+# The task just enqueues jobs — the posts themselves go out from Solid Queue in
+# the freshly started puma, and the unique index on social_posts keeps a
+# re-deploy of the same tag from posting twice. A failure here is logged, not
+# fatal: the code is live regardless.
+# The task prints one line saying what it did; that line goes to Telegram.
+if ANNOUNCE_OUTPUT=$(run_as_app "bundle exec rails 'social:release[$TARGET_TAG]'" 2>&1); then
+  ANNOUNCE=$(echo "$ANNOUNCE_OUTPUT" | tail -n 1)
+  log "Release announcement: $ANNOUNCE"
+else
+  ANNOUNCE="failed, see deploy.log"
+  log "Release announcement failed (the deploy itself is fine):"
+  log "$ANNOUNCE_OUTPUT"
+fi
 log "---"
 
 if [[ "$DEPLOY_STARTED" == true && "$DEPLOY_FAILED" == false ]]; then
   DURATION=$(( $(date +%s) - DEPLOY_START_TS ))
   tg_notify "DEPLOY FINISHED
 Repo: $GITHUB_REPO
-Branch: $BRANCH
+Release: $TARGET_TAG
 Now running: $NEW_HEAD
 Health: OK ($HEALTH_HTTP_CODE)
+Social: $ANNOUNCE
 Duration: ${DURATION}s"
 fi

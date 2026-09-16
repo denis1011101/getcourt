@@ -1,0 +1,124 @@
+# Релиз = тег vX.Y.Z + GitHub Release. Прод катит только релизы (script/deploy
+# спрашивает releases/latest), так что мерж в main сам по себе ничего не выкатывает.
+#
+# Запускается руками: Actions → Release → Run workflow. Highlights — короткий
+# английский абзац для соцсетей; после деплоя он уходит в Threads/Bluesky/Nostr
+# как есть (Social::Content::Release). Без Highlights релиз выкатится молча.
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Какую часть версии поднять: minor — фичи, patch — правки"
+        type: choice
+        options: [minor, patch, major]
+        default: minor
+      highlights:
+        description: "Highlights для соцсетей, по-английски, до 200 символов. Перенос строки — литерал \\n"
+        type: string
+        required: false
+
+# Два релиза разом посчитают одну и ту же следующую версию.
+concurrency: release
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      HIGHLIGHTS: ${{ inputs.highlights }}
+      # Та же цифра, что HIGHLIGHTS_LIMIT в Social::Content::Release: шапка и
+      # ссылка съедают остаток из 300 графем Bluesky.
+      HIGHLIGHTS_LIMIT: 200
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+
+      # Деплой всё равно не пустит красный коммит, но релиз, указывающий на него,
+      # завис бы молча навсегда. Лучше упасть здесь с понятной причиной.
+      # Критерий тот же, что в script/deploy: последний завершённый прогон ci.yml
+      # на этом SHA должен быть success. Просто «есть хоть один успешный» не
+      # годится — после него мог упасть повторный прогон, и деплой его увидит.
+      - name: Require green CI on main
+        run: |
+          SHA=$(git rev-parse HEAD)
+          CONCLUSION=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?head_sha=$SHA&status=completed&per_page=1" \
+            --jq '.workflow_runs[0].conclusion // "none"')
+          case "$CONCLUSION" in
+            success) echo "CI passed on main@${SHA:0:8}" ;;
+            none)
+              echo "::error::CI has not finished on main@${SHA:0:8} yet — wait for it."
+              exit 1
+              ;;
+            *)
+              echo "::error::Latest CI run on main@${SHA:0:8} ended with '$CONCLUSION' — the deploy would refuse this release."
+              exit 1
+              ;;
+          esac
+
+      - name: Check highlights length
+        run: |
+          # Литеральный \n считается одним символом, как и настоящий перенос.
+          TEXT=$(printf '%s' "$HIGHLIGHTS" | sed 's/\\n/\n/g')
+          LEN=$(printf '%s' "$TEXT" | wc -m)
+          if (( LEN > HIGHLIGHTS_LIMIT )); then
+            echo "::error::Highlights are $LEN characters, the limit is $HIGHLIGHTS_LIMIT — the post would be cut mid-sentence on Bluesky."
+            exit 1
+          fi
+          if [[ -z "$TEXT" ]]; then
+            echo "::warning::No highlights — the release will deploy but nothing will be posted to social networks."
+          fi
+
+      - name: Compute next version
+        id: version
+        run: |
+          LAST=$(git tag --list 'v*' --sort=-v:refname | head -n 1)
+          if [[ -z "$LAST" ]]; then
+            NEXT="v1.0.0"
+          else
+            IFS=. read -r MAJOR MINOR PATCH <<< "${LAST#v}"
+            case "${{ inputs.bump }}" in
+              major) NEXT="v$((MAJOR + 1)).0.0" ;;
+              minor) NEXT="v$MAJOR.$((MINOR + 1)).0" ;;
+              patch) NEXT="v$MAJOR.$MINOR.$((PATCH + 1))" ;;
+            esac
+          fi
+          echo "last=$LAST" >> "$GITHUB_OUTPUT"
+          echo "next=$NEXT" >> "$GITHUB_OUTPUT"
+          echo "Releasing $NEXT (previous: ${LAST:-none})"
+
+      # Тело: Highlights сверху, ниже — список смерженных PR, который GitHub
+      # собирает сам (категории и исключения — в .github/release.yml).
+      - name: Create release
+        env:
+          NEXT: ${{ steps.version.outputs.next }}
+          LAST: ${{ steps.version.outputs.last }}
+        run: |
+          SHA=$(git rev-parse HEAD)
+          ARGS=(-f tag_name="$NEXT" -f target_commitish="$SHA")
+          if [[ -n "$LAST" ]]; then
+            ARGS+=(-f previous_tag_name="$LAST")
+          fi
+          NOTES=$(gh api "repos/${{ github.repository }}/releases/generate-notes" "${ARGS[@]}" --jq .body)
+
+          {
+            if [[ -n "$HIGHLIGHTS" ]]; then
+              echo "## Highlights"
+              echo
+              printf '%s\n' "$HIGHLIGHTS" | sed 's/\\n/\n/g'
+              echo
+            fi
+            printf '%s\n' "$NOTES"
+          } > body.md
+
+          gh release create "$NEXT" --target "$SHA" --title "$NEXT" --notes-file body.md
+          echo "https://github.com/${{ github.repository }}/releases/tag/$NEXT" >> "$GITHUB_STEP_SUMMARY"
