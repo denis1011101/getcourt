@@ -16,7 +16,7 @@ class GamesController < ApplicationController
     @skill_levels = Game.where.not(skill_level: [ nil, "" ]).distinct.order(:skill_level).pluck(:skill_level)
 
     court_city_names = Court.where.not(city_name: [ nil, "" ]).distinct.pluck(:city_name)
-    city_country_map = build_city_country_map(court_city_names)
+    city_country_map = city_country_map_for(court_city_names)
     normalize_location_params!(city_country_map)
 
     canonical_path = canonical_games_path_for(city_country_map)
@@ -497,20 +497,20 @@ class GamesController < ApplicationController
     gp
   end
 
-  def build_city_country_map(city_names)
-    City.where(name: city_names)
-      .pluck(:name, :country_code, :population)
-      .group_by(&:first)
-      .transform_values { |rows| rows.max_by { |(_, _, population)| population.to_i }[1] }
-  end
-
+  # Слаг, которого нет среди наших городов и стран, — это 404, а не редирект на
+  # родителя: раньше «/games/georgia/tbilisi» без известного нам города уводил
+  # 301-м на главную, «/courts/turkey/istanbul» — на страницу страны, и Google
+  # копил такие адреса как «Page with redirect». Известный город без игр при
+  # этом остаётся обычной страницей.
   def normalize_location_params!(city_country_map)
     if params[:country_slug].present?
       params[:country] = country_code_for_slug(params[:country_slug], city_country_map)
+      raise ActionController::RoutingError, "Unknown country slug: #{params[:country_slug]}" if params[:country].blank?
     end
 
     if params[:city_slug].present?
       params[:city] = city_name_for_slug(params[:city_slug], params[:country], city_country_map)
+      raise ActionController::RoutingError, "Unknown city slug: #{params[:city_slug]}" if params[:city].blank?
     end
 
     params[:country] = effective_country_code(city_country_map)

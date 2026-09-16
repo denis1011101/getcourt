@@ -297,6 +297,37 @@ class CourtsControllerTest < ActionDispatch::IntegrationTest
     City.where(id: city_ids).delete_all if city_ids
   end
 
+  test "pretty courts url resolves a city known only through CITY_COUNTRY_OVERRIDES" do
+    court = Court.create!(name: "Chaoyang Court", city_name: "Chaoyang District", moderation_status: "approved", approved_at: Time.current)
+
+    get courts_url, params: { country: "CN", city: "Chaoyang District" }
+    assert_redirected_to courts_browse_path(country_slug: "china", city_slug: "chaoyang-district")
+
+    get courts_browse_url(country_slug: "china", city_slug: "chaoyang-district")
+    assert_response :success
+    assert_includes assigns(:courts), court
+  ensure
+    court&.destroy
+  end
+
+  test "pretty courts url responds 404 for a country or city unknown to the app" do
+    city_ids = []
+    city_ids << City.create!(name: "Yekaterinburg", country_code: "RU", population: 1_500_000).id
+    Court.create!(name: "Ekb Court", city_name: "Yekaterinburg", moderation_status: "approved", approved_at: Time.current)
+
+    get courts_browse_url(country_slug: "turkey")
+    assert_response :not_found
+
+    get courts_browse_url(country_slug: "turkey", city_slug: "istanbul")
+    assert_response :not_found
+
+    get courts_browse_url(country_slug: "russia", city_slug: "istanbul")
+    assert_response :not_found
+  ensure
+    Court.where(name: "Ekb Court").delete_all
+    City.where(id: city_ids).delete_all if city_ids
+  end
+
   # ---- city-first ordering for signed-in user ----------------------------
 
   test "same-city court appears before other-city court for signed-in user" do

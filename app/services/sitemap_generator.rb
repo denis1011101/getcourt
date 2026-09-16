@@ -57,12 +57,15 @@ class SitemapGenerator
     court_paths + game_paths + event_paths
   end
 
+  # Корт на модерации гостю отвечает редиректом на список, а прошедшая
+  # одноразовая игра по субботам удаляется CleanupPastOneOffGamesJob — обе
+  # записи в сайтмапе оборачивались для Google редиректом и 404.
   def court_paths
-    Court.find_each.map { |court| [ court_path(court), court.updated_at ] }
+    Court.approved.find_each.map { |court| [ court_path(court), court.updated_at ] }
   end
 
   def game_paths
-    Game.find_each.map { |game| [ game_path(game), game.updated_at ] }
+    Game.still_running.publicly_visible.find_each.map { |game| [ game_path(game), game.updated_at ] }
   end
 
   def event_paths

@@ -131,22 +131,45 @@ module LocationFilters
   }.freeze
 
   # Геокодер иногда отдаёт район города или название, которого нет в справочнике
-  # City, — тогда страну для фильтров подставляем вручную.
+  # City («T'bilisi», «Wien», «Beograd» — так Nominatim пишет их даже с
+  # accept-language=en), — тогда страну подставляем вручную. Без записи здесь
+  # у такого города нет страны, а значит и своей страницы: адрес вида
+  # /courts/georgia/t-bilisi отвечает 404. Сюда же попадают тёзки, у которых
+  # справочник выбирает не ту страну: «Moskva» в нём есть только в Таджикистане,
+  # «Roma» — в Лесото, и корты уезжали в /courts/tj и /courts/ls.
   CITY_COUNTRY_OVERRIDES = {
     "Acapulco" => "MX",
+    "Amphoe Pak Kret" => "TH",
+    "Beograd" => "RS",
     "Chaoyang District" => "CN",
+    "Fatih" => "TR",
     "Futian District" => "CN",
     "Greater London" => "GB",
+    "Hlavní město Praha" => "CZ",
     "Hua Hin City Municipality" => "TH",
     "Jiang'an District" => "CN",
     "Klagenfurt" => "AT",
     "Koto" => "JP",
+    "Koto City" => "JP",
+    "Las Condes" => "CL",
     "Montreal" => "CA",
+    "Moskva" => "RU",
+    "Nan Chang Shi" => "CN",
     "New York" => "US",
     "Pak Kret City Municipality" => "TH",
     "Palilula Urban Municipality" => "RS",
     "Pudong" => "CN",
-    "Yuexiu District" => "CN"
+    "Queens County" => "US",
+    "Roma" => "IT",
+    "Sankt-Peterburg" => "RU",
+    "Shen Zhen Shi" => "CN",
+    "T'bilisi" => "GE",
+    "Tambon Hua Hin" => "TH",
+    "Torino" => "IT",
+    "Wien" => "AT",
+    "Yuexiu District" => "CN",
+    "Zhu Hai Shi" => "CN",
+    "Тоshkent" => "UZ"
   }.freeze
 
   included do
