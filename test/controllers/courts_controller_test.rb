@@ -297,6 +297,24 @@ class CourtsControllerTest < ActionDispatch::IntegrationTest
     City.where(id: city_ids).delete_all if city_ids
   end
 
+  test "pretty courts url responds 404 for a country or city unknown to the app" do
+    city_ids = []
+    city_ids << City.create!(name: "Yekaterinburg", country_code: "RU", population: 1_500_000).id
+    Court.create!(name: "Ekb Court", city_name: "Yekaterinburg", moderation_status: "approved", approved_at: Time.current)
+
+    get courts_browse_url(country_slug: "turkey")
+    assert_response :not_found
+
+    get courts_browse_url(country_slug: "turkey", city_slug: "istanbul")
+    assert_response :not_found
+
+    get courts_browse_url(country_slug: "russia", city_slug: "istanbul")
+    assert_response :not_found
+  ensure
+    Court.where(name: "Ekb Court").delete_all
+    City.where(id: city_ids).delete_all if city_ids
+  end
+
   # ---- city-first ordering for signed-in user ----------------------------
 
   test "same-city court appears before other-city court for signed-in user" do

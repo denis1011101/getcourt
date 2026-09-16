@@ -504,13 +504,20 @@ class GamesController < ApplicationController
       .transform_values { |rows| rows.max_by { |(_, _, population)| population.to_i }[1] }
   end
 
+  # Слаг, которого нет среди наших городов и стран, — это 404, а не редирект на
+  # родителя: раньше «/games/georgia/tbilisi» без известного нам города уводил
+  # 301-м на главную, «/courts/turkey/istanbul» — на страницу страны, и Google
+  # копил такие адреса как «Page with redirect». Известный город без игр при
+  # этом остаётся обычной страницей.
   def normalize_location_params!(city_country_map)
     if params[:country_slug].present?
       params[:country] = country_code_for_slug(params[:country_slug], city_country_map)
+      raise ActionController::RoutingError, "Unknown country slug: #{params[:country_slug]}" if params[:country].blank?
     end
 
     if params[:city_slug].present?
       params[:city] = city_name_for_slug(params[:city_slug], params[:country], city_country_map)
+      raise ActionController::RoutingError, "Unknown city slug: #{params[:city_slug]}" if params[:city].blank?
     end
 
     params[:country] = effective_country_code(city_country_map)

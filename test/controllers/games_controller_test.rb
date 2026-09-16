@@ -497,6 +497,39 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     City.where(id: city_ids).delete_all if city_ids
   end
 
+  test "pretty games url for a known city without games renders the page instead of redirecting" do
+    city_ids = []
+    city_ids << City.create!(name: "Tbilisi", country_code: "GE", population: 1_049_498).id
+    court = Court.create!(name: "Vake Court", city_name: "Tbilisi", moderation_status: "approved", approved_at: Time.current)
+
+    get games_browse_url(country_slug: "georgia", city_slug: "tbilisi")
+
+    assert_response :success
+    assert_empty assigns(:games)
+    assert_select "[data-testid='results-summary']", text: /Tbilisi/
+  ensure
+    court&.destroy
+    City.where(id: city_ids).delete_all if city_ids
+  end
+
+  test "pretty games url responds 404 for a country or city unknown to the app" do
+    city_ids = []
+    city_ids << City.create!(name: "Yekaterinburg", country_code: "RU", population: 1_500_000).id
+    court = Court.create!(name: "Ekb Court", city_name: "Yekaterinburg", moderation_status: "approved", approved_at: Time.current)
+
+    get games_browse_url(country_slug: "turkey")
+    assert_response :not_found
+
+    get games_browse_url(country_slug: "turkey", city_slug: "istanbul")
+    assert_response :not_found
+
+    get games_browse_url(country_slug: "russia", city_slug: "istanbul")
+    assert_response :not_found
+  ensure
+    court&.destroy
+    City.where(id: city_ids).delete_all if city_ids
+  end
+
   test "pretty games url renders canonical title and description for location" do
     city_ids = []
     city_ids << City.create!(name: "Yekaterinburg", country_code: "RU", population: 1_500_000).id
