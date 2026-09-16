@@ -8,7 +8,7 @@ class CourtsController < ApplicationController
   def index
     visible_courts = Court.visible_to(current_user)
     court_city_names = visible_courts.where.not(city_name: [ nil, "" ]).distinct.pluck(:city_name)
-    city_country_map = build_city_country_map(court_city_names)
+    city_country_map = city_country_map_for(court_city_names)
     normalize_location_params!(city_country_map)
 
     canonical_path = canonical_courts_path_for(city_country_map)
@@ -149,13 +149,6 @@ class CourtsController < ApplicationController
     else
       value.to_s
     end
-  end
-
-  def build_city_country_map(city_names)
-    City.where(name: city_names)
-      .pluck(:name, :country_code, :population)
-      .group_by(&:first)
-      .transform_values { |rows| rows.max_by { |(_, _, population)| population.to_i }[1] }
   end
 
   # Слаг, которого нет среди наших городов и стран, — это 404, а не редирект на

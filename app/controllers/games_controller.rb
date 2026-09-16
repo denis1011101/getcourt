@@ -16,7 +16,7 @@ class GamesController < ApplicationController
     @skill_levels = Game.where.not(skill_level: [ nil, "" ]).distinct.order(:skill_level).pluck(:skill_level)
 
     court_city_names = Court.where.not(city_name: [ nil, "" ]).distinct.pluck(:city_name)
-    city_country_map = build_city_country_map(court_city_names)
+    city_country_map = city_country_map_for(court_city_names)
     normalize_location_params!(city_country_map)
 
     canonical_path = canonical_games_path_for(city_country_map)
@@ -495,13 +495,6 @@ class GamesController < ApplicationController
     gp["occurrence_dates"] = dates.map(&:to_s)
     gp["recurrence_days"] = dates.map(&:wday)
     gp
-  end
-
-  def build_city_country_map(city_names)
-    City.where(name: city_names)
-      .pluck(:name, :country_code, :population)
-      .group_by(&:first)
-      .transform_values { |rows| rows.max_by { |(_, _, population)| population.to_i }[1] }
   end
 
   # Слаг, которого нет среди наших городов и стран, — это 404, а не редирект на
