@@ -42,6 +42,11 @@ CI_FAIL_FILE="/tmp/getcourt-last-ci-fail"
 # Lives next to deploy.log rather than in /tmp: a reboot must not turn a
 # rollback back into "follow latest".
 PIN_FILE="${DEPLOY_PIN_FILE:-$APP_DIR/log/deploy.pin}"
+# The tag whose announcement last went through. Without it a release that
+# points at the commit already running (the first one after this script lands,
+# a re-cut tag) would never be announced, and a transient failure would never
+# be retried — the "nothing to deploy" exit comes before the announcement.
+ANNOUNCED_FILE="${DEPLOY_ANNOUNCED_FILE:-$APP_DIR/log/deploy.announced}"
 RAILS_ENV="${RAILS_ENV:-production}"
 HEALTHCHECK_URL="${HEALTHCHECK_URL:-https://getcourt.co/up}"
 GITHUB_TOKEN="${GITHUB_TOKEN:-}"
@@ -146,6 +151,30 @@ run_as_app() {
   sudo -u "$APP_USER" bash -lc "source $RVM_SCRIPT && cd $APP_DIR && export RAILS_MASTER_KEY=\$(cat config/master.key) && RAILS_ENV=$RAILS_ENV $1"
 }
 
+# Announces TARGET_TAG in social networks, once per tag. The task just enqueues
+# jobs — the posts themselves go out from Solid Queue inside puma, and the
+# unique index on social_posts keeps a repeated call from posting twice. The
+# task prints one line saying what it did; that line goes to ANNOUNCE for
+# Telegram. A failure is logged, not fatal: the code is live regardless, and
+# the next cron run retries because ANNOUNCED_FILE is only written on success.
+ANNOUNCE=""
+announce_release() {
+  local output
+  if output=$(run_as_app "bundle exec rails 'social:release[$TARGET_TAG]'" 2>&1); then
+    ANNOUNCE=$(echo "$output" | tail -n 1)
+    echo "$TARGET_TAG" > "$ANNOUNCED_FILE"
+    log "Release announcement: $ANNOUNCE"
+  else
+    ANNOUNCE="failed, see deploy.log"
+    log "Release announcement failed (the deploy itself is fine):"
+    log "$output"
+  fi
+}
+
+release_announced() {
+  [[ -f "$ANNOUNCED_FILE" && "$(tr -d '[:space:]' < "$ANNOUNCED_FILE")" == "$TARGET_TAG" ]]
+}
+
 DEPLOY_STARTED=false
 DEPLOY_FAILED=false
 DEPLOY_START_TS=$(date +%s)
@@ -238,7 +267,12 @@ LOCAL_HEAD=$(git rev-parse HEAD)
 REMOTE_HEAD=$(git rev-parse "refs/tags/$TARGET_TAG^{commit}")
 
 if [[ "$LOCAL_HEAD" == "$REMOTE_HEAD" ]]; then
-  log "Already running $TARGET_TAG ($LOCAL_HEAD). Nothing to deploy."
+  if release_announced; then
+    log "Already running $TARGET_TAG ($LOCAL_HEAD). Nothing to deploy."
+  else
+    log "Already running $TARGET_TAG ($LOCAL_HEAD), but it has not been announced yet."
+    announce_release
+  fi
   exit 0
 fi
 
@@ -422,19 +456,7 @@ log "Deploy complete! Now running: $TARGET_TAG ($NEW_HEAD)"
 
 # ---- Announce the release ----------------------------------------------------
 # Only after a healthy restart: the post says "is out", and it is out only now.
-# The task just enqueues jobs — the posts themselves go out from Solid Queue in
-# the freshly started puma, and the unique index on social_posts keeps a
-# re-deploy of the same tag from posting twice. A failure here is logged, not
-# fatal: the code is live regardless.
-# The task prints one line saying what it did; that line goes to Telegram.
-if ANNOUNCE_OUTPUT=$(run_as_app "bundle exec rails 'social:release[$TARGET_TAG]'" 2>&1); then
-  ANNOUNCE=$(echo "$ANNOUNCE_OUTPUT" | tail -n 1)
-  log "Release announcement: $ANNOUNCE"
-else
-  ANNOUNCE="failed, see deploy.log"
-  log "Release announcement failed (the deploy itself is fine):"
-  log "$ANNOUNCE_OUTPUT"
-fi
+announce_release
 log "---"
 
 if [[ "$DEPLOY_STARTED" == true && "$DEPLOY_FAILED" == false ]]; then
