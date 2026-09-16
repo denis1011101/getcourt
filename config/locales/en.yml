@@ -574,8 +574,8 @@ en:
       clay: "Clay"
       grass: "Grass"
       artificial_grass: "Artificial grass"
-      rubber: "Rubber (crumb)"
-      teraflex: "Teraflex (modular tiles)"
+      rubber: "Rubber"
+      teraflex: "Teraflex"
     form:
       free: "Free court (no booking fee)"
       outdoor: "Outdoor court"
