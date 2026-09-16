@@ -62,7 +62,13 @@ jobs:
               echo "::error::$TAG is not on main — releases are cut from main only."
               exit 1
             fi
-            HIGHLIGHTS=$(git tag -l --format='%(contents)' "$TAG")
+            # Только у аннотированного тега: для лёгкого %(contents) отдаёт
+            # сообщение коммита, и оно уехало бы в соцсети как Highlights.
+            if [[ "$(git tag -l --format='%(objecttype)' "$TAG")" == "tag" ]]; then
+              HIGHLIGHTS=$(git tag -l --format='%(contents)' "$TAG")
+            else
+              HIGHLIGHTS=""
+            fi
           else
             TAG=""
             HIGHLIGHTS="$INPUT_HIGHLIGHTS"
