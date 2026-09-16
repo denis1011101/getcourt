@@ -83,13 +83,22 @@ read -r -p "Tag and push? [y/N] " ANSWER
 
 # An annotated tag carries the highlights; git refuses an empty message, so a
 # release without highlights gets a lightweight tag — release.yml reads that as
-# "nothing to post".
+# "nothing to post". The default message cleanup drops lines starting with "#"
+# as comments, which is what a hashtag line looks like — "whitespace" keeps
+# them and still trims the edges.
 if [[ -n "$TEXT" ]]; then
-  printf '%s\n' "$TEXT" | git tag -a "$NEXT" -F -
+  printf '%s\n' "$TEXT" | git tag -a "$NEXT" --cleanup=whitespace -F -
 else
   git tag "$NEXT"
 fi
-git push origin "refs/tags/$NEXT"
+
+# A tag left behind by a failed push would be taken for the last release next
+# time and the retry would skip a version.
+if ! git push origin "refs/tags/$NEXT"; then
+  git tag -d "$NEXT" >/dev/null
+  echo "Push failed — the local tag $NEXT is removed, run the command again." >&2
+  exit 1
+fi
 
 echo
 echo "Pushed $NEXT. Watch the release being cut:"
