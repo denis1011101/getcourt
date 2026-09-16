@@ -82,12 +82,27 @@ module Social
 
       # Между «## Highlights» и следующим заголовком любого уровня. Хэштег
       # («#GetCourt») заголовком не считается — после решётки нет пробела.
+      # HTML-комментарии выкидываем: GitHub вставляет «<!-- Release notes
+      # generated using configuration in .github/release.yml -->» перед своим
+      # списком, и он попадал в пост.
       def highlights
-        lines = release&.dig("body").to_s.lines.map { |line| line.chomp.delete_suffix("\r") }
+        body = release&.dig("body").to_s.gsub(/<!--.*?-->/m, "")
+        lines = body.lines.map { |line| line.chomp.delete_suffix("\r") }
         start = lines.index { |line| line.match?(HEADING) }
         return nil unless start
 
         lines[(start + 1)..].take_while { |line| !line.match?(/\A#+\s/) }.join("\n").strip.presence
+      end
+
+      # Режем Highlights, а не хвост: ссылка должна остаться целой, иначе в ленте
+      # висит «https:…». В норме сюда не доходит — release.yml ограничивает
+      # Highlights заранее, но GitHub может дописать в секцию что-то своё.
+      def text(locale:, limit: nil)
+        return body(locale: locale) if limit.nil?
+
+        frame = body(locale: locale, highlights: "")
+        budget = limit - RichText.grapheme_length(frame)
+        body(locale: locale, highlights: RichText.truncate(highlights, [ budget, 0 ].max))
       end
 
       private
@@ -98,7 +113,7 @@ module Social
       end
 
       # Ссылку даём со схемой — иначе Bluesky не соберёт link-facet.
-      def body(locale:)
+      def body(locale:, highlights: self.highlights)
         "🎾 GetCourt #{tag} is out\n\n#{highlights}\n\n#{url}"
       end
     end
