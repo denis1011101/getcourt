@@ -1,12 +1,18 @@
 # Релиз = тег vX.Y.Z + GitHub Release. Прод катит только релизы (script/deploy
 # спрашивает releases/latest), так что мерж в main сам по себе ничего не выкатывает.
 #
-# Запускается руками: Actions → Release → Run workflow. Highlights — короткий
-# английский абзац для соцсетей; после деплоя он уходит в Threads/Bluesky/Nostr
-# как есть (Social::Content::Release). Без Highlights релиз выкатится молча.
+# Два входа:
+#   - script/release с машины: он тегает main и пушит тег, Highlights лежат в
+#     сообщении аннотированного тега — сюда приходим по push;
+#   - Actions → Release → Run workflow: версию и Highlights вводим в форме.
+# Highlights — короткий английский абзац для соцсетей; после деплоя он уходит в
+# Threads/Bluesky/Nostr как есть (Social::Content::Release). Без Highlights
+# релиз выкатится молча.
 name: Release
 
 on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
   workflow_dispatch:
     inputs:
       bump:
@@ -31,17 +37,48 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
-      HIGHLIGHTS: ${{ inputs.highlights }}
       # Та же цифра, что HIGHLIGHTS_LIMIT в Social::Content::Release: шапка и
       # ссылка съедают остаток из 300 графем Bluesky.
       HIGHLIGHTS_LIMIT: 200
 
     steps:
-      - name: Checkout main
+      - name: Checkout
         uses: actions/checkout@v7
         with:
-          ref: main
+          ref: ${{ github.event_name == 'push' && github.ref || 'main' }}
           fetch-depth: 0
+          fetch-tags: true
+
+      # По push тег уже есть — берём его и его сообщение. По dispatch версию
+      # считаем от последнего тега, Highlights — из формы.
+      - name: Resolve tag and highlights
+        id: release
+        env:
+          INPUT_HIGHLIGHTS: ${{ inputs.highlights }}
+        run: |
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            TAG="${GITHUB_REF_NAME}"
+            if ! git merge-base --is-ancestor "$TAG" origin/main; then
+              echo "::error::$TAG is not on main — releases are cut from main only."
+              exit 1
+            fi
+            # Только у аннотированного тега: для лёгкого %(contents) отдаёт
+            # сообщение коммита, и оно уехало бы в соцсети как Highlights.
+            if [[ "$(git tag -l --format='%(objecttype)' "$TAG")" == "tag" ]]; then
+              HIGHLIGHTS=$(git tag -l --format='%(contents)' "$TAG")
+            else
+              HIGHLIGHTS=""
+            fi
+          else
+            TAG=""
+            HIGHLIGHTS="$INPUT_HIGHLIGHTS"
+          fi
+          {
+            echo "tag=$TAG"
+            echo "highlights<<EOF"
+            printf '%s\n' "$HIGHLIGHTS"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       # Деплой всё равно не пустит красный коммит, но релиз, указывающий на него,
       # завис бы молча навсегда. Лучше упасть здесь с понятной причиной.
@@ -66,6 +103,8 @@ jobs:
           esac
 
       - name: Check highlights length
+        env:
+          HIGHLIGHTS: ${{ steps.release.outputs.highlights }}
         run: |
           # Литеральный \n считается одним символом, как и настоящий перенос.
           TEXT=$(printf '%s' "$HIGHLIGHTS" | sed 's/\\n/\n/g')
@@ -78,11 +117,15 @@ jobs:
             echo "::warning::No highlights — the release will deploy but nothing will be posted to social networks."
           fi
 
-      - name: Compute next version
+      - name: Compute version
         id: version
+        env:
+          TAG: ${{ steps.release.outputs.tag }}
         run: |
-          LAST=$(git tag --list 'v*' --sort=-v:refname | head -n 1)
-          if [[ -z "$LAST" ]]; then
+          LAST=$(git tag --list 'v*' --sort=-v:refname | grep -vx "$TAG" | head -n 1 || true)
+          if [[ -n "$TAG" ]]; then
+            NEXT="$TAG"
+          elif [[ -z "$LAST" ]]; then
             NEXT="v1.0.0"
           else
             IFS=. read -r MAJOR MINOR PATCH <<< "${LAST#v}"
@@ -102,6 +145,7 @@ jobs:
         env:
           NEXT: ${{ steps.version.outputs.next }}
           LAST: ${{ steps.version.outputs.last }}
+          HIGHLIGHTS: ${{ steps.release.outputs.highlights }}
         run: |
           SHA=$(git rev-parse HEAD)
           ARGS=(-f tag_name="$NEXT" -f target_commitish="$SHA")

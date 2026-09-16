@@ -1,0 +1,106 @@
+#!/bin/bash
+# =============================================================================
+# Cut a GetCourt release from this machine.
+#
+# Bumps the version from the last v* tag, tags main with the highlights as the
+# tag message and pushes the tag. Everything else — the CI check, the release
+# notes and the GitHub Release itself — happens in .github/workflows/release.yml
+# on that push, and script/deploy on the server picks the release up within
+# five minutes. No GitHub token needed: pushing a tag is enough.
+#
+# Usage:
+#   script/release minor "Pick a player from a dropdown.\nMulti-day games get a calendar."
+#   script/release patch            # no highlights: deploys, posts nothing
+#
+# Highlights are the social post: English, up to 200 characters, a literal \n
+# is a line break. minor — features, patch — fixes, major — you know when.
+# =============================================================================
+
+set -euo pipefail
+
+# Same number as HIGHLIGHTS_LIMIT in release.yml and Social::Content::Release.
+HIGHLIGHTS_LIMIT=200
+
+usage() {
+  echo "Usage: script/release major|minor|patch [\"highlights for social networks\"]" >&2
+  exit 2
+}
+
+BUMP="${1:-}"
+HIGHLIGHTS="${2:-}"
+[[ "$BUMP" =~ ^(major|minor|patch)$ ]] || usage
+
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+
+# ---- The tag must point at what is on origin/main -----------------------------
+git fetch origin main --tags --quiet
+
+if [[ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]]; then
+  echo "Switch to main first — releases are cut from main only." >&2
+  exit 1
+fi
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo "The working tree is not clean — commit or stash first." >&2
+  exit 1
+fi
+if [[ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]]; then
+  echo "Local main differs from origin/main — pull (or push) first." >&2
+  exit 1
+fi
+
+# ---- Highlights ----------------------------------------------------------------
+TEXT=$(printf '%s' "$HIGHLIGHTS" | sed 's/\\n/\n/g')
+LEN=$(printf '%s' "$TEXT" | wc -m)
+if (( LEN > HIGHLIGHTS_LIMIT )); then
+  echo "Highlights are $LEN characters, the limit is $HIGHLIGHTS_LIMIT — the post would be cut on Bluesky." >&2
+  exit 1
+fi
+
+# ---- Next version ----------------------------------------------------------------
+LAST=$(git tag --list 'v*' --sort=-v:refname | head -n 1)
+if [[ -z "$LAST" ]]; then
+  NEXT="v1.0.0"
+else
+  IFS=. read -r MAJOR MINOR PATCH <<< "${LAST#v}"
+  case "$BUMP" in
+    major) NEXT="v$((MAJOR + 1)).0.0" ;;
+    minor) NEXT="v$MAJOR.$((MINOR + 1)).0" ;;
+    patch) NEXT="v$MAJOR.$MINOR.$((PATCH + 1))" ;;
+  esac
+fi
+
+echo "Release $NEXT (previous: ${LAST:-none}) from $(git rev-parse --short HEAD):"
+echo "  $(git log -1 --format=%s)"
+if [[ -n "$TEXT" ]]; then
+  echo
+  printf '%s\n' "$TEXT" | sed 's/^/  | /'
+else
+  echo "  (no highlights — nothing will be posted to social networks)"
+fi
+echo
+read -r -p "Tag and push? [y/N] " ANSWER
+[[ "$ANSWER" =~ ^[Yy]$ ]] || { echo "Aborted."; exit 1; }
+
+# An annotated tag carries the highlights; git refuses an empty message, so a
+# release without highlights gets a lightweight tag — release.yml reads that as
+# "nothing to post". The default message cleanup drops lines starting with "#"
+# as comments, which is what a hashtag line looks like — "whitespace" keeps
+# them and still trims the edges.
+if [[ -n "$TEXT" ]]; then
+  printf '%s\n' "$TEXT" | git tag -a "$NEXT" --cleanup=whitespace -F -
+else
+  git tag "$NEXT"
+fi
+
+# A tag left behind by a failed push would be taken for the last release next
+# time and the retry would skip a version.
+if ! git push origin "refs/tags/$NEXT"; then
+  git tag -d "$NEXT" >/dev/null
+  echo "Push failed — the local tag $NEXT is removed, run the command again." >&2
+  exit 1
+fi
+
+echo
+echo "Pushed $NEXT. Watch the release being cut:"
+echo "  https://github.com/denis1011101/getcourt/actions/workflows/release.yml"
+echo "The server deploys it within five minutes; the Telegram report will say Social: ..."
