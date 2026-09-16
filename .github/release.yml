@@ -1,11 +1,9 @@
 # Настройки автогенерации тела релиза (releases/generate-notes в release.yml).
-# Обновления зависимостей в анонс не идут — читать там нечего.
+# Обновления зависимостей в анонс не идут — читать там нечего. Категорий нет
+# намеренно: GitHub сам ставит «What's Changed» над списком, а единственная
+# категория с тем же именем давала заголовок дважды.
 changelog:
   exclude:
     authors:
       - dependabot
       - dependabot[bot]
-  categories:
-    - title: What's Changed
-      labels:
-        - "*"
