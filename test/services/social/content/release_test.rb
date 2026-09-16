@@ -38,6 +38,21 @@ class Social::Content::ReleaseTest < ActiveSupport::TestCase
     assert_operator Social::RichText.grapheme_length(text), :<=, Social::BlueskyPostingService::TEXT_LIMIT
   end
 
+  test "drops the HTML comment GitHub puts before its own list" do
+    body = "## Highlights\n\nShort and sweet.\n\n<!-- Release notes generated using configuration in .github/release.yml at v1.4.0 -->\n\n## What's Changed\n* x"
+
+    assert_equal "Short and sweet.", build(body: body).highlights
+  end
+
+  test "keeps the link whole and cuts the highlights when the limit is tight" do
+    content = build(body: "## Highlights\n\n#{'word ' * 100}")
+    text = content.text(locale: :en, limit: Social::BlueskyPostingService::TEXT_LIMIT)
+
+    assert_operator Social::RichText.grapheme_length(text), :<=, Social::BlueskyPostingService::TEXT_LIMIT
+    assert text.end_with?("\n\nhttps://github.com/denis1011101/getcourt/releases/tag/v1.4.0")
+    assert_includes text, "…"
+  end
+
   test "survives CRLF bodies and a heading in another case" do
     content = build(body: "## highlights\r\n\r\nFirst line\r\nSecond line\r\n\r\n## Other\r\nnope\r\n")
 
