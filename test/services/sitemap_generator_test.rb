@@ -51,12 +51,32 @@ class SitemapGeneratorTest < ActiveSupport::TestCase
       starts_at: 1.day.from_now
     )
 
+    court = courts(:feed_approved)
+    game = Game.create!(court: court, user: users(:one), date: Date.current + 3.days, time: "10:00")
+
     SitemapGenerator.generate!(path: @sitemap_file)
     document = Nokogiri::XML(File.read(@sitemap_file))
 
-    assert_dynamic_record(document, courts(:one), court_path(courts(:one)))
-    assert_dynamic_record(document, games(:one), game_path(games(:one)))
+    assert_dynamic_record(document, court, court_path(court))
+    assert_dynamic_record(document, game, game_path(game))
     assert_dynamic_record(document, match, event_path(match))
+  end
+
+  test "courts under moderation and past one-off games are left out" do
+    pending_court = courts(:one)
+    assert_not pending_court.approved?
+    # Каждый фильтр проверяем отдельно: прошедшая игра — на одобренном корте,
+    # чтобы её отсекал срок, а не корт; будущая — на корте с модерации.
+    past_game = Game.create!(court: courts(:feed_approved), user: users(:one), date: Date.current - 3.days, time: "10:00")
+    hidden_game = Game.create!(court: pending_court, user: users(:one), date: Date.current + 3.days, time: "10:00")
+    assert past_game.ends_on < Date.current
+
+    SitemapGenerator.generate!(path: @sitemap_file)
+    document = Nokogiri::XML(File.read(@sitemap_file))
+
+    assert_nil find_url(document, localized_url("en", court_path(pending_court)))
+    assert_nil find_url(document, localized_url("en", game_path(past_game)))
+    assert_nil find_url(document, localized_url("en", game_path(hidden_game)))
   end
 
   private
