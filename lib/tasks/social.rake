@@ -61,4 +61,35 @@ namespace :social do
   task daily: :environment do
     PostDailySocialPostJob.perform_now
   end
+
+  # Последняя строка вывода уходит в телеграм-отчёт деплоя, поэтому итог — одной
+  # строкой. Ненулевой код — только для явной поломки (кривой тег, GitHub лёг):
+  # релиз без Highlights — это норма, а не ошибка.
+  desc "Announce a GitHub release in every configured network (rake social:release[v1.2.3]) — script/deploy runs it after a healthy restart"
+  task :release, [ :tag ] => :environment do |_task, args|
+    content = Social::Content::Release.from_key(args[:tag])
+    abort "Usage: rake social:release[v1.2.3]" unless content
+
+    unless content.available?
+      puts "#{content.tag}: #{content.unavailable_reason}"
+      next
+    end
+
+    networks = Social.publish(content)
+    puts networks.empty? ? "#{content.tag}: no network configured" : "#{content.tag}: enqueued for #{networks.join(', ')}"
+  end
+
+  desc "Show what the release post would say without publishing it (rake social:release_preview[v1.2.3])"
+  task :release_preview, [ :tag ] => :environment do |_task, args|
+    content = Social::Content::Release.from_key(args[:tag])
+    abort "Usage: rake social:release_preview[v1.2.3]" unless content
+
+    unless content.available?
+      puts "#{content.tag}: #{content.unavailable_reason}"
+      next
+    end
+
+    puts content.text(locale: :en, limit: Social::BlueskyPostingService::TEXT_LIMIT)
+    puts "\nimage: #{content.image_url}"
+  end
 end

@@ -2,7 +2,7 @@
 # welcome и daily к играм не привязаны вовсе, а плодить по колонке на каждую новую
 # сеть в games не хочется.
 class SocialPost < ApplicationRecord
-  KINDS = %w[welcome urgent daily].freeze
+  KINDS = %w[welcome urgent daily release].freeze
 
   validates :network, presence: true
   validates :dedup_key, presence: true
