@@ -77,6 +77,9 @@ class PrebookingsController < ApplicationController
 
   def approve
     return head :forbidden unless can_manage_game?
+    # Состав на дату уже собран: одобренная сейчас заявка в него не попадёт,
+    # а человек получил бы подтверждение.
+    return head :forbidden if @game.prebooking_closed_on?(@prebooking.date)
 
     @prebooking.update!(status: "approved", approved_at: Time.current)
     GameRequestNotification.prebooking(user: @prebooking.user, game: @game, dates: @prebooking.date, approved: true)
@@ -112,6 +115,8 @@ class PrebookingsController < ApplicationController
     # Записаться можно только на занятие: слот мог остаться от даты, которую
     # организатор убрал из расписания, — игры в этот день уже не будет.
     return false if date.present? && !game.occurrence_date?(date)
+    # Состав на эту дату уже собран из предзаписи — бронь на неё никуда не уйдёт.
+    return false if date.present? && game.prebooking_closed_on?(date)
 
     # запрещаем, если дата отменена
     if date.present? && PrebookingCancellation.exists?(game_id: game.id, date: date)

@@ -29,6 +29,40 @@ class PrebookingsControllerTest < ActionDispatch::IntegrationTest
     assert_nil stale.reload.user_id
   end
 
+  # Сброс на занятие прошёл, состав собран — бронь на эту дату джоба уже не
+  # заберёт, так что и с открытой заранее страницы её принимать нельзя.
+  test "booking a date whose roster is already assembled is refused" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 7), recurring: true, players_count: 2, prebooking_enabled: true)
+    slot = game.prebookings.create!(date: Date.new(2026, 9, 14), slot_index: 1)
+    game.mark_participations_reset!(Date.new(2026, 9, 14))
+
+    users(:two).update!(email: "roster-assembled@example.com")
+    post session_url, params: { email: users(:two).email }
+    travel_to Time.zone.local(2026, 9, 12, 12, 0) do
+      post book_game_prebooking_url(game, slot)
+    end
+
+    assert_response :forbidden
+    assert_nil slot.reload.user_id
+  end
+
+  # Джоба переносит в состав только одобренные заявки; ждавшую одобрения после
+  # сброса одобрять поздно — подтверждение придёт, а места в составе не будет.
+  test "approving a request for a date whose roster is already assembled is refused" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 9, 7), recurring: true, players_count: 2, prebooking_enabled: true)
+    request = game.prebookings.create!(date: Date.new(2026, 9, 14), slot_index: 1, user: users(:two), status: "pending")
+    game.mark_participations_reset!(Date.new(2026, 9, 14))
+
+    users(:one).update!(email: "roster-approve@example.com")
+    post session_url, params: { email: users(:one).email }
+    assert_no_enqueued_emails do
+      post approve_game_prebooking_url(game, request)
+    end
+
+    assert_response :forbidden
+    assert_equal "pending", request.reload.status
+  end
+
   # Серия по понедельникам с 7 сентября; смотрим 8-го: в сентябре впереди 14,
   # 21 и 28, в октябре — 5, 12, 19 и 26. Даты прибиты: число карточек в месяце
   # зависит от календаря.

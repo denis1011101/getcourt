@@ -175,6 +175,25 @@ class GameTest < ActiveSupport::TestCase
     end
   end
 
+  # Сброс на ближайшее занятие уже прошёл: его состав собран, и в предзаписи
+  # эта дата закрыта — иначе бронь на неё висела бы мёртвой, а сама дата в
+  # календаре выглядела свободной при полном составе.
+  test "a session whose roster is already assembled is closed for prebooking" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.new(2026, 8, 31), recurring: true, prebooking_enabled: true)
+
+    travel_to Time.zone.local(2026, 9, 12, 12, 0) do
+      assert_equal [ Date.new(2026, 9, 14), Date.new(2026, 9, 21), Date.new(2026, 9, 28) ], game.prebooking_dates_in(Date.new(2026, 9, 1))
+      assert_equal Date.new(2026, 9, 14), game.prebooking_horizon_dates(3).first
+
+      game.mark_participations_reset!(Date.new(2026, 9, 14))
+
+      assert game.prebooking_closed_on?(Date.new(2026, 9, 14))
+      assert_not game.prebooking_closed_on?(Date.new(2026, 9, 21))
+      assert_equal [ Date.new(2026, 9, 21), Date.new(2026, 9, 28) ], game.prebooking_dates_in(Date.new(2026, 9, 1))
+      assert_equal [ Date.new(2026, 9, 21), Date.new(2026, 9, 28), Date.new(2026, 10, 5) ], game.prebooking_horizon_dates(3)
+    end
+  end
+
   # Отменили всё, что оставалось, — календарь всё равно нужен: вернуть дату
   # можно только из него.
   test "a series with every remaining session cancelled keeps its calendar" do
