@@ -624,6 +624,7 @@ class Game < ApplicationRecord
     # Серия кончилась — записываться больше некуда: без этой проверки горизонт
     # начинался заново с первой даты расписания, то есть с уже отыгранной.
     start = next_date
+    start = occurrence_after(start) while start.present? && prebooking_closed_on?(start)
     return [] if start.blank?
 
     count = count.to_i.clamp(3, MAX_PREBOOKING_HORIZON)
@@ -673,6 +674,15 @@ class Game < ApplicationRecord
     coach_dates = coach_prebookings.where(date: from..to).distinct.pluck(:date)
 
     (occurrences_between(from, to) + booked_dates + cancelled_dates + coach_dates).map(&:to_date).uniq.sort
+      .reject { |d| prebooking_closed_on?(d) && !cancelled_dates.include?(d) }
+  end
+
+  # Сброс на дату прошёл — её состав уже собран из предзаписи, и новая бронь
+  # на неё в состав не попадёт: ResetParticipationsJob эту дату больше не
+  # трогает. Записываются на такое занятие через состав, а не через предзапись.
+  def prebooking_closed_on?(date)
+    marker = last_participations_reset_at
+    marker.present? && marker.to_date >= date.to_date
   end
 
   # Все занятия в промежутке, включая отменённые.
