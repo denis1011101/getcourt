@@ -218,6 +218,15 @@ en:
       prebooking_note: 'Note: prebooking slots will be created after saving the game.'
       prebooking_locked: Prebooking can be enabled only for repeating (weekly) games.
       prebooking_locked_hint: Check "Repeat weekly" to enable prebooking.
+      after_session: After each session
+      after_session_hint: Every session of a repeating game starts fresh. Choose what
+        is cleared along the way.
+      reset_lineup: Clear the lineup
+      reset_lineup_hint: Players sign up for every session anew. Leave unchecked for a
+        standing group that plays together every week.
+      release_court_on_reset: Clear the court
+      release_court_on_reset_hint: For a court booked one session at a time. Leave unchecked
+        if the court is booked weeks ahead.
       kind: Type
       kind_game: Game
       kind_training: Training

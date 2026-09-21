@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_13_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_21_100000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -257,6 +257,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_13_100000) do
     t.text "recurrence_days"
     t.boolean "recurring", default: false, null: false
     t.boolean "recurring_monthly", default: false, null: false
+    t.boolean "release_court_on_reset", default: false, null: false
+    t.boolean "reset_lineup", default: true, null: false
     t.integer "second_coach_id"
     t.string "second_coach_invitation_status"
     t.string "skill_level"

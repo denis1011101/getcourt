@@ -12,6 +12,7 @@ es:
           attributes:
             prebooking_enabled:
               players_count_required: "no se puede activar hasta elegir el número de jugadores: se reparten tantas plazas por fecha"
+              lineup_reset_required: "requiere vaciar la alineación tras cada sesión: así los jugadores con reserva previa ocupan su plaza"
             urgent_player_search:
               court_required: "no se puede anunciar hasta elegir una pista: se avisa a los jugadores por la ciudad de la pista"
         game_medium:

@@ -12,6 +12,7 @@ ru:
           attributes:
             prebooking_enabled:
               players_count_required: "нельзя включить, пока не выбрано число игроков: столько слотов раздаётся на дату"
+              lineup_reset_required: "работает только с очисткой состава после занятия: так записавшиеся попадают в состав"
             urgent_player_search:
               court_required: "нельзя объявить, пока не выбран корт: уведомления уходят игрокам из города корта"
         game_medium:

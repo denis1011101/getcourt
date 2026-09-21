@@ -67,6 +67,26 @@ class GameTest < ActiveSupport::TestCase
     assert game.valid?, game.errors.full_messages.to_sentence
   end
 
+  # Предзапись заполняет состав на дату; постоянному составу раздавать слоты некому.
+  test "prebooking needs the lineup to be cleared after each session" do
+    game = Game.new(court: courts(:one), user: users(:one), date: Date.current, time: "10:00",
+                    recurring: true, prebooking_enabled: true, players_count: 4, reset_lineup: false)
+
+    assert_not game.valid?
+    assert_includes game.errors.full_messages, "Pre-booking needs the lineup to be cleared after each session: that is how pre-booked players get their places"
+
+    game.reset_lineup = true
+    assert game.valid?, game.errors.full_messages.to_sentence
+  end
+
+  # Форма разовой игры присылает выключенную галку нулём; стань игра серией,
+  # состав молча перестал бы очищаться.
+  test "a single game keeps the lineup reset on for the day it becomes a series" do
+    game = Game.create!(court: courts(:one), user: users(:one), date: Date.current, time: "10:00", reset_lineup: false)
+
+    assert game.reload.reset_lineup?
+  end
+
   test "player search cannot be announced until a court is chosen" do
     game = Game.new(user: users(:one), date: Date.current, time: "10:00", urgent_player_search: true)
 

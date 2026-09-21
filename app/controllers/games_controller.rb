@@ -377,7 +377,7 @@ class GamesController < ApplicationController
   end
 
   def game_params
-    params.require(:game).permit(:court_id, :kind, :recurring, :recurring_monthly, :occurrences_per_week, :with_coach, :coach_id, :second_coach_id, :date, :dates, :time, :players_count, :skill_level, :sport, :surface, :environment, :prebooking_enabled, :urgent_player_search, :duration_minutes, :comment)
+    params.require(:game).permit(:court_id, :kind, :recurring, :recurring_monthly, :occurrences_per_week, :with_coach, :coach_id, :second_coach_id, :date, :dates, :time, :players_count, :skill_level, :sport, :surface, :environment, :prebooking_enabled, :reset_lineup, :release_court_on_reset, :urgent_player_search, :duration_minutes, :comment)
   end
 
   def display_date(game)

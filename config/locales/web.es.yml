@@ -222,6 +222,15 @@ es:
         (semanales).
       prebooking_locked_hint: Marca «Repetir cada semana» para activar la reserva
         previa.
+      after_session: Después de cada sesión
+      after_session_hint: Cada sesión de un partido recurrente empieza de cero. Elige qué
+        se limpia en ese momento.
+      reset_lineup: Vaciar la alineación
+      reset_lineup_hint: Los jugadores se apuntan a cada sesión de nuevo. Déjalo sin marcar
+        si el grupo es fijo y juega junto cada semana.
+      release_court_on_reset: Quitar la pista
+      release_court_on_reset_hint: Para una pista que se reserva sesión a sesión. Déjalo sin
+        marcar si la pista está reservada con semanas de antelación.
       kind: Tipo
       kind_game: Partido
       kind_training: Entrenamiento

@@ -57,6 +57,78 @@ class ResetParticipationsJobTest < ActiveJob::TestCase
     end
   end
 
+  # Корт, который берут на одно занятие, к следующему ещё никто не бронировал:
+  # с галкой он уходит вместе с составом, чтобы страница не обещала площадку.
+  test "clears the court together with the lineup when the series asks for it" do
+    game = weekly_series(release_court_on_reset: true)
+    game.participations.create!(user: @player)
+
+    travel_to(RESET_MOMENT) { ResetParticipationsJob.perform_now }
+
+    assert_nil game.reload.court_id
+    assert_empty game.participations
+  end
+
+  # Маркер сброса закрывает игре повторный заход, поэтому корт снимаем до него:
+  # иначе упавшая запись оставила бы старый корт у нового занятия навсегда.
+  test "a failed court release leaves the game to the next run" do
+    game = weekly_series(release_court_on_reset: true)
+    game.participations.create!(user: @player)
+
+    travel_to RESET_MOMENT do
+      with_failing_court_release { ResetParticipationsJob.perform_now }
+
+      assert_nil game.reload.last_participations_reset_at, "маркер не ставим, пока корт не снят"
+      assert_equal courts(:one), game.court
+      assert_equal 1, game.participations.count, "состав ждёт вместе с игрой"
+
+      ResetParticipationsJob.perform_now
+
+      assert_nil game.reload.court_id
+      assert_empty game.participations
+    end
+  end
+
+  # Постоянный состав: люди остаются, но занятие у игры уже следующее — иначе
+  # карточка, чат и статистика застряли бы на отыгранном.
+  test "rolls a standing group over to the next occurrence without touching the lineup" do
+    game = weekly_series(reset_lineup: false, comment: "сегодня беру мячи")
+    game.participations.create!(user: @player)
+
+    travel_to RESET_MOMENT do
+      assert game.participations_reset_due?
+
+      ResetParticipationsJob.perform_now
+
+      assert_equal [ @player.id ], game.participations.reload.pluck(:user_id)
+      assert_equal NEXT_OCCURRENCE, game.reload.last_participations_reset_at
+      assert_nil game.comment, "комментарий был про прошедшее занятие"
+      assert_not game.participations_reset_due?
+    end
+  end
+
+  # Корт бронируют на занятие независимо от того, меняются ли люди.
+  test "clears the court of a standing group too" do
+    game = weekly_series(reset_lineup: false, release_court_on_reset: true)
+    game.participations.create!(user: @player)
+
+    travel_to(RESET_MOMENT) { ResetParticipationsJob.perform_now }
+
+    assert_nil game.reload.court_id
+    assert_equal 1, game.participations.count
+  end
+
+  # Кто бронирует корт на недели вперёд, галку не ставит — по умолчанию корт
+  # переживает сброс, как и до появления настройки.
+  test "keeps the court by default" do
+    game = weekly_series
+    game.participations.create!(user: @player)
+
+    travel_to(RESET_MOMENT) { ResetParticipationsJob.perform_now }
+
+    assert_equal courts(:one), game.reload.court
+  end
+
   # Серия «пн + чт»: состав понедельника не может дожить до четверга — в четверг
   # на корт выходит уже другой состав. Середина промежутка — ночь на среду,
   # ближайшие к ней 20:00 — вечер вторника.
@@ -280,6 +352,25 @@ class ResetParticipationsJobTest < ActiveJob::TestCase
 
   # Неудачу удаления по-другому не подстроить: destroy у вложения падает только
   # на сбое диска или базы.
+  # Роняем именно снятие корта: update_columns с court_id зовёт только оно.
+  def with_failing_court_release
+    Game.class_eval do
+      alias_method :update_columns_without_failure, :update_columns
+      define_method(:update_columns) do |attributes|
+        raise ActiveRecord::StatementInvalid, "database is locked" if attributes.key?(:court_id)
+
+        update_columns_without_failure(attributes)
+      end
+    end
+    yield
+  ensure
+    Game.class_eval do
+      remove_method :update_columns
+      alias_method :update_columns, :update_columns_without_failure
+      remove_method :update_columns_without_failure
+    end
+  end
+
   def with_failing_medium_destroy
     GameMedium.class_eval do
       alias_method :destroy_without_failure, :destroy

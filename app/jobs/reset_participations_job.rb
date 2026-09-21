@@ -16,16 +16,22 @@ class ResetParticipationsJob < ApplicationJob
       # неудачная уборка должна дождаться следующего часа, а не пропасть.
       # Отсюда же и порядок: сброс предзаписей уносит людей с даты в состав,
       # повторить его вторым заходом нельзя.
-      next unless reset_occurrence_content(game)
+      next unless reset_occurrence_content(game) && release_court(game)
 
       if game.prebooking_enabled?
         apply_prebookings_for_occurrence!(game, upcoming)
         game.mark_participations_reset!(upcoming)
         Rails.logger.info "Reset participations from prebookings for Game##{game.id} for occurrence #{upcoming}"
-      else
+      elsif game.reset_lineup?
         game.participations.delete_all
         game.mark_participations_reset!(upcoming)
         Rails.logger.info "Reset participations for Game##{game.id} for occurrence #{upcoming}"
+      else
+        # Постоянный состав: люди остаются, но занятие у них теперь новое —
+        # маркер двигаем, иначе карточка, чат и статистика застряли бы на
+        # отыгранном.
+        game.mark_participations_reset!(upcoming)
+        Rails.logger.info "Rolled Game##{game.id} over to occurrence #{upcoming}, lineup kept"
       end
 
       close_chat_for_dropped(game, chat_members)
@@ -59,6 +65,24 @@ class ResetParticipationsJob < ApplicationJob
     dropped.all?
   rescue StandardError => e
     Rails.logger.warn("[ResetParticipationsJob] content reset failed for Game##{game.id}: #{e.class}: #{e.message}")
+    false
+  end
+
+  # Корт у такой серии бронируют на одно занятие, и с новым составом его надо
+  # искать заново — иначе страница обещает площадку, которой ни у кого нет.
+  # Кто бронирует на месяц вперёд, галку не ставит, и корт остаётся.
+  # update_columns по той же причине, что и у комментария: без рассылки.
+  # Идёт до маркера и по тому же договору, что и уборка контента: false —
+  # игру в этот раз пропускаем, и следующий запуск попробует снова, а не
+  # оставит старый корт у нового занятия навсегда.
+  def release_court(game)
+    return true unless game.release_court_on_reset? && game.court_id.present?
+
+    game.update_columns(court_id: nil, updated_at: Time.current)
+    Rails.logger.info "Released court for Game##{game.id}"
+    true
+  rescue StandardError => e
+    Rails.logger.warn("[ResetParticipationsJob] court release failed for Game##{game.id}: #{e.class}: #{e.message}")
     false
   end
 
