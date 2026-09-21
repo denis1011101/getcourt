@@ -107,6 +107,21 @@ class ResetParticipationsJobTest < ActiveJob::TestCase
     end
   end
 
+  # Поиск игроков без корта невозможен — уведомления идут по городу корта, и
+  # модель такую игру не сохранит. Снимаем его вместе с кортом, а не оставляем
+  # организатору невалидную игру.
+  test "turns off the player search together with the court" do
+    game = weekly_series(release_court_on_reset: true, urgent_player_search: true)
+    game.participations.create!(user: @player)
+
+    travel_to(RESET_MOMENT) { ResetParticipationsJob.perform_now }
+
+    game.reload
+    assert_nil game.court_id
+    assert_not game.urgent_player_search?
+    assert game.valid?, game.errors.full_messages.to_sentence
+  end
+
   # Корт бронируют на занятие независимо от того, меняются ли люди.
   test "clears the court of a standing group too" do
     game = weekly_series(reset_lineup: false, release_court_on_reset: true)

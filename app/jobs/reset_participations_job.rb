@@ -78,7 +78,10 @@ class ResetParticipationsJob < ApplicationJob
   def release_court(game)
     return true unless game.release_court_on_reset? && game.court_id.present?
 
-    game.update_columns(court_id: nil, updated_at: Time.current)
+    # Поиск игроков живёт на корте: уведомления уходят по его городу, и модель
+    # без корта его не пропустит. Снимаем вместе, иначе игра висит в поиске
+    # без адреса, а любая правка формы упирается в валидацию.
+    game.update_columns(court_id: nil, urgent_player_search: false, updated_at: Time.current)
     Rails.logger.info "Released court for Game##{game.id}"
     true
   rescue StandardError => e
