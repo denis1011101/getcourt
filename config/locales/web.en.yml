@@ -201,7 +201,7 @@ en:
         many: "%{count} errors prohibited this game from being saved:"
         other: "%{count} errors prohibited this game from being saved:"
       repeat: Repeating the schedule
-      repeat_hint: "The sessions themselves are ticked in the calendar below — as many days as you need. These boxes continue the schedule after the last ticked date; without them the series ends there."
+      repeat_hint: "The sessions themselves are ticked in the calendar above — as many days as you need. These boxes continue the schedule after the last ticked date; without them the series ends there."
       recurring: Repeat weekly
       recurring_hint: "After the last ticked date the game carries on every week on the same weekdays."
       recurring_monthly: Repeat monthly
@@ -218,10 +218,14 @@ en:
       prebooking_note: 'Note: prebooking slots will be created after saving the game.'
       prebooking_locked: Prebooking can be enabled only for repeating (weekly) games.
       prebooking_locked_hint: Check "Repeat weekly" to enable prebooking.
+      section_schedule: When
+      section_between_sessions: Between sessions
+      section_players: Players and format
+      section_court: Where
       after_session: After each session
       after_session_hint: Every session of a repeating game starts fresh. Choose what
         is cleared along the way.
-      reset_lineup: Clear the lineup
+      reset_lineup: Clear the participants
       reset_lineup_hint: Players sign up for every session anew. Leave unchecked for a
         standing group that plays together every week.
       release_court_on_reset: Clear the court
