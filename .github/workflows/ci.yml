@@ -14,10 +14,10 @@ jobs:
         run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libvips42
 
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+        uses: ruby/setup-ruby@a0102e0972be65f351c307e2d64b9314a57c8073 # v1.324.0
         with:
           ruby-version: .ruby-version
           bundler-cache: true
@@ -33,10 +33,10 @@ jobs:
         run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libvips42
 
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+        uses: ruby/setup-ruby@a0102e0972be65f351c307e2d64b9314a57c8073 # v1.324.0
         with:
           ruby-version: .ruby-version
           bundler-cache: true
@@ -60,10 +60,10 @@ jobs:
         run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libvips42
 
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+        uses: ruby/setup-ruby@a0102e0972be65f351c307e2d64b9314a57c8073 # v1.324.0
         with:
           ruby-version: .ruby-version
           bundler-cache: true
@@ -85,10 +85,10 @@ jobs:
         run: sudo apt-get update && sudo apt-get install --no-install-recommends -y build-essential git libyaml-dev libvips42 pkg-config google-chrome-stable
 
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+        uses: ruby/setup-ruby@a0102e0972be65f351c307e2d64b9314a57c8073 # v1.324.0
         with:
           ruby-version: .ruby-version
           bundler-cache: true
@@ -105,7 +105,7 @@ jobs:
         run: bin/rails db:test:prepare test test:system
 
       - name: Keep screenshots from failed system tests
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: failure()
         with:
           name: screenshots
@@ -135,7 +135,7 @@ jobs:
 
       - name: Update coverage badge
         if: success() && github.ref == 'refs/heads/main'
-        uses: schneegans/dynamic-badges-action@v1.9.0
+        uses: schneegans/dynamic-badges-action@28b0fa8bdeb46170ac397105ece0c1fe58f68910 # v1.9.0
         with:
           auth: ${{ secrets.GIST_SECRET }}
           gistID: ${{ vars.BADGE_GIST_ID }}
@@ -148,7 +148,7 @@ jobs:
 
       - name: Update Ruby badge
         if: success() && github.ref == 'refs/heads/main'
-        uses: schneegans/dynamic-badges-action@v1.9.0
+        uses: schneegans/dynamic-badges-action@28b0fa8bdeb46170ac397105ece0c1fe58f68910 # v1.9.0
         with:
           auth: ${{ secrets.GIST_SECRET }}
           gistID: ${{ vars.BADGE_GIST_ID }}
@@ -159,7 +159,7 @@ jobs:
 
       - name: Update Rails badge
         if: success() && github.ref == 'refs/heads/main'
-        uses: schneegans/dynamic-badges-action@v1.9.0
+        uses: schneegans/dynamic-badges-action@28b0fa8bdeb46170ac397105ece0c1fe58f68910 # v1.9.0
         with:
           auth: ${{ secrets.GIST_SECRET }}
           gistID: ${{ vars.BADGE_GIST_ID }}
