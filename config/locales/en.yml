@@ -41,6 +41,7 @@ en:
           attributes:
             prebooking_enabled:
               players_count_required: "cannot be enabled until the number of players is chosen: that many slots are handed out per date"
+              lineup_reset_required: "needs the lineup to be cleared after each session: that is how pre-booked players get their places"
             urgent_player_search:
               court_required: "cannot be announced until a court is chosen: players are notified by the court’s city"
         game_medium:

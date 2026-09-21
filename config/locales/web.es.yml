@@ -202,7 +202,7 @@ es:
         many: "%{count} errores impidieron guardar el partido:"
         other: "%{count} errores impidieron guardar el partido:"
       repeat: Repetición del calendario
-      repeat_hint: "Las sesiones se marcan en el calendario de abajo, tantas como haga falta. Estas casillas continúan el calendario después de la última fecha marcada; sin ellas la serie termina ahí."
+      repeat_hint: "Las sesiones se marcan en el calendario de arriba, tantas como haga falta. Estas casillas continúan el calendario después de la última fecha marcada; sin ellas la serie termina ahí."
       recurring: Repetir cada semana
       recurring_hint: "Tras la última fecha marcada el partido sigue cada semana en los mismos días de la semana."
       recurring_monthly: Repetir cada mes
@@ -222,6 +222,19 @@ es:
         (semanales).
       prebooking_locked_hint: Marca «Repetir cada semana» para activar la reserva
         previa.
+      section_schedule: Cuándo
+      section_between_sessions: Entre sesiones
+      section_players: Jugadores y formato
+      section_court: Dónde
+      after_session: Después de cada sesión
+      after_session_hint: Cada sesión de un partido recurrente empieza de cero. Elige qué
+        se limpia en ese momento.
+      reset_lineup: Vaciar los participantes
+      reset_lineup_hint: Los jugadores se apuntan a cada sesión de nuevo. Déjalo sin marcar
+        si el grupo es fijo y juega junto cada semana.
+      release_court_on_reset: Quitar la pista
+      release_court_on_reset_hint: Para una pista que se reserva sesión a sesión. Déjalo sin
+        marcar si la pista está reservada con semanas de antelación.
       kind: Tipo
       kind_game: Partido
       kind_training: Entrenamiento

@@ -106,14 +106,21 @@ export default class extends Controller {
     this.modeTarget.textContent = parts.join(" · ")
   }
 
-  // Предзапись живёт у серии: одна дата без повтора — обычная разовая игра.
+  // Предзапись и всё, что происходит после занятия, живёт у серии: одна дата
+  // без повтора — обычная разовая игра.
   syncPrebooking(dates) {
-    const prebooking = document.getElementById("game_prebooking_enabled")
-    if (!prebooking) return
-
     const series = dates.length > 1 || this.weekly || this.monthly
-    prebooking.disabled = !series
-    if (!series) prebooking.checked = false
+    const seriesOnly = [ "game_prebooking_enabled", "game_reset_lineup", "game_release_court_on_reset" ]
+
+    seriesOnly.forEach((id) => {
+      const checkbox = document.getElementById(id)
+      if (!checkbox) return
+
+      checkbox.disabled = !series
+      // Очистку состава не снимаем: у серии она включена по умолчанию, и
+      // щелчок повтором туда-обратно не должен её терять.
+      if (!series && id !== "game_reset_lineup") checkbox.checked = false
+    })
   }
 
   weekdayNames(dates) {

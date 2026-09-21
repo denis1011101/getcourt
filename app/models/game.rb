@@ -71,6 +71,7 @@ class Game < ApplicationRecord
   before_validation :drop_options_managed_by_tournament, if: -> { tournament_id.present? }
   before_validation :normalize_coach_assignment
   before_validation :normalize_recurrence_days
+  before_validation :keep_lineup_reset_for_single_games
   before_save :remember_last_occurrence
 
   validates :date, presence: { message: "must be present" }
@@ -89,6 +90,7 @@ class Game < ApplicationRecord
   validate :environment_available_at_court
   validate :court_chosen_for_player_search
   validate :players_count_chosen_for_prebooking
+  validate :prebooking_requires_lineup_reset
   validate :within_tournament_dates_and_courts, if: -> { tournament.present? }
 
   def training?
@@ -405,6 +407,20 @@ class Game < ApplicationRecord
     errors.add(:prebooking_enabled, :players_count_required)
   end
 
+  # У разовой игры галка в форме выключена и приходит нулём; сохранять его
+  # нельзя — станет серией, и состав молча перестанет очищаться.
+  def keep_lineup_reset_for_single_games
+    self.reset_lineup = true unless series?
+  end
+
+  # Предзапись и есть способ собрать состав на дату; постоянному составу
+  # раздавать слоты некому.
+  def prebooking_requires_lineup_reset
+    return unless prebooking_enabled? && !reset_lineup?
+
+    errors.add(:prebooking_enabled, :lineup_reset_required)
+  end
+
   # Покрытие игры должно быть среди покрытий выбранного корта
   def surface_available_at_court
     return if surface.blank? || court.blank?
@@ -448,6 +464,8 @@ class Game < ApplicationRecord
     self.recurrence_days = []
     self.occurrence_dates = []
     self.prebooking_enabled = false
+    self.reset_lineup = true
+    self.release_court_on_reset = false
     self.with_coach = false
     self.urgent_player_search = false
   end

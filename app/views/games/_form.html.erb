@@ -11,348 +11,395 @@
   <% end %>
 
   <% tournament = game.tournament %>
-  <div class="bg-white rounded-lg border p-6 shadow-sm dark:bg-slate-800/80 dark:border-white/10">
-    <%# A tournament game follows the tournament schedule, so the standalone options are hidden. %>
-    <% if tournament.present? %>
-      <div class="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/15 dark:text-amber-200">
-        <p><%= t("games.form.tournament_notice") %></p>
-        <p class="mt-1">
-          <%= link_to (tournament.name.presence || t("layout.nav.tournaments")), tournament_path(tournament), class: "font-medium underline" %>
-        </p>
-      </div>
-    <% else %>
-      <%# После неудачного сохранения отметки берём из формы, иначе из плана игры. %>
-      <% submitted_block_ids = params.dig(:game, :training_block_ids) %>
-      <% selected_block_ids = submitted_block_ids ? Array(submitted_block_ids).map(&:to_i) : (game.persisted? ? game.training_block_ids : []) %>
-      <div class="mb-4" data-controller="game-kind training-plan"
-           data-training-plan-next-index-value="<%= Array(@new_training_blocks).size %>"
-           data-training-plan-library-url-value="<%= training_plan_fragment_games_path %>"
-           data-training-plan-game-id-value="<%= game.id %>">
-        <span class="block text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("games.form.kind") %></span>
-        <div class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <% Game::KINDS.each do |kind| %>
-            <label class="flex cursor-pointer items-center gap-2 rounded-md border border-gray-300 px-3 py-2 hover:bg-gray-50 dark:border-white/15 dark:hover:bg-white/5">
-              <%= form.radio_button :kind, kind,
-                    checked: (game.kind.presence || "game") == kind,
-                    class: "h-4 w-4 text-indigo-600",
-                    data: { game_kind_target: "kindRadio", action: "game-kind#toggle" } %>
-              <span class="text-sm text-gray-700 dark:text-slate-300"><%= t("games.form.kind_#{kind}") %></span>
-            </label>
-          <% end %>
-        </div>
-        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.kind_hint") %></p>
-        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.kind_stats_hint") %></p>
-
-        <div class="mt-3" data-game-kind-target="trainingFields">
-          <label class="inline-flex items-center gap-2">
-            <%= form.check_box :with_coach,
-                  { class: "h-4 w-4 text-indigo-600", data: { game_kind_target: "withCoach", action: "game-kind#toggleCoaches" } },
-                  "1", "0" %>
-            <span class="text-sm text-gray-700 dark:text-slate-300"><%= t("games.form.with_coach") %></span>
-          </label>
-          <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.with_coach_hint") %></p>
-          <div class="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2" data-game-kind-target="coachFields">
-            <div>
-              <%= form.label :coach_id, t("games.form.coach"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-              <%= form.collection_select :coach_id, @coaches, :id, :name, { include_blank: t("games.form.coach_blank") },
-                    class: "mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100",
-                    data: { game_kind_target: "coachSelect", training_plan_target: "coachSelect", action: "change->training-plan#reloadLibrary" } %>
-            </div>
-            <div>
-              <%= form.label :second_coach_id, t("games.form.second_coach"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-              <%= form.collection_select :second_coach_id, @coaches, :id, :name, { include_blank: t("games.form.second_coach_blank") },
-                    class: "mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100",
-                    data: { game_kind_target: "coachSelect", training_plan_target: "coachSelect", action: "change->training-plan#reloadLibrary" } %>
-              <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.second_coach_hint") %></p>
-            </div>
+  <%# Форма длинная, поэтому разложена по карточкам в две колонки: слева то,
+      что задаёт само занятие, справа — кто и где играет. На узком экране
+      карточки идут одна за другой в этом же порядке. %>
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+    <div class="space-y-6 lg:col-span-7">
+      <%# A tournament game follows the tournament schedule, so the standalone options are hidden. %>
+      <% if tournament.present? %>
+        <section class="rounded-lg border bg-white p-5 shadow-sm dark:bg-slate-800/80 dark:border-white/10">
+          <div class="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/15 dark:text-amber-200">
+            <p><%= t("games.form.tournament_notice") %></p>
+            <p class="mt-1">
+              <%= link_to (tournament.name.presence || t("layout.nav.tournaments")), tournament_path(tournament), class: "font-medium underline" %>
+            </p>
           </div>
-
-          <div class="mt-4 rounded-md border border-gray-200 p-3 dark:border-white/10">
-            <span class="block text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("games.form.training_plan") %></span>
-            <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.training_plan_hint") %></p>
-
-            <%# Пустое значение гарантирует, что снятые галочки долетят до сервера как пустой план. %>
-            <%= hidden_field_tag "game[training_block_ids][]", "" %>
-
-            <div class="mt-3" data-training-plan-target="library">
-              <%= render "games/training_plan_library", blocks: @training_blocks, selected_ids: selected_block_ids %>
-            </div>
-
-            <div class="mt-3 space-y-3" data-training-plan-target="container">
-              <% Array(@new_training_blocks).each_with_index do |new_block, new_block_index| %>
-                <%= render "games/training_plan_row", index: new_block_index, block: new_block %>
+        </section>
+      <% else %>
+        <section class="rounded-lg border bg-white p-5 shadow-sm dark:bg-slate-800/80 dark:border-white/10">
+          <h2 class="text-base font-semibold text-gray-900 dark:text-slate-100 mb-3"><%= t("games.form.kind") %></h2>
+          <%# После неудачного сохранения отметки берём из формы, иначе из плана игры. %>
+          <% submitted_block_ids = params.dig(:game, :training_block_ids) %>
+          <% selected_block_ids = submitted_block_ids ? Array(submitted_block_ids).map(&:to_i) : (game.persisted? ? game.training_block_ids : []) %>
+          <div class="mb-4" data-controller="game-kind training-plan"
+               data-training-plan-next-index-value="<%= Array(@new_training_blocks).size %>"
+               data-training-plan-library-url-value="<%= training_plan_fragment_games_path %>"
+               data-training-plan-game-id-value="<%= game.id %>">
+            <div class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <% Game::KINDS.each do |kind| %>
+                <label class="flex cursor-pointer items-center gap-2 rounded-md border border-gray-300 px-3 py-2 hover:bg-gray-50 dark:border-white/15 dark:hover:bg-white/5">
+                  <%= form.radio_button :kind, kind,
+                        checked: (game.kind.presence || "game") == kind,
+                        class: "h-4 w-4 text-indigo-600",
+                        data: { game_kind_target: "kindRadio", action: "game-kind#toggle" } %>
+                  <span class="text-sm text-gray-700 dark:text-slate-300"><%= t("games.form.kind_#{kind}") %></span>
+                </label>
               <% end %>
             </div>
+            <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.kind_hint") %></p>
+            <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.kind_stats_hint") %></p>
 
-            <button type="button"
-                    data-action="click->training-plan#add"
-                    class="mt-3 inline-flex items-center gap-1 rounded-md border border-indigo-300 px-3 py-2 text-sm text-indigo-700 hover:bg-indigo-50 dark:border-white/15 dark:text-slate-100 dark:hover:bg-slate-700/60">
-              + <%= t("games.form.training_plan_add") %>
-            </button>
+            <div class="mt-3" data-game-kind-target="trainingFields">
+              <label class="inline-flex items-center gap-2">
+                <%= form.check_box :with_coach,
+                      { class: "h-4 w-4 text-indigo-600", data: { game_kind_target: "withCoach", action: "game-kind#toggleCoaches" } },
+                      "1", "0" %>
+                <span class="text-sm text-gray-700 dark:text-slate-300"><%= t("games.form.with_coach") %></span>
+              </label>
+              <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.with_coach_hint") %></p>
+              <div class="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2" data-game-kind-target="coachFields">
+                <div>
+                  <%= form.label :coach_id, t("games.form.coach"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+                  <%= form.collection_select :coach_id, @coaches, :id, :name, { include_blank: t("games.form.coach_blank") },
+                        class: "mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100",
+                        data: { game_kind_target: "coachSelect", training_plan_target: "coachSelect", action: "change->training-plan#reloadLibrary" } %>
+                </div>
+                <div>
+                  <%= form.label :second_coach_id, t("games.form.second_coach"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+                  <%= form.collection_select :second_coach_id, @coaches, :id, :name, { include_blank: t("games.form.second_coach_blank") },
+                        class: "mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100",
+                        data: { game_kind_target: "coachSelect", training_plan_target: "coachSelect", action: "change->training-plan#reloadLibrary" } %>
+                  <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.second_coach_hint") %></p>
+                </div>
+              </div>
 
-            <template data-training-plan-target="template">
-              <%= render "games/training_plan_row", index: "__INDEX__", block: nil %>
-            </template>
-          </div>
-        </div>
-      </div>
+              <div class="mt-4 rounded-md border border-gray-200 p-3 dark:border-white/10">
+                <span class="block text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("games.form.training_plan") %></span>
+                <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.training_plan_hint") %></p>
 
-      <div class="mb-4">
-        <%# Сами занятия задаёт календарь ниже, а эти галки — только продолжение
-            расписания за последней отметкой. Обе сразу не имеют смысла, поэтому
-            календарь снимает вторую. %>
-        <span class="block text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("games.form.repeat") %></span>
-        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.repeat_hint") %></p>
+                <%# Пустое значение гарантирует, что снятые галочки долетят до сервера как пустой план. %>
+                <%= hidden_field_tag "game[training_block_ids][]", "" %>
 
-        <label class="mt-2 inline-flex items-center gap-2">
-          <%= form.check_box :recurring, { class: "h-4 w-4 text-indigo-600", id: "game_recurring" }, "1", "0" %>
-          <span class="text-sm text-gray-700 dark:text-slate-300"><%= t("games.form.recurring") %></span>
-        </label>
-        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.recurring_hint") %></p>
+                <div class="mt-3" data-training-plan-target="library">
+                  <%= render "games/training_plan_library", blocks: @training_blocks, selected_ids: selected_block_ids %>
+                </div>
 
-        <label class="mt-2 inline-flex items-center gap-2">
-          <%= form.check_box :recurring_monthly, { class: "h-4 w-4 text-indigo-600", id: "game_recurring_monthly" }, "1", "0" %>
-          <span class="text-sm text-gray-700 dark:text-slate-300"><%= t("games.form.recurring_monthly") %></span>
-        </label>
-        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.recurring_monthly_hint") %></p>
-      </div>
+                <div class="mt-3 space-y-3" data-training-plan-target="container">
+                  <% Array(@new_training_blocks).each_with_index do |new_block, new_block_index| %>
+                    <%= render "games/training_plan_row", index: new_block_index, block: new_block %>
+                  <% end %>
+                </div>
 
-      <div class="mb-4">
-        <label class="inline-flex items-center gap-2">
-          <%= hidden_field_tag "game[prebooking_enabled]", "0", id: nil %>
-          <%= check_box_tag "game[prebooking_enabled]", "1", game.prebooking_enabled?,
-                class: "h-4 w-4 text-indigo-600", id: "game_prebooking_enabled", disabled: !game.series? %>
-          <span class="text-sm text-gray-700 dark:text-slate-300"><%= t("games.form.prebooking") %></span>
-        </label>
-        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.prebooking_hint") %></p>
-        <% unless game.series? %>
-          <p class="mt-1 text-xs text-gray-600 dark:text-slate-400"><%= t("games.form.prebooking_locked") %> <%= t("games.form.prebooking_locked_hint") %></p>
-        <% end %>
-      </div>
+                <button type="button"
+                        data-action="click->training-plan#add"
+                        class="mt-3 inline-flex items-center gap-1 rounded-md border border-indigo-300 px-3 py-2 text-sm text-indigo-700 hover:bg-indigo-50 dark:border-white/15 dark:text-slate-100 dark:hover:bg-slate-700/60">
+                  + <%= t("games.form.training_plan_add") %>
+                </button>
 
-      <div class="mb-4">
-        <label class="inline-flex items-center gap-2">
-          <%= form.check_box :urgent_player_search, { class: "h-4 w-4 text-indigo-600" }, "1", "0" %>
-          <span class="text-sm text-gray-700 dark:text-slate-300"><%= t("games.form.urgent_player_search") %></span>
-        </label>
-        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.urgent_player_search_hint") %></p>
-      </div>
-    <% end %>
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-      <div class="sm:col-span-2">
-        <%= form.label :date, t("games.show.date"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-        <% tournament_range = [ tournament&.start_date, tournament&.end_date ].compact %>
-        <% seed_dates = game.recurrence_seed_dates.compact.map(&:to_s) %>
-        <%# Нативное поле даты остаётся в форме — на нём всё держится без JS, —
-            а с включённым JS его подменяет календарь с мультивыбором. %>
-        <div data-controller="date-picker"
-             data-date-picker-selected-value="<%= json_escape(seed_dates.to_json) %>"
-             data-date-picker-weekdays-value="<%= json_escape(t("games.prebookings.weekdays").to_json) %>"
-             data-date-picker-months-value="<%= json_escape(t("games.prebookings.months").to_json) %>"
-             data-date-picker-mode-dates-value="<%= t("games.form.dates_mode_dates") %>"
-             data-date-picker-mode-weekly-value="<%= t("games.form.dates_mode_weekly") %>"
-             data-date-picker-mode-monthly-value="<%= t("games.form.dates_mode_monthly") %>"
-             data-date-picker-mode-finite-value="<%= t("games.form.dates_mode_finite") %>"
-             data-date-picker-min-value="<%= tournament&.start_date %>"
-             data-date-picker-max-value="<%= tournament&.end_date %>">
-          <%# Список дат заполняет календарь. Пустым он и уходит, если JS не
-              взлетел: тогда дату решает нативное поле, а не отметки, которые
-              человек не видел. %>
-          <%= hidden_field_tag "game[dates]", nil, id: "game_dates", data: { date_picker_target: "input" } %>
-          <%= form.date_field :date, value: game.date,
-                min: tournament&.start_date, max: tournament&.end_date,
-                data: { date_picker_target: "dateField" },
-                class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
-
-          <div class="mt-2 hidden rounded-lg border border-gray-200 p-3 dark:border-white/10"
-               data-date-picker-target="calendar" data-testid="game-date-calendar">
-            <%# Стрелки — полноценные кнопки под палец, а не типографские
-                кавычки: в календаре листают месяцы чаще, чем кажется. %>
-            <div class="mb-2 flex items-center justify-between">
-              <button type="button" data-action="date-picker#previousMonth" aria-label="<%= t("games.form.dates_previous_month") %>"
-                      class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md text-gray-600 transition hover:bg-gray-100 hover:text-gray-900 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white">
-                <svg class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 0 1-.02 1.06L8.832 10l3.938 3.71a.75.75 0 1 1-1.04 1.08l-4.5-4.25a.75.75 0 0 1 0-1.08l4.5-4.25a.75.75 0 0 1 1.06.02Z" clip-rule="evenodd"/></svg>
-              </button>
-              <span class="text-base font-semibold text-gray-900 dark:text-slate-100" data-date-picker-target="title"></span>
-              <button type="button" data-action="date-picker#nextMonth" aria-label="<%= t("games.form.dates_next_month") %>"
-                      class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md text-gray-600 transition hover:bg-gray-100 hover:text-gray-900 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white">
-                <svg class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.168 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" clip-rule="evenodd"/></svg>
-              </button>
+                <template data-training-plan-target="template">
+                  <%= render "games/training_plan_row", index: "__INDEX__", block: nil %>
+                </template>
+              </div>
             </div>
-            <div class="grid grid-cols-7 gap-1" data-date-picker-target="grid"></div>
-
-            <%# Что получилось, видно там же, где кликают: сколько занятий
-                отмечено и что будет после последнего. %>
-            <p class="mt-3 text-xs text-gray-600 dark:text-slate-300" data-date-picker-target="mode"></p>
           </div>
-
-          <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.dates_hint") %></p>
-        </div>
-        <% if tournament_range.any? %>
-          <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">
-            <%= t("games.form.tournament_dates_hint", range: tournament_range.uniq.map { |day| day.strftime("%d.%m.%Y") }.join(" — ")) %>
-          </p>
-        <% end %>
-      </div>
-      <div>
-        <%= form.label :time, t("games.show.time"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-        <%= form.time_field :time, value: game.time, class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-      <div>
-        <%= form.label :players_count, t("games.form.players_count"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-        <%# Число игроков можно оставить «пока не выбрано»; у новой игры по умолчанию 4.
-            Сохранённое значение вне 2/4 (модель разрешает любое) тоже должно быть в
-            списке, иначе браузер подставит пустой пункт и сохранение формы его обнулит. %>
-        <% players_count_options = ([2, 4] | [game.players_count.to_i]).select(&:positive?).sort %>
-        <%= form.select :players_count,
-              options_for_select(players_count_options.map { |n| [n, n] }, game.players_count),
-              { include_blank: t("games.form.players_count_blank") }, class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
-        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.players_count_hint") %></p>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-      <div>
-        <%= form.label :sport, t("games.form.sport"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-        <%= form.select :sport,
-              options_for_select(SportCatalog::SPORTS.map { |s| [s, s] }, (game.respond_to?(:sport) ? game.sport : nil)),
-              { include_blank: t("games.form.sport_any") },
-              class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
-      </div>
-
-      <div>
-        <%= form.label :skill_level, t("games.form.skill_level"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-        <%= form.select :skill_level,
-              options_for_select(User::SKILL_LEVELS.map { |l| [l.titleize, l] }, (game.respond_to?(:skill_level) ? game.skill_level : nil)),
-              { include_blank: t("games.form.skill_level_any") },
-              class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-      <div>
-        <%= form.label :duration_minutes, t("games.form.duration"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-        <%= form.select :duration_minutes,
-              options_for_select(
-                [
-                  ["1h", 60],
-                  ["1h 30m", 90],
-                  ["2h", 120],
-                  ["2h 30m", 150],
-                  ["3h", 180],
-                  ["4h", 240]
-                ],
-                (game.respond_to?(:duration_minutes) ? game.duration_minutes : nil)
-              ),
-              { include_blank: t("games.form.duration_any") },
-              class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
-        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.duration_hint") %></p>
-      </div>
-    </div>
-
-    <% sorted_courts = tournament&.courts&.any? ? tournament.courts.to_a : Court.sorted_for_user(current_user) %>
-    <% locations = court_picker_locations(sorted_courts) %>
-    <%# Кортов много и они из разных стран, поэтому список сужаем парой селектов.
-        Стартуем с города выбранного корта, а для новой игры — с города игрока. %>
-    <% selected_city = game.court&.city_name.presence || default_court_city(locations[:cities_by_country][""], current_user) %>
-    <% selected_country = locations[:city_country][selected_city].to_s %>
-    <% location_filter = locations[:countries].size > 1 || locations[:cities_by_country][""].size > 1 %>
-    <div class="space-y-3"
-         data-controller="court-picker"
-         data-court-picker-default-lat-value="56.838011"
-         data-court-picker-default-lng-value="60.597465"
-         data-court-picker-courts-value="<%= json_escape(sorted_courts.map { |c|
-           lat, lng = c.coordinates.to_s.split(',').map(&:to_f)
-           { id: c.id, name: c.name, street: c.street.to_s, lat: lat, lng: lng, surfaces: c.surfaces,
-             environments: c.environments, city: c.city_name.to_s,
-             country: locations[:city_country][c.city_name].to_s }
-         }.to_json) %>"
-         data-court-picker-country-cities-value="<%= json_escape(locations[:cities_by_country].to_json) %>"
-         data-court-picker-city-placeholder-value="<%= t("games.form.court_city_any") %>"
-         data-court-picker-surface-labels-value="<%= json_escape(Court::SURFACES.index_with { |s| t("courts.surfaces.#{s}") }.to_json) %>"
-         data-court-picker-environment-labels-value="<%= json_escape(Game::ENVIRONMENTS.index_with { |e| t("courts.index.#{e}_badge") }.to_json) %>"
-         data-court-picker-surface-selected-value="<%= game.surface %>"
-         data-court-picker-environment-selected-value="<%= game.environment %>">
-      <% if location_filter %>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <%= label_tag :court_country, t("games.form.court_country"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-            <%# Фильтры не уходят на сервер: без name они не попадают в параметры игры. %>
-            <%= select_tag nil, options_for_select(locations[:countries], selected_country),
-                  include_blank: t("games.form.court_country_any"), id: "court_country",
-                  class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500",
-                  data: { "court-picker-target": "countrySelect", action: "court-picker#locationChanged" } %>
-          </div>
-          <div>
-            <%= label_tag :court_city, t("games.form.court_city"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-            <%= select_tag nil, options_for_select(locations[:cities_by_country][selected_country] || [], selected_city),
-                  include_blank: t("games.form.court_city_any"), id: "court_city",
-                  class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500",
-                  data: { "court-picker-target": "citySelect", action: "court-picker#locationChanged" } %>
-          </div>
-        </div>
+        </section>
       <% end %>
 
-      <div>
-        <%= form.label :court_id, t("games.form.court"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-        <%# У турнирной игры корт задаёт турнир, а обычную можно объявить и без него. %>
-        <%= form.collection_select :court_id, sorted_courts, :id, :name,
-              { include_blank: (t("games.form.court_blank") unless tournament&.courts&.any?) }, { class: "mt-1 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500",
-                   data: { "court-picker-target": "select", action: "change->court-picker#selectChanged" } } %>
-        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">
-          <%= tournament&.courts&.any? ? t("games.form.tournament_courts_hint") : t("games.form.court_hint") %>
-        </p>
-      </div>
+      <section class="rounded-lg border bg-white p-5 shadow-sm dark:bg-slate-800/80 dark:border-white/10">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-slate-100 mb-3"><%= t("games.form.section_schedule") %></h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <%= form.label :time, t("games.show.time"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+            <%# Значение только часы:минуты — с секундами браузер разворачивает поле
+                до «08:20:00.000» и просит вводить их все. %>
+            <%= form.time_field :time, value: game.time&.strftime("%H:%M"), class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+          </div>
+          <div class="sm:col-span-2">
+            <%= form.label :date, t("games.show.date"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+            <% tournament_range = [ tournament&.start_date, tournament&.end_date ].compact %>
+            <% seed_dates = game.recurrence_seed_dates.compact.map(&:to_s) %>
+            <%# Нативное поле даты остаётся в форме — на нём всё держится без JS, —
+                а с включённым JS его подменяет календарь с мультивыбором. %>
+            <div data-controller="date-picker"
+                 data-date-picker-selected-value="<%= json_escape(seed_dates.to_json) %>"
+                 data-date-picker-weekdays-value="<%= json_escape(t("games.prebookings.weekdays").to_json) %>"
+                 data-date-picker-months-value="<%= json_escape(t("games.prebookings.months").to_json) %>"
+                 data-date-picker-mode-dates-value="<%= t("games.form.dates_mode_dates") %>"
+                 data-date-picker-mode-weekly-value="<%= t("games.form.dates_mode_weekly") %>"
+                 data-date-picker-mode-monthly-value="<%= t("games.form.dates_mode_monthly") %>"
+                 data-date-picker-mode-finite-value="<%= t("games.form.dates_mode_finite") %>"
+                 data-date-picker-min-value="<%= tournament&.start_date %>"
+                 data-date-picker-max-value="<%= tournament&.end_date %>">
+              <%# Список дат заполняет календарь. Пустым он и уходит, если JS не
+                  взлетел: тогда дату решает нативное поле, а не отметки, которые
+                  человек не видел. %>
+              <%= hidden_field_tag "game[dates]", nil, id: "game_dates", data: { date_picker_target: "input" } %>
+              <%= form.date_field :date, value: game.date,
+                    min: tournament&.start_date, max: tournament&.end_date,
+                    data: { date_picker_target: "dateField" },
+                    class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <%= form.label :surface, t("games.form.surface"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-          <%= form.select :surface, [], { include_blank: t("games.form.surface_any") },
-                class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500",
-                data: { "court-picker-target": "surfaceSelect" } %>
-          <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.surface_hint") %></p>
+              <div class="mt-2 hidden rounded-lg border border-gray-200 p-3 dark:border-white/10"
+                   data-date-picker-target="calendar" data-testid="game-date-calendar">
+                <%# Стрелки — полноценные кнопки под палец, а не типографские
+                    кавычки: в календаре листают месяцы чаще, чем кажется. %>
+                <div class="mb-2 flex items-center justify-between">
+                  <button type="button" data-action="date-picker#previousMonth" aria-label="<%= t("games.form.dates_previous_month") %>"
+                          class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md text-gray-600 transition hover:bg-gray-100 hover:text-gray-900 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white">
+                    <svg class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 0 1-.02 1.06L8.832 10l3.938 3.71a.75.75 0 1 1-1.04 1.08l-4.5-4.25a.75.75 0 0 1 0-1.08l4.5-4.25a.75.75 0 0 1 1.06.02Z" clip-rule="evenodd"/></svg>
+                  </button>
+                  <span class="text-base font-semibold text-gray-900 dark:text-slate-100" data-date-picker-target="title"></span>
+                  <button type="button" data-action="date-picker#nextMonth" aria-label="<%= t("games.form.dates_next_month") %>"
+                          class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md text-gray-600 transition hover:bg-gray-100 hover:text-gray-900 dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white">
+                    <svg class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.168 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" clip-rule="evenodd"/></svg>
+                  </button>
+                </div>
+                <div class="grid grid-cols-7 gap-1" data-date-picker-target="grid"></div>
+
+                <%# Что получилось, видно там же, где кликают: сколько занятий
+                    отмечено и что будет после последнего. %>
+                <p class="mt-3 text-xs text-gray-600 dark:text-slate-300" data-date-picker-target="mode"></p>
+              </div>
+
+              <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.dates_hint") %></p>
+            </div>
+            <% if tournament_range.any? %>
+              <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">
+                <%= t("games.form.tournament_dates_hint", range: tournament_range.uniq.map { |day| day.strftime("%d.%m.%Y") }.join(" — ")) %>
+              </p>
+            <% end %>
+            <% unless tournament.present? %>
+              <div class="mt-4 rounded-md border border-gray-200 p-3 dark:border-white/10">
+                <%# Повтор стоит под календарём: галка меняет подпись под ним, и
+                    глаза не должны бегать между двумя карточками. %>
+                <span class="block text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("games.form.repeat") %></span>
+                <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.repeat_hint") %></p>
+
+                <label class="mt-2 inline-flex items-center gap-2">
+                  <%= form.check_box :recurring, { class: "h-4 w-4 text-indigo-600", id: "game_recurring" }, "1", "0" %>
+                  <span class="text-sm text-gray-700 dark:text-slate-300"><%= t("games.form.recurring") %></span>
+                </label>
+                <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.recurring_hint") %></p>
+
+                <label class="mt-2 inline-flex items-center gap-2">
+                  <%= form.check_box :recurring_monthly, { class: "h-4 w-4 text-indigo-600", id: "game_recurring_monthly" }, "1", "0" %>
+                  <span class="text-sm text-gray-700 dark:text-slate-300"><%= t("games.form.recurring_monthly") %></span>
+                </label>
+                <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.recurring_monthly_hint") %></p>
+              </div>
+            <% end %>
+          </div>
         </div>
+      </section>
 
-        <div>
-          <%= form.label :environment, t("games.form.environment"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-          <%= form.select :environment, [], { include_blank: t("games.form.environment_any") },
-                class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500",
-                data: { "court-picker-target": "environmentSelect" } %>
-          <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.environment_hint") %></p>
+      <% unless tournament.present? %>
+        <section class="rounded-lg border bg-white p-5 shadow-sm dark:bg-slate-800/80 dark:border-white/10">
+          <h2 class="text-base font-semibold text-gray-900 dark:text-slate-100 mb-3"><%= t("games.form.section_between_sessions") %></h2>
+
+          <div class="mb-4">
+            <label class="inline-flex items-center gap-2">
+              <%= hidden_field_tag "game[prebooking_enabled]", "0", id: nil %>
+              <%= check_box_tag "game[prebooking_enabled]", "1", game.prebooking_enabled?,
+                    class: "h-4 w-4 text-indigo-600", id: "game_prebooking_enabled", disabled: !game.series? %>
+              <span class="text-sm text-gray-700 dark:text-slate-300"><%= t("games.form.prebooking") %></span>
+            </label>
+            <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.prebooking_hint") %></p>
+            <% unless game.series? %>
+              <p class="mt-1 text-xs text-gray-600 dark:text-slate-400"><%= t("games.form.prebooking_locked") %> <%= t("games.form.prebooking_locked_hint") %></p>
+            <% end %>
+          </div>
+
+          <div class="mb-4">
+            <%# Обе галки — про перекат серии на следующее занятие, поэтому живут
+                только у серии, как и предзапись: календарь гасит их вместе с ней. %>
+            <span class="block text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("games.form.after_session") %></span>
+            <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.after_session_hint") %></p>
+
+            <label class="mt-2 inline-flex items-center gap-2">
+              <%= hidden_field_tag "game[reset_lineup]", "0", id: nil %>
+              <%= check_box_tag "game[reset_lineup]", "1", game.reset_lineup?,
+                    class: "h-4 w-4 text-indigo-600", id: "game_reset_lineup", disabled: !game.series? %>
+              <span class="text-sm text-gray-700 dark:text-slate-300"><%= t("games.form.reset_lineup") %></span>
+            </label>
+            <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.reset_lineup_hint") %></p>
+
+            <label class="mt-2 inline-flex items-center gap-2">
+              <%= hidden_field_tag "game[release_court_on_reset]", "0", id: nil %>
+              <%= check_box_tag "game[release_court_on_reset]", "1", game.release_court_on_reset?,
+                    class: "h-4 w-4 text-indigo-600", id: "game_release_court_on_reset", disabled: !game.series? %>
+              <span class="text-sm text-gray-700 dark:text-slate-300"><%= t("games.form.release_court_on_reset") %></span>
+            </label>
+            <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.release_court_on_reset_hint") %></p>
+          </div>
+        </section>
+      <% end %>
+    </div>
+
+    <div class="space-y-6 lg:col-span-5">
+      <section class="rounded-lg border bg-white p-5 shadow-sm dark:bg-slate-800/80 dark:border-white/10">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-slate-100 mb-3"><%= t("games.form.section_players") %></h2>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <%= form.label :players_count, t("games.form.players_count"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+            <%# Число игроков можно оставить «пока не выбрано»; у новой игры по умолчанию 4.
+                Сохранённое значение вне 2/4 (модель разрешает любое) тоже должно быть в
+                списке, иначе браузер подставит пустой пункт и сохранение формы его обнулит. %>
+            <% players_count_options = ([2, 4] | [game.players_count.to_i]).select(&:positive?).sort %>
+            <%= form.select :players_count,
+                  options_for_select(players_count_options.map { |n| [n, n] }, game.players_count),
+                  { include_blank: t("games.form.players_count_blank") }, class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+            <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.players_count_hint") %></p>
+            <% unless tournament.present? %>
+              <div class="mt-3">
+                <label class="inline-flex items-center gap-2">
+                  <%= form.check_box :urgent_player_search, { class: "h-4 w-4 text-indigo-600" }, "1", "0" %>
+                  <span class="text-sm text-gray-700 dark:text-slate-300"><%= t("games.form.urgent_player_search") %></span>
+                </label>
+                <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.urgent_player_search_hint") %></p>
+              </div>
+            <% end %>
+          </div>
+          <div>
+            <%= form.label :duration_minutes, t("games.form.duration"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+            <%= form.select :duration_minutes,
+                  options_for_select(
+                    [
+                      ["1h", 60],
+                      ["1h 30m", 90],
+                      ["2h", 120],
+                      ["2h 30m", 150],
+                      ["3h", 180],
+                      ["4h", 240]
+                    ],
+                    (game.respond_to?(:duration_minutes) ? game.duration_minutes : nil)
+                  ),
+                  { include_blank: t("games.form.duration_any") },
+                  class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+            <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.duration_hint") %></p>
+          </div>
+          <div>
+            <%= form.label :sport, t("games.form.sport"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+            <%= form.select :sport,
+                  options_for_select(SportCatalog::SPORTS.map { |s| [s, s] }, (game.respond_to?(:sport) ? game.sport : nil)),
+                  { include_blank: t("games.form.sport_any") },
+                  class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+          </div>
+          <div>
+            <%= form.label :skill_level, t("games.form.skill_level"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+            <%= form.select :skill_level,
+                  options_for_select(User::SKILL_LEVELS.map { |l| [l.titleize, l] }, (game.respond_to?(:skill_level) ? game.skill_level : nil)),
+                  { include_blank: t("games.form.skill_level_any") },
+                  class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div>
-        <%= render "shared/map_panel" do %>
-          <div data-court-picker-target="map" class="h-72 w-full rounded border bg-white mb-2 dark:bg-slate-700"></div>
-        <% end %>
-      </div>
+      <section class="rounded-lg border bg-white p-5 shadow-sm dark:bg-slate-800/80 dark:border-white/10">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-slate-100 mb-3"><%= t("games.form.section_court") %></h2>
+        <% sorted_courts = tournament&.courts&.any? ? tournament.courts.to_a : Court.sorted_for_user(current_user) %>
+        <% locations = court_picker_locations(sorted_courts) %>
+        <%# Кортов много и они из разных стран, поэтому список сужаем парой селектов.
+            Стартуем с города выбранного корта, а для новой игры — с города игрока. %>
+        <% selected_city = game.court&.city_name.presence || default_court_city(locations[:cities_by_country][""], current_user) %>
+        <% selected_country = locations[:city_country][selected_city].to_s %>
+        <% location_filter = locations[:countries].size > 1 || locations[:cities_by_country][""].size > 1 %>
+        <div class="space-y-3"
+             data-controller="court-picker"
+             data-court-picker-default-lat-value="56.838011"
+             data-court-picker-default-lng-value="60.597465"
+             data-court-picker-courts-value="<%= json_escape(sorted_courts.map { |c|
+               lat, lng = c.coordinates.to_s.split(',').map(&:to_f)
+               { id: c.id, name: c.name, street: c.street.to_s, lat: lat, lng: lng, surfaces: c.surfaces,
+                 environments: c.environments, city: c.city_name.to_s,
+                 country: locations[:city_country][c.city_name].to_s }
+             }.to_json) %>"
+             data-court-picker-country-cities-value="<%= json_escape(locations[:cities_by_country].to_json) %>"
+             data-court-picker-city-placeholder-value="<%= t("games.form.court_city_any") %>"
+             data-court-picker-surface-labels-value="<%= json_escape(Court::SURFACES.index_with { |s| t("courts.surfaces.#{s}") }.to_json) %>"
+             data-court-picker-environment-labels-value="<%= json_escape(Game::ENVIRONMENTS.index_with { |e| t("courts.index.#{e}_badge") }.to_json) %>"
+             data-court-picker-surface-selected-value="<%= game.surface %>"
+             data-court-picker-environment-selected-value="<%= game.environment %>">
+          <% if location_filter %>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <%= label_tag :court_country, t("games.form.court_country"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+                <%# Фильтры не уходят на сервер: без name они не попадают в параметры игры. %>
+                <%= select_tag nil, options_for_select(locations[:countries], selected_country),
+                      include_blank: t("games.form.court_country_any"), id: "court_country",
+                      class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                      data: { "court-picker-target": "countrySelect", action: "court-picker#locationChanged" } %>
+              </div>
+              <div>
+                <%= label_tag :court_city, t("games.form.court_city"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+                <%= select_tag nil, options_for_select(locations[:cities_by_country][selected_country] || [], selected_city),
+                      include_blank: t("games.form.court_city_any"), id: "court_city",
+                      class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                      data: { "court-picker-target": "citySelect", action: "court-picker#locationChanged" } %>
+              </div>
+            </div>
+          <% end %>
+
+          <div>
+            <%= form.label :court_id, t("games.form.court"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+            <%# У турнирной игры корт задаёт турнир, а обычную можно объявить и без него. %>
+            <%= form.collection_select :court_id, sorted_courts, :id, :name,
+                  { include_blank: (t("games.form.court_blank") unless tournament&.courts&.any?) }, { class: "mt-1 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                       data: { "court-picker-target": "select", action: "change->court-picker#selectChanged" } } %>
+            <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">
+              <%= tournament&.courts&.any? ? t("games.form.tournament_courts_hint") : t("games.form.court_hint") %>
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <%= form.label :surface, t("games.form.surface"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+              <%= form.select :surface, [], { include_blank: t("games.form.surface_any") },
+                    class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                    data: { "court-picker-target": "surfaceSelect" } %>
+              <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.surface_hint") %></p>
+            </div>
+
+            <div>
+              <%= form.label :environment, t("games.form.environment"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+              <%= form.select :environment, [], { include_blank: t("games.form.environment_any") },
+                    class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500",
+                    data: { "court-picker-target": "environmentSelect" } %>
+              <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.environment_hint") %></p>
+            </div>
+          </div>
+
+          <div>
+            <%= render "shared/map_panel" do %>
+              <div data-court-picker-target="map" class="h-72 w-full rounded border bg-white mb-2 dark:bg-slate-700"></div>
+            <% end %>
+          </div>
+        </div>
+      </section>
+
+      <section class="rounded-lg border bg-white p-5 shadow-sm dark:bg-slate-800/80 dark:border-white/10">
+        <div>
+          <%= form.label :comment, t("games.form.comment"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+          <%= form.text_area :comment, rows: 3, maxlength: 500, placeholder: t("games.form.comment_placeholder"),
+                class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
+          <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.comment_hint") %></p>
+        </div>
+      </section>
     </div>
-
-    <div class="mt-4">
-      <%= form.label :comment, t("games.form.comment"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-      <%= form.text_area :comment, rows: 3, maxlength: 500, placeholder: t("games.form.comment_placeholder"),
-            class: "mt-2 block w-full rounded-md border border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" %>
-      <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.comment_hint") %></p>
-    </div>
-
-    <div class="mt-6 flex items-center gap-3">
-      <%= form.submit (game.persisted? ? t("games.form.submit_update") : t("games.form.submit_create")),
-            class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition" %>
-      <%= link_to t("common.cancel"), root_path, class: "block inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 transition dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5" %>
-    </div>
-
-    <% if local_assigns.fetch(:show_actions, false) && game.persisted? %>
-      <div class="mt-4 pt-4 border-t flex items-center gap-3">
-        <%= link_to t("games.form.view_game"), game_path(game), class: "text-sm text-indigo-600 transition-colors hover:text-indigo-800 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300" %>
-        <% if can_manage?(game) %>
-          <%= link_to t("games.form.delete_game"), game_path(game), data: { turbo_method: :delete, turbo_confirm: t("games.form.delete_confirm") }, class: "text-sm text-red-600 hover:underline" %>
-        <% end %>
-      </div>
-    <% end %>
   </div>
+
+  <div class="mt-6 flex items-center gap-3">
+    <%= form.submit (game.persisted? ? t("games.form.submit_update") : t("games.form.submit_create")),
+          class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition" %>
+    <%= link_to t("common.cancel"), root_path, class: "block inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 transition dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5" %>
+  </div>
+
+  <% if local_assigns.fetch(:show_actions, false) && game.persisted? %>
+    <div class="mt-4 pt-4 border-t flex items-center gap-3">
+      <%= link_to t("games.form.view_game"), game_path(game), class: "text-sm text-indigo-600 transition-colors hover:text-indigo-800 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300" %>
+      <% if can_manage?(game) %>
+        <%= link_to t("games.form.delete_game"), game_path(game), data: { turbo_method: :delete, turbo_confirm: t("games.form.delete_confirm") }, class: "text-sm text-red-600 hover:underline" %>
+      <% end %>
+    </div>
+  <% end %>
 <% end %>
