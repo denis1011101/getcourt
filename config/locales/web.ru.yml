@@ -371,11 +371,15 @@ ru:
       sport_blank: Выберите вид спорта
       sport_hint: Выберите основной вид спорта для этого корта.
       map_label: Выберите на карте
+      section_about: О корте
+      section_amenities: Удобства
       use_my_location: Моё местоположение
       map_hint: Нажмите на карту или перетащите маркер
       contacts: Контакты
-      contacts_hint: До 3 контактов, у каждого свой тип.
+      contacts_hint: До 5 контактов, у каждого свой тип.
       contact_type: Тип контакта %{number}
+      contact_add: Ещё контакт
+      contact_remove: Убрать
       contact_type_blank: Выберите
       contact_value: Контакт %{number}
       contact_value_placeholder: Телефон, сайт, email или мессенджер

@@ -107,7 +107,11 @@ class Court < ApplicationRecord
     end
   end
 
-  def contact_entries_for_form(count = 3)
+  # Сколько строк контактов раздаёт форма: две видны сразу, остальные — по
+  # плюсику (app/views/courts/_fields.html.erb).
+  MAX_FORM_CONTACTS = 5
+
+  def contact_entries_for_form(count = MAX_FORM_CONTACTS)
     entries = contact_entries.map do |value|
       type, normalized_value = extract_contact_type_and_value(value)
       { "contact_type" => type, "contact_value" => normalized_value }

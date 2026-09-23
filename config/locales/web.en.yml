@@ -367,11 +367,15 @@ en:
       sport_blank: Select a sport
       sport_hint: Choose the main sport for this court.
       map_label: Select on the map
+      section_about: About the court
+      section_amenities: Amenities
       use_my_location: Use my location
       map_hint: Click on the map or drag the marker
       contacts: Contacts
-      contacts_hint: Up to 3 contacts, each with its own type.
+      contacts_hint: Up to 5 contacts, each with its own type.
       contact_type: Contact type %{number}
+      contact_add: Another contact
+      contact_remove: Remove
       contact_type_blank: Select
       contact_value: Contact %{number}
       contact_value_placeholder: Phone, website, email or messenger

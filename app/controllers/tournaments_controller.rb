@@ -1,4 +1,5 @@
 class TournamentsController < ApplicationController
+  include LocationFilters
   # redirect to login when non-authenticated users call mutating actions
   before_action :authenticate_user!, only: %i[new create edit update destroy join leave select_bracket reset_bracket add_match]
   before_action :set_tournament, only: %i[options show edit update destroy join leave select_bracket reset_bracket add_match]

@@ -35,6 +35,17 @@ module GamesHelper
 
   # Город пользователя записан свободным текстом ("Ekaterinburg" против
   # "Yekaterinburg" у кортов), поэтому сравниваем нормализованные названия.
+  # Корты по городам в том же порядке, что и в списке: город без названия идёт
+  # первым блоком без заголовка. Города разделяем только когда их несколько —
+  # иначе это лишний шум, как и в селекте формы игры.
+  def court_picker_groups(courts, locations)
+    groups = courts.group_by { |court| court.city_name.to_s }
+    named = locations[:cities_by_country][""].select { |name| groups.key?(name) }
+    ordered = [ [ "", groups[""] ] ] + named.map { |name| [ name, groups[name] ] }
+    ordered = ordered.reject { |_, list| list.blank? }
+    ordered.size > 1 ? ordered : ordered.map { |_, list| [ "", list ] }
+  end
+
   def default_court_city(city_names, user)
     target = normalized_city(user&.city_name)
     return nil if target.blank?

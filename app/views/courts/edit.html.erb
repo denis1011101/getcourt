@@ -1,4 +1,9 @@
 <% content_for :meta_robots, "noindex, follow" %>
-<h1 class="text-2xl font-semibold"><%= t("courts.edit.title") %></h1>
+<div class="max-w-7xl mx-auto px-4 py-6">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-semibold"><%= t("courts.edit.title") %></h1>
+    <%= link_to t("courts.new.back"), courts_path, class: "block inline-flex items-center rounded-md border border-gray-300 dark:border-white/10 px-3 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/5 transition" %>
+  </div>
 
-<%= render "form", court: @court %>
+  <%= render "form", court: @court %>
+</div>

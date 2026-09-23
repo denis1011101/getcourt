@@ -371,11 +371,15 @@ es:
       sport_blank: Elige un deporte
       sport_hint: Elige el deporte principal de esta pista.
       map_label: Selecciona en el mapa
+      section_about: Sobre la pista
+      section_amenities: Servicios
       use_my_location: Usar mi ubicación
       map_hint: Pulsa en el mapa o arrastra el marcador
       contacts: Contactos
-      contacts_hint: Hasta 3 contactos, cada uno con su tipo.
+      contacts_hint: Hasta 5 contactos, cada uno con su tipo.
       contact_type: Tipo de contacto %{number}
+      contact_add: Otro contacto
+      contact_remove: Quitar
       contact_type_blank: Elegir
       contact_value: Contacto %{number}
       contact_value_placeholder: Teléfono, web, email o mensajería
