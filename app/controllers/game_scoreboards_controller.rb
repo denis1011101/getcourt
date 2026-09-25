@@ -77,12 +77,15 @@ class GameScoreboardsController < ApplicationController
     @game = Game.find(params[:game_id])
   end
 
-  # Табло закрыли с другого телефона — показываем, что счёт уже записан.
+  # Изменения относятся к тому матчу, который был на экране: id табло
+  # приходит с каждой кнопкой. Если его уже закрыли, а на игре идёт другой
+  # матч, старая вкладка не должна менять или завершать чужой счёт —
+  # показываем ей актуальное табло.
   def set_scoreboard
-    @scoreboard = @game.scoreboards.live.first
+    @scoreboard = @game.scoreboards.live.find_by(id: params[:scoreboard_id])
     return if @scoreboard
 
-    redirect_to game_scoreboard_path(@game)
+    redirect_to game_scoreboard_path(@game), alert: t("game_scoreboards.flash.stale")
   end
 
   def require_scorer!

@@ -11,7 +11,7 @@
       <%= t("game_scoreboards.controls.match_over", name: scoreboard.players(board.winner).map { |player| scoreboard_player_label(player) }.join(" / ")) %>
     </p>
     <p class="mt-1 text-xs text-emerald-800 dark:text-emerald-200"><%= t("game_scoreboards.controls.match_over_hint") %></p>
-    <%= button_to finish_game_scoreboard_path(scoreboard.game),
+    <%= button_to finish_game_scoreboard_path(scoreboard.game), params: { scoreboard_id: scoreboard.id },
           class: "mt-3 h-12 w-full rounded-xl bg-emerald-600 px-4 text-base font-semibold text-white transition hover:bg-emerald-700 active:scale-[0.99]" do %>
       <%= t("game_scoreboards.controls.finish_and_save") %>
     <% end %>
@@ -24,14 +24,14 @@
   <% %w[a b].each do |side| %>
     <% name = scoreboard.players(side).map { |player| scoreboard_player_label(player) }.join(" / ") %>
     <div class="flex flex-col gap-2">
-      <%= button_to score_game_scoreboard_path(scoreboard.game), params: { side: side },
+      <%= button_to score_game_scoreboard_path(scoreboard.game), params: { side: side, scoreboard_id: scoreboard.id },
             form: { class: "contents" }, disabled: board.finished?,
             class: "flex h-28 w-full flex-col items-center justify-center rounded-2xl text-white shadow-sm disabled:opacity-40 disabled:active:scale-100 #{press} #{side == "a" ? "bg-indigo-600 active:bg-indigo-700" : "bg-emerald-600 active:bg-emerald-700"}",
             aria: { label: t("game_scoreboards.controls.plus_aria", unit: unit, name: name) } do %>
         <span class="text-5xl font-bold leading-none">+</span>
         <span class="mt-1 max-w-full truncate px-2 text-xs opacity-90"><%= board.points_mode? ? name : "#{unit} · #{name}" %></span>
       <% end %>
-      <%= button_to unscore_game_scoreboard_path(scoreboard.game), params: { side: side },
+      <%= button_to unscore_game_scoreboard_path(scoreboard.game), params: { side: side, scoreboard_id: scoreboard.id },
             form: { class: "contents" }, class: "#{outline} h-12 text-2xl",
             aria: { label: t("game_scoreboards.controls.minus_aria", unit: unit, name: name) } do %>
         −
@@ -39,12 +39,12 @@
 
       <% unless board.points_mode? %>
         <div class="mt-1 grid grid-cols-2 gap-2">
-          <%= button_to score_game_scoreboard_path(scoreboard.game), params: { side: side, unit: "set" },
+          <%= button_to score_game_scoreboard_path(scoreboard.game), params: { side: side, unit: "set", scoreboard_id: scoreboard.id },
                 form: { class: "contents" }, disabled: board.finished?, class: "#{outline} h-12 text-sm disabled:opacity-40",
                 aria: { label: t("game_scoreboards.controls.plus_aria", unit: t("game_scoreboards.controls.set"), name: name) } do %>
             + <%= t("game_scoreboards.controls.set") %>
           <% end %>
-          <%= button_to unscore_game_scoreboard_path(scoreboard.game), params: { side: side, unit: "set" },
+          <%= button_to unscore_game_scoreboard_path(scoreboard.game), params: { side: side, unit: "set", scoreboard_id: scoreboard.id },
                 form: { class: "contents" }, class: "#{outline} h-12 text-sm",
                 aria: { label: t("game_scoreboards.controls.minus_aria", unit: t("game_scoreboards.controls.set"), name: name) } do %>
             − <%= t("game_scoreboards.controls.set") %>
@@ -81,6 +81,7 @@
     </summary>
 
     <%= form_with url: tiebreak_game_scoreboard_path(scoreboard.game), method: :post, class: "px-3 pb-3" do %>
+      <%= hidden_field_tag :scoreboard_id, scoreboard.id, id: nil %>
       <% if tiebreak_error %>
         <p class="mb-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-400/30 dark:bg-red-500/10 dark:text-red-300" role="alert">
           <%= t("game_scoreboards.controls.tiebreak_#{tiebreak_error}", name: scoreboard.players(set_winner).map { |player| scoreboard_player_label(player) }.join(" / ")) %>
@@ -122,18 +123,18 @@
     <% end %>
   </details>
   <% if saved %>
-    <%= form_with url: reset_tiebreak_game_scoreboard_path(scoreboard.game), method: :post, id: "reset_tiebreak_form", class: "hidden" do %><% end %>
+    <%= form_with url: reset_tiebreak_game_scoreboard_path(scoreboard.game), method: :post, id: "reset_tiebreak_form", class: "hidden" do %><%= hidden_field_tag :scoreboard_id, scoreboard.id, id: nil %><% end %>
   <% end %>
 <% end %>
 
 <div class="mt-3 flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-slate-400">
   <span><%= scoreboard_settings_summary(scoreboard) %></span>
-  <%= link_to t("game_scoreboards.controls.change_settings"), edit_game_scoreboard_path(scoreboard.game),
+  <%= link_to t("game_scoreboards.controls.change_settings"), edit_game_scoreboard_path(scoreboard.game, scoreboard_id: scoreboard.id),
         class: "shrink-0 rounded-md border border-gray-300 px-2.5 py-1.5 font-medium text-gray-700 hover:bg-gray-50 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5" %>
 </div>
 
 <% unless board.finished? %>
-<%= button_to finish_game_scoreboard_path(scoreboard.game),
+<%= button_to finish_game_scoreboard_path(scoreboard.game), params: { scoreboard_id: scoreboard.id },
       form: { data: { turbo_confirm: t("game_scoreboards.controls.finish_confirm") } },
       class: "mt-6 w-full rounded-xl border border-red-300 px-4 py-3 text-base font-semibold text-red-700 transition hover:bg-red-50 active:scale-[0.99] dark:border-red-400/40 dark:text-red-300 dark:hover:bg-red-500/10" do %>
   <%= t("game_scoreboards.controls.finish") %>

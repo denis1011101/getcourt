@@ -106,16 +106,16 @@ class Scoreboard::TennisStateTest < ActiveSupport::TestCase
   test "switching from full score to games keeps sets and games, drops the points" do
     actions = game("a") * 6 + game("b") * 2 + %w[a a]
     board = state(actions)
-    rebuilt = Scoreboard::TennisState.new(POINTS.merge("mode" => "games"), board.actions_for("games"))
+    rebuilt = Scoreboard::TennisState.new(POINTS.merge("mode" => "games"), board.rebuilt_actions(POINTS.merge("mode" => "games")))
 
     assert_equal "6-0 0-2", rebuilt.score_string
   end
 
   test "switching from games to full score keeps a hand-closed set and a tiebreak set" do
     games = Scoreboard::TennisState.new(GAMES, %w[a b] * 6 + %w[a] + %w[a b s:b])
-    rebuilt = Scoreboard::TennisState.new(POINTS, games.actions_for("points"))
+    rebuilt = Scoreboard::TennisState.new(POINTS, games.rebuilt_actions(POINTS))
 
-    assert_equal "7-6(0) 1-2", rebuilt.score_string
+    assert_equal "7-6 1-2", rebuilt.score_string, "тай-брейк без счёта не выдумываем"
   end
 
   test "a tiebreak score is attached to a 7-6 set closed in games mode" do
@@ -136,8 +136,47 @@ class Scoreboard::TennisStateTest < ActiveSupport::TestCase
 
   test "the tiebreak score survives switching to full score" do
     games = Scoreboard::TennisState.new(GAMES, %w[a b] * 6 + %w[a tb:8])
-    rebuilt = Scoreboard::TennisState.new(POINTS, games.actions_for("points"))
+    rebuilt = Scoreboard::TennisState.new(POINTS, games.rebuilt_actions(POINTS))
 
     assert_equal "7-6(8)", rebuilt.score_string
+  end
+
+  # Регрессия из ревью: включённое золотое очко переигрывало уже сыгранный
+  # гейм — «больше» у A при 40:40 превращалось в выигранный гейм.
+  test "turning on the golden point keeps games already played" do
+    board = state(%w[a a a b b b a b b b])
+    assert_equal({ "a" => 0, "b" => 1 }, board.games)
+
+    rebuilt = state(board.rebuilt_actions(POINTS.merge("golden_point" => true)), golden_point: true)
+
+    assert_equal({ "a" => 0, "b" => 1 }, rebuilt.games)
+  end
+
+  test "turning off the tiebreak keeps a finished 7-6 set" do
+    board = state((game("a") + game("b")) * 6 + (%w[a b] * 5) + %w[a a])
+
+    rebuilt = state(board.rebuilt_actions(POINTS.merge("tiebreak" => false)), tiebreak: false)
+
+    assert_equal "7-6(5)", rebuilt.score_string
+  end
+
+  # Недоигранный гейм считается по новым правилам, но задним числом не
+  # закрывается: «больше» под золотым очком становится ровно.
+  test "an advantage in the open game becomes 40-40 under the golden point" do
+    board = state(%w[a a a b b b a])
+
+    rebuilt = state(board.rebuilt_actions(POINTS.merge("golden_point" => true)), golden_point: true)
+
+    assert_equal [ "40", "40" ], [ rebuilt.point_label("a"), rebuilt.point_label("b") ]
+    assert_equal({ "a" => 0, "b" => 0 }, rebuilt.games)
+  end
+
+  test "a tiebreak in progress carries over when the rules keep it" do
+    board = state((game("a") + game("b")) * 6 + %w[a a b])
+
+    rebuilt = state(board.rebuilt_actions(POINTS.merge("sets_to_win" => 3)), sets_to_win: 3)
+
+    assert rebuilt.tiebreak?
+    assert_equal [ "2", "1" ], [ rebuilt.point_label("a"), rebuilt.point_label("b") ]
   end
 end

@@ -142,6 +142,7 @@ es:
       finish_hint: El marcador se guarda en las estadísticas del partido.
       finish_confirm: ¿Terminar el partido y guardar el marcador en las estadísticas?
     flash:
+      stale: "Ese partido ya está cerrado: este es el marcador actual."
       finished: Partido terminado, el marcador está en las estadísticas.
       not_allowed: Los jugadores del partido pueden llevar el marcador cuando empieza.
     entry:

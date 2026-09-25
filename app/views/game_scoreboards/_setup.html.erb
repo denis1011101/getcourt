@@ -6,6 +6,7 @@
 <% values = scoreboard_form_values(scoreboard, params) %>
 
 <%= form_with url: game_scoreboard_path(game), method: editing ? :patch : :post, local: true, class: "group/setup" do %>
+  <%= hidden_field_tag :scoreboard_id, scoreboard.id, id: nil if editing %>
   <% if scoreboard&.errors&.any? %>
     <div class="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-400/30 dark:bg-red-500/10 dark:text-red-300">
       <%= scoreboard.errors.full_messages.to_sentence %>

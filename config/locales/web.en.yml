@@ -142,6 +142,7 @@ en:
       finish_hint: The score goes to the game statistics.
       finish_confirm: Finish the match and save the score to the statistics?
     flash:
+      stale: That match is already closed — here is the current scoreboard.
       finished: Match finished, the score is saved to the statistics.
       not_allowed: Players of the game can keep the score once it starts.
     entry:

@@ -8,6 +8,11 @@ module Scoreboard
   #   "points" — действие «a»/«b» = розыгрыш (0-15-30-40, геймы, сеты, тай-брейк);
   #   "games"  — «a»/«b» = выигранный гейм (очки не ведут).
   # В обоих режимах «s:a»/«s:b» закрывает текущий сет в пользу стороны.
+  # «g:a»/«g:b» — гейм стороне напрямую, без правил розыгрыша и без
+  # автозакрытия сета: так записаны сыгранные геймы после смены настроек.
+  # «fs:a»/«fs:b» — закрытие такого замороженного сета. В отличие от «s:»
+  # (закрыли кнопкой) оно держится на своих геймах: «−» по гейму этого сета
+  # снимает и его, и сет открывается, как при обычной игре.
   # «tb:5» — счёт тай-брейка (очки проигравшего) для сета 7:6, закрытого в
   # режиме геймов: стоит сразу за действием, закрывшим этот сет.
   class TennisState
@@ -42,21 +47,22 @@ module Scoreboard
       { winner => [ 7, set["tb"] + 2 ].max, other(winner) => set["tb"] }
     end
 
-    # История, пересобранная под другой режим: сыгранные сеты и геймы
-    # остаются, очки текущего гейма при переходе на геймы отбрасываются.
-    # Геймы внутри сета чередуются — так сет закрывается ровно на последнем
-    # гейме, а не раньше; вручную закрытый сет получает «s:» в конце.
-    def actions_for(mode)
+    # История, пересобранная под новые настройки. Сыгранное замораживается
+    # явными токенами «g:» и «s:», которые проигрываются одинаково при любых
+    # правилах: включённое золотое очко или выключенный тай-брейк не должны
+    # переигрывать уже закончившиеся геймы и сеты. По новым правилам считается
+    # только недоигранный гейм — и то в пределах 40:40, чтобы его не закрыло
+    # задним числом.
+    def rebuilt_actions(new_settings)
+      target = normalize(new_settings)
       rebuilt = []
       sets.each do |set|
-        rebuilt.concat(games_tokens(set, mode))
-        target = TennisState.new(settings.merge("mode" => mode), rebuilt)
-        winner_side = set["a"] > set["b"] ? "a" : "b"
-        rebuilt << "s:#{winner_side}" if target.sets.size < sets.index(set) + 1
-        rebuilt << "tb:#{set["tb"]}" if mode == "games" && set["tb"]
+        rebuilt.concat(frozen_games(set))
+        rebuilt << "fs:#{set["a"] > set["b"] ? "a" : "b"}"
+        rebuilt << "tb:#{set["tb"]}" if set["tb"]
       end
-      rebuilt.concat(games_tokens(games, mode))
-      rebuilt.concat(%w[a] * points["a"] + %w[b] * points["b"]) if mode == "points" && points_mode?
+      rebuilt.concat(frozen_games(games))
+      rebuilt.concat(open_game_points(target)) if points_mode? && target["mode"] == "points"
       rebuilt
     end
 
@@ -144,8 +150,11 @@ module Scoreboard
 
       if action.start_with?("tb:")
         attach_tiebreak(action.delete_prefix("tb:").to_i)
-      elsif action.start_with?("s:")
-        side = action.delete_prefix("s:")
+      elsif action.start_with?("g:")
+        side = action.delete_prefix("g:")
+        credit_game(side) if SIDES.include?(side)
+      elsif action.start_with?("s:", "fs:")
+        side = action.split(":", 2).last
         award_set(side) if SIDES.include?(side)
       elsif SIDES.include?(action)
         points_mode? ? win_point(action) : win_game(action)
@@ -160,6 +169,41 @@ module Scoreboard
       set["tb_token"] = @index
       set["range"] = (set["range"].begin..@index)
       @set_start = @index + 1
+    end
+
+    def credit_game(side)
+      @points = { "a" => 0, "b" => 0 }
+      games[side] += 1
+      # 6:6 из замороженных геймов в полном счёте — дальше идёт тай-брейк.
+      @tiebreak = settings["tiebreak"] && points_mode? && games["a"] == SET_GAMES && games["b"] == SET_GAMES
+    end
+
+    def frozen_games(set)
+      [ "g:a" ] * set["a"] + [ "g:b" ] * set["b"]
+    end
+
+    # Очки недоигранного гейма. Тай-брейк переносим, только если он и по новым
+    # правилам идёт; «больше» при 40:40 сводим к ровно, если теперь золотое
+    # очко (иначе оно закрыло бы гейм), а в остальном очки остаются как были.
+    def open_game_points(target)
+      return [] if tiebreak? && !(target["tiebreak"] && games["a"] == SET_GAMES && games["b"] == SET_GAMES)
+      return [] if !tiebreak? && target["tiebreak"] && games["a"] == SET_GAMES && games["b"] == SET_GAMES
+
+      a = points["a"]
+      b = points["b"]
+      unless tiebreak?
+        if a >= 3 && b >= 3
+          lead = target["golden_point"] ? 0 : (a <=> b)
+          a = 3 + [ lead, 0 ].max
+          b = 3 + [ -lead, 0 ].max
+        end
+      end
+      alternate(a, b)
+    end
+
+    def alternate(a, b)
+      shared = [ a, b ].min
+      ([ "a", "b" ] * shared) + [ "a" ] * (a - shared) + [ "b" ] * (b - shared)
     end
 
     # Сет закрывают вручную: с набранными геймами, если сторона ведёт, а если
@@ -215,33 +259,6 @@ module Scoreboard
       @set_start = @index + 1
       @games = { "a" => 0, "b" => 0 }
       SIDES.each { |side| @winner = side if sets_won(side) >= settings["sets_to_win"] }
-    end
-
-    # Геймы сета токенами выбранного режима, по очереди, чтобы ни одна сторона
-    # не закрыла сет раньше времени. В полном счёте гейм — четыре очка, а
-    # решающий гейм при 6:6 — тай-брейк до семи.
-    def games_tokens(set, mode)
-      a = set["a"]
-      b = set["b"]
-      order = []
-      order << "a" << "b" while order.count("a") < [ a, b ].min
-      order.concat([ "a" ] * (a - order.count("a")) + [ "b" ] * (b - order.count("b")))
-      return order unless mode == "points"
-
-      order.each_with_index.flat_map do |side, index|
-        next [ side ] * 4 unless settings["tiebreak"] && index == 12
-
-        tiebreak_tokens(side, set["tb"].to_i)
-      end
-    end
-
-    # Тай-брейк по очкам: сначала очки проигравшего вперемешку, потом
-    # победитель добирает до семи с разницей в два.
-    def tiebreak_tokens(winner_side, loser_points)
-      loser_side = other(winner_side)
-      winner_points = [ 7, loser_points + 2 ].max
-      shared = [ loser_points, winner_points - 2 ].min
-      ([ winner_side, loser_side ] * shared) + [ loser_side ] * (loser_points - shared) + [ winner_side ] * (winner_points - shared)
     end
 
     def seven_six?(set)

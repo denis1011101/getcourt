@@ -21,8 +21,12 @@ class GameScoreboardsControllerTest < ActionDispatch::IntegrationTest
     @game.scoreboards.live.first
   end
 
+  def live_id
+    @game.scoreboards.live.pick(:id)
+  end
+
   def tap(side, times = 1)
-    times.times { post score_game_scoreboard_url(@game), params: { side: side }, as: :turbo_stream }
+    times.times { post score_game_scoreboard_url(@game), params: { scoreboard_id: live_id, side: side }, as: :turbo_stream }
   end
 
   test "an organiser sets up the sides and starts a match" do
@@ -46,7 +50,7 @@ class GameScoreboardsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "text/vnd.turbo-stream.html", response.media_type
     assert_equal %w[a a b], scoreboard.reload.actions
 
-    post unscore_game_scoreboard_url(@game), params: { side: "a" }, as: :turbo_stream
+    post unscore_game_scoreboard_url(@game), params: { scoreboard_id: live_id, side: "a" }, as: :turbo_stream
     assert_equal %w[a b], scoreboard.reload.actions
   end
 
@@ -73,11 +77,11 @@ class GameScoreboardsControllerTest < ActionDispatch::IntegrationTest
     scoreboard = start_match(mode: "games", sets: 2)
     tap("a", 6)
     tap("b", 2)
-    post score_game_scoreboard_url(@game), params: { side: "b", unit: "set" }, as: :turbo_stream
+    post score_game_scoreboard_url(@game), params: { scoreboard_id: live_id, side: "b", unit: "set" }, as: :turbo_stream
 
     assert_equal "6-0 0-2", scoreboard.reload.state.score_string
 
-    post unscore_game_scoreboard_url(@game), params: { side: "a", unit: "set" }, as: :turbo_stream
+    post unscore_game_scoreboard_url(@game), params: { scoreboard_id: live_id, side: "a", unit: "set" }, as: :turbo_stream
     assert_equal "0-2", scoreboard.reload.state.score_string
 
     get game_scoreboard_url(@game)
@@ -90,12 +94,13 @@ class GameScoreboardsControllerTest < ActionDispatch::IntegrationTest
     tap("a", 6)
     tap("b", 2)
 
-    get edit_game_scoreboard_url(@game)
+    get edit_game_scoreboard_url(@game, scoreboard_id: live_id)
     assert_response :success
     assert_select "input[name='settings[mode]'][value=games][checked]"
     assert_select "select[name='team_a[]'] option[selected][value='u:#{@owner.id}']"
 
     patch game_scoreboard_url(@game), params: {
+      scoreboard_id: live_id,
       team_a: [ "u:#{@rival.id}" ], team_b: [ "u:#{@owner.id}" ],
       settings: { mode: "points", sets_to_win: 3, tiebreak: "1", golden_point: "0" }
     }
@@ -114,26 +119,26 @@ class GameScoreboardsControllerTest < ActionDispatch::IntegrationTest
     tap("a")
 
     assert_select "input[name=a]", 1
-    post tiebreak_game_scoreboard_url(@game), params: { a: 7, b: 9 }, as: :turbo_stream
+    post tiebreak_game_scoreboard_url(@game), params: { scoreboard_id: live_id, a: 7, b: 9 }, as: :turbo_stream
     assert_nil scoreboard.reload.state.sets.first["tb"], "7:9 не тай-брейк победителя сета"
     assert_select "[role=alert]", /won the set/
 
-    post tiebreak_game_scoreboard_url(@game), params: { a: 7, b: 6 }, as: :turbo_stream
+    post tiebreak_game_scoreboard_url(@game), params: { scoreboard_id: live_id, a: 7, b: 6 }, as: :turbo_stream
     assert_select "[role=alert]", /two-point lead/
 
-    post tiebreak_game_scoreboard_url(@game), params: { a: 7, b: 5 }, as: :turbo_stream
+    post tiebreak_game_scoreboard_url(@game), params: { scoreboard_id: live_id, a: 7, b: 5 }, as: :turbo_stream
     assert_equal "7-6(5)", scoreboard.reload.state.score_string
     assert_select "input[name=a][value='7']", 1, "сохранённый счёт виден и правится"
 
-    post tiebreak_game_scoreboard_url(@game), params: { a: 10, b: 8 }, as: :turbo_stream
+    post tiebreak_game_scoreboard_url(@game), params: { scoreboard_id: live_id, a: 10, b: 8 }, as: :turbo_stream
     assert_equal "7-6(8)", scoreboard.reload.state.score_string
 
-    post reset_tiebreak_game_scoreboard_url(@game), as: :turbo_stream
+    post reset_tiebreak_game_scoreboard_url(@game), params: { scoreboard_id: live_id }, as: :turbo_stream
     assert_equal "7-6", scoreboard.reload.state.score_string
 
-    post tiebreak_game_scoreboard_url(@game), params: { a: 7, b: 5 }, as: :turbo_stream
+    post tiebreak_game_scoreboard_url(@game), params: { scoreboard_id: live_id, a: 7, b: 5 }, as: :turbo_stream
 
-    post finish_game_scoreboard_url(@game)
+    post finish_game_scoreboard_url(@game), params: { scoreboard_id: live_id }
     assert_equal "7-6(5)", Match.find_by!(game: @game, user: @owner).score
   end
 
@@ -147,11 +152,40 @@ class GameScoreboardsControllerTest < ActionDispatch::IntegrationTest
     assert_select "form[action='#{unscore_game_scoreboard_path(@game)}'] button:not([disabled])", 4
   end
 
+  # Регрессия из ревью: вкладка с первым матчем не должна менять или
+  # завершать второй, начатый после.
+  test "a stale page cannot touch the next match" do
+    first = start_match(mode: "games", sets: 1)
+    tap("a", 6)
+    post finish_game_scoreboard_url(@game), params: { scoreboard_id: first.id }
+    second = start_match(mode: "games", sets: 1)
+
+    post score_game_scoreboard_url(@game), params: { scoreboard_id: first.id, side: "a" }, as: :turbo_stream
+    post finish_game_scoreboard_url(@game), params: { scoreboard_id: first.id }
+
+    assert_redirected_to game_scoreboard_url(@game)
+    assert second.reload.live?
+    assert_empty second.actions
+  end
+
+  # Регрессия из ревью: у второго телефона после чужого «−» должны ожить
+  # кнопки — поэтому рассылаем обновление страницы, а не готовое табло.
+  test "every change asks all open scoreboards to refresh" do
+    start_match(mode: "games", sets: 1)
+    tap("a", 6)
+
+    streams = capture_turbo_stream_broadcasts [ @game, :scoreboard ] do
+      post unscore_game_scoreboard_url(@game), params: { scoreboard_id: live_id, side: "a" }, as: :turbo_stream
+    end
+
+    assert_equal [ "refresh" ], streams.map { |stream| stream["action"] }
+  end
+
   test "finishing writes the score to the game statistics" do
     start_match(mode: "games", sets: 1)
     tap("a", 6)
 
-    post finish_game_scoreboard_url(@game)
+    post finish_game_scoreboard_url(@game), params: { scoreboard_id: live_id }
 
     assert_redirected_to game_url(@game)
     match = Match.find_by!(game: @game, user: @owner)
@@ -180,9 +214,11 @@ class GameScoreboardsControllerTest < ActionDispatch::IntegrationTest
     get game_scoreboard_url(@game)
     assert_response :success
     assert_select "[data-testid=scoreboard]"
+    assert_select "meta[name=turbo-refresh-method][content=morph]"
+    assert_select "meta[name=turbo-refresh-scroll][content=preserve]"
     assert_select "form[action='#{score_game_scoreboard_path(@game)}']", 0
 
-    post score_game_scoreboard_url(@game), params: { side: "a" }
+    post score_game_scoreboard_url(@game), params: { scoreboard_id: live_id, side: "a" }
     assert_redirected_to game_scoreboard_url(@game)
     assert_empty @game.scoreboards.live.first.actions
   end

@@ -7,7 +7,9 @@
   </div>
 
   <% if @scoreboard&.persisted? %>
-    <%# Счёт меняют все телефоны разом: подписка обновляет табло без перезагрузки. %>
+    <%# Счёт меняют все телефоны разом: по сигналу страница перезапрашивается
+        и морфится на месте — без мигания и с сохранением прокрутки. %>
+    <% turbo_refreshes_with method: :morph, scroll: :preserve %>
     <%= turbo_stream_from @game, :scoreboard %>
     <%= render "game_scoreboards/board", scoreboard: @scoreboard %>
 

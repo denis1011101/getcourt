@@ -15,7 +15,7 @@ class GameScoreboard < ApplicationRecord
 
   scope :live, -> { where(status: "live") }
 
-  after_update_commit :broadcast_board
+  after_update_commit :broadcast_refresh
 
   def state
     Scoreboard::TennisState.new(settings, actions)
@@ -48,8 +48,10 @@ class GameScoreboard < ApplicationRecord
         range = state.last_set_range(side)
         range && (list[0...range.begin] + list[(range.end + 1)..])
       else
-        index = list.rindex(side)
-        index && (list[0...index] + list[(index + 1)..])
+        # «g:» — гейм, замороженный при смене настроек: тоже её последнее
+        # очко или гейм, если после него она ничего не выигрывала.
+        index = list.rindex { |token| token == side || token == "g:#{side}" }
+        index && without_game(list, index)
       end
     end
   end
@@ -62,20 +64,23 @@ class GameScoreboard < ApplicationRecord
   # :wrong_winner — тай-брейк отдан стороне, проигравшей сет; :invalid_score —
   # нет семи очков или разницы в два (либо разница больше двух после 7).
   def record_tiebreak!(a_points, b_points)
-    board = state
-    index = board.tiebreak_editable_set
-    return :invalid_score unless index
-
-    set = board.sets[index]
-    winner = set["a"] > set["b"] ? "a" : "b"
-    points = { "a" => a_points.to_i, "b" => b_points.to_i }
-    loser_points = points[winner == "a" ? "b" : "a"]
-    lead = points[winner] - loser_points
-    return :wrong_winner if lead.negative?
-    return :invalid_score unless points[winner] >= 7 && lead >= 2 && (points[winner] == 7 || lead == 2)
-
-    token = "tb:#{loser_points}"
+    error = nil
+    # Сет и позицию токена ищем под замком, по свежей истории: иначе сброс с
+    # другого телефона сдвинет индекс, и замена попадёт в чужой гейм.
     change_actions do |list|
+      board = state
+      index = board.tiebreak_editable_set
+      next error = :invalid_score unless index
+
+      set = board.sets[index]
+      winner = set["a"] > set["b"] ? "a" : "b"
+      points = { "a" => a_points.to_i, "b" => b_points.to_i }
+      loser_points = points[winner == "a" ? "b" : "a"]
+      lead = points[winner] - loser_points
+      next error = :wrong_winner if lead.negative?
+      next error = :invalid_score unless points[winner] >= 7 && lead >= 2 && (points[winner] == 7 || lead == 2)
+
+      token = "tb:#{loser_points}"
       if set["tb_token"]
         list.dup.tap { |copy| copy[set["tb_token"]] = token }
       else
@@ -83,7 +88,7 @@ class GameScoreboard < ApplicationRecord
         list[0...at] + [ token ] + list[at..]
       end
     end
-    nil
+    error
   end
 
   # Сбросить записанный счёт тай-брейка: сет остаётся 7:6, без скобок.
@@ -99,18 +104,17 @@ class GameScoreboard < ApplicationRecord
   end
 
   # Правка настроек посреди матча: стороны и правила меняются, счёт остаётся.
-  # При смене режима история пересобирается (см. TennisState#actions_for).
-  # Остальным телефонам шлём обновление страницы: у них поменяются кнопки,
-  # а не только табло.
+  # Историю пересобираем при любой смене правил (TennisState#rebuilt_actions):
+  # сыгранные геймы и сеты замораживаются и по новым правилам не
+  # переигрываются.
   def update_setup!(settings:, team_a:, team_b:)
     with_lock do
       return false unless live?
 
-      rebuilt = settings["mode"] == state.settings["mode"] ? actions : state.actions_for(settings["mode"])
+      current = state
+      rebuilt = Scoreboard::TennisState.new(settings).settings == current.settings ? actions : current.rebuilt_actions(settings)
       assign_attributes(settings: settings, team_a: team_a, team_b: team_b, actions: rebuilt)
       return false unless save
-
-      broadcast_refresh_to [ game, :scoreboard ]
     end
     true
   end
@@ -157,15 +161,30 @@ class GameScoreboard < ApplicationRecord
       return false unless live?
 
       updated = yield(Array(actions).dup)
-      return false if updated.nil?
+      return false unless updated.is_a?(Array)
 
       update!(actions: updated)
     end
     true
   end
 
-  def broadcast_board
-    broadcast_replace_to [ game, :scoreboard ], target: "game_scoreboard", partial: "game_scoreboards/board", locals: { scoreboard: self }
+  # Всем открытым табло — сигнал перезапросить страницу. Не готовый HTML:
+  # у каждого свои язык и права (кнопки видит только тот, кто ведёт счёт), а
+  # после чужого «−» кнопки и плашка «Матч окончен» должны ожить у всех.
+  # Нажавший сам себя не перезагружает — Turbo узнаёт свой запрос по id.
+  # Убираем гейм, а если он из замороженного сета — и закрытие этого сета
+  # («fs:») с его тай-брейком: сет был закрыт потому, что сыгран, и без
+  # гейма он снова открыт. Сет, закрытый кнопкой («s:»), остаётся закрытым.
+  def without_game(list, index)
+    set = state.sets.find { |candidate| candidate["range"].cover?(index) }
+    positions = set ? set["range"].to_a : []
+    frozen = positions.any? { |position| list[position].start_with?("fs:") }
+    dependent = frozen ? positions.select { |position| list[position].start_with?("fs:", "tb:") } : []
+    list.each_with_index.filter_map { |token, position| token unless position == index || dependent.include?(position) }
+  end
+
+  def broadcast_refresh
+    broadcast_refresh_to [ game, :scoreboard ]
   end
 
   def user_ids(team)
