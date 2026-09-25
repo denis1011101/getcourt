@@ -31,6 +31,7 @@ class Game < ApplicationRecord
   has_many :featured_matches, dependent: :nullify
   has_many :player_statistic_entries, dependent: :nullify
   has_many :game_media, class_name: "GameMedium", dependent: :destroy
+  has_many :scoreboards, class_name: "GameScoreboard", dependent: :destroy
   # План тренировки — блоки из библиотеки тренера в выбранном порядке.
   has_many :game_training_blocks, -> { ordered }, dependent: :destroy, inverse_of: :game
   has_many :training_blocks, through: :game_training_blocks

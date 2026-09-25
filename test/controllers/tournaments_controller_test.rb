@@ -24,6 +24,20 @@ class TournamentsControllerTest < ActionDispatch::IntegrationTest
     ActiveJob::Base.queue_adapter = @previous_queue_adapter
   end
 
+  # Ревью: снятые галки браузер не шлёт, и «Снять всё» оставляло прежние
+  # корты. Форма отправляет пустое значение — список кортов очищается.
+  test "clearing every court in the form removes the tournament courts" do
+    post session_url, params: { email: @organizer_email }
+
+    get edit_tournament_url(@tournament)
+    assert_select "input[type=hidden][name='tournament[court_ids][]'][value='']", 1
+
+    patch tournament_url(@tournament), params: { tournament: { name: @tournament.name, court_ids: [ "" ] } }
+
+    assert_redirected_to tournament_url(@tournament)
+    assert_empty @tournament.reload.courts
+  end
+
   test "should get index" do
     get tournaments_url
     assert_response :success

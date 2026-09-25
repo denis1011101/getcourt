@@ -37,6 +37,13 @@ en:
         file: "File"
     errors:
       models:
+        game_scoreboard:
+          attributes:
+            base:
+              unbalanced_teams: "Sides must be even: one against one or two against two"
+              no_registered_players: "At least one registered player is needed — otherwise the score has nowhere to go"
+              same_player_twice: "A player can't play for both sides"
+              training: "Trainings don't keep a score"
         game:
           attributes:
             prebooking_enabled:
@@ -446,6 +453,8 @@ en:
       name: "Tournament name"
       players_count: "Number of players"
       bracket_warning: "%{players} players do not fill a bracket: %{byes} of them advance to the next round without playing. Add %{missing} more players for a full bracket of %{size}."
+      section_about: "About the tournament"
+      section_schedule: "When"
       games_count: "Number of games"
       games_count_unknown: "Unknown (will be added during the tournament)"
       games_count_hint: "If unknown, games can be created and added as the tournament progresses."
@@ -456,6 +465,10 @@ en:
       bracket_hint: "Bracket — knockout rounds"
       round_robin_hint: "Round robin — everyone plays everyone"
       courts: "Courts"
+      courts_search_placeholder: "Search courts by name"
+      courts_selected: "Selected: %{count}"
+      courts_clear: "Clear all"
+      courts_none_found: "Nothing found — change the filters or the search."
       courts_hint: "Tournament games are played on the first selected court."
       no_courts: "No courts yet."
       start_date: "Start date"

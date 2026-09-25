@@ -1,112 +1,190 @@
 <%= form_with model: tournament, local: true do |f| %>
-  <div class="bg-white dark:bg-slate-800/80 shadow sm:rounded-lg p-6">
-    <% if tournament.errors.any? %>
-      <div class="mb-6 rounded-md border border-red-200 bg-red-50 p-4 dark:border-red-400/30 dark:bg-red-500/10">
-        <p class="text-sm font-medium text-red-700 dark:text-red-200"><%= t("tournaments.form.errors", count: tournament.errors.count) %></p>
-        <ul class="mt-2 list-disc list-inside text-sm text-red-600 dark:text-red-300">
-          <% tournament.errors.full_messages.each do |message| %>
-            <li><%= message %></li>
-          <% end %>
-        </ul>
-      </div>
-    <% end %>
+  <% if tournament.errors.any? %>
+    <div class="mb-6 rounded-md border border-red-200 bg-red-50 p-4 dark:border-red-400/30 dark:bg-red-500/10">
+      <p class="text-sm font-medium text-red-700 dark:text-red-200"><%= t("tournaments.form.errors", count: tournament.errors.count) %></p>
+      <ul class="mt-2 list-disc list-inside text-sm text-red-600 dark:text-red-300">
+        <% tournament.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
 
-    <div class="grid grid-cols-1 gap-6"
-         data-controller="bracket-size"
-         data-action="input->bracket-size#refresh change->bracket-size#refresh"
-         data-bracket-size-template-value="<%= t("tournaments.form.bracket_warning", players: "__PLAYERS__", byes: "__BYES__", missing: "__MISSING__", size: "__SIZE__") %>">
-      <div>
-        <%= f.label :name, t("tournaments.form.name"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-        <%= f.text_field :name, maxlength: 200, class: "mt-1 block w-full rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm" %>
-      </div>
+  <% card = "rounded-lg border bg-white p-5 shadow-sm dark:bg-slate-800/80 dark:border-white/10" %>
+  <% heading = "text-base font-semibold text-gray-900 dark:text-slate-100 mb-3" %>
+  <%# Карточки в две колонки, как у формы игры: слева сам турнир, справа —
+      когда и где. Контроллер сетки висит на общей обёртке: число игроков и тип
+      турнира живут в одной карточке, а предупреждение о неполной сетке — там же. %>
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-12"
+       data-controller="bracket-size"
+       data-action="input->bracket-size#refresh change->bracket-size#refresh"
+       data-bracket-size-template-value="<%= t("tournaments.form.bracket_warning", players: "__PLAYERS__", byes: "__BYES__", missing: "__MISSING__", size: "__SIZE__") %>">
+    <div class="space-y-6 lg:col-span-7">
+      <section class="<%= card %>">
+        <h2 class="<%= heading %>"><%= t("tournaments.form.section_about") %></h2>
+        <div class="grid grid-cols-1 gap-5">
+          <div>
+            <%= f.label :name, t("tournaments.form.name"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+            <%= f.text_field :name, maxlength: 200, class: "mt-1 block w-full rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm" %>
+          </div>
 
-      <div>
-        <%= f.label :players_count, t("tournaments.form.players_count"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-        <%= f.number_field :players_count, min: 2, class: "mt-1 block w-32 rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm", data: { bracket_size_target: "playersCount" } %>
-        <p data-bracket-size-target="message"
-           class="mt-2 hidden max-w-xl rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/15 dark:text-amber-200"></p>
-      </div>
+          <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <span class="block text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("tournaments.form.format") %></span>
+              <div class="mt-2 flex flex-col gap-2">
+                <label class="inline-flex items-center">
+                  <%= f.radio_button :format, "singles", class: "form-radio" %>
+                  <span class="ml-2 text-sm text-gray-700 dark:text-slate-300"><%= t("tournaments.form.singles_hint") %></span>
+                </label>
+                <label class="inline-flex items-center">
+                  <%= f.radio_button :format, "doubles", class: "form-radio" %>
+                  <span class="ml-2 text-sm text-gray-700 dark:text-slate-300"><%= t("tournaments.form.doubles_hint") %></span>
+                </label>
+              </div>
+            </div>
 
-      <div>
-        <%= f.label :games_count, t("tournaments.form.games_count"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-        <div class="mt-1 flex flex-wrap items-center gap-4">
-          <%= f.number_field :games_count, min: 1, class: "block w-32 rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm", id: "tournament_games_count_field", disabled: tournament.games_count.nil? && tournament.persisted? %>
-          <label class="inline-flex items-center text-sm text-gray-600 dark:text-slate-400">
-            <%= check_box_tag "games_count_unknown", "1", tournament.games_count.nil?,
-                  class: "form-checkbox h-4 w-4 text-indigo-600",
-                  onchange: "var field = document.getElementById('tournament_games_count_field'); field.disabled = this.checked; if(this.checked) field.value = '';" %>
-            <span class="ml-2"><%= t("tournaments.form.games_count_unknown") %></span>
-          </label>
+            <div>
+              <span class="block text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("tournaments.form.type") %></span>
+              <div class="mt-2 flex flex-col gap-2">
+                <label class="inline-flex items-center">
+                  <%= f.radio_button :tournament_type, "bracket", class: "form-radio", data: { bracket_size_target: "type" } %>
+                  <span class="ml-2 text-sm text-gray-700 dark:text-slate-300"><%= t("tournaments.form.bracket_hint") %></span>
+                </label>
+                <label class="inline-flex items-center">
+                  <%= f.radio_button :tournament_type, "round_robin", class: "form-radio", data: { bracket_size_target: "type" } %>
+                  <span class="ml-2 text-sm text-gray-700 dark:text-slate-300"><%= t("tournaments.form.round_robin_hint") %></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <%= f.label :players_count, t("tournaments.form.players_count"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+            <%= f.number_field :players_count, min: 2, class: "mt-1 block w-32 rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm", data: { bracket_size_target: "playersCount" } %>
+            <p data-bracket-size-target="message"
+               class="mt-2 hidden max-w-xl rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/15 dark:text-amber-200"></p>
+          </div>
+
+          <div>
+            <%= f.label :games_count, t("tournaments.form.games_count"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+            <div class="mt-1 flex flex-wrap items-center gap-4">
+              <%= f.number_field :games_count, min: 1, class: "block w-32 rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm", id: "tournament_games_count_field", disabled: tournament.games_count.nil? && tournament.persisted? %>
+              <label class="inline-flex items-center text-sm text-gray-600 dark:text-slate-400">
+                <%= check_box_tag "games_count_unknown", "1", tournament.games_count.nil?,
+                      class: "form-checkbox h-4 w-4 text-indigo-600",
+                      onchange: "var field = document.getElementById('tournament_games_count_field'); field.disabled = this.checked; if(this.checked) field.value = '';" %>
+                <span class="ml-2"><%= t("tournaments.form.games_count_unknown") %></span>
+              </label>
+            </div>
+            <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("tournaments.form.games_count_hint") %></p>
+          </div>
         </div>
-        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("tournaments.form.games_count_hint") %></p>
-      </div>
+      </section>
+    </div>
 
-      <div>
-        <span class="block text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("tournaments.form.format") %></span>
-        <div class="mt-2 flex flex-wrap items-center gap-6">
-          <label class="inline-flex items-center">
-            <%= f.radio_button :format, "singles", class: "form-radio" %>
-            <span class="ml-2 text-sm text-gray-700 dark:text-slate-300"><%= t("tournaments.form.singles_hint") %></span>
-          </label>
-          <label class="inline-flex items-center">
-            <%= f.radio_button :format, "doubles", class: "form-radio" %>
-            <span class="ml-2 text-sm text-gray-700 dark:text-slate-300"><%= t("tournaments.form.doubles_hint") %></span>
-          </label>
+    <div class="space-y-6 lg:col-span-5">
+      <section class="<%= card %>">
+        <h2 class="<%= heading %>"><%= t("tournaments.form.section_schedule") %></h2>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <%= f.label :start_date, t("tournaments.form.start_date"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+            <%= f.date_field :start_date, class: "mt-1 block w-full rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm" %>
+          </div>
+          <div>
+            <%= f.label :time, t("tournaments.form.start_time"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+            <%# Только ЧЧ:ММ — с секундами браузер разворачивает поле до «08:20:00.000». %>
+            <%= f.time_field :time, value: tournament.time&.strftime("%H:%M"), class: "mt-1 block w-full rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm" %>
+          </div>
+          <div class="sm:col-span-2">
+            <%= f.label :end_date, t("tournaments.form.end_date"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+            <%= f.date_field :end_date, class: "mt-1 block w-full rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm" %>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div>
-        <span class="block text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("tournaments.form.type") %></span>
-        <div class="mt-2 flex flex-wrap items-center gap-6">
-          <label class="inline-flex items-center">
-            <%= f.radio_button :tournament_type, "bracket", class: "form-radio", data: { bracket_size_target: "type" } %>
-            <span class="ml-2 text-sm text-gray-700 dark:text-slate-300"><%= t("tournaments.form.bracket_hint") %></span>
-          </label>
-          <label class="inline-flex items-center">
-            <%= f.radio_button :tournament_type, "round_robin", class: "form-radio", data: { bracket_size_target: "type" } %>
-            <span class="ml-2 text-sm text-gray-700 dark:text-slate-300"><%= t("tournaments.form.round_robin_hint") %></span>
-          </label>
-        </div>
-      </div>
-
-      <div>
-        <%= f.label :court_ids, t("tournaments.form.courts"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+      <section class="<%= card %>">
+        <h2 class="<%= heading %>"><%= t("tournaments.form.courts") %></h2>
         <% courts = Court.sorted_for_user(current_user) %>
         <% if courts.any? %>
-          <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <% courts.each do |court| %>
-              <label class="inline-flex items-center text-sm text-gray-700 dark:text-slate-300">
-                <%= check_box_tag "tournament[court_ids][]", court.id, tournament.court_ids&.include?(court.id), id: "tournament_court_#{court.id}", class: "form-checkbox" %>
-                <span class="ml-2"><%= court.name %></span>
-              </label>
+          <% locations = court_picker_locations(courts) %>
+          <% selected_ids = Array(tournament.court_ids) %>
+          <% show_filters = locations[:countries].size > 1 || locations[:cities_by_country][""].size > 1 %>
+          <%# Кортов сотни, поэтому список сужаем теми же фильтрами, что и в форме
+              игры, плюс поиском по названию. Разметка остаётся обычными галочками:
+              без JS видно всё и выбор работает. %>
+          <div data-controller="court-multi-picker"
+               data-court-multi-picker-country-cities-value="<%= json_escape(locations[:cities_by_country].to_json) %>"
+               data-court-multi-picker-city-placeholder-value="<%= t("games.form.court_city_any") %>"
+               data-court-multi-picker-count-label-value="<%= t("tournaments.form.courts_selected", count: "%{count}") %>">
+            <% if show_filters %>
+              <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <%= label_tag :tournament_court_country, t("games.form.court_country"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+                  <%# Фильтры без name — в параметры турнира они не попадают. %>
+                  <%= select_tag nil, options_for_select(locations[:countries]),
+                        include_blank: t("games.form.court_country_any"), id: "tournament_court_country",
+                        class: "mt-1 block w-full rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm",
+                        data: { "court-multi-picker-target": "country", action: "court-multi-picker#countryChanged" } %>
+                </div>
+                <div>
+                  <%= label_tag :tournament_court_city, t("games.form.court_city"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
+                  <%= select_tag nil, options_for_select(locations[:cities_by_country][""] || []),
+                        include_blank: t("games.form.court_city_any"), id: "tournament_court_city",
+                        class: "mt-1 block w-full rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm",
+                        data: { "court-multi-picker-target": "city", action: "court-multi-picker#filter" } %>
+                </div>
+              </div>
             <% end %>
+
+            <%= search_field_tag nil, nil, placeholder: t("tournaments.form.courts_search_placeholder"),
+                  id: "tournament_court_search", autocomplete: "off",
+                  class: "mt-3 block w-full rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm",
+                  data: { "court-multi-picker-target": "search", action: "input->court-multi-picker#filter" } %>
+
+            <div class="mt-3 flex items-center justify-between gap-3">
+              <span class="text-xs text-gray-500 dark:text-slate-400" data-court-multi-picker-target="count"></span>
+              <button type="button" hidden data-court-multi-picker-target="clear" data-action="court-multi-picker#clear"
+                      class="text-xs text-indigo-600 hover:underline dark:text-indigo-400"><%= t("tournaments.form.courts_clear") %></button>
+            </div>
+
+            <%# Высота ограничена: иначе список кортов выдавливает кнопку сохранения
+                за пределы экрана — на телефоне до неё не долистать. %>
+            <%# Снятые галки браузер не отправляет, и без пустого значения «Снять
+                всё» оставило бы турниру прежние корты: список не пришёл — не меняем. %>
+            <%= hidden_field_tag "tournament[court_ids][]", "", id: nil %>
+            <div class="mt-2 max-h-72 overflow-y-auto rounded-md border border-gray-200 p-3 dark:border-white/10">
+              <% court_picker_groups(courts, locations).each do |city_name, city_courts| %>
+                <% if city_name.present? %>
+                  <p class="mt-3 text-xs font-semibold uppercase tracking-wide text-gray-500 first:mt-0 dark:text-slate-400"
+                     data-court-multi-picker-target="group" data-city="<%= city_name %>"><%= city_name %></p>
+                <% end %>
+                <% city_courts.each do |court| %>
+                  <label class="mt-1 flex items-center text-sm text-gray-700 dark:text-slate-300"
+                         data-court-multi-picker-target="option"
+                         data-city="<%= court.city_name %>"
+                         data-country="<%= locations[:city_country][court.city_name] %>"
+                         data-name="<%= court.name.to_s.downcase %>">
+                    <%= check_box_tag "tournament[court_ids][]", court.id, selected_ids.include?(court.id),
+                          id: "tournament_court_#{court.id}", class: "form-checkbox",
+                          data: { action: "court-multi-picker#toggled" } %>
+                    <span class="ml-2"><%= court.name %></span>
+                  </label>
+                <% end %>
+              <% end %>
+              <p hidden data-court-multi-picker-target="empty" class="text-sm text-gray-500 dark:text-slate-400"><%= t("tournaments.form.courts_none_found") %></p>
+            </div>
           </div>
-          <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("tournaments.form.courts_hint") %></p>
+          <p class="mt-2 text-xs text-gray-500 dark:text-slate-400"><%= t("tournaments.form.courts_hint") %></p>
         <% else %>
-          <p class="mt-2 text-sm text-gray-500 dark:text-slate-400"><%= t("tournaments.form.no_courts") %></p>
+          <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("tournaments.form.no_courts") %></p>
         <% end %>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div>
-          <%= f.label :start_date, t("tournaments.form.start_date"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-          <%= f.date_field :start_date, class: "mt-1 block w-full rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm" %>
-        </div>
-        <div>
-          <%= f.label :time, t("tournaments.form.start_time"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-          <%= f.time_field :time, class: "mt-1 block w-full rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm" %>
-        </div>
-        <div>
-          <%= f.label :end_date, t("tournaments.form.end_date"), class: "block text-sm font-medium text-gray-700 dark:text-slate-300" %>
-          <%= f.date_field :end_date, class: "mt-1 block w-full rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm" %>
-        </div>
-      </div>
-
-      <div class="flex items-center justify-between mt-4">
-        <%= link_to t("tournaments.form.cancel"), (tournament.persisted? ? tournament_path(tournament) : tournaments_path), class: "text-sm text-gray-600 dark:text-slate-400 hover:underline" %>
-        <%= f.submit (tournament.persisted? ? t("tournaments.form.update") : t("tournaments.form.create")),
-              class: "inline-flex items-center rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition cursor-pointer" %>
-      </div>
+      </section>
     </div>
+  </div>
+
+  <div class="mt-6 flex items-center justify-between">
+    <%= link_to t("tournaments.form.cancel"), (tournament.persisted? ? tournament_path(tournament) : tournaments_path), class: "text-sm text-gray-600 dark:text-slate-400 hover:underline" %>
+    <%= f.submit (tournament.persisted? ? t("tournaments.form.update") : t("tournaments.form.create")),
+          class: "inline-flex items-center rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition cursor-pointer" %>
   </div>
 <% end %>

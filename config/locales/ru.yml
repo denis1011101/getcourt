@@ -8,6 +8,13 @@ ru:
         file: "Файл"
     errors:
       models:
+        game_scoreboard:
+          attributes:
+            base:
+              unbalanced_teams: "Стороны должны быть равными: один на один или двое на двое"
+              no_registered_players: "Нужен хотя бы один зарегистрированный игрок — иначе счёт некуда записать"
+              same_player_twice: "Один игрок не может играть за обе стороны"
+              training: "На тренировке счёт не ведут"
         game:
           attributes:
             prebooking_enabled:
@@ -426,6 +433,8 @@ ru:
       name: "Название турнира"
       players_count: "Количество игроков"
       bracket_warning: "При %{players} игроках сетка неполная: %{byes} пройдут в следующий круг без игры. Добавьте ещё %{missing}, чтобы получилась полная сетка на %{size}."
+      section_about: "О турнире"
+      section_schedule: "Когда"
       games_count: "Количество игр"
       games_count_unknown: "Неизвестно (добавим по ходу турнира)"
       games_count_hint: "Если неизвестно, игры можно создавать и добавлять по ходу турнира."
@@ -436,6 +445,10 @@ ru:
       bracket_hint: "Сетка — игры на вылет"
       round_robin_hint: "Круговой — каждый играет с каждым"
       courts: "Корты"
+      courts_search_placeholder: "Поиск по названию корта"
+      courts_selected: "Выбрано: %{count}"
+      courts_clear: "Снять всё"
+      courts_none_found: "Ничего не нашлось — измените фильтры или поиск."
       courts_hint: "Игры турнира создаются на первом выбранном корте."
       no_courts: "Кортов пока нет."
       start_date: "Дата начала"

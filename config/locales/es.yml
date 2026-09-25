@@ -8,6 +8,13 @@ es:
         file: "Archivo"
     errors:
       models:
+        game_scoreboard:
+          attributes:
+            base:
+              unbalanced_teams: "Los lados deben ser iguales: uno contra uno o dos contra dos"
+              no_registered_players: "Hace falta al menos un jugador registrado: si no, el marcador no tiene dónde guardarse"
+              same_player_twice: "Un jugador no puede jugar en los dos lados"
+              training: "En los entrenamientos no se lleva marcador"
         game:
           attributes:
             prebooking_enabled:
@@ -421,6 +428,8 @@ es:
       name: "Nombre del torneo"
       players_count: "Número de jugadores"
       bracket_warning: "Con %{players} jugadores el cuadro no está completo: %{byes} pasan a la siguiente ronda sin jugar. Añade %{missing} jugadores más para un cuadro completo de %{size}."
+      section_about: "Sobre el torneo"
+      section_schedule: "Cuándo"
       games_count: "Número de partidos"
       games_count_unknown: "Desconocido (se añadirán durante el torneo)"
       games_count_hint: "Si no lo sabes, los partidos se pueden crear y añadir durante el torneo."
@@ -431,6 +440,10 @@ es:
       bracket_hint: "Cuadro — eliminatorias"
       round_robin_hint: "Todos contra todos"
       courts: "Pistas"
+      courts_search_placeholder: "Busca pistas por nombre"
+      courts_selected: "Seleccionadas: %{count}"
+      courts_clear: "Quitar todo"
+      courts_none_found: "No se encontró nada: cambia los filtros o la búsqueda."
       courts_hint: "Los partidos del torneo se juegan en la primera pista seleccionada."
       no_courts: "Todavía no hay pistas."
       start_date: "Fecha de inicio"
