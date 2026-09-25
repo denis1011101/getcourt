@@ -2,8 +2,8 @@ module Ai
   module Tools
     class FindCourtTool < RubyLLM::Tool
       description "Find approved courts by city"
-      param :city, desc: "City name to search courts in", required: false
-      param :sport, desc: "Sport filter", required: false
+      parameter :city, description: "City name to search courts in", required: false
+      parameter :sport, description: "Sport filter", required: false
 
       def initialize(user)
         @user = user

@@ -38,6 +38,17 @@ class Ai::AssistantServiceTest < ActiveSupport::TestCase
     end
   end
 
+  # Заглушка чата живёт своей жизнью: когда ruby_llm 2.0 убрал with_tool,
+  # тесты с ней остались зелёными, а на проде ассистент упал бы на первом
+  # сообщении. Держим её честной — каждый её метод должен быть у настоящего чата.
+  test "the fake chat only uses methods RubyLLM::Chat really has" do
+    fake_methods = FakeRubyLLMChat.public_instance_methods(false) - %i[tools instructions asked_message history_messages]
+
+    fake_methods.each do |name|
+      assert RubyLLM::Chat.method_defined?(name), "RubyLLM::Chat больше не умеет #{name}"
+    end
+  end
+
   private
 
   class FakeRubyLLMChat
@@ -49,8 +60,8 @@ class Ai::AssistantServiceTest < ActiveSupport::TestCase
       @history_messages = []
     end
 
-    def with_tool(tool)
-      @tools << tool
+    def with_tools(*tools)
+      @tools.concat(tools)
       self
     end
 
