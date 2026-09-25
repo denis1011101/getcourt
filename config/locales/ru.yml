@@ -8,6 +8,13 @@ ru:
         file: "Файл"
     errors:
       models:
+        game_scoreboard:
+          attributes:
+            base:
+              unbalanced_teams: "Стороны должны быть равными: один на один или двое на двое"
+              no_registered_players: "Нужен хотя бы один зарегистрированный игрок — иначе счёт некуда записать"
+              same_player_twice: "Один игрок не может играть за обе стороны"
+              training: "На тренировке счёт не ведут"
         game:
           attributes:
             prebooking_enabled:

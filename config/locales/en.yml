@@ -37,6 +37,13 @@ en:
         file: "File"
     errors:
       models:
+        game_scoreboard:
+          attributes:
+            base:
+              unbalanced_teams: "Sides must be even: one against one or two against two"
+              no_registered_players: "At least one registered player is needed — otherwise the score has nowhere to go"
+              same_player_twice: "A player can't play for both sides"
+              training: "Trainings don't keep a score"
         game:
           attributes:
             prebooking_enabled:

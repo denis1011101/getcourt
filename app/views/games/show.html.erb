@@ -318,6 +318,25 @@
         <% end %>
       </div>
 
+      <%# Табло — быстрый путь к той же статистике: счёт ведут по ходу матча, а
+          не вспоминают потом. Идущий матч видят все, начать — те, кто пишет
+          статистику. %>
+      <% unless @game.training? %>
+        <% live_scoreboard = @game.scoreboards.live.first %>
+        <% if live_scoreboard || (can_fill_stats && game_started) %>
+          <%= link_to game_scoreboard_path(@game),
+                class: "mb-4 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-base font-semibold transition #{live_scoreboard ? "bg-emerald-600 text-white hover:bg-emerald-700" : "border border-indigo-300 text-indigo-700 hover:bg-indigo-50 dark:border-white/15 dark:text-slate-100 dark:hover:bg-slate-700/60"}" do %>
+            <% if live_scoreboard %>
+              <span class="inline-block h-2 w-2 animate-pulse rounded-full bg-white" aria-hidden="true"></span>
+              <%= t("game_scoreboards.entry.live") %>
+              <span class="tabular-nums opacity-90"><%= live_scoreboard.state.score_string.presence %></span>
+            <% else %>
+              <%= t("game_scoreboards.entry.open") %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+
       <% if can_fill_stats && game_started %>
         <div class="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
           <%= t("account.games.fairness_warning") %>

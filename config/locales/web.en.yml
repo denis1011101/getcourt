@@ -87,6 +87,66 @@ en:
       body_by: "%{author} shared a video."
       body_by_titled: "%{author} shared the video \u201C%{title}\u201D."
       action: Watch video
+  game_scoreboards:
+    show:
+      title: Scoreboard
+      back: Back to game
+      no_live_match: No match on the scoreboard right now. Players of the game keep the score once it starts.
+      last_result: "Last match:"
+    setup:
+      sides: Sides
+      sides_hint: One against one or two against two. Leave the second field empty for singles.
+      player_blank: "— player —"
+      partner_blank: "— partner (doubles) —"
+      format: Format
+      mode: Scoring
+      mode_points: Full score
+      mode_points_hint: 15-30-40, games and sets — the board counts for you.
+      mode_games: Games and sets
+      mode_games_hint: Tap after each game, close sets by hand if you like. Points aren't kept.
+      sets_to_win: Playing
+      sets_option:
+        one: first to %{count} set
+        other: first to %{count} sets
+      tiebreak: Tie-break at 6-6
+      tiebreak_hint: Without it the set goes on until a two-game lead.
+      golden_point: Golden point
+      golden_point_hint: At 40-40 there's no advantage — the next point wins the game.
+      start: Start the match
+    edit:
+      title: Match settings
+      back: Back to scoreboard
+      keeps_score: The score stays. Switching the mode keeps played games and sets, only the points of the current game are reset.
+      save: Save settings
+    controls:
+      match_over: "Match over — %{name} won"
+      match_over_hint: "Save the score to the statistics. − takes back the last game if it was a mistake."
+      finish_and_save: Finish and save the score
+      tiebreak_wrong_winner: "%{name} won the set, so they won the tie-break too: they need the higher score."
+      tiebreak_invalid_score: "A tie-break goes to 7 points with a two-point lead: 7:5, 8:6, 10:8."
+      tiebreak_edit: Edit
+      tiebreak_saved: "Saved %{score}"
+      tiebreak_update: Update
+      tiebreak_reset: Reset
+      tiebreak_title: Tie-break score in set %{number}
+      tiebreak_save: Save
+      tiebreak_hint: "Optional: without it the set is saved as 7-6. E.g. 7 : 5."
+      change_settings: Change settings
+      point: point
+      game: game
+      set: set
+      set_hint: "+ set closes the current set, − set removes the side's last won set entirely."
+      plus_aria: "+ %{unit}: %{name}"
+      minus_aria: "− %{unit}: %{name}"
+      finish: Finish the match
+      finish_hint: The score goes to the game statistics.
+      finish_confirm: Finish the match and save the score to the statistics?
+    flash:
+      finished: Match finished, the score is saved to the statistics.
+      not_allowed: Players of the game can keep the score once it starts.
+    entry:
+      open: Keep score on the scoreboard
+      live: Match in progress — open the scoreboard
   games:
     court_pending: Court not chosen yet
     show:

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_21_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_23_090000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -224,6 +224,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_21_100000) do
     t.index ["hidden_at"], name: "index_game_media_on_hidden_at"
     t.index ["show_in_feed"], name: "index_game_media_on_show_in_feed"
     t.index ["user_id"], name: "index_game_media_on_user_id"
+  end
+
+  create_table "game_scoreboards", force: :cascade do |t|
+    t.json "actions", default: [], null: false
+    t.datetime "created_at", null: false
+    t.datetime "finished_at"
+    t.integer "game_id", null: false
+    t.json "settings", default: {}, null: false
+    t.string "status", default: "live", null: false
+    t.json "team_a", default: {}, null: false
+    t.json "team_b", default: {}, null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["game_id"], name: "index_game_scoreboards_on_game_id"
+    t.index ["game_id"], name: "index_game_scoreboards_one_live_per_game", unique: true, where: "status = 'live'"
+    t.index ["user_id"], name: "index_game_scoreboards_on_user_id"
   end
 
   create_table "game_training_blocks", force: :cascade do |t|
@@ -622,6 +638,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_21_100000) do
   add_foreign_key "featured_matches", "games"
   add_foreign_key "game_media", "games"
   add_foreign_key "game_media", "users"
+  add_foreign_key "game_scoreboards", "games"
+  add_foreign_key "game_scoreboards", "users"
   add_foreign_key "game_training_blocks", "games"
   add_foreign_key "game_training_blocks", "training_blocks"
   add_foreign_key "games", "courts"

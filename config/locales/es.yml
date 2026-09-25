@@ -8,6 +8,13 @@ es:
         file: "Archivo"
     errors:
       models:
+        game_scoreboard:
+          attributes:
+            base:
+              unbalanced_teams: "Los lados deben ser iguales: uno contra uno o dos contra dos"
+              no_registered_players: "Hace falta al menos un jugador registrado: si no, el marcador no tiene dónde guardarse"
+              same_player_twice: "Un jugador no puede jugar en los dos lados"
+              training: "En los entrenamientos no se lleva marcador"
         game:
           attributes:
             prebooking_enabled:

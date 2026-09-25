@@ -1,0 +1,143 @@
+<%# Кнопки — под большой палец: «+» во всю ширину стороны, «−» поменьше,
+    чтобы не задеть случайно. Порядок сторон — как на табло выше. В режиме
+    «Геймы и сеты» под ними ещё пара для сетов: закрыть сет или убрать его. %>
+<% board = scoreboard.state %>
+<div id="game_scoreboard_controls">
+<%# Матч выигран: «+» больше ничего не делает, поэтому гасим его и говорим,
+    что дальше. «−» оставляем — последний гейм могли нажать по ошибке. %>
+<% if board.finished? %>
+  <div class="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-500/30 dark:bg-emerald-500/10" role="status">
+    <p class="text-sm font-semibold text-emerald-900 dark:text-emerald-100">
+      <%= t("game_scoreboards.controls.match_over", name: scoreboard.players(board.winner).map { |player| scoreboard_player_label(player) }.join(" / ")) %>
+    </p>
+    <p class="mt-1 text-xs text-emerald-800 dark:text-emerald-200"><%= t("game_scoreboards.controls.match_over_hint") %></p>
+    <%= button_to finish_game_scoreboard_path(scoreboard.game),
+          class: "mt-3 h-12 w-full rounded-xl bg-emerald-600 px-4 text-base font-semibold text-white transition hover:bg-emerald-700 active:scale-[0.99]" do %>
+      <%= t("game_scoreboards.controls.finish_and_save") %>
+    <% end %>
+  </div>
+<% end %>
+<% unit = board.points_mode? ? t("game_scoreboards.controls.point") : t("game_scoreboards.controls.game") %>
+<% press = "transition active:scale-95 select-none touch-manipulation" %>
+<% outline = "flex w-full items-center justify-center rounded-xl border border-gray-300 font-semibold text-gray-700 dark:border-white/15 dark:text-slate-200 #{press}" %>
+<div class="mt-4 grid grid-cols-2 gap-3">
+  <% %w[a b].each do |side| %>
+    <% name = scoreboard.players(side).map { |player| scoreboard_player_label(player) }.join(" / ") %>
+    <div class="flex flex-col gap-2">
+      <%= button_to score_game_scoreboard_path(scoreboard.game), params: { side: side },
+            form: { class: "contents" }, disabled: board.finished?,
+            class: "flex h-28 w-full flex-col items-center justify-center rounded-2xl text-white shadow-sm disabled:opacity-40 disabled:active:scale-100 #{press} #{side == "a" ? "bg-indigo-600 active:bg-indigo-700" : "bg-emerald-600 active:bg-emerald-700"}",
+            aria: { label: t("game_scoreboards.controls.plus_aria", unit: unit, name: name) } do %>
+        <span class="text-5xl font-bold leading-none">+</span>
+        <span class="mt-1 max-w-full truncate px-2 text-xs opacity-90"><%= board.points_mode? ? name : "#{unit} · #{name}" %></span>
+      <% end %>
+      <%= button_to unscore_game_scoreboard_path(scoreboard.game), params: { side: side },
+            form: { class: "contents" }, class: "#{outline} h-12 text-2xl",
+            aria: { label: t("game_scoreboards.controls.minus_aria", unit: unit, name: name) } do %>
+        −
+      <% end %>
+
+      <% unless board.points_mode? %>
+        <div class="mt-1 grid grid-cols-2 gap-2">
+          <%= button_to score_game_scoreboard_path(scoreboard.game), params: { side: side, unit: "set" },
+                form: { class: "contents" }, disabled: board.finished?, class: "#{outline} h-12 text-sm disabled:opacity-40",
+                aria: { label: t("game_scoreboards.controls.plus_aria", unit: t("game_scoreboards.controls.set"), name: name) } do %>
+            + <%= t("game_scoreboards.controls.set") %>
+          <% end %>
+          <%= button_to unscore_game_scoreboard_path(scoreboard.game), params: { side: side, unit: "set" },
+                form: { class: "contents" }, class: "#{outline} h-12 text-sm",
+                aria: { label: t("game_scoreboards.controls.minus_aria", unit: t("game_scoreboards.controls.set"), name: name) } do %>
+            − <%= t("game_scoreboards.controls.set") %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<% unless board.points_mode? %>
+  <p class="mt-2 text-center text-xs text-gray-500 dark:text-slate-400"><%= t("game_scoreboards.controls.set_hint") %></p>
+<% end %>
+
+<%# Сет закрылся 7:6, а очков тай-брейка в режиме геймов нет — предлагаем
+    дописать. Необязательно: без них в статистику уйдёт просто 7-6. %>
+<% if (tiebreak_set = board.tiebreak_editable_set) %>
+  <% saved = board.tiebreak_points(board.sets[tiebreak_set]) %>
+  <% tiebreak_error = local_assigns[:tiebreak_error] %>
+  <% set = board.sets[tiebreak_set] %>
+  <% set_winner = set["a"] > set["b"] ? "a" : "b" %>
+  <%# Незаписанный тай-брейк — открытая форма. Записанный сворачивается в
+      строку со счётом, а форма с «Исправить» и «Сбросить» раскрывается по
+      тапу: <details> работает без JS и переживает замену блока. %>
+  <details class="group mt-4 rounded-lg border <%= saved ? "border-gray-200 bg-gray-50 dark:border-white/10 dark:bg-slate-800/60" : "border-amber-200 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-500/10" %>" <%= "open" if !saved || tiebreak_error %>>
+    <summary class="flex cursor-pointer list-none items-center justify-between gap-2 p-3 [&::-webkit-details-marker]:hidden">
+      <span class="text-sm font-medium <%= saved ? "text-gray-800 dark:text-slate-100" : "text-amber-900 dark:text-amber-100" %>"><%= t("game_scoreboards.controls.tiebreak_title", number: tiebreak_set + 1) %></span>
+      <% if saved %>
+        <span class="flex items-center gap-2">
+          <span class="rounded-md bg-emerald-100 px-2 py-0.5 text-sm font-semibold tabular-nums text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-200"><%= "#{saved["a"]}:#{saved["b"]}" %></span>
+          <span class="text-xs font-medium text-indigo-600 group-open:hidden dark:text-indigo-300"><%= t("game_scoreboards.controls.tiebreak_edit") %></span>
+        </span>
+      <% end %>
+    </summary>
+
+    <%= form_with url: tiebreak_game_scoreboard_path(scoreboard.game), method: :post, class: "px-3 pb-3" do %>
+      <% if tiebreak_error %>
+        <p class="mb-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-400/30 dark:bg-red-500/10 dark:text-red-300" role="alert">
+          <%= t("game_scoreboards.controls.tiebreak_#{tiebreak_error}", name: scoreboard.players(set_winner).map { |player| scoreboard_player_label(player) }.join(" / ")) %>
+        </p>
+      <% end %>
+      <%# Поле вводится с клавиатуры, а «−»/«+» — для тех, кому удобнее натыкать.
+          Стороны в том же порядке, что на табло и кнопках выше. %>
+      <div class="grid grid-cols-2 gap-3">
+        <% %w[a b].each do |side| %>
+          <% name = scoreboard.players(side).map { |player| scoreboard_player_label(player) }.join(" / ") %>
+          <div data-controller="stepper">
+            <%# Тай-брейк выигрывает тот, кто взял сет: помечаем его колонку и
+                подсказываем ожидаемые числа прямо в полях. %>
+            <p class="mb-1 truncate text-xs text-gray-600 dark:text-slate-300"><% if side == set_winner %><span aria-hidden="true">🏆 </span><% end %><%= name %></p>
+            <div class="flex items-center gap-1">
+              <button type="button" data-action="stepper#decrement" aria-label="− <%= name %>"
+                      class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-gray-300 bg-white text-2xl font-semibold text-gray-700 <%= press %> dark:border-white/15 dark:bg-slate-800 dark:text-slate-200">−</button>
+              <%= text_field_tag side, local_assigns.dig(:tiebreak_input, side.to_s).presence || saved&.dig(side), inputmode: "numeric", pattern: "[0-9]*", maxlength: 2, required: true, autocomplete: "off",
+                    placeholder: side == set_winner ? "7" : "0–5",
+                    aria: { label: name }, data: { stepper_target: "input" },
+                    class: "h-12 w-full min-w-0 rounded-md border-gray-300 text-center text-xl font-semibold tabular-nums dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+              <button type="button" data-action="stepper#increment" aria-label="+ <%= name %>"
+                      class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-2xl font-bold text-white <%= press %> <%= side == "a" ? "bg-indigo-600 active:bg-indigo-700" : "bg-emerald-600 active:bg-emerald-700" %>">+</button>
+            </div>
+          </div>
+        <% end %>
+      </div>
+      <div class="mt-3 flex gap-2">
+        <%= submit_tag saved ? t("game_scoreboards.controls.tiebreak_update") : t("game_scoreboards.controls.tiebreak_save"),
+              class: "h-12 flex-1 rounded-xl bg-amber-600 px-3 text-base font-semibold text-white hover:bg-amber-700 cursor-pointer" %>
+        <% if saved %>
+          <%# Сброс — отдельная форма: вложить её в эту нельзя, поэтому кнопка
+              ссылается на неё через атрибут form. %>
+          <button type="submit" form="reset_tiebreak_form"
+                  class="h-12 rounded-xl border border-gray-300 px-4 text-sm font-semibold text-gray-700 hover:bg-gray-100 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5"><%= t("game_scoreboards.controls.tiebreak_reset") %></button>
+        <% end %>
+      </div>
+      <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("game_scoreboards.controls.tiebreak_hint") %></p>
+    <% end %>
+  </details>
+  <% if saved %>
+    <%= form_with url: reset_tiebreak_game_scoreboard_path(scoreboard.game), method: :post, id: "reset_tiebreak_form", class: "hidden" do %><% end %>
+  <% end %>
+<% end %>
+
+<div class="mt-3 flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-slate-400">
+  <span><%= scoreboard_settings_summary(scoreboard) %></span>
+  <%= link_to t("game_scoreboards.controls.change_settings"), edit_game_scoreboard_path(scoreboard.game),
+        class: "shrink-0 rounded-md border border-gray-300 px-2.5 py-1.5 font-medium text-gray-700 hover:bg-gray-50 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5" %>
+</div>
+
+<% unless board.finished? %>
+<%= button_to finish_game_scoreboard_path(scoreboard.game),
+      form: { data: { turbo_confirm: t("game_scoreboards.controls.finish_confirm") } },
+      class: "mt-6 w-full rounded-xl border border-red-300 px-4 py-3 text-base font-semibold text-red-700 transition hover:bg-red-50 active:scale-[0.99] dark:border-red-400/40 dark:text-red-300 dark:hover:bg-red-500/10" do %>
+  <%= t("game_scoreboards.controls.finish") %>
+<% end %>
+<p class="mt-1 text-center text-xs text-gray-500 dark:text-slate-400"><%= t("game_scoreboards.controls.finish_hint") %></p>
+<% end %>
+</div>

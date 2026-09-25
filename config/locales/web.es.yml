@@ -87,6 +87,66 @@ es:
       body_by: "%{author} ha compartido un vídeo."
       body_by_titled: "%{author} ha compartido el vídeo «%{title}»."
       action: Ver vídeo
+  game_scoreboards:
+    show:
+      title: Marcador
+      back: Volver al partido
+      no_live_match: Ahora no hay ningún partido en el marcador. Lo llevan los jugadores del partido cuando empieza.
+      last_result: "Último partido:"
+    setup:
+      sides: Lados
+      sides_hint: Uno contra uno o dos contra dos. Deja el segundo campo vacío para individuales.
+      player_blank: "— jugador —"
+      partner_blank: "— pareja (dobles) —"
+      format: Formato
+      mode: Cómo contamos
+      mode_points: Marcador completo
+      mode_points_hint: "15-30-40, juegos y sets: el marcador cuenta solo."
+      mode_games: Juegos y sets
+      mode_games_hint: Pulsa tras cada juego, los sets se pueden cerrar a mano. Los puntos no se llevan.
+      sets_to_win: Jugamos
+      sets_option:
+        one: a %{count} set
+        other: a %{count} sets
+      tiebreak: Tie-break con 6-6
+      tiebreak_hint: Sin él, el set sigue hasta una ventaja de dos juegos.
+      golden_point: Punto de oro
+      golden_point_hint: "Con 40-40 no hay ventaja: el siguiente punto gana el juego."
+      start: Empezar el partido
+    edit:
+      title: Ajustes del partido
+      back: Volver al marcador
+      keeps_score: El marcador se mantiene. Al cambiar el modo, los juegos y sets jugados se quedan; solo se reinician los puntos del juego actual.
+      save: Guardar ajustes
+    controls:
+      match_over: "Partido terminado: ganó %{name}"
+      match_over_hint: "Guarda el marcador en las estadísticas. − deshace el último juego si fue un error."
+      finish_and_save: Terminar y guardar el marcador
+      tiebreak_wrong_winner: "El set lo ganó %{name}, así que el tie-break también: necesita más puntos."
+      tiebreak_invalid_score: "El tie-break se juega a 7 puntos con dos de ventaja: 7:5, 8:6, 10:8."
+      tiebreak_edit: Editar
+      tiebreak_saved: "Guardado %{score}"
+      tiebreak_update: Corregir
+      tiebreak_reset: Borrar
+      tiebreak_title: Resultado del tie-break del set %{number}
+      tiebreak_save: Guardar
+      tiebreak_hint: "Opcional: sin él, el set se guarda como 7-6. P. ej. 7 : 5."
+      change_settings: Cambiar ajustes
+      point: punto
+      game: juego
+      set: set
+      set_hint: "+ set cierra el set actual, − set quita entero el último set ganado por ese lado."
+      plus_aria: "+ %{unit}: %{name}"
+      minus_aria: "− %{unit}: %{name}"
+      finish: Terminar el partido
+      finish_hint: El marcador se guarda en las estadísticas del partido.
+      finish_confirm: ¿Terminar el partido y guardar el marcador en las estadísticas?
+    flash:
+      finished: Partido terminado, el marcador está en las estadísticas.
+      not_allowed: Los jugadores del partido pueden llevar el marcador cuando empieza.
+    entry:
+      open: Llevar el marcador
+      live: "Partido en juego: abrir el marcador"
   games:
     court_pending: Pista aún sin elegir
     show:

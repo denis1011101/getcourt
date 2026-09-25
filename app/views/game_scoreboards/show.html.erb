@@ -1,0 +1,30 @@
+<% content_for :meta_robots, "noindex, follow" %>
+<% card = "rounded-lg border bg-white p-4 shadow-sm dark:bg-slate-800/80 dark:border-white/10" %>
+<div class="max-w-xl mx-auto px-4 py-4">
+  <div class="flex items-center justify-between gap-3 mb-4">
+    <h1 class="text-xl font-semibold"><%= t("game_scoreboards.show.title") %></h1>
+    <%= link_to t("game_scoreboards.show.back"), game_path(@game), class: "shrink-0 inline-flex items-center rounded-md border border-gray-300 dark:border-white/10 px-3 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/5 transition" %>
+  </div>
+
+  <% if @scoreboard&.persisted? %>
+    <%# Счёт меняют все телефоны разом: подписка обновляет табло без перезагрузки. %>
+    <%= turbo_stream_from @game, :scoreboard %>
+    <%= render "game_scoreboards/board", scoreboard: @scoreboard %>
+
+    <% if @can_score %>
+      <%= render "game_scoreboards/controls", scoreboard: @scoreboard %>
+    <% end %>
+  <% elsif @can_score %>
+    <%= render "game_scoreboards/setup", game: @game, scoreboard: @scoreboard %>
+  <% else %>
+    <section class="<%= card %>">
+      <p class="text-sm text-gray-600 dark:text-slate-400"><%= t("game_scoreboards.show.no_live_match") %></p>
+      <% if @last_finished %>
+        <p class="mt-2 text-sm text-gray-700 dark:text-slate-300">
+          <%= t("game_scoreboards.show.last_result") %>
+          <span class="font-semibold tabular-nums"><%= @last_finished.state.score_string.presence || "—" %></span>
+        </p>
+      <% end %>
+    </section>
+  <% end %>
+</div>

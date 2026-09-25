@@ -112,6 +112,13 @@ Rails.application.routes.draw do
   root "games#index"
   resources :games, except: [ :index ], constraints: { id: /\d+/ } do
     resource :weather, only: :show
+    resource :scoreboard, only: %i[show create edit update], controller: "game_scoreboards" do
+      post :score
+      post :unscore
+      post :tiebreak
+      post :reset_tiebreak
+      post :finish
+    end
 
     member do
       post :toggle_urgent_player_search

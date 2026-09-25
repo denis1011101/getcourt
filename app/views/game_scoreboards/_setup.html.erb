@@ -1,0 +1,84 @@
+<% card = "rounded-lg border bg-white p-4 shadow-sm dark:bg-slate-800/80 dark:border-white/10" %>
+<% heading = "text-base font-semibold text-gray-900 dark:text-slate-100 mb-3" %>
+<% select_class = "mt-1 block w-full rounded-md border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100 shadow-sm py-2.5" %>
+<% options = scoreboard_candidate_options(game) %>
+<% editing = scoreboard&.persisted? %>
+<% values = scoreboard_form_values(scoreboard, params) %>
+
+<%= form_with url: game_scoreboard_path(game), method: editing ? :patch : :post, local: true, class: "group/setup" do %>
+  <% if scoreboard&.errors&.any? %>
+    <div class="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-400/30 dark:bg-red-500/10 dark:text-red-300">
+      <%= scoreboard.errors.full_messages.to_sentence %>
+    </div>
+  <% end %>
+
+  <div class="space-y-4">
+    <section class="<%= card %>">
+      <h2 class="<%= heading %>"><%= t("game_scoreboards.setup.sides") %></h2>
+      <p class="-mt-2 mb-3 text-xs text-gray-500 dark:text-slate-400"><%= t("game_scoreboards.setup.sides_hint") %></p>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <% { "team_a" => t("games.show.team_a"), "team_b" => t("games.show.team_b") }.each do |team, label| %>
+          <div>
+            <span class="block text-sm font-medium text-gray-700 dark:text-slate-300"><%= label %></span>
+            <% 2.times do |index| %>
+              <%= select_tag "#{team}[]", options_for_select(options, values[team][index]),
+                    include_blank: index.zero? ? t("game_scoreboards.setup.player_blank") : t("game_scoreboards.setup.partner_blank"),
+                    id: "#{team}_#{index}", class: select_class %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </section>
+
+    <section class="<%= card %>">
+      <h2 class="<%= heading %>"><%= t("game_scoreboards.setup.format") %></h2>
+
+      <span class="block text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("game_scoreboards.setup.mode") %></span>
+      <div class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <% %w[points games].each do |mode| %>
+          <label class="flex cursor-pointer items-start gap-2 rounded-md border border-gray-300 px-3 py-3 hover:bg-gray-50 dark:border-white/15 dark:hover:bg-white/5">
+            <%= radio_button_tag "settings[mode]", mode, values[:settings]["mode"] == mode, class: "mt-0.5 h-4 w-4 text-indigo-600" %>
+            <span>
+              <span class="block text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("game_scoreboards.setup.mode_#{mode}") %></span>
+              <span class="block text-xs text-gray-500 dark:text-slate-400"><%= t("game_scoreboards.setup.mode_#{mode}_hint") %></span>
+            </span>
+          </label>
+        <% end %>
+      </div>
+
+      <span class="mt-4 block text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("game_scoreboards.setup.sets_to_win") %></span>
+      <div class="mt-2 grid grid-cols-3 gap-2">
+        <% [ 1, 2, 3 ].each do |sets| %>
+          <label class="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-gray-300 px-2 py-3 text-sm text-gray-700 hover:bg-gray-50 dark:border-white/15 dark:text-slate-300 dark:hover:bg-white/5">
+            <%= radio_button_tag "settings[sets_to_win]", sets, values[:settings]["sets_to_win"].to_i == sets, class: "h-4 w-4 text-indigo-600" %>
+            <%= t("game_scoreboards.setup.sets_option", count: sets) %>
+          </label>
+        <% end %>
+      </div>
+
+      <div class="mt-4 space-y-3">
+        <label class="flex items-start gap-2">
+          <%= hidden_field_tag "settings[tiebreak]", "0", id: nil %>
+          <%= check_box_tag "settings[tiebreak]", "1", values[:settings]["tiebreak"], class: "mt-0.5 h-4 w-4 text-indigo-600" %>
+          <span>
+            <span class="block text-sm text-gray-700 dark:text-slate-300"><%= t("game_scoreboards.setup.tiebreak") %></span>
+            <span class="block text-xs text-gray-500 dark:text-slate-400"><%= t("game_scoreboards.setup.tiebreak_hint") %></span>
+          </span>
+        </label>
+        <%# Золотое очко — про розыгрыши при 40:40; в режиме геймов очков нет,
+            поэтому галку прячем, пока выбран он. На сервере её и так не читают. %>
+        <label class="flex items-start gap-2 group-has-[input[value=games]:checked]/setup:hidden">
+          <%= hidden_field_tag "settings[golden_point]", "0", id: nil %>
+          <%= check_box_tag "settings[golden_point]", "1", values[:settings]["golden_point"], class: "mt-0.5 h-4 w-4 text-indigo-600" %>
+          <span>
+            <span class="block text-sm text-gray-700 dark:text-slate-300"><%= t("game_scoreboards.setup.golden_point") %></span>
+            <span class="block text-xs text-gray-500 dark:text-slate-400"><%= t("game_scoreboards.setup.golden_point_hint") %></span>
+          </span>
+        </label>
+      </div>
+    </section>
+  </div>
+
+  <%= submit_tag editing ? t("game_scoreboards.edit.save") : t("game_scoreboards.setup.start"),
+        class: "mt-4 w-full rounded-xl bg-indigo-600 px-4 py-3 text-base font-semibold text-white transition hover:bg-indigo-700 active:scale-[0.99] cursor-pointer" %>
+<% end %>
