@@ -2,8 +2,8 @@ module Ai
   module Tools
     class FindOpponentTool < RubyLLM::Tool
       description "Find tennis opponents in the user's city"
-      param :city, desc: "City name to search in", required: false
-      param :skill_level, desc: "Skill level filter", required: false
+      parameter :city, description: "City name to search in", required: false
+      parameter :skill_level, description: "Skill level filter", required: false
 
       def initialize(user)
         @user = user

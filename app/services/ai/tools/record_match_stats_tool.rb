@@ -2,13 +2,13 @@ module Ai
   module Tools
     class RecordMatchStatsTool < RubyLLM::Tool
       description "Record match score for a game. Admins can also record off-schedule historical matches without an existing game."
-      param :game_id, desc: "ID of the game to record stats for", required: false
-      param :game_date, desc: "Game date, for example 'today' or '2026-03-24'", required: false
-      param :game_time, desc: "Game start time, for example '19:00'", required: false
-      param :score, desc: 'Match score, for example "6-2 6-3"', required: true
-      param :hours, desc: 'Hours played, for example "1.5"', required: false
-      param :team_a, desc: "Comma-separated player names or telegram usernames for team A", required: true
-      param :team_b, desc: "Comma-separated player names or telegram usernames for team B", required: true
+      parameter :game_id, description: "ID of the game to record stats for", required: false
+      parameter :game_date, description: "Game date, for example 'today' or '2026-03-24'", required: false
+      parameter :game_time, description: "Game start time, for example '19:00'", required: false
+      parameter :score, description: 'Match score, for example "6-2 6-3"', required: true
+      parameter :hours, description: 'Hours played, for example "1.5"', required: false
+      parameter :team_a, description: "Comma-separated player names or telegram usernames for team A", required: true
+      parameter :team_b, description: "Comma-separated player names or telegram usernames for team B", required: true
 
       class << self
         def parse_structured_message(text)

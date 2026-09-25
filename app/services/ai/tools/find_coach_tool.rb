@@ -2,7 +2,7 @@ module Ai
   module Tools
     class FindCoachTool < RubyLLM::Tool
       description "Find coaches by city"
-      param :city, desc: "City name to search coaches in", required: false
+      parameter :city, description: "City name to search coaches in", required: false
 
       def initialize(user)
         @user = user

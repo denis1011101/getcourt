@@ -60,10 +60,12 @@ module Ai
         Rails.logger.info "[Ai::AssistantService] chat attempt=#{attempt} key_index=#{Ai::GeminiKeys.current_key_index} message=#{message.inspect}"
 
         chat = RubyLLM.chat(model: ENV.fetch("GEMINI_MODEL", "gemini-2.5-flash"))
-          .with_tool(Ai::Tools::FindOpponentTool.new(@user))
-          .with_tool(Ai::Tools::FindCourtTool.new(@user))
-          .with_tool(Ai::Tools::FindCoachTool.new(@user))
-          .with_tool(Ai::Tools::RecordMatchStatsTool.new(@user))
+          .with_tools(
+            Ai::Tools::FindOpponentTool.new(@user),
+            Ai::Tools::FindCourtTool.new(@user),
+            Ai::Tools::FindCoachTool.new(@user),
+            Ai::Tools::RecordMatchStatsTool.new(@user)
+          )
 
         chat.with_instructions(SYSTEM_PROMPT % { locale: locale.to_s, user_info: user_info })
         hydrate_history(chat, history)

@@ -1,5 +1,4 @@
 require "json"
-require "ruby_llm/schema"
 
 module Ai
   class ScoreFromPhotoService
@@ -15,7 +14,8 @@ module Ai
       Do not guess unreadable numbers or names. If no single match score can be recognized, return empty sets.
     PROMPT
 
-    class ScoreSchema < RubyLLM::Schema
+    # DSL схем с ruby_llm 2.0 живёт в геме schematist, его подключает сам ruby_llm.
+    class ScoreSchema < Schematist::Schema
       array :sets, min_items: 0, max_items: MAX_SETS do
         object do
           integer :top, minimum: 0, maximum: 99
