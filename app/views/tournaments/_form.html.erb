@@ -149,6 +149,9 @@
 
             <%# Высота ограничена: иначе список кортов выдавливает кнопку сохранения
                 за пределы экрана — на телефоне до неё не долистать. %>
+            <%# Снятые галки браузер не отправляет, и без пустого значения «Снять
+                всё» оставило бы турниру прежние корты: список не пришёл — не меняем. %>
+            <%= hidden_field_tag "tournament[court_ids][]", "", id: nil %>
             <div class="mt-2 max-h-72 overflow-y-auto rounded-md border border-gray-200 p-3 dark:border-white/10">
               <% court_picker_groups(courts, locations).each do |city_name, city_courts| %>
                 <% if city_name.present? %>

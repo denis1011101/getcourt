@@ -179,4 +179,10 @@ class Scoreboard::TennisStateTest < ActiveSupport::TestCase
     assert rebuilt.tiebreak?
     assert_equal [ "2", "1" ], [ rebuilt.point_label("a"), rebuilt.point_label("b") ]
   end
+
+  test "missing sets to win means a best-of-three match" do
+    assert_equal 2, Scoreboard::TennisState.new({}).settings["sets_to_win"]
+    assert_equal 2, Scoreboard::TennisState.new({ "sets_to_win" => "" }).settings["sets_to_win"]
+    assert_equal 1, Scoreboard::TennisState.new({ "sets_to_win" => "1" }).settings["sets_to_win"]
+  end
 end

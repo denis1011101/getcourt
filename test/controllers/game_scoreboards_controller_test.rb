@@ -33,6 +33,8 @@ class GameScoreboardsControllerTest < ActionDispatch::IntegrationTest
     get game_scoreboard_url(@game)
     assert_response :success
     assert_select "select[name='team_a[]']", 2
+    # Ревью: умолчание собиралось из пустых настроек и выходило «до 1 сета».
+    assert_select "input[name='settings[sets_to_win]'][value='2'][checked]"
 
     scoreboard = start_match
 

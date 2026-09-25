@@ -129,7 +129,9 @@ module Scoreboard
       settings = settings.to_h.stringify_keys
       {
         "mode" => MODES.include?(settings["mode"].to_s) ? settings["mode"].to_s : "points",
-        "sets_to_win" => settings["sets_to_win"].to_i.clamp(1, 3),
+        # Не указано — обычный матч до двух сетов: пустое значение не должно
+        # превращаться в ноль и дальше в «до одного сета».
+        "sets_to_win" => (settings["sets_to_win"].presence || 2).to_i.clamp(1, 3),
         "tiebreak" => ActiveModel::Type::Boolean.new.cast(settings.fetch("tiebreak", true)),
         "golden_point" => ActiveModel::Type::Boolean.new.cast(settings.fetch("golden_point", false))
       }
