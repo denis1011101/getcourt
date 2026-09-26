@@ -137,6 +137,17 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "turns away a batch longer than the limit, even of open methods" do
+    with_token(TOKEN) do
+      batch = Array.new(McpController::MAX_BATCH_SIZE + 1) { |i| { jsonrpc: "2.0", id: i, method: "tools/list" } }
+
+      post mcp_url, params: batch.to_json, headers: json_headers
+
+      assert_response :bad_request
+      assert_equal Mcp::Server::INVALID_REQUEST, JSON.parse(response.body).dig("error", "code")
+    end
+  end
+
   private
 
   def json_headers(authorization = nil)

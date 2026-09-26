@@ -183,7 +183,14 @@ curl -X POST https://getcourt.co/mcp \
 Rack::Attack, per IP (`config/initializers/rack_attack.rb`):
 
 - `/api/**` — 60 requests per minute;
-- `/mcp` — 120 requests per minute, because one question from an MCP client costs several calls.
+- `/mcp` — 120 requests per minute, because one question from an MCP client costs several calls,
+  and no more than 20 in any 10 seconds.
+
+A `/mcp` body over 64 KiB answers `413` before Rails parses it, and a batch of more than
+10 messages answers `400` with a JSON-RPC `Invalid request`. Excess requests answer `429`.
+
+The limits are counted per `request.ip`, which behind Cloudflare is currently the edge
+node, not the client — so clients arriving through one node share a counter.
 
 ## Environment
 

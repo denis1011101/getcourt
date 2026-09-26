@@ -864,7 +864,7 @@ en:
       raw_title: "Or call it directly"
       limits_title: "Limits"
       limits_rest: "JSON API: 60 requests per minute per IP."
-      limits_mcp: "MCP: 120 requests per minute per IP — one question usually costs several calls."
+      limits_mcp: "MCP: 120 requests per minute per IP and no more than 20 in 10 seconds — one question usually costs several calls. A request body is limited to 64 KiB, a batch to 10 messages."
       limits_read_only: "Both are read-only: nothing here creates a game or joins one."
       get_token: "Issue a token"
       source_code: "Docs on GitHub"

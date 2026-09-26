@@ -4,6 +4,9 @@ class McpController < Api::BaseController
   # Знакомство с сервером открыто: каталоги MCP сканируют его без токена, а список
   # инструментов — лишь их описание. Сами вызовы инструментов требуют токен.
   PUBLIC_METHODS = %w[initialize notifications/initialized ping tools/list].freeze
+  # Батч теперь можно прислать и без токена, поэтому ограничиваем его длину: иначе
+  # один HTTP-запрос с тысячами tools/list обходит лимит запросов.
+  MAX_BATCH_SIZE = 10
 
   # Streamable HTTP: клиент шлёт JSON-RPC пакет POST-ом и получает JSON в ответ.
   # Пакет бывает батчем — массивом сообщений; уведомления ответа не имеют, и если
@@ -13,7 +16,7 @@ class McpController < Api::BaseController
     return render(json: parse_error, status: :bad_request) if payload == :invalid
 
     if payload.is_a?(Array)
-      return render(json: invalid_request, status: :bad_request) if payload.empty?
+      return render(json: invalid_request, status: :bad_request) if payload.empty? || payload.size > MAX_BATCH_SIZE
 
       responses = payload.filter_map { |message| server.call(message) }
       responses.any? ? render(json: responses) : head(:accepted)
