@@ -11,13 +11,44 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "turns away a caller without the right token" do
+  test "turns away a tool call without the right token" do
     with_token(TOKEN) do
-      post mcp_url, params: request_body("tools/list"), headers: json_headers
+      post mcp_url, params: request_body("tools/call"), headers: json_headers
       assert_response :unauthorized
 
-      post mcp_url, params: request_body("tools/list"), headers: json_headers("Bearer wrong")
+      post mcp_url, params: request_body("tools/call"), headers: json_headers("Bearer wrong")
       assert_response :unauthorized
+    end
+  end
+
+  test "lets a catalog introduce itself and list the tools without a token" do
+    with_token(TOKEN) do
+      post mcp_url, params: request_body("initialize"), headers: json_headers
+      assert_response :success
+
+      post mcp_url, params: { jsonrpc: "2.0", method: "notifications/initialized" }.to_json, headers: json_headers
+      assert_response :accepted
+
+      post mcp_url, params: request_body("ping"), headers: json_headers
+      assert_response :success
+
+      post mcp_url, params: request_body("tools/list"), headers: json_headers
+      assert_response :success
+      assert_equal %w[search_games get_game], JSON.parse(response.body).dig("result", "tools").map { |tool| tool["name"] }
+    end
+  end
+
+  test "a batch hiding a tool call behind tools/list still needs a token" do
+    with_token(TOKEN) do
+      batch = [
+        { jsonrpc: "2.0", id: 1, method: "tools/list" },
+        { jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: "search_games", arguments: {} } }
+      ]
+
+      post mcp_url, params: batch.to_json, headers: json_headers
+
+      assert_response :unauthorized
+      assert_empty response.body
     end
   end
 
@@ -35,7 +66,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     with_token(nil) do
       personal = ApiToken.issue_for(User.create!(email: "mcp-personal@example.com"))
 
-      post mcp_url, params: request_body("tools/list"), headers: json_headers("Bearer #{personal.token}")
+      post mcp_url, params: tool_call_body, headers: json_headers("Bearer #{personal.token}")
 
       assert_response :success
       assert_not_nil personal.reload.last_used_at
@@ -48,7 +79,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       revoked.revoke!
       ApiToken.issue_for(User.create!(email: "mcp-active@example.com"))
 
-      post mcp_url, params: request_body("tools/list"), headers: json_headers("Bearer #{revoked.token}")
+      post mcp_url, params: tool_call_body, headers: json_headers("Bearer #{revoked.token}")
 
       assert_response :unauthorized
     end
@@ -99,6 +130,10 @@ class McpControllerTest < ActionDispatch::IntegrationTest
 
   def request_body(method)
     { jsonrpc: "2.0", id: 1, method: method }.to_json
+  end
+
+  def tool_call_body
+    { jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "search_games", arguments: {} } }.to_json
   end
 
   def with_token(token)

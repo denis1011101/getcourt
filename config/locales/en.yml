@@ -853,7 +853,7 @@ en:
       mcp_text: "The same data as a Model Context Protocol server, so an assistant can look for games itself instead of reading pages."
       mcp_endpoint_html: "Endpoint: <code>POST /mcp</code>, Streamable HTTP over JSON-RPC 2.0, batches included."
       mcp_protocol_html: "Protocol versions: <code>2025-06-18</code>, <code>2025-03-26</code>, <code>2024-11-05</code>."
-      mcp_auth_html: "Authorisation: <code>Authorization: Bearer &lt;token&gt;</code>. A missing or wrong token answers 401. While not a single token has been issued, the endpoint is off entirely and answers 404."
+      mcp_auth_html: "Authorisation: <code>Authorization: Bearer &lt;token&gt;</code>. Tool calls need it: a missing or wrong token answers 401. initialize, ping and tools/list work without a token, so MCP catalogs can see the tools. While not a single token has been issued, the endpoint is off entirely and answers 404."
       mcp_token_html: "Getting a token: issue it yourself in <b>Account → Security</b> once your email is verified or Telegram is linked. It lasts six months from your last request, so a token in use never expires — and you can revoke it there at any time."
       tools_title: "Tools"
       tool: "Tool"
