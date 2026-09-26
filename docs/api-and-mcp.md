@@ -99,10 +99,16 @@ Two kinds of token are accepted:
 - **shared**, from the `MCP_TOKEN` environment variable — for our own scripts.
 
 Until at least one of them exists, every request answers `404`: a forgotten environment
-variable must not silently open the endpoint. A missing or wrong `Authorization` header
-answers `401`.
+variable must not silently open the endpoint.
 
-The tools only read public data, but the endpoint stays closed so it is not called at random.
+The handshake is open: `initialize`, `notifications/initialized`, `ping` and `tools/list`
+need no token, because MCP catalogs scan a server anonymously and the tool list is only a
+description. `tools/call` needs one — a missing or wrong `Authorization` header answers
+`401`. A batch goes through without a token only if every message in it is open, so a
+`tools/call` cannot ride along with a `tools/list`.
+
+The same games are public through the JSON API anyway; the token only gates the MCP tools,
+so they are not called at random.
 
 ### Issuing a token
 
@@ -177,7 +183,15 @@ curl -X POST https://getcourt.co/mcp \
 Rack::Attack, per IP (`config/initializers/rack_attack.rb`):
 
 - `/api/**` — 60 requests per minute;
-- `/mcp` — 120 requests per minute, because one question from an MCP client costs several calls.
+- `/mcp` — 120 requests per minute, because one question from an MCP client costs several calls,
+  and no more than 20 per fixed 10-second window. Windows are aligned to the clock, not
+  sliding, so neither limit is a ceiling for an arbitrary 60 or 10 seconds.
+
+A `/mcp` body over 64 KiB answers `413` before Rails parses it, and a batch of more than
+10 messages answers `400` with a JSON-RPC `Invalid request`. Excess requests answer `429`.
+
+The limits are counted per `request.ip`, which behind Cloudflare is currently the edge
+node, not the client — so clients arriving through one node share a counter.
 
 ## Environment
 

@@ -1,6 +1,13 @@
 class McpController < Api::BaseController
   before_action :authenticate_mcp!
 
+  # Знакомство с сервером открыто: каталоги MCP сканируют его без токена, а список
+  # инструментов — лишь их описание. Сами вызовы инструментов требуют токен.
+  PUBLIC_METHODS = %w[initialize notifications/initialized ping tools/list].freeze
+  # Батч теперь можно прислать и без токена, поэтому ограничиваем его длину: иначе
+  # один HTTP-запрос с тысячами tools/list обходит лимит запросов.
+  MAX_BATCH_SIZE = 10
+
   # Streamable HTTP: клиент шлёт JSON-RPC пакет POST-ом и получает JSON в ответ.
   # Пакет бывает батчем — массивом сообщений; уведомления ответа не имеют, и если
   # в батче одни уведомления, по спецификации возвращается 202 с пустым телом.
@@ -9,7 +16,7 @@ class McpController < Api::BaseController
     return render(json: parse_error, status: :bad_request) if payload == :invalid
 
     if payload.is_a?(Array)
-      return render(json: invalid_request, status: :bad_request) if payload.empty?
+      return render(json: invalid_request, status: :bad_request) if payload.empty? || payload.size > MAX_BATCH_SIZE
 
       responses = payload.filter_map { |message| server.call(message) }
       responses.any? ? render(json: responses) : head(:accepted)
@@ -26,9 +33,9 @@ class McpController < Api::BaseController
   end
 
   def parse_payload
-    JSON.parse(request.raw_post)
+    @payload ||= JSON.parse(request.raw_post)
   rescue JSON::ParserError
-    :invalid
+    @payload = :invalid
   end
 
   def parse_error
@@ -43,16 +50,34 @@ class McpController < Api::BaseController
 
   # Токенов два сорта: общий из MCP_TOKEN — для наших собственных скриптов, и
   # личные из api_tokens, которые человек выпускает себе сам в кабинете.
-  # Инструменты только читают публичные данные, но эндпоинт закрыт, чтобы его не
-  # звали кто попало. Пока не выдан ни один токен, сервера словно и нет: забытая
-  # переменная окружения не должна открывать его молча.
+  # Инструменты только читают публичные данные, но вызывать их можно лишь с токеном,
+  # чтобы их не звали кто попало. Пока не выдан ни один токен, сервера словно и нет:
+  # забытая переменная окружения не должна открывать его молча.
   def authenticate_mcp!
     return head(:not_found) unless shared_token.present? || ApiToken.active.exists?
+    return if public_request?
 
-    provided = request.headers["Authorization"].to_s.delete_prefix("Bearer ").strip
+    header = request.headers["Authorization"].to_s
+    provided = header.delete_prefix("Bearer ").strip
     return if provided.present? && (shared_token?(provided) || ApiToken.authenticate(provided))
 
+    log_rejected_authorization(header, provided)
     head :unauthorized
+  end
+
+  # Чтобы по логу отличать «заголовка нет» от «схема не та» и «токен не тот», не
+  # записывая сам токен. Незнакомую схему не выводим: при кривом формате в ней
+  # может оказаться секрет.
+  def log_rejected_authorization(header, provided)
+    scheme = if header.blank? then "empty" elsif header.start_with?("Bearer ") then "bearer" else "other" end
+    Rails.logger.info("MCP 401: authorization_present=#{header.present?} scheme=#{scheme} length=#{provided.length}")
+  end
+
+  # Батч пропускается без токена, только если открыто каждое его сообщение: иначе
+  # tools/call проскочил бы рядом с tools/list.
+  def public_request?
+    messages = Array.wrap(parse_payload)
+    messages.any? && messages.all? { |message| message.is_a?(Hash) && PUBLIC_METHODS.include?(message["method"]) }
   end
 
   def shared_token

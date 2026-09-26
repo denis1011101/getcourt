@@ -25,8 +25,49 @@ class Rack::Attack
     request.ip if request.path.start_with?("/api/")
   end
 
+  # MCP узнаём по маршруту, а не по строке пути: Rails принимает и /mcp.json, и
+  # /mcp.js%6fn, и лишние слэши (см. recognized_route ниже). Маршрут только POST,
+  # так что роутер спрашиваем лишь для POST-запросов.
+  def self.mcp_request?(request)
+    return false unless request.post?
+
+    route = recognized_route(request)
+    route.present? && route[:controller] == "mcp"
+  end
+
   throttle("mcp/ip", limit: 120, period: 1.minute) do |request|
-    request.ip if request.path == "/mcp"
+    request.ip if mcp_request?(request)
+  end
+
+  # Всплески отдельно: минутный лимит можно выбрать за пару секунд. Пока request.ip —
+  # адрес узла Cloudflare, а не клиента, счётчик общий для всех, кто пришёл через
+  # тот же узел, и может задеть обычные запросы.
+  throttle("mcp/ip/burst", limit: 20, period: 10.seconds) do |request|
+    request.ip if mcp_request?(request)
+  end
+
+  # Rails разбирает JSON-тело в params ещё до контроллера, поэтому большое тело
+  # отсекаем здесь. Content-Length может не быть или он может врать, так что
+  # читаем не больше лимита и перематываем поток обратно.
+  def self.mcp_body_too_large?(request)
+    return false unless request.body && mcp_request?(request)
+
+    request.body.rewind
+    request.body.read(JSON_BODY_LIMIT + 1).to_s.bytesize > JSON_BODY_LIMIT
+  rescue IOError, ArgumentError
+    false
+  ensure
+    request.body&.rewind
+  end
+
+  blocklist("mcp/body_size") { |request| mcp_body_too_large?(request) }
+
+  self.blocklisted_responder = lambda do |request|
+    if request.env["rack.attack.matched"] == "mcp/body_size"
+      [ 413, { "content-type" => "text/plain" }, [ "Payload Too Large\n" ] ]
+    else
+      [ 403, { "content-type" => "text/plain" }, [ "Forbidden\n" ] ]
+    end
   end
 
   # Код входа четырёхзначный, живёт 15 минут, и неудачная попытка его не гасит:
