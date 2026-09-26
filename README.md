@@ -40,7 +40,8 @@ Upcoming games are readable from outside the app in two ways:
 
 - `GET /api/v1/games` and `GET /api/v1/games/:id` — public JSON, no key needed
 - `POST /mcp` — an MCP server (JSON-RPC 2.0 over Streamable HTTP) with `search_games` and
-  `get_game` tools, closed behind a `MCP_TOKEN` bearer token
+  `get_game` tools; the handshake and `tools/list` are open, tool calls need a bearer token
+  (a personal one from *Account → Security*, or the shared `MCP_TOKEN`)
 
 Both are read-only and expose only what a game page already shows in public. See
 [docs/api-and-mcp.md](docs/api-and-mcp.md) for parameters, examples and limits, or the same
