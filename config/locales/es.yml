@@ -839,7 +839,7 @@ es:
       raw_title: "O llámalo directamente"
       limits_title: "Límites"
       limits_rest: "API JSON: 60 peticiones por minuto e IP."
-      limits_mcp: "MCP: 120 peticiones por minuto e IP y no más de 20 en 10 segundos — una pregunta suele costar varias llamadas. El cuerpo de la petición admite hasta 64 KiB y un lote, hasta 10 mensajes."
+      limits_mcp: "MCP: 120 peticiones por minuto e IP y 20 por ventana fija de 10 segundos — una pregunta suele costar varias llamadas. El cuerpo de la petición admite hasta 64 KiB y un lote, hasta 10 mensajes."
       limits_read_only: "Ambas son de solo lectura: no crean partidos ni apuntan a nadie."
       get_token: "Emitir un token"
       source_code: "Documentación en GitHub"
