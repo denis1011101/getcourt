@@ -21,6 +21,23 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "logs how a rejected Authorization header looked without the token itself" do
+    secret = "wrong-secret-value"
+    with_token(TOKEN) do
+      {
+        nil => "authorization_present=false scheme=empty length=0",
+        "Bearer #{secret}" => "authorization_present=true scheme=bearer length=#{secret.length}",
+        secret => "authorization_present=true scheme=other length=#{secret.length}"
+      }.each do |authorization, expected|
+        log = capture_log { post mcp_url, params: tool_call_body, headers: json_headers(authorization) }
+
+        assert_response :unauthorized
+        assert_includes log, "MCP 401: #{expected}"
+        assert_not_includes log, secret
+      end
+    end
+  end
+
   test "lets a catalog introduce itself and list the tools without a token" do
     with_token(TOKEN) do
       post mcp_url, params: request_body("initialize"), headers: json_headers
@@ -134,6 +151,16 @@ class McpControllerTest < ActionDispatch::IntegrationTest
 
   def tool_call_body
     { jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "search_games", arguments: {} } }.to_json
+  end
+
+  def capture_log
+    io = StringIO.new
+    previous = Rails.logger
+    Rails.logger = ActiveSupport::Logger.new(io)
+    yield
+    io.string
+  ensure
+    Rails.logger = previous
   end
 
   def with_token(token)

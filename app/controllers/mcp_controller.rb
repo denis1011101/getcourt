@@ -54,10 +54,20 @@ class McpController < Api::BaseController
     return head(:not_found) unless shared_token.present? || ApiToken.active.exists?
     return if public_request?
 
-    provided = request.headers["Authorization"].to_s.delete_prefix("Bearer ").strip
+    header = request.headers["Authorization"].to_s
+    provided = header.delete_prefix("Bearer ").strip
     return if provided.present? && (shared_token?(provided) || ApiToken.authenticate(provided))
 
+    log_rejected_authorization(header, provided)
     head :unauthorized
+  end
+
+  # Чтобы по логу отличать «заголовка нет» от «схема не та» и «токен не тот», не
+  # записывая сам токен. Незнакомую схему не выводим: при кривом формате в ней
+  # может оказаться секрет.
+  def log_rejected_authorization(header, provided)
+    scheme = if header.blank? then "empty" elsif header.start_with?("Bearer ") then "bearer" else "other" end
+    Rails.logger.info("MCP 401: authorization_present=#{header.present?} scheme=#{scheme} length=#{provided.length}")
   end
 
   # Батч пропускается без токена, только если открыто каждое его сообщение: иначе
