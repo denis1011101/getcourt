@@ -14,336 +14,359 @@
     }.to_json).html_safe %>
   </script>
 <% end %>
-<div class="max-w-5xl mx-auto px-4 py-6">
+<%# Страница разложена по карточкам в две колонки, как формы игры и корта:
+    слева — само занятие и кто в нём играет, справа — дела организатора,
+    счёт, статистика и остальное. На телефоне карточки идут одна за другой в этом же порядке,
+    а редкое (шансы, загрузка медиа, данные организатора) свёрнуто. %>
+<% card = "rounded-lg border bg-white p-4 shadow-sm sm:p-5 dark:bg-slate-800/80 dark:border-white/10" %>
+<% heading = "text-base font-semibold text-gray-900 dark:text-slate-100 mb-3" %>
+<div class="max-w-7xl mx-auto px-4 py-4 sm:py-6">
   <!-- Breadcrumb -->
-  <nav class="text-sm text-gray-500 dark:text-slate-400 mb-4">
+  <nav class="hidden text-sm text-gray-500 dark:text-slate-400 mb-4 sm:block">
     <%= link_to t("layout.nav.home"), root_path, class: "hover:text-gray-700 dark:hover:text-white" %> &rsaquo;
     <%= link_to t("layout.nav.games"), root_path, class: "hover:text-gray-700 dark:hover:text-white" %> &rsaquo;
     <span class="text-gray-900 dark:text-slate-100"><%= t("games.show.game_on", date: display_date(@game)) %></span>
   </nav>
 
-  <div class="flex items-center justify-between gap-4 mb-6">
+  <div class="flex items-center justify-between gap-4 mb-4 sm:mb-6">
     <div>
-      <h1 class="text-2xl font-semibold"><%= t("games.show.title") %></h1>
-      <p class="text-gray-600 dark:text-slate-400"><%= t("games.show.subtitle") %></p>
+      <h1 class="text-xl font-semibold sm:text-2xl"><%= t("games.show.title") %></h1>
+      <p class="hidden text-gray-600 sm:block dark:text-slate-400"><%= t("games.show.subtitle") %></p>
     </div>
     <%= link_to t("games.show.back_to_games"),
                 root_path,
                 class: "shrink-0 inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5" %>
   </div>
 
-  <div class="bg-white rounded-lg border p-6 shadow-sm dark:bg-slate-800/80 dark:border-white/10">
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-      <div>
-        <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("games.show.date") %></p>
-        <p class="text-lg font-medium text-gray-900 dark:text-slate-100">
-          <% game_badges(@game).each do |b| %>
-            <% badge_text = b[:text].to_s %>
-            <% badge_classes =
-                 case badge_text.downcase
-                 when /coach/
-                   "inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-500/15 dark:text-blue-200"
-                 when /weekly/
-                   "inline-flex items-center rounded-full bg-purple-50 px-2.5 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-500/15 dark:text-purple-200"
-                 when /urgent/
-                   "inline-flex items-center rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-medium text-rose-700 dark:bg-rose-500/15 dark:text-rose-200"
-                 when /spot/, %r{\A\d+/\d+\z}
-                   "inline-flex items-center rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-medium text-rose-700 dark:bg-rose-500/15 dark:text-rose-200"
-                 else
-                   "inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:bg-slate-700 dark:text-slate-100"
-                 end %>
-            <span class="<%= badge_classes %>"><%= badge_text %></span>
-          <% end %>
-          <%= display_date(@game) %>
-        </p>
-      </div>
-
-      <div>
-        <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("games.show.time") %></p>
-        <p class="text-lg font-medium text-gray-900 dark:text-slate-100"><%= display_time(@game) %></p>
-      </div>
-
-      <% if @game.respond_to?(:duration_minutes) && @game.duration_minutes.to_i > 0 %>
-        <div>
-          <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("games.show.duration") %></p>
-          <p class="text-lg font-medium text-gray-900 dark:text-slate-100"><%= format_duration_minutes(@game.duration_minutes) %></p>
-        </div>
-      <% end %>
-
-      <div class="sm:col-span-2">
-        <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("games.show.court") %></p>
-        <% if @game.court %>
-          <p class="text-lg font-medium text-indigo-700 dark:text-indigo-400">
-            <%= link_to @game.court.name, court_path(@game.court), class: "transition-colors hover:text-indigo-800 hover:underline dark:hover:text-indigo-300" %>
+  <div class="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-12 lg:items-start">
+    <div class="space-y-4 sm:space-y-6 lg:col-span-7">
+      <section class="<%= card %>">
+        <% badges = game_badges(@game) %>
+        <% if badges.any? %>
+          <p class="mb-3 flex flex-wrap gap-1.5">
+            <% badges.each do |b| %>
+              <% badge_text = b[:text].to_s %>
+              <% badge_classes =
+                   case badge_text.downcase
+                   when /coach/
+                     "inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-500/15 dark:text-blue-200"
+                   when /weekly/
+                     "inline-flex items-center rounded-full bg-purple-50 px-2.5 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-500/15 dark:text-purple-200"
+                   when /urgent/
+                     "inline-flex items-center rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-medium text-rose-700 dark:bg-rose-500/15 dark:text-rose-200"
+                   when /spot/, %r{\A\d+/\d+\z}
+                     "inline-flex items-center rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-medium text-rose-700 dark:bg-rose-500/15 dark:text-rose-200"
+                   else
+                     "inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:bg-slate-700 dark:text-slate-100"
+                   end %>
+              <span class="<%= badge_classes %>"><%= badge_text %></span>
+            <% end %>
           </p>
-        <% else %>
-          <p class="text-lg font-medium text-gray-500 dark:text-slate-400"><%= t("games.court_pending") %></p>
         <% end %>
-      </div>
 
-      <% if @game.court&.coordinates_pair && @game.environment.to_s != "indoor" %>
-        <%# No display:contents here: it removes the frame's box, so the observer
-            Turbo uses for lazy frames never fires and the badge never loads. %>
-        <%= turbo_frame_tag dom_id(@game, :weather), src: game_weather_path(@game, context: "details"), loading: "lazy" %>
-      <% end %>
-
-      <% if @game.comment.present? %>
-        <%# Free-form text from the organizer: rendered as plain paragraphs, no autolinking. %>
-        <div class="sm:col-span-2" data-testid="game-comment">
-          <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("games.show.comment") %></p>
-          <div class="mt-1 space-y-2 break-words text-base text-gray-900 dark:text-slate-100">
-            <%# Escaped first, so any markup the organizer typed shows up as text instead of being stripped. %>
-            <%= simple_format(h(@game.comment), {}, sanitize: false) %>
+        <%# Дата, время, длительность и погода — по две в ряд на телефоне и в одну строку шире. %>
+        <div class="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4">
+          <div>
+            <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("games.show.date") %></p>
+            <p class="text-lg font-medium text-gray-900 dark:text-slate-100"><%= display_date(@game) %></p>
           </div>
+
+          <div>
+            <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("games.show.time") %></p>
+            <p class="text-lg font-medium text-gray-900 dark:text-slate-100"><%= display_time(@game) %></p>
+          </div>
+
+          <% if @game.respond_to?(:duration_minutes) && @game.duration_minutes.to_i > 0 %>
+            <div>
+              <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("games.show.duration") %></p>
+              <p class="text-lg font-medium text-gray-900 dark:text-slate-100"><%= format_duration_minutes(@game.duration_minutes) %></p>
+            </div>
+          <% end %>
+
+          <% if @game.court&.coordinates_pair && @game.environment.to_s != "indoor" %>
+            <%# No display:contents here: it removes the frame's box, so the observer
+                Turbo uses for lazy frames never fires and the badge never loads. %>
+            <%= turbo_frame_tag dom_id(@game, :weather), src: game_weather_path(@game, context: "details"), loading: "lazy" %>
+          <% end %>
+
+          <div class="col-span-2 sm:col-span-4">
+            <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("games.show.court") %></p>
+            <% if @game.court %>
+              <p class="text-lg font-medium text-indigo-700 dark:text-indigo-400">
+                <%= link_to @game.court.name, court_path(@game.court), class: "transition-colors hover:text-indigo-800 hover:underline dark:hover:text-indigo-300" %>
+              </p>
+            <% else %>
+              <p class="text-lg font-medium text-gray-500 dark:text-slate-400"><%= t("games.court_pending") %></p>
+            <% end %>
+          </div>
+
+          <% if @game.tournament.present? %>
+            <div class="col-span-2 sm:col-span-4">
+              <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("games.show.tournament") %></p>
+              <p class="text-lg font-medium text-purple-700 dark:text-purple-300">
+                <%= link_to (@game.tournament.name.presence || t("layout.nav.tournaments")), tournament_path(@game.tournament), class: "transition-colors hover:underline" %>
+              </p>
+            </div>
+          <% end %>
+
+          <% if @game.comment.present? %>
+            <%# Free-form text from the organizer: rendered as plain paragraphs, no autolinking. %>
+            <div class="col-span-2 sm:col-span-4" data-testid="game-comment">
+              <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("games.show.comment") %></p>
+              <div class="mt-1 space-y-2 break-words text-base text-gray-900 dark:text-slate-100">
+                <%# Escaped first, so any markup the organizer typed shows up as text instead of being stripped. %>
+                <%= simple_format(h(@game.comment), {}, sanitize: false) %>
+              </div>
+            </div>
+          <% end %>
         </div>
+      </section>
+
+      <section class="<%= card %>">
+        <h2 class="<%= heading %>"><%= t("games.show.participants") %></h2>
+        <%= render "participations/list", game: @game %>
+        <%= render "participations/controls", game: @game %>
+
+        <% if @game.with_coach? && @game.coaches.any? %>
+          <div class="mt-4 rounded-md border border-violet-200 bg-violet-50/70 p-3 dark:border-violet-400/20 dark:bg-violet-500/10">
+            <%# У тренировки тренеров может быть двое, и каждый отвечает за себя. %>
+            <% @game.coaches.each_with_index do |coach, index| %>
+              <div class="<%= "mt-3 border-t border-violet-200 pt-3 dark:border-violet-400/20" if index.positive? %>">
+                <p class="text-sm font-semibold text-gray-800 dark:text-slate-100">
+                  <%= t("games.show.coach") %>: <%= coach.name.presence || coach.email %>
+                </p>
+                <p class="mt-1 text-xs text-gray-600 dark:text-slate-400">
+                  <%= t("games.show.coach_status.#{@game.invitation_status_for(coach) || "pending"}") %>
+                </p>
+                <% if current_user == coach && @game.invitation_status_for(coach) == "pending" %>
+                  <div class="mt-3 flex gap-2">
+                    <%= button_to t("games.show.coach_accept"), accept_coach_invitation_game_path(@game), method: :post, class: "rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white" %>
+                    <%= button_to t("games.show.coach_decline"), decline_coach_invitation_game_path(@game), method: :post, class: "rounded-md border border-red-300 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-300" %>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </section>
+
+      <% if @game.training? && @game.training_blocks.any? %>
+        <section class="<%= card %>" data-testid="training-plan">
+          <h2 class="text-base font-semibold text-gray-900 dark:text-slate-100"><%= t("games.show.training_plan") %></h2>
+          <ol class="mt-2 space-y-2">
+            <% @game.training_blocks.each_with_index do |block, index| %>
+              <li class="text-sm text-gray-700 dark:text-slate-300">
+                <span class="font-medium"><%= index + 1 %>. <%= block.label %></span>
+                <% if block.description.present? %>
+                  <span class="mt-0.5 block text-xs text-gray-500 dark:text-slate-400"><%= block.description %></span>
+                <% end %>
+                <%= render "training_blocks/video_link", block: block %>
+                <%# Схему показываем свёрнутой: в плане из пяти блоков пять кортов подряд не читаются. %>
+                <% if block.diagram? %>
+                  <details class="mt-1">
+                    <summary class="cursor-pointer text-xs text-indigo-600 hover:underline dark:text-indigo-400"><%= t("training_blocks.diagram.title") %></summary>
+                    <div class="mt-2">
+                      <%= render "training_blocks/diagram", block: block, readonly: true %>
+                    </div>
+                  </details>
+                <% end %>
+              </li>
+            <% end %>
+          </ol>
+        </section>
       <% end %>
 
-      <% if @game.tournament.present? %>
-        <div class="sm:col-span-2">
-          <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("games.show.tournament") %></p>
-          <p class="text-lg font-medium text-purple-700 dark:text-purple-300">
-            <%= link_to (@game.tournament.name.presence || t("layout.nav.tournaments")), tournament_path(@game.tournament), class: "transition-colors hover:underline" %>
-          </p>
-        </div>
+      <% if @game.training? %>
+        <%= render "games/training_plan_proposals",
+                   game: @game,
+                   proposals: @training_plan_proposals,
+                   blocks: @proposal_training_blocks,
+                   can_propose: @can_propose_training_plan %>
+      <% end %>
+
+      <% if @game.prebooking_enabled? || (@game.series? && @game.coach_accepted?) %>
+        <%# Календарь бывает пустым — серия кончилась, — и тогда пустую карточку прячем. %>
+        <section class="<%= card %> hidden has-[[data-testid=prebooking-calendar]]:block">
+          <%= render "prebookings", game: @game, month: params[:month] %>
+        </section>
       <% end %>
     </div>
 
-    <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2"><%= t("games.show.participants") %></h2>
-    <%= render "participations/list", game: @game %>
-    <%= render "participations/controls", game: @game %>
+    <div class="space-y-4 sm:space-y-6 lg:col-span-5">
+      <% onboarding = GameOnboardingPresenter.new(game: @game, user: current_user) %>
+      <% player_search_onboarding = onboarding.items.find { |item| item.key == :player_search && !item.completed } if onboarding.visible? %>
+      <% if onboarding.visible? %>
+        <section class="rounded-lg border border-indigo-200 bg-indigo-50/70 p-4 shadow-sm sm:p-5 dark:border-indigo-400/20 dark:bg-indigo-500/10" data-testid="game-onboarding">
+          <h2 class="text-base font-semibold text-gray-900 dark:text-slate-100"><%= t("games.show.onboarding.title") %></h2>
+          <p class="mt-1 text-sm text-gray-600 dark:text-slate-400"><%= t("games.show.onboarding.description") %></p>
 
-    <%= render "games/win_chances", game: @game %>
-
-    <% if @game.with_coach? && @game.coaches.any? %>
-      <section class="mt-4 rounded-md border border-violet-200 bg-violet-50/70 p-3 dark:border-violet-400/20 dark:bg-violet-500/10">
-        <%# У тренировки тренеров может быть двое, и каждый отвечает за себя. %>
-        <% @game.coaches.each_with_index do |coach, index| %>
-          <div class="<%= "mt-3 border-t border-violet-200 pt-3 dark:border-violet-400/20" if index.positive? %>">
-            <p class="text-sm font-semibold text-gray-800 dark:text-slate-100">
-              <%= t("games.show.coach") %>: <%= coach.name.presence || coach.email %>
-            </p>
-            <p class="mt-1 text-xs text-gray-600 dark:text-slate-400">
-              <%= t("games.show.coach_status.#{@game.invitation_status_for(coach) || "pending"}") %>
-            </p>
-            <% if current_user == coach && @game.invitation_status_for(coach) == "pending" %>
-              <div class="mt-3 flex gap-2">
-                <%= button_to t("games.show.coach_accept"), accept_coach_invitation_game_path(@game), method: :post, class: "rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white" %>
-                <%= button_to t("games.show.coach_decline"), decline_coach_invitation_game_path(@game), method: :post, class: "rounded-md border border-red-300 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-300" %>
-              </div>
-            <% end %>
-          </div>
-        <% end %>
-      </section>
-    <% end %>
-
-    <% if @game.training? && @game.training_blocks.any? %>
-      <section class="mt-4 rounded-md border border-gray-200 p-3 dark:border-white/10" data-testid="training-plan">
-        <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("games.show.training_plan") %></h2>
-        <ol class="mt-2 space-y-2">
-          <% @game.training_blocks.each_with_index do |block, index| %>
-            <li class="text-sm text-gray-700 dark:text-slate-300">
-              <span class="font-medium"><%= index + 1 %>. <%= block.label %></span>
-              <% if block.description.present? %>
-                <span class="mt-0.5 block text-xs text-gray-500 dark:text-slate-400"><%= block.description %></span>
-              <% end %>
-              <%= render "training_blocks/video_link", block: block %>
-              <%# Схему показываем свёрнутой: в плане из пяти блоков пять кортов подряд не читаются. %>
-              <% if block.diagram? %>
-                <details class="mt-1">
-                  <summary class="cursor-pointer text-xs text-indigo-600 hover:underline dark:text-indigo-400"><%= t("training_blocks.diagram.title") %></summary>
-                  <div class="mt-2">
-                    <%= render "training_blocks/diagram", block: block, readonly: true %>
+          <ul class="mt-4 space-y-3">
+            <% onboarding.items.each do |item| %>
+              <li class="rounded-md bg-white p-3 dark:bg-slate-800/80" data-testid="onboarding-<%= item.key %>">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div class="flex gap-3">
+                    <span class="mt-0.5 <%= item.completed ? "text-emerald-600 dark:text-emerald-400" : "text-gray-400 dark:text-slate-500" %>" aria-hidden="true"><%= item.completed ? "✓" : "○" %></span>
+                    <div>
+                      <p class="text-sm font-medium text-gray-900 dark:text-slate-100"><%= t("games.show.onboarding.items.#{item.key}.title") %></p>
+                      <p class="text-xs text-gray-600 dark:text-slate-400"><%= t("games.show.onboarding.items.#{item.key}.description") %></p>
+                    </div>
                   </div>
-                </details>
-              <% end %>
-            </li>
-          <% end %>
-        </ol>
-      </section>
-    <% end %>
 
-    <% if @game.training? %>
-      <%= render "games/training_plan_proposals",
-                 game: @game,
-                 proposals: @training_plan_proposals,
-                 blocks: @proposal_training_blocks,
-                 can_propose: @can_propose_training_plan %>
-    <% end %>
-
-    <% onboarding = GameOnboardingPresenter.new(game: @game, user: current_user) %>
-    <% player_search_onboarding = onboarding.items.find { |item| item.key == :player_search && !item.completed } if onboarding.visible? %>
-    <% if onboarding.visible? %>
-      <section class="mt-6 rounded-md border border-indigo-200 bg-indigo-50/70 p-3 dark:border-indigo-400/20 dark:bg-indigo-500/10" data-testid="game-onboarding">
-        <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("games.show.onboarding.title") %></h2>
-        <p class="mt-1 text-sm text-gray-600 dark:text-slate-400"><%= t("games.show.onboarding.description") %></p>
-
-        <ul class="mt-4 space-y-3">
-          <% onboarding.items.each do |item| %>
-            <li class="rounded-md bg-white p-3 dark:bg-slate-800/80" data-testid="onboarding-<%= item.key %>">
-              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div class="flex gap-3">
-                  <span class="mt-0.5 <%= item.completed ? "text-emerald-600 dark:text-emerald-400" : "text-gray-400 dark:text-slate-500" %>" aria-hidden="true"><%= item.completed ? "✓" : "○" %></span>
-                  <div>
-                    <p class="text-sm font-medium text-gray-900 dark:text-slate-100"><%= t("games.show.onboarding.items.#{item.key}.title") %></p>
-                    <p class="text-xs text-gray-600 dark:text-slate-400"><%= t("games.show.onboarding.items.#{item.key}.description") %></p>
-                  </div>
-                </div>
-
-                <% action_classes = "inline-flex shrink-0 items-center justify-center rounded-md border border-indigo-300 px-3 py-2 text-sm font-medium text-indigo-700 transition hover:bg-indigo-50 dark:border-white/15 dark:text-slate-100 dark:hover:bg-slate-700/60" %>
-                <% unless item.completed || item.key == :player_search %>
-                  <% case item.key %>
-                  <% when :join %>
-                    <%= button_to t("games.show.onboarding.items.join.action"), game_participations_path(@game), method: :post, form: { data: { turbo: false } }, class: action_classes %>
-                  <% when :city %>
-                    <%= link_to t("games.show.onboarding.items.city.action"), profile_account_path, class: action_classes %>
-                  <% when :telegram %>
-                    <%= link_to t("games.show.onboarding.items.telegram.action"), notifications_account_path, class: action_classes %>
+                  <% action_classes = "inline-flex shrink-0 items-center justify-center rounded-md border border-indigo-300 px-3 py-2 text-sm font-medium text-indigo-700 transition hover:bg-indigo-50 dark:border-white/15 dark:text-slate-100 dark:hover:bg-slate-700/60" %>
+                  <% unless item.completed || item.key == :player_search %>
+                    <% case item.key %>
+                    <% when :join %>
+                      <%= button_to t("games.show.onboarding.items.join.action"), game_participations_path(@game), method: :post, form: { data: { turbo: false } }, class: action_classes %>
+                    <% when :city %>
+                      <%= link_to t("games.show.onboarding.items.city.action"), profile_account_path, class: action_classes %>
+                    <% when :telegram %>
+                      <%= link_to t("games.show.onboarding.items.telegram.action"), notifications_account_path, class: action_classes %>
+                    <% end %>
                   <% end %>
-                <% end %>
-              </div>
-
-              <%# Announcing the search is one way to fill the spots — inviting players you already know is the other. %>
-              <% if item.key == :player_search && !item.completed %>
-                <div class="mt-3 grid gap-3 border-t border-gray-100 pt-3 sm:grid-cols-2 dark:border-white/10" data-testid="onboarding-invite">
-                  <div class="flex flex-col rounded-md border border-gray-200 p-3 dark:border-white/10">
-                    <p class="text-sm font-medium text-indigo-700 dark:text-indigo-300"><%= t("games.show.onboarding.items.player_search.announce_title") %></p>
-                    <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.show.onboarding.items.player_search.announce_hint") %></p>
-                    <%# mt-auto keeps the button on the card's floor, level with whatever the invite card ends on. %>
-                    <div class="mt-auto pt-3">
-                      <%= button_to t("games.show.onboarding.items.player_search.action"), toggle_urgent_player_search_game_path(@game), method: :post, class: action_classes %>
-                    </div>
-                  </div>
-                  <div class="rounded-md border border-gray-200 p-3 dark:border-white/10">
-                    <p class="text-sm font-medium text-indigo-700 dark:text-indigo-300"><%= t("games.show.onboarding.items.player_search.invite_toggle") %></p>
-                    <div class="mt-3">
-                      <%= render "games/invite_form", game: @game %>
-                    </div>
-                  </div>
                 </div>
-              <% end %>
-            </li>
-          <% end %>
-        </ul>
-      </section>
-    <% end %>
 
-    <% if current_user&.admin? %>
-      <% organizer = @game.user %>
-      <section class="mt-6 rounded-md border border-amber-200 bg-amber-50/70 p-3 dark:border-amber-400/20 dark:bg-amber-500/10" data-testid="game-organizer-admin">
-        <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("games.show.organizer.title") %></h2>
-        <dl class="mt-3 grid grid-cols-1 gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
-          <div><dt class="text-gray-500 dark:text-slate-400"><%= t("games.show.organizer.user_id") %></dt><dd class="font-medium text-gray-900 dark:text-slate-100"><%= organizer.id %></dd></div>
-          <div><dt class="text-gray-500 dark:text-slate-400"><%= t("games.show.organizer.name") %></dt><dd class="font-medium text-gray-900 dark:text-slate-100"><%= organizer.name.presence || t("games.show.organizer.not_set") %></dd></div>
-          <div><dt class="text-gray-500 dark:text-slate-400"><%= t("games.show.organizer.email") %></dt><dd><%= mail_to organizer.email, organizer.email, class: "font-medium text-indigo-700 hover:underline dark:text-indigo-300" %></dd></div>
-          <div><dt class="text-gray-500 dark:text-slate-400"><%= t("games.show.organizer.registered_at") %></dt><dd class="font-medium text-gray-900 dark:text-slate-100"><%= l(organizer.created_at, format: :short) %></dd></div>
-          <div><dt class="text-gray-500 dark:text-slate-400"><%= t("games.show.organizer.city") %></dt><dd class="font-medium text-gray-900 dark:text-slate-100"><%= organizer.city_name.presence || t("games.show.organizer.not_set") %></dd></div>
-          <div>
-            <dt class="text-gray-500 dark:text-slate-400"><%= t("games.show.organizer.telegram") %></dt>
-            <dd class="font-medium text-gray-900 dark:text-slate-100">
-              <%= organizer.telegram_chat_id.present? ? t("games.show.organizer.telegram_connected") : t("games.show.organizer.telegram_not_connected") %>
-              <% if organizer.telegram_username.present? %>
-                · <%= telegram_profile_link(organizer.telegram_username, class: "text-indigo-700 hover:underline dark:text-indigo-300") %>
-              <% end %>
-            </dd>
-          </div>
-          <div><dt class="text-gray-500 dark:text-slate-400"><%= t("games.show.organizer.registration_source") %></dt><dd class="font-medium text-gray-900 dark:text-slate-100"><%= organizer.registration_source.presence || t("games.show.organizer.not_set") %></dd></div>
-        </dl>
-      </section>
-    <% end %>
+                <%# Announcing the search is one way to fill the spots — inviting players you already know is the other. %>
+                <% if item.key == :player_search && !item.completed %>
+                  <div class="mt-3 grid gap-3 border-t border-gray-100 pt-3 sm:grid-cols-2 lg:grid-cols-1 dark:border-white/10" data-testid="onboarding-invite">
+                    <div class="flex flex-col rounded-md border border-gray-200 p-3 dark:border-white/10">
+                      <p class="text-sm font-medium text-indigo-700 dark:text-indigo-300"><%= t("games.show.onboarding.items.player_search.announce_title") %></p>
+                      <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.show.onboarding.items.player_search.announce_hint") %></p>
+                      <%# mt-auto keeps the button on the card's floor, level with whatever the invite card ends on. %>
+                      <div class="mt-auto pt-3">
+                        <%= button_to t("games.show.onboarding.items.player_search.action"), toggle_urgent_player_search_game_path(@game), method: :post, class: action_classes %>
+                      </div>
+                    </div>
+                    <div class="rounded-md border border-gray-200 p-3 dark:border-white/10">
+                      <p class="text-sm font-medium text-indigo-700 dark:text-indigo-300"><%= t("games.show.onboarding.items.player_search.invite_toggle") %></p>
+                      <div class="mt-3">
+                        <%= render "games/invite_form", game: @game %>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        </section>
+      <% end %>
 
-    <% if current_user.present? && (current_user == @game.user || (current_user.respond_to?(:admin?) && current_user.admin?)) && player_search_onboarding.nil? %>
-      <div class="mt-4 space-y-4">
-        <div class="rounded-md border border-gray-200 p-3 dark:border-white/10">
-          <p class="mb-2 text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("games.show.invite.title") %></p>
+      <% if current_user.present? && (current_user == @game.user || (current_user.respond_to?(:admin?) && current_user.admin?)) && player_search_onboarding.nil? %>
+        <section class="<%= card %>">
+          <h2 class="<%= heading %>"><%= t("games.show.invite.title") %></h2>
           <%= render "games/invite_form", game: @game %>
+
+          <%# Tournament games get their players from the tournament draw, not from a public search. %>
+          <% unless @game.tournament_game? %>
+            <div class="mt-4 border-t border-gray-200 pt-4 dark:border-white/10">
+              <p class="mb-2 text-sm text-gray-500 dark:text-slate-400">
+                <%= t("games.show.urgent_hint") %>
+              </p>
+              <%= button_to (@game.urgent_player_search? ? t("games.show.urgent_cancel") : t("games.show.urgent_announce")),
+                    toggle_urgent_player_search_game_path(@game),
+                    method: :post,
+                    class: "inline-flex items-center rounded-md border border-indigo-300 px-3 py-2 text-sm font-medium text-indigo-700 transition hover:bg-indigo-50 dark:border-white/15 dark:text-slate-100 dark:hover:bg-slate-700/60" %>
+            </div>
+          <% end %>
+        </section>
+      <% end %>
+
+      <% can_fill_stats = false %>
+      <% if current_user.present? %>
+        <% can_fill_stats = (current_user == @game.user || (current_user.respond_to?(:admin?) && current_user.admin?)) %>
+        <% unless can_fill_stats %>
+          <% scope = @game.participations.respond_to?(:approved) ? @game.participations.approved : @game.participations %>
+          <% can_fill_stats = scope.exists?(user_id: current_user.id) %>
+        <% end %>
+      <% end %>
+      <% game_started =
+           if @game.respond_to?(:started_for_ui?)
+             @game.started_for_ui?
+           elsif @game.respond_to?(:starts_at) && @game.starts_at.present?
+             @game.starts_at <= Time.current
+           elsif @game.respond_to?(:date) && @game.date.present?
+             @game.date <= Date.current
+           else
+             true
+           end %>
+
+      <section class="<%= card %>">
+        <% last_reset = @game.last_participations_reset_at %>
+        <% stats_filled =
+             if last_reset.present?
+               PlayerStatisticEntry.where(game: @game).where("recorded_at >= ?", last_reset.beginning_of_day).exists? ||
+                 Match.where(game_id: @game.id).where("played_at >= ?", last_reset.beginning_of_day).exists?
+             else
+               PlayerStatisticEntry.where(game: @game).exists? || Match.where(game_id: @game.id).exists?
+             end %>
+        <div class="flex items-center justify-between gap-2 mb-3">
+          <h2 class="text-base font-semibold text-gray-900 dark:text-slate-100"><%= t("games.show.enter_statistics") %></h2>
+          <% if stats_filled %>
+            <span class="text-xs font-medium text-green-700 bg-green-50 dark:bg-green-500/15 dark:text-green-200 px-2 py-1 rounded"><%= t("games.show.statistics_saved") %></span>
+          <% else %>
+            <span class="text-xs font-medium text-amber-700 bg-amber-50 dark:bg-amber-500/15 dark:text-amber-200 px-2 py-1 rounded">
+              <%= game_started ? "Fill in the statistics" : "Fill in the statistics after game starts" %>
+            </span>
+          <% end %>
         </div>
 
-        <%# Tournament games get their players from the tournament draw, not from a public search. %>
-        <% unless @game.tournament_game? %>
-          <div class="rounded-md border border-gray-200 p-3 dark:border-white/10">
-            <p class="mb-2 text-sm text-gray-500 dark:text-slate-400">
-              <%= t("games.show.urgent_hint") %>
-            </p>
-            <%= button_to (@game.urgent_player_search? ? t("games.show.urgent_cancel") : t("games.show.urgent_announce")),
-                  toggle_urgent_player_search_game_path(@game),
-                  method: :post,
-                  class: "inline-flex items-center rounded-md border border-indigo-300 px-3 py-2 text-sm font-medium text-indigo-700 transition hover:bg-indigo-50 dark:border-white/15 dark:text-slate-100 dark:hover:bg-slate-700/60" %>
-          </div>
-        <% end %>
-      </div>
-    <% end %>
-
-    <% if @game.prebooking_enabled? || (@game.series? && @game.coach_accepted?) %>
-      <%= render "prebookings", game: @game, month: params[:month] %>
-    <% end %>
-
-    <% can_fill_stats = false %>
-    <% if current_user.present? %>
-      <% can_fill_stats = (current_user == @game.user || (current_user.respond_to?(:admin?) && current_user.admin?)) %>
-      <% unless can_fill_stats %>
-        <% scope = @game.participations.respond_to?(:approved) ? @game.participations.approved : @game.participations %>
-        <% can_fill_stats = scope.exists?(user_id: current_user.id) %>
-      <% end %>
-    <% end %>
-    <% game_started =
-         if @game.respond_to?(:started_for_ui?)
-           @game.started_for_ui?
-         elsif @game.respond_to?(:starts_at) && @game.starts_at.present?
-           @game.starts_at <= Time.current
-         elsif @game.respond_to?(:date) && @game.date.present?
-           @game.date <= Date.current
-         else
-           true
-         end %>
-
-    <%= render "games/media", game: @game, can_contribute: can_fill_stats %>
-
-    <div class="mt-6 border-t dark:border-white/10 pt-4">
-      <% last_reset = @game.last_participations_reset_at %>
-      <% stats_filled =
-           if last_reset.present?
-             PlayerStatisticEntry.where(game: @game).where("recorded_at >= ?", last_reset.beginning_of_day).exists? ||
-               Match.where(game_id: @game.id).where("played_at >= ?", last_reset.beginning_of_day).exists?
-           else
-             PlayerStatisticEntry.where(game: @game).exists? || Match.where(game_id: @game.id).exists?
-           end %>
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("games.show.enter_statistics") %></h2>
-        <% if stats_filled %>
-          <span class="text-xs font-medium text-green-700 bg-green-50 dark:bg-green-500/15 dark:text-green-200 px-2 py-1 rounded"><%= t("games.show.statistics_saved") %></span>
-        <% else %>
-          <span class="text-xs font-medium text-amber-700 bg-amber-50 dark:bg-amber-500/15 dark:text-amber-200 px-2 py-1 rounded">
-            <%= game_started ? "Fill in the statistics" : "Fill in the statistics after game starts" %>
-          </span>
-        <% end %>
-      </div>
-
-      <%# Табло — быстрый путь к той же статистике: счёт ведут по ходу матча, а
-          не вспоминают потом. Идущий матч видят все, начать — те, кто пишет
-          статистику. %>
-      <% unless @game.training? %>
-        <% live_scoreboard = @game.scoreboards.live.first %>
-        <% if live_scoreboard || (can_fill_stats && game_started) %>
-          <%= link_to game_scoreboard_path(@game),
-                class: "mb-4 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-base font-semibold transition #{live_scoreboard ? "bg-emerald-600 text-white hover:bg-emerald-700" : "border border-indigo-300 text-indigo-700 hover:bg-indigo-50 dark:border-white/15 dark:text-slate-100 dark:hover:bg-slate-700/60"}" do %>
-            <% if live_scoreboard %>
-              <span class="inline-block h-2 w-2 animate-pulse rounded-full bg-white" aria-hidden="true"></span>
-              <%= t("game_scoreboards.entry.live") %>
-              <span class="tabular-nums opacity-90"><%= live_scoreboard.state.score_string.presence %></span>
-            <% else %>
-              <%= t("game_scoreboards.entry.open") %>
+        <%# Табло — быстрый путь к той же статистике: счёт ведут по ходу матча, а
+            не вспоминают потом. Идущий матч видят все, начать — те, кто пишет
+            статистику. %>
+        <% unless @game.training? %>
+          <% live_scoreboard = @game.scoreboards.live.first %>
+          <% if live_scoreboard || (can_fill_stats && game_started) %>
+            <%= link_to game_scoreboard_path(@game),
+                  class: "mb-4 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-base font-semibold transition #{live_scoreboard ? "bg-emerald-600 text-white hover:bg-emerald-700" : "border border-indigo-300 text-indigo-700 hover:bg-indigo-50 dark:border-white/15 dark:text-slate-100 dark:hover:bg-slate-700/60"}" do %>
+              <% if live_scoreboard %>
+                <span class="inline-block h-2 w-2 animate-pulse rounded-full bg-white" aria-hidden="true"></span>
+                <%= t("game_scoreboards.entry.live") %>
+                <span class="tabular-nums opacity-90"><%= live_scoreboard.state.score_string.presence %></span>
+              <% else %>
+                <%= t("game_scoreboards.entry.open") %>
+              <% end %>
             <% end %>
           <% end %>
         <% end %>
-      <% end %>
 
-      <% if can_fill_stats && game_started %>
-        <div class="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
-          <%= t("account.games.fairness_warning") %>
-        </div>
-        <%= render "games/stats_form", game: @game %>
-      <% else %>
-        <p class="text-gray-600 dark:text-slate-400 text-sm"><%= t("games.show.stats_locked") %></p>
+        <% if can_fill_stats && game_started %>
+          <div class="mb-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+            <%= t("account.games.fairness_warning") %>
+          </div>
+          <%= render "games/stats_form", game: @game %>
+        <% else %>
+          <p class="text-gray-600 dark:text-slate-400 text-sm"><%= t("games.show.stats_locked") %></p>
+        <% end %>
+      </section>
+
+      <%= render "games/win_chances", game: @game %>
+
+      <%= render "games/media", game: @game, can_contribute: can_fill_stats %>
+
+      <% if current_user&.admin? %>
+        <% organizer = @game.user %>
+        <details class="group rounded-lg border border-amber-200 bg-amber-50/70 p-4 shadow-sm sm:p-5 dark:border-amber-400/20 dark:bg-amber-500/10" data-testid="game-organizer-admin">
+          <summary class="flex cursor-pointer list-none items-center justify-between gap-2 [&::-webkit-details-marker]:hidden">
+            <h2 class="text-base font-semibold text-gray-900 dark:text-slate-100"><%= t("games.show.organizer.title") %></h2>
+            <svg class="h-5 w-5 shrink-0 text-gray-400 transition group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd"/></svg>
+          </summary>
+          <dl class="mt-3 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+            <div><dt class="text-gray-500 dark:text-slate-400"><%= t("games.show.organizer.user_id") %></dt><dd class="font-medium text-gray-900 dark:text-slate-100"><%= organizer.id %></dd></div>
+            <div><dt class="text-gray-500 dark:text-slate-400"><%= t("games.show.organizer.name") %></dt><dd class="font-medium text-gray-900 dark:text-slate-100"><%= organizer.name.presence || t("games.show.organizer.not_set") %></dd></div>
+            <div class="col-span-2"><dt class="text-gray-500 dark:text-slate-400"><%= t("games.show.organizer.email") %></dt><dd class="break-all"><%= mail_to organizer.email, organizer.email, class: "font-medium text-indigo-700 hover:underline dark:text-indigo-300" %></dd></div>
+            <div><dt class="text-gray-500 dark:text-slate-400"><%= t("games.show.organizer.registered_at") %></dt><dd class="font-medium text-gray-900 dark:text-slate-100"><%= l(organizer.created_at, format: :short) %></dd></div>
+            <div><dt class="text-gray-500 dark:text-slate-400"><%= t("games.show.organizer.city") %></dt><dd class="font-medium text-gray-900 dark:text-slate-100"><%= organizer.city_name.presence || t("games.show.organizer.not_set") %></dd></div>
+            <div>
+              <dt class="text-gray-500 dark:text-slate-400"><%= t("games.show.organizer.telegram") %></dt>
+              <dd class="font-medium text-gray-900 dark:text-slate-100">
+                <%= organizer.telegram_chat_id.present? ? t("games.show.organizer.telegram_connected") : t("games.show.organizer.telegram_not_connected") %>
+                <% if organizer.telegram_username.present? %>
+                  · <%= telegram_profile_link(organizer.telegram_username, class: "text-indigo-700 hover:underline dark:text-indigo-300") %>
+                <% end %>
+              </dd>
+            </div>
+            <div><dt class="text-gray-500 dark:text-slate-400"><%= t("games.show.organizer.registration_source") %></dt><dd class="font-medium text-gray-900 dark:text-slate-100"><%= organizer.registration_source.presence || t("games.show.organizer.not_set") %></dd></div>
+          </dl>
+        </details>
       <% end %>
     </div>
   </div>

@@ -1,11 +1,15 @@
 <% chances = Games::WinChances.for_game(game, viewer: current_user) %>
-<section class="mt-4 rounded-md border border-sky-200 bg-sky-50/70 p-3 dark:border-sky-400/20 dark:bg-sky-500/10" data-testid="game-win-chances">
-  <div class="flex flex-wrap items-baseline justify-between gap-2">
-    <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("games.show.win_chances.title") %></h2>
-    <% if chances.available? %>
-      <p class="text-xs text-gray-500 dark:text-slate-400"><%= t("games.show.win_chances.mode.#{chances.mode}") %></p>
-    <% end %>
-  </div>
+<%# Свёрнуто: на телефоне раскладка по парам и форма игроков — это несколько экранов. %>
+<details class="group rounded-lg border border-sky-200 bg-sky-50/70 p-4 shadow-sm sm:p-5 dark:border-sky-400/20 dark:bg-sky-500/10" data-testid="game-win-chances">
+  <summary class="flex cursor-pointer list-none items-center justify-between gap-2 [&::-webkit-details-marker]:hidden">
+    <span class="flex flex-wrap items-baseline gap-x-2">
+      <h2 class="text-base font-semibold text-gray-900 dark:text-slate-100"><%= t("games.show.win_chances.title") %></h2>
+      <% if chances.available? %>
+        <span class="text-xs text-gray-500 dark:text-slate-400"><%= t("games.show.win_chances.mode.#{chances.mode}") %></span>
+      <% end %>
+    </span>
+    <svg class="h-5 w-5 shrink-0 text-gray-400 transition group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd"/></svg>
+  </summary>
 
   <% if chances.available? %>
     <% if chances.splits.any? %>
@@ -96,4 +100,4 @@
       <% end %>
     </ul>
   <% end %>
-</section>
+</details>

@@ -1,6 +1,6 @@
 <%# Правки плана: участник предлагает, организатор решает, состав голосует. %>
-<section class="mt-4 rounded-md border border-gray-200 p-3 dark:border-white/10" data-testid="training-plan-proposals">
-  <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("games.training_plan_proposals.title") %></h2>
+<section class="rounded-lg border bg-white p-4 shadow-sm sm:p-5 dark:bg-slate-800/80 dark:border-white/10" data-testid="training-plan-proposals">
+  <h2 class="text-base font-semibold text-gray-900 dark:text-slate-100"><%= t("games.training_plan_proposals.title") %></h2>
 
   <% if proposals.empty? %>
     <p class="mt-2 text-sm text-gray-500 dark:text-slate-400"><%= t("games.training_plan_proposals.empty") %></p>

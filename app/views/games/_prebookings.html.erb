@@ -15,7 +15,7 @@
     осталось ради тренера: вместо слотов и счётчика мест — подсказка. %>
 <% closed_dates = dates.select { |d| game.prebooking_closed_on?(d) } %>
 
-<%= turbo_frame_tag "prebookings-#{game.id}", class: "block mt-6" do %>
+<%= turbo_frame_tag "prebookings-#{game.id}", class: "block" do %>
   <% if month && (game.prebooking_enabled? || accepted_coaches.any?) %>
     <h3 class="mb-2 text-sm font-semibold text-gray-700 dark:text-slate-300">
       <%= game.prebooking_enabled? ? t("games.prebookings.title") : t("games.prebookings.coach_title") %>
