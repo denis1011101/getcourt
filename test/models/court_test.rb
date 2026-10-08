@@ -132,6 +132,45 @@ class CourtTest < ActiveSupport::TestCase
     end
   end
 
+  # --- Город справочника и страна ---------------------------------------------
+
+  test "moving a court forgets the city and country resolved for the old place" do
+    court = court_in_moscow
+
+    court.update!(coordinates: "48.85,2.35")
+
+    assert_nil court.reload.city_id
+    assert_nil court.country_code
+    assert_equal "Moscow", court.city_name, "строку перепишет геокодинг новых координат"
+  end
+
+  test "rewriting the same point differently keeps the resolved city" do
+    court = court_in_moscow
+
+    court.update!(coordinates: "55.75, 37.62", name: "Renamed")
+
+    assert_equal "RU", court.reload.country_code
+    assert court.city_id.present?
+  end
+
+  test "country code is normalized and must match the linked city" do
+    court = court_in_moscow
+
+    court.country_code = " ru "
+    assert court.valid?
+    assert_equal "RU", court.country_code
+
+    court.country_code = "KZ"
+    assert_not court.valid?
+    assert court.errors[:country_code].any?
+
+    court.city = nil
+    assert court.valid?, "страна бывает известна и без города"
+
+    court.country_code = "RUS"
+    assert_not court.valid?
+  end
+
   test "free_only scope returns only free courts" do
     courts(:one).update!(free: true,  moderation_status: "approved")
     courts(:two).update!(free: false, moderation_status: "approved")
@@ -157,6 +196,13 @@ class CourtTest < ActiveSupport::TestCase
   end
 
   private
+
+  def court_in_moscow
+    moscow = City.create!(name: "Moscow", asciiname: "Moscow", country_code: "RU", geoname_id: 524901)
+    court = courts(:one)
+    court.update_columns(coordinates: "55.75,37.62", city_name: "Moscow", city_id: moscow.id, country_code: "RU")
+    court
+  end
 
   def with_stubbed_singleton_method(target, method_name, replacement)
     sc = target.singleton_class

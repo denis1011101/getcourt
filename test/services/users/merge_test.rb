@@ -136,4 +136,26 @@ class Users::MergeTest < ActiveSupport::TestCase
 
     assert_empty Match.where(id: match_ids), "an event a player shares with themselves must be dropped"
   end
+
+  test "the city link moves only together with its city_name" do
+    moscow = City.create!(name: "Moscow", asciiname: "Moscow", country_code: "RU", geoname_id: 524901)
+    kurgan = City.create!(name: "Kurgan", asciiname: "Kurgan", country_code: "RU", geoname_id: 1501321)
+    target = User.create!(email: "merge-city-target-#{SecureRandom.hex(4)}@example.com")
+    donor = User.create!(email: "tg-#{SecureRandom.hex(8)}@telegram.getcourt", telegram_generated_email: true,
+                         telegram_chat_id: 777_003, city_name: "Moscow", city: moscow)
+
+    stub_singleton(RecalculateEloJob, :perform_later, ->(_modes) { true }) do
+      Users::Merge.call(source: donor, target: target)
+    end
+    assert_equal [ "Moscow", moscow.id ], target.reload.values_at(:city_name, :city_id)
+
+    other_target = User.create!(email: "merge-city-other-#{SecureRandom.hex(4)}@example.com", city_name: "Kurgan", city: kurgan)
+    other_donor = User.create!(email: "tg-#{SecureRandom.hex(8)}@telegram.getcourt", telegram_generated_email: true,
+                               telegram_chat_id: 777_004, city_name: "Moscow", city: moscow)
+
+    stub_singleton(RecalculateEloJob, :perform_later, ->(_modes) { true }) do
+      Users::Merge.call(source: other_donor, target: other_target)
+    end
+    assert_equal [ "Kurgan", kurgan.id ], other_target.reload.values_at(:city_name, :city_id)
+  end
 end

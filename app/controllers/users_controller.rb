@@ -48,6 +48,7 @@ class UsersController < ApplicationController
     selected_city = City.find_by(id: params[:selected_city_id]) if params[:selected_city_id].present?
     if selected_city
       user_attrs["city_name"] = selected_city.canonical_name
+      user_attrs["city_id"] = selected_city.id
       user_attrs["timezone"] = selected_city.rails_timezone if selected_city.rails_timezone.present?
     end
 
@@ -115,7 +116,7 @@ class UsersController < ApplicationController
 
   def clear_city
     @user = current_user
-    @user.update(timezone: nil, city_name: nil)
+    @user.update(timezone: nil, city_name: nil, city_id: nil)
     redirect_to profile_account_path, notice: "City cleared"
   end
 

@@ -116,6 +116,26 @@ class UserTest < ActiveSupport::TestCase
     assert_equal [ start, word_start, inside ], User.search_pickable("ian")
   end
 
+  test "a new city_name without a new link forgets the old city" do
+    moscow = City.create!(name: "Moscow", asciiname: "Moscow", country_code: "RU", geoname_id: 524901)
+    user = User.create!(email: "city-link-#{SecureRandom.hex(4)}@example.com", city_name: "Moscow", city: moscow)
+
+    user.update!(name: "Renamed")
+    assert_equal moscow, user.reload.city, "без смены города связь живёт"
+
+    user.update!(city_name: "Moskva")
+    assert_nil user.reload.city_id
+  end
+
+  test "re-picking the linked city under its canonical name keeps the link" do
+    yekaterinburg = City.create!(name: "Yekaterinburg", asciiname: "Yekaterinburg", country_code: "RU", geoname_id: 1486209)
+    user = User.create!(email: "city-link-#{SecureRandom.hex(4)}@example.com", city_name: "Ekaterinburg", city: yekaterinburg)
+
+    user.update!(city_name: yekaterinburg.canonical_name, city: yekaterinburg)
+
+    assert_equal yekaterinburg, user.reload.city
+  end
+
   test "search_pickable skips merged and nameless accounts and caps the list" do
     merged = User.create!(email: "picker-merged@example.com", name: "Zed Merged", merged_at: Time.current)
     User.create!(email: "picker-zed-nameless@example.com")

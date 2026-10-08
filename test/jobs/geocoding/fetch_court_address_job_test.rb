@@ -78,7 +78,97 @@ class Geocoding::FetchCourtAddressJobTest < ActiveSupport::TestCase
     end
   end
 
+  # --- Страна и город справочника ----------------------------------------------
+
+  test "writes the resolved city and its country together, keeping the geocoder's city_name" do
+    moscow = City.create!(name: "Moscow", asciiname: "Moscow", country_code: "RU", geoname_id: 524901)
+
+    with_stubbed_resolver(moskva_result) do
+      Geocoding::FetchCourtAddressJob.new.perform(@court.id)
+    end
+
+    @court.reload
+    assert_equal moscow, @court.city
+    assert_equal "RU", @court.country_code
+    assert_equal "Moskva", @court.city_name, "строковое представление не переименовываем"
+    assert_equal "Tverskaya St 1", @court.street
+  end
+
+  test "keeps the country but no city when the name does not resolve" do
+    City.create!(name: "Moskva", asciiname: "Moskva", country_code: "TJ", geoname_id: 1220988)
+
+    with_stubbed_resolver(moskva_result) do
+      Geocoding::FetchCourtAddressJob.new.perform(@court.id)
+    end
+
+    @court.reload
+    assert_nil @court.city_id, "таджикская Moskva — чужой город"
+    assert_equal "RU", @court.country_code
+    assert_equal "Moskva", @court.city_name
+  end
+
+  test "a district keeps its city_name and gets no city" do
+    City.create!(name: "Istanbul", asciiname: "Istanbul", country_code: "TR", geoname_id: 745044)
+    result = { address: "Fatih, Istanbul", city_name: "Fatih", country_code: "TR", city_component: "administrative_area_level_2" }
+
+    with_stubbed_resolver(result) do
+      Geocoding::FetchCourtAddressJob.new.perform(@court.id)
+    end
+
+    @court.reload
+    assert_equal "Fatih", @court.city_name
+    assert_nil @court.city_id
+    assert_equal "TR", @court.country_code
+  end
+
+  test "reprocessing is stable and creates neither cities nor aliases" do
+    moscow = City.create!(name: "Moscow", asciiname: "Moscow", country_code: "RU", geoname_id: 524901)
+
+    assert_no_difference -> { City.count } do
+      2.times do
+        with_stubbed_resolver(moskva_result) { Geocoding::FetchCourtAddressJob.new.perform(@court.id) }
+      end
+    end
+
+    assert_equal [ moscow.id, "RU" ], @court.reload.values_at(:city_id, :country_code)
+  end
+
+  test "a stale job does not write its result over newer coordinates" do
+    City.create!(name: "Moscow", asciiname: "Moscow", country_code: "RU", geoname_id: 524901)
+    court_id = @court.id
+    fake = Object.new
+    # Пока геокодер отвечает, корт переносят в другое место.
+    fake.define_singleton_method(:resolve) do |*|
+      Court.find(court_id).update!(coordinates: "48.85,2.35")
+      { address: "Tverskaya St 1, Moscow", city_name: "Moscow", street: "Tverskaya St 1", country_code: "RU", city_component: "locality" }
+    end
+
+    with_stubbed_singleton_method(Geocoding::AddressResolver, :new, -> { fake }) do
+      Geocoding::FetchCourtAddressJob.new.perform(@court.id)
+    end
+
+    @court.reload
+    assert_nil @court.city_id
+    assert_nil @court.country_code
+    assert_nil @court.city_name
+    assert_nil @court.street
+  end
+
+  test "a job for coordinates the court no longer has writes nothing" do
+    with_stubbed_resolver(moskva_result) do
+      Geocoding::FetchCourtAddressJob.new.perform(@court.id, 48.85, 2.35)
+    end
+
+    assert_nil @court.reload.country_code
+    assert_nil @court.city_name
+  end
+
   private
+
+  def moskva_result
+    { address: "Tverskaya St 1, Moskva", city_name: "Moskva", street: "Tverskaya St 1",
+      country_code: "RU", city_component: "city" }
+  end
 
   def with_stubbed_resolver(return_value, &block)
     fake = Object.new

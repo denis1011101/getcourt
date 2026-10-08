@@ -7,6 +7,11 @@ class User < ApplicationRecord
   has_many :merged_users, class_name: "User", foreign_key: :merged_into_id, dependent: :nullify, inverse_of: :merged_into
   after_create :ensure_player_statistic
 
+  # Город справочника рядом со строковым city_name: явный выбор в профиле или
+  # строгое разрешение (ResolveUserCityJob). Пустая связь — город не определён.
+  belongs_to :city, optional: true
+  before_save :forget_stale_city, if: -> { will_save_change_to_city_name? && !will_save_change_to_city_id? }
+
   # Accounts merged into another one stay in the table for history, but must not
   # show up anywhere people are listed or picked.
   scope :not_merged, -> { where(merged_at: nil) }
@@ -243,6 +248,13 @@ class User < ApplicationRecord
 
   def ensure_player_statistic
     create_player_statistic unless player_statistic
+  end
+
+  # Новый город без новой связи отвязывает прежнюю: иначе city_id указывал бы
+  # на город, которого в city_name уже нет. Связь остаётся, только если
+  # city_name стал ровно названием связанного города.
+  def forget_stale_city
+    self.city = nil unless city && city.canonical_name == city_name
   end
 
   def normalize_email
