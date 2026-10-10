@@ -10,7 +10,17 @@
 <% can_manage = user_signed_in? && (current_user.admin? || game.user == current_user) %>
 <% weekdays = t("games.prebookings.weekdays") %>
 <% month_names = t("games.prebookings.months") %>
-<% taken_by_date = dates.index_with { |d| (1..required).count { |slot_index| prebookings_by_date_and_slot[[ d, slot_index ]]&.user } } %>
+<%# Тип, корт и число мест можно задать на каждую дату отдельно; пусто — как в серии. %>
+<% settings_by_date = game.occurrence_settings.where(date: dates).includes(:court, :coach, :second_coach).index_by(&:date) %>
+<% required_by_date = dates.index_with { |d| settings_by_date[d]&.players_count || required } %>
+<% taken_by_date = dates.index_with { |d| (1..required_by_date[d]).count { |slot_index| prebookings_by_date_and_slot[[ d, slot_index ]]&.user } } %>
+<% if can_manage && dates.any? %>
+  <% anchor_city = game.court&.city_name.presence || current_user.try(:city_name).presence %>
+  <% court_options = Court.visible_to(current_user).sorted_for_user(current_user) %>
+  <% court_options = court_options.select { |c| c.city_name == anchor_city } if anchor_city && court_options.any? { |c| c.city_name == anchor_city } %>
+  <% court_options = (court_options.first(100) | settings_by_date.values.filter_map(&:court)) %>
+  <% coach_options = User.not_merged.where(coach: true).order(:name).to_a %>
+<% end %>
 <%# Дата в календаре, но игрокам на неё не записаться — первое занятие, которое
     осталось ради тренера: вместо слотов и счётчика мест — подсказка. %>
 <% closed_dates = dates.select { |d| game.prebooking_closed_on?(d) } %>
@@ -66,23 +76,28 @@
           <% cancellation = cancellations_by_date[day] %>
           <% game_day = dates.include?(day) %>
           <% taken = taken_by_date[day].to_i %>
+          <% day_required = required_by_date[day] || required %>
+          <% day_setting = settings_by_date[day] %>
           <% cell_classes =
                if !game_day
                  "bg-gray-50 text-gray-400 dark:bg-white/5 dark:text-slate-500"
                elsif cancellation
                  "bg-red-100 text-red-700 line-through dark:bg-red-500/25 dark:text-red-200"
-               elsif game.prebooking_enabled? && taken >= required && !closed_dates.include?(day)
+               elsif game.prebooking_enabled? && taken >= day_required && !closed_dates.include?(day)
                  "bg-emerald-100 font-semibold text-emerald-800 dark:bg-emerald-500/30 dark:text-emerald-100"
                else
                  "bg-indigo-100 font-semibold text-indigo-800 dark:bg-indigo-500/35 dark:text-indigo-50"
                end %>
           <% cell_body = capture do %>
+            <% if game_day && day_setting && (day_setting.kind || !day_setting.with_coach.nil? || day_setting.coaches_set? || day_setting.court || day_setting.without_court?) %>
+              <span class="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-violet-500 dark:bg-violet-300" aria-hidden="true"></span>
+            <% end %>
             <span class="text-sm"><%= day.day %></span>
             <% if game_day && game.prebooking_enabled? && !cancellation && !closed_dates.include?(day) %>
-              <span class="text-[10px] tabular-nums"><%= taken %>/<%= required %></span>
+              <span class="text-[10px] tabular-nums"><%= taken %>/<%= day_required %></span>
             <% end %>
           <% end %>
-          <% cell_classes = "#{cell_classes} flex min-h-11 flex-col items-center justify-center rounded-md leading-tight sm:min-h-14 #{"opacity-40" unless in_month} #{"ring-2 ring-indigo-400 dark:ring-indigo-300" if day == Date.current}" %>
+          <% cell_classes = "#{cell_classes} relative flex min-h-11 flex-col items-center justify-center rounded-md leading-tight sm:min-h-14 #{"opacity-40" unless in_month} #{"ring-2 ring-indigo-400 dark:ring-indigo-300" if day == Date.current}" %>
 
           <% if game_day %>
             <%# Якорь ведёт к карточке дня; с JS её ставит по центру экрана
@@ -90,7 +105,7 @@
                 навигацию и перерисовывал календарь, а до карточки не доезжал. %>
             <%= link_to cell_body, "#prebooking-#{day.iso8601}",
                         class: "#{cell_classes} cursor-pointer transition hover:brightness-95",
-                        title: l(day, format: :long),
+                        title: [ l(day, format: :long), (t("games.form.kind_#{day_setting.kind}") if day_setting&.kind), (day_setting.court&.name || (t("games.occurrence_settings.court_without") if day_setting.without_court?) if day_setting) ].compact.join(" · "),
                         data: { testid: "calendar-day", turbo: false, action: "scroll-to#center" } %>
           <% else %>
             <span class="<%= cell_classes %>" data-testid="calendar-day"><%= cell_body %></span>
@@ -122,7 +137,9 @@
     <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       <% dates.each do |d| %>
         <% cancellation = cancellations_by_date[d] %>
-        <% slots = (1..required).map { |slot_index| [ slot_index, prebookings_by_date_and_slot[[ d, slot_index ]] ] } %>
+        <% setting = settings_by_date[d] %>
+        <% day_required = required_by_date[d] %>
+        <% slots = (1..day_required).map { |slot_index| [ slot_index, prebookings_by_date_and_slot[[ d, slot_index ]] ] } %>
         <% taken = taken_by_date[d].to_i %>
         <%# Без JS работает сам якорь: подсветка через :target, а запас при
             прокрутке — высота липкой шапки (h-16) плюс отступ, иначе карточка
@@ -136,11 +153,34 @@
               <p class="text-sm font-semibold text-gray-900 dark:text-slate-100"><%= l(d, format: :long) %></p>
             </div>
             <% if game.prebooking_enabled? && !cancellation && !closed_dates.include?(d) %>
-              <% full = taken >= required %>
+              <% full = taken >= day_required %>
               <span class="inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-xs font-medium tabular-nums <%= full ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-200" : "bg-gray-100 text-gray-700 dark:bg-slate-700 dark:text-slate-100" %>"
-                    title="<%= t("games.prebookings.filled", taken: taken, total: required) %>"><%= taken %>/<%= required %></span>
+                    title="<%= t("games.prebookings.filled", taken: taken, total: day_required) %>"><%= taken %>/<%= day_required %></span>
             <% end %>
           </header>
+
+          <% if setting && !cancellation && (setting.kind || !setting.with_coach.nil? || setting.coaches_set? || setting.court || setting.without_court?) %>
+            <div class="mt-2 flex flex-wrap gap-1.5" data-testid="occurrence-setting-chips">
+              <% if setting.kind %>
+                <span class="inline-flex items-center rounded-full bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-700 dark:bg-violet-500/15 dark:text-violet-200"><%= t("games.form.kind_#{setting.kind}") %></span>
+              <% end %>
+              <% if setting.coaches_set? %>
+                <span class="inline-flex min-w-0 max-w-full items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-200">
+                  <span class="truncate"><%= t("games.show.coach") %>: <%= setting.coach_names.join(", ") %></span>
+                </span>
+              <% elsif !setting.with_coach.nil? && setting.effective_kind != "game" %>
+                <span class="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-500/15 dark:text-amber-200"><%= setting.with_coach ? t("games.form.with_coach") : t("games.occurrence_settings.without_coach") %></span>
+              <% end %>
+              <% if setting.court %>
+                <%= link_to court_path(setting.court), class: "inline-flex min-w-0 max-w-full items-center gap-1 rounded-full bg-sky-50 px-2 py-0.5 text-xs font-medium text-sky-700 hover:underline dark:bg-sky-500/15 dark:text-sky-200", data: { turbo_frame: "_top" } do %>
+                  <svg class="h-3 w-3 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="m9.69 18.933.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 0 0 .281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 1 0 3 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 0 0 2.273 1.765 11.842 11.842 0 0 0 .976.544l.062.029.018.008.006.003ZM10 11.25a2.25 2.25 0 1 0 0-4.5 2.25 2.25 0 0 0 0 4.5Z" clip-rule="evenodd"/></svg>
+                  <span class="truncate"><%= setting.court.name %></span>
+                <% end %>
+              <% elsif setting.without_court? %>
+                <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 dark:bg-slate-700 dark:text-slate-300"><%= t("games.occurrence_settings.court_without") %></span>
+              <% end %>
+            </div>
+          <% end %>
 
           <% if cancellation %>
             <p class="mt-3 text-xs text-red-600 dark:text-red-400"><%= t("games.prebookings.cancelled") %></p>
@@ -212,6 +252,11 @@
                 </div>
               <% end %>
             </div>
+          <% end %>
+
+          <% if can_manage && !cancellation %>
+            <%= render "games/occurrence_setting_form", game: game, date: d, setting: setting, court_options: court_options, coach_options: coach_options,
+                       series_players: required, series_court: game.court %>
           <% end %>
 
           <% if can_manage %>

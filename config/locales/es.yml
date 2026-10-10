@@ -15,6 +15,12 @@ es:
               no_registered_players: "Hace falta al menos un jugador registrado: si no, el marcador no tiene dónde guardarse"
               same_player_twice: "Un jugador no puede jugar en los dos lados"
               training: "En los entrenamientos no se lleva marcador"
+        occurrence_setting:
+          attributes:
+            second_coach_id:
+              same_as_coach: "no puede ser el mismo que el primer entrenador"
+            players_count:
+              less_than_booked: "no puede ser menor que los %{count} jugadores ya apuntados a esta fecha"
         game:
           attributes:
             prebooking_enabled:

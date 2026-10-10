@@ -15,6 +15,12 @@ ru:
               no_registered_players: "Нужен хотя бы один зарегистрированный игрок — иначе счёт некуда записать"
               same_player_twice: "Один игрок не может играть за обе стороны"
               training: "На тренировке счёт не ведут"
+        occurrence_setting:
+          attributes:
+            second_coach_id:
+              same_as_coach: "не может совпадать с первым тренером"
+            players_count:
+              less_than_booked: "не может быть меньше уже записавшихся на эту дату: %{count}"
         game:
           attributes:
             prebooking_enabled:

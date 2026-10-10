@@ -1,0 +1,97 @@
+<%# Настройка одного занятия серии. Свёрнута по умолчанию: карточку открывают
+    ради записи, а тип и корт меняют редко. %>
+<% field_classes = "mt-1 block w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+<details class="group mt-3 rounded-md border border-gray-200 bg-white/60 dark:border-white/10 dark:bg-white/5" data-testid="occurrence-setting">
+  <summary class="flex cursor-pointer list-none items-center justify-between gap-2 px-2.5 py-1.5 text-xs font-medium text-indigo-700 dark:text-indigo-300 [&::-webkit-details-marker]:hidden">
+    <span class="inline-flex items-center gap-1.5">
+      <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5 4a1 1 0 0 0-2 0v7.268a2 2 0 0 0 0 3.464V16a1 1 0 1 0 2 0v-1.268a2 2 0 0 0 0-3.464V4ZM11 4a1 1 0 1 0-2 0v1.268a2 2 0 0 0 0 3.464V16a1 1 0 1 0 2 0V8.732a2 2 0 0 0 0-3.464V4ZM16 3a1 1 0 0 1 1 1v7.268a2 2 0 0 1 0 3.464V16a1 1 0 1 1-2 0v-1.268a2 2 0 0 1 0-3.464V4a1 1 0 0 1 1-1Z"/></svg>
+      <%= t("games.occurrence_settings.toggle") %>
+    </span>
+    <svg class="h-4 w-4 transition group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>
+  </summary>
+
+  <%= form_with url: game_occurrence_settings_path(game, date: date.iso8601), scope: :occurrence_setting, method: :post,
+                class: "space-y-3 border-t border-gray-200 px-2.5 pb-2.5 pt-2 dark:border-white/10",
+                data: { controller: "occurrence-setting" } do |f| %>
+    <fieldset>
+      <legend class="text-xs font-medium text-gray-600 dark:text-slate-300"><%= t("games.form.kind") %></legend>
+      <div class="mt-1 grid grid-cols-2 gap-1.5">
+        <% Game::KINDS.each do |kind| %>
+          <label class="cursor-pointer">
+            <%= f.radio_button :kind, kind, checked: (setting&.effective_kind || game.kind) == kind, class: "peer sr-only",
+                               id: "occurrence_setting_#{date.iso8601}_#{kind}",
+                               data: { action: "occurrence-setting#toggleCoach" } %>
+            <span class="flex items-center justify-center gap-1.5 rounded-md border border-gray-200 px-2 py-1.5 text-xs text-gray-700 transition hover:border-indigo-300 peer-checked:border-indigo-500 peer-checked:bg-indigo-50 peer-checked:font-semibold peer-checked:text-indigo-700 peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-400 dark:border-white/10 dark:text-slate-300 dark:peer-checked:border-indigo-400 dark:peer-checked:bg-indigo-500/20 dark:peer-checked:text-indigo-100">
+              <%= t("games.form.kind_#{kind}") %>
+            </span>
+          </label>
+        <% end %>
+      </div>
+      <%# Тренер бывает только на тренировке: у игры галку прячем, как в форме. %>
+      <div class="mt-2" data-occurrence-setting-target="coach" <%= "hidden" unless (setting&.effective_kind || game.kind) == "training" %>>
+        <label class="inline-flex cursor-pointer items-center gap-2">
+          <%= f.hidden_field :with_coach, value: "0", id: nil %>
+          <%= f.check_box :with_coach, { checked: setting ? setting.effective_with_coach? : game.with_coach?, include_hidden: false,
+                                         id: "occurrence_setting_with_coach_#{date.iso8601}", class: "h-4 w-4 rounded text-indigo-600",
+                                         data: { action: "occurrence-setting#toggleCoachFields" } }, "1" %>
+          <span class="text-xs text-gray-700 dark:text-slate-300"><%= t("games.form.with_coach") %></span>
+        </label>
+
+        <% with_coach_now = setting ? setting.effective_with_coach? : game.with_coach? %>
+        <div class="mt-2 space-y-2" data-occurrence-setting-target="coachFields" <%= "hidden" unless with_coach_now %>>
+          <% coach_fields = [
+               [ :coach_id, "games.form.coach", game.coach, "games.form.coach_blank", setting&.coach_id ],
+               [ :second_coach_id, "games.form.second_coach", game.second_coach, "games.form.second_coach_blank", setting&.second_coach_id ]
+             ] %>
+          <% coach_fields.each do |field, label_key, series_coach, blank_key, selected| %>
+            <div>
+              <%= f.label field, t(label_key), for: "occurrence_setting_#{field}_#{date.iso8601}", class: "text-xs font-medium text-gray-600 dark:text-slate-300" %>
+              <%= f.select field, options_from_collection_for_select(coach_options.reject { |c| c == series_coach }, :id, :name, selected),
+                           { include_blank: series_coach ? t("games.occurrence_settings.as_series", name: series_coach.name.presence || series_coach.email) : t(blank_key) },
+                           id: "occurrence_setting_#{field}_#{date.iso8601}", class: field_classes %>
+            </div>
+          <% end %>
+          <div>
+            <%= f.label :guest_coach_name, t("games.form.guest_coach"), for: "occurrence_setting_guest_coach_#{date.iso8601}", class: "text-xs font-medium text-gray-600 dark:text-slate-300" %>
+            <%= f.text_field :guest_coach_name, value: setting&.guest_coach_name, maxlength: 50,
+                             placeholder: game.guest_coach_name.presence || t("games.form.guest_coach_placeholder"),
+                             id: "occurrence_setting_guest_coach_#{date.iso8601}", class: field_classes %>
+          </div>
+          <p class="text-[11px] text-gray-500 dark:text-slate-400"><%= t("games.occurrence_settings.coach_hint") %></p>
+        </div>
+      </div>
+    </fieldset>
+
+    <div>
+      <%= f.label :court_id, t("games.occurrence_settings.court"), for: "occurrence_setting_court_#{date.iso8601}", class: "text-xs font-medium text-gray-600 dark:text-slate-300" %>
+      <%# Пустое значение — «как в серии»; «Без корта» есть, только когда у серии
+          корт выбран, и стоит первым. Список собираем сами: include_blank
+          всегда встаёт в начало. %>
+      <% court_choices = [ [ series_court ? t("games.occurrence_settings.court_series", name: series_court.name) : t("games.occurrence_settings.court_none"), "" ] ] %>
+      <% court_choices.unshift([ t("games.occurrence_settings.court_without"), "none" ]) if series_court %>
+      <% court_choices += court_options.reject { |c| c == series_court }.map { |c| [ c.name, c.id ] } %>
+      <%= f.select :court_id, options_for_select(court_choices, setting&.without_court? ? "none" : setting&.court_id.to_s),
+                   {},
+                   id: "occurrence_setting_court_#{date.iso8601}", class: field_classes %>
+    </div>
+
+    <% if game.prebooking_enabled? %>
+      <div>
+        <%= f.label :players_count, t("games.occurrence_settings.players"), for: "occurrence_setting_players_#{date.iso8601}", class: "text-xs font-medium text-gray-600 dark:text-slate-300" %>
+        <%= f.select :players_count, options_for_select(OccurrenceSetting::PLAYERS_RANGE.to_a, setting&.players_count),
+                     { include_blank: t("games.occurrence_settings.players_series", count: series_players) },
+                     id: "occurrence_setting_players_#{date.iso8601}", class: field_classes %>
+      </div>
+    <% end %>
+
+    <div class="flex items-center justify-between gap-2 pt-1">
+      <% if setting %>
+        <%= f.button t("games.occurrence_settings.reset"), name: "reset", value: "1",
+                     class: "text-xs font-medium text-gray-500 hover:text-gray-800 hover:underline dark:text-slate-400 dark:hover:text-slate-200" %>
+      <% else %>
+        <span></span>
+      <% end %>
+      <%= f.submit t("games.occurrence_settings.save"), class: "cursor-pointer rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-700" %>
+    </div>
+  <% end %>
+</details>

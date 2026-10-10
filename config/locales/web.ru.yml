@@ -153,6 +153,14 @@ ru:
   games:
     court_pending: Корт пока не выбран
     show:
+      nav:
+        label: Разделы страницы
+        details: Детали
+        participants: Игроки
+        plan: План
+        prebookings: Календарь
+        media: Фото
+        stats: Статистика
       win_chances:
         title: Шансы на победу
         mode:
@@ -401,6 +409,21 @@ ru:
       assigned: "%{name} записан(а)."
       assign_no_user: Игрок не найден — выберите из подсказок.
       assign_already_booked: "%{name} уже записан(а) на эту дату."
+    occurrence_settings:
+      as_series: "Как в серии — %{name}"
+      coach_hint: "Только на эту дату — приглашение тренеру не уходит."
+      toggle: Настроить занятие
+      without_coach: Без тренера
+      court: Корт
+      court_series: "Как в серии — %{name}"
+      court_without: Корт не выбран
+      court_none: Не выбран
+      players: Игроков
+      players_series: "Как в серии — %{count}"
+      save: Сохранить
+      reset: Сбросить
+      saved: Настройки занятия сохранены.
+      invalid_date: Неверная дата
     ai_chat:
       title: Теннисный ассистент
       subtitle: На базе ИИ

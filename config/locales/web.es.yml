@@ -151,6 +151,14 @@ es:
   games:
     court_pending: Pista aún sin elegir
     show:
+      nav:
+        label: Secciones de la página
+        details: Detalles
+        participants: Jugadores
+        plan: Plan
+        prebookings: Calendario
+        media: Fotos
+        stats: Estadísticas
       win_chances:
         title: Probabilidades de victoria
         mode:
@@ -398,6 +406,21 @@ es:
       assigned: "%{name} reservado."
       assign_no_user: Jugador no encontrado — elige uno de las sugerencias.
       assign_already_booked: "%{name} ya tiene plaza en esa fecha."
+    occurrence_settings:
+      as_series: "Como en la serie — %{name}"
+      coach_hint: "Solo para esta fecha — el entrenador no recibe invitación."
+      toggle: Configurar esta sesión
+      without_coach: Sin entrenador
+      court: Pista
+      court_series: "Como en la serie — %{name}"
+      court_without: Pista sin elegir
+      court_none: Sin elegir
+      players: Jugadores
+      players_series: "Como en la serie — %{count}"
+      save: Guardar
+      reset: Restablecer
+      saved: Ajustes de la sesión guardados.
+      invalid_date: Fecha no válida
     ai_chat:
       title: Asistente de tenis
       subtitle: Con IA

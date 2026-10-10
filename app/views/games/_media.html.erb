@@ -3,7 +3,7 @@
 <% media = game.game_media.visible.includes(:user, file_attachment: :blob).newest_first.to_a %>
 <% manageable = ->(medium) { current_user.present? && (medium.user_id == current_user.id || current_user.admin?) } %>
 
-<section class="mt-6 rounded-md border border-gray-200 p-3 dark:border-white/10" data-testid="game-media">
+<section id="game-media" class="scroll-mt-32 mt-6 rounded-md border border-gray-200 p-3 dark:border-white/10" data-testid="game-media">
   <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("games.show.media.title") %></h2>
 
   <% if media.any? %>
