@@ -151,6 +151,14 @@ en:
   games:
     court_pending: Court not chosen yet
     show:
+      nav:
+        label: Page sections
+        details: Details
+        participants: Players
+        plan: Plan
+        prebookings: Calendar
+        media: Photos
+        stats: Statistics
       win_chances:
         title: Win chances
         mode:
@@ -334,6 +342,8 @@ en:
       duration_any: "— not specified —"
       duration_hint: Approximate or exact playing time. Helps others see how long
         the court will be busy.
+      as_series: "As in the series — %{name}"
+      coach_hint: "Only for this date — the coach doesn’t get an invitation."
       court: Place
       court_hint: Choose court from list or click marker on the map.
       court_blank: "— court not chosen yet —"
@@ -394,6 +404,19 @@ en:
       assigned: "%{name} booked."
       assign_no_user: Player not found — pick one from the suggestions.
       assign_already_booked: "%{name} already has a slot on that date."
+    occurrence_settings:
+      toggle: Set up this session
+      without_coach: Without a coach
+      court: Court
+      court_series: "As in the series — %{name}"
+      court_without: Court not chosen
+      court_none: Not chosen
+      players: Players
+      players_series: "As in the series — %{count}"
+      save: Save
+      reset: Reset
+      saved: Session settings saved.
+      invalid_date: Invalid date
     ai_chat:
       title: Tennis Assistant
       subtitle: Powered by AI

@@ -26,6 +26,7 @@ class Game < ApplicationRecord
   has_many :prebookings, dependent: :destroy
   has_many :coach_prebookings, dependent: :destroy
   has_many :prebooking_cancellations, dependent: :destroy
+  has_many :occurrence_settings, dependent: :destroy
   has_many :matches, dependent: :nullify
   # Событие с главной переживает удаление игры — просто теряет ссылку на неё.
   has_many :featured_matches, dependent: :nullify
@@ -505,7 +506,7 @@ class Game < ApplicationRecord
     dates.each do |d|
       d = d.to_date
       next if cancelled_on?(d)
-      (1..prebooking_required_players).each do |slot|
+      (1..prebooking_required_players(d)).each do |slot|
         prebookings.find_or_create_by!(date: d, slot_index: slot)
       end
     end
@@ -768,7 +769,12 @@ class Game < ApplicationRecord
   def required_players
     players_count_chosen? ? players_count.to_i : DEFAULT_PLAYERS
   end
-  alias_method :prebooking_required_players, :required_players
+
+  # Слотов на дату столько, сколько задано в настройках занятия, иначе — как в
+  # серии.
+  def prebooking_required_players(date = nil)
+    date && occurrence_settings.find_by(date: date)&.players_count || required_players
+  end
 
   # Занятые и свободные места. Считаем по уже загруженной ассоциации, если она
   # есть: список игр грузит participations через includes, и запрос на каждую

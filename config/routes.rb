@@ -168,6 +168,7 @@ Rails.application.routes.draw do
     end
 
     resources :prebooking_cancellations, only: [ :create, :destroy ]
+    resources :occurrence_settings, only: [ :create ]
     resources :coach_prebookings, only: [ :create, :destroy ]
     resources :media, only: %i[create update destroy], controller: "game_media"
   end

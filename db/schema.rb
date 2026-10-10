@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_08_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_10_090000) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -321,6 +321,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_090000) do
     t.index ["user_id", "mode", "played_at"], name: "index_matches_on_user_id_and_mode_and_played_at"
     t.index ["user_id", "played_at"], name: "index_matches_on_user_id_and_played_at"
     t.index ["user_id"], name: "index_matches_on_user_id"
+  end
+
+  create_table "occurrence_settings", force: :cascade do |t|
+    t.integer "coach_id"
+    t.integer "court_id"
+    t.datetime "created_at", null: false
+    t.date "date", null: false
+    t.integer "game_id", null: false
+    t.string "guest_coach_name"
+    t.string "kind"
+    t.integer "players_count"
+    t.integer "second_coach_id"
+    t.datetime "updated_at", null: false
+    t.boolean "with_coach"
+    t.boolean "without_court", default: false, null: false
+    t.index ["coach_id"], name: "index_occurrence_settings_on_coach_id"
+    t.index ["court_id"], name: "index_occurrence_settings_on_court_id"
+    t.index ["game_id", "date"], name: "index_occurrence_settings_on_game_id_and_date", unique: true
+    t.index ["game_id"], name: "index_occurrence_settings_on_game_id"
+    t.index ["second_coach_id"], name: "index_occurrence_settings_on_second_coach_id"
   end
 
   create_table "outreach_contacts", force: :cascade do |t|
@@ -651,6 +671,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_090000) do
   add_foreign_key "matches", "games"
   add_foreign_key "matches", "users"
   add_foreign_key "matches", "users", column: "opponent_id"
+  add_foreign_key "occurrence_settings", "courts"
+  add_foreign_key "occurrence_settings", "games"
+  add_foreign_key "occurrence_settings", "users", column: "coach_id"
+  add_foreign_key "occurrence_settings", "users", column: "second_coach_id"
   add_foreign_key "participations", "games"
   add_foreign_key "participations", "users"
   add_foreign_key "player_statistic_entries", "games"

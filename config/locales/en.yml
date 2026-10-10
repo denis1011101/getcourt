@@ -44,6 +44,12 @@ en:
               no_registered_players: "At least one registered player is needed — otherwise the score has nowhere to go"
               same_player_twice: "A player can't play for both sides"
               training: "Trainings don't keep a score"
+        occurrence_setting:
+          attributes:
+            second_coach_id:
+              same_as_coach: "can't be the same as the first coach"
+            players_count:
+              less_than_booked: "can't be lower than the %{count} players already booked for this date"
         game:
           attributes:
             prebooking_enabled:
