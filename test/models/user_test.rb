@@ -144,6 +144,10 @@ class UserTest < ActiveSupport::TestCase
     assert_equal [ booked, new_friend, old_friend ], me.recent_teammates
     assert_equal [ new_friend, old_friend ], me.recent_teammates(except: [ booked.id ])
     assert_equal [ booked ], me.recent_teammates(limit: 1)
+
+    # Объединённый аккаунт не занимает место в выдаче.
+    booked.update_columns(merged_into_id: new_friend.id, merged_at: Time.current)
+    assert_equal [ new_friend ], me.recent_teammates(limit: 1)
   end
 
   test "recent_coaches keeps only selectable coaches of my latest games" do

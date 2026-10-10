@@ -185,12 +185,14 @@ class User < ApplicationRecord
   # записывают снова. Свежие первыми; except — кто уже записан.
   def recent_teammates(except: [], limit: RECENT_PICKS_LIMIT)
     my_games = games.select(:id)
+    # Объединённых отсеиваем до limit, иначе они занимали бы места в выдаче.
+    pickable = User.not_merged.where.not(id: [ id, *except ].compact).select(:id)
     last_seen = [ Participation, Prebooking ].map do |model|
-      model.where(game_id: my_games).where.not(user_id: [ id, *except ].compact).group(:user_id).maximum(:updated_at)
+      model.where(game_id: my_games, user_id: pickable).group(:user_id).maximum(:updated_at)
     end.reduce { |a, b| a.merge(b) { |_, x, y| [ x, y ].max } }
 
     ids = last_seen.sort_by { |_, at| at }.reverse.first(limit).map(&:first)
-    User.not_merged.where(id: ids).index_by(&:id).values_at(*ids).compact
+    User.where(id: ids).index_by(&:id).values_at(*ids)
   end
 
   # Тренеры моих последних игр с тренером, из тех, кого можно выбрать (among).
