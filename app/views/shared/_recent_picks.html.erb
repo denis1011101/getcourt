@@ -1,0 +1,27 @@
+<%# Недавние люди — один тап вместо поиска по имени.
+      people    — кого показать (пусто — блока нет);
+      url       — чип отправляет user_id сюда же, куда и поле выбора;
+      select_id — или подставляет человека в этот <select> (тренер).
+    На телефоне — одна строка с прокруткой, чтобы не занимать пол-экрана. %>
+<% if people.present? %>
+  <div class="-mx-1 mt-2 flex items-center gap-2 overflow-x-auto px-1 scrollbar-hide sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0" <%= tag.attributes(data: { controller: ("recent-pick" if local_assigns[:select_id]), testid: "recent-picks" }) %>>
+    <span class="shrink-0 text-xs text-gray-500 dark:text-slate-400"><%= t("shared.user_picker.recent") %></span>
+    <% chip_class = "inline-flex max-w-[12rem] shrink-0 min-h-9 cursor-pointer items-center truncate rounded-full border border-gray-300 px-3 py-1.5 text-sm text-gray-700 transition hover:border-indigo-500 hover:text-indigo-700 active:bg-indigo-50 sm:min-h-0 sm:py-1 sm:text-xs dark:border-white/15 dark:text-slate-200 dark:hover:border-indigo-400 dark:hover:text-indigo-300 dark:active:bg-indigo-500/10" %>
+    <% people.each do |person| %>
+      <% label = person.name.presence || person.email %>
+      <% if local_assigns[:select_id] %>
+        <button type="button" title="<%= label %>" class="<%= chip_class %>"
+                data-action="recent-pick#pick"
+                data-recent-pick-select-param="<%= select_id %>"
+                data-recent-pick-value-param="<%= person.id %>">
+          <span class="truncate"><%= label %></span>
+        </button>
+      <% else %>
+        <%= button_to url, params: { user_id: person.id }, method: :post, title: label, class: chip_class,
+                      form_class: "shrink-0", form: { data: { turbo: true } } do %>
+          <span class="truncate"><%= label %></span>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

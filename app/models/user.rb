@@ -179,6 +179,26 @@ class User < ApplicationRecord
     update_column(:recent_invite_handles, [ handles ] + others.first(RECENT_INVITE_LISTS_LIMIT - 1))
   end
 
+  RECENT_PICKS_LIMIT = 5
+
+  # Кого я недавно записывал в свои игры и предзаписи — их в один тап
+  # записывают снова. Свежие первыми; except — кто уже записан.
+  def recent_teammates(except: [], limit: RECENT_PICKS_LIMIT)
+    my_games = games.select(:id)
+    last_seen = [ Participation, Prebooking ].map do |model|
+      model.where(game_id: my_games).where.not(user_id: [ id, *except ].compact).group(:user_id).maximum(:updated_at)
+    end.reduce { |a, b| a.merge(b) { |_, x, y| [ x, y ].max } }
+
+    ids = last_seen.sort_by { |_, at| at }.reverse.first(limit).map(&:first)
+    User.not_merged.where(id: ids).index_by(&:id).values_at(*ids).compact
+  end
+
+  # Тренеры моих последних игр с тренером, из тех, кого можно выбрать (among).
+  def recent_coaches(among:)
+    ids = games.where(with_coach: true).order(updated_at: :desc).limit(20).pluck(:coach_id, :second_coach_id).flatten.compact.uniq
+    among.select { |coach| ids.include?(coach.id) }.sort_by { |coach| ids.index(coach.id) }.first(RECENT_PICKS_LIMIT)
+  end
+
   # ensure registration token for bot-based registration
   def ensure_telegram_registration_token!
     return telegram_registration_token if telegram_registration_token.present?

@@ -43,6 +43,8 @@
       <%= render "shared/user_picker", field_name: "user_id", submit: true,
                  placeholder: t("games.show.add_user_placeholder"), aria_label: t("games.show.add_user") %>
     <% end %>
+    <%= render "shared/recent_picks", people: current_user.recent_teammates(except: g.participations.map(&:user_id)),
+                                      url: add_user_game_participations_path(g) %>
     <p class="mb-3 text-xs text-gray-500 dark:text-slate-400"><%= t("games.show.add_user_hint") %></p>
 
     <%= form_with url: create_guest_game_participations_path(g), method: :post,

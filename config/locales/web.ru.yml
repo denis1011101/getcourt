@@ -633,6 +633,7 @@ ru:
         rate_limited: Слишком много запросов. Попробуйте позже.
   shared:
     user_picker:
+      recent: "Недавние:"
       placeholder: Начните вводить имя…
       searching: Ищем…
       no_matches: Никого не нашли.

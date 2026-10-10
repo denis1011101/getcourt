@@ -8,6 +8,8 @@
 <%# Тренеров у тренировки бывает двое, и каждый подтверждает свои даты сам. %>
 <% coach_bookings = accepted_coaches.any? ? game.coach_prebookings.where(date: dates).index_by { |booking| [ booking.coach_id, booking.date ] } : {} %>
 <% can_manage = user_signed_in? && (current_user.admin? || game.user == current_user) %>
+<%# Недавние — один раз на все даты; занятых на дату отсеиваем ниже. %>
+<% recent_people = can_manage ? current_user.recent_teammates(limit: User::RECENT_PICKS_LIMIT * 2) : [] %>
 <% weekdays = t("games.prebookings.weekdays") %>
 <% month_names = t("games.prebookings.months") %>
 <%# Тип, корт и число мест можно задать на каждую дату отдельно; пусто — как в серии. %>
@@ -20,6 +22,7 @@
   <% court_options = court_options.select { |c| c.city_name == anchor_city } if anchor_city && court_options.any? { |c| c.city_name == anchor_city } %>
   <% court_options = (court_options.first(100) | settings_by_date.values.filter_map(&:court)) %>
   <% coach_options = User.not_merged.where(coach: true).order(:name).to_a %>
+  <% recent_coaches = current_user.recent_coaches(among: coach_options) %>
 <% end %>
 <%# Дата в календаре, но игрокам на неё не записаться — первое занятие, которое
     осталось ради тренера: вместо слотов и счётчика мест — подсказка. %>
@@ -134,7 +137,7 @@
       <p class="mt-3 text-xs text-gray-500 dark:text-slate-400"><%= t("games.prebookings.sign_in_to_book") %></p>
     <% end %>
 
-    <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
       <% dates.each do |d| %>
         <% cancellation = cancellations_by_date[d] %>
         <% setting = settings_by_date[d] %>
@@ -228,6 +231,9 @@
                 <%= render "shared/user_picker", field_name: "user_id", submit: true,
                            placeholder: t("games.prebookings.assign_placeholder"), aria_label: t("games.prebookings.assign_player") %>
               <% end %>
+              <% booked_ids = slots.filter_map { |_, slot| slot&.user_id } %>
+              <%= render "shared/recent_picks", people: recent_people.reject { |person| booked_ids.include?(person.id) }.first(User::RECENT_PICKS_LIMIT),
+                                                url: assign_game_prebooking_path(game, free_slot) %>
             <% end %>
           <% end %>
 
@@ -256,7 +262,7 @@
 
           <% if can_manage && !cancellation %>
             <%= render "games/occurrence_setting_form", game: game, date: d, setting: setting, court_options: court_options, coach_options: coach_options,
-                       series_players: required, series_court: game.court %>
+                       recent_coaches: recent_coaches, series_players: required, series_court: game.court %>
           <% end %>
 
           <% if can_manage %>

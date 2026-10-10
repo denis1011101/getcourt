@@ -634,6 +634,7 @@ es:
         rate_limited: Demasiadas solicitudes. Inténtalo más tarde.
   shared:
     user_picker:
+      recent: "Recientes:"
       placeholder: Empieza a escribir un nombre…
       searching: Buscando…
       no_matches: Nadie encontrado.

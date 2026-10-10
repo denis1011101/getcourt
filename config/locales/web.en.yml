@@ -628,6 +628,7 @@ en:
         rate_limited: Too many requests. Please try again later.
   shared:
     user_picker:
+      recent: "Recent:"
       placeholder: Start typing a name…
       searching: Searching…
       no_matches: No one found.
