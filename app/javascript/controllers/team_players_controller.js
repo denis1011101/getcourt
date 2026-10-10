@@ -5,7 +5,11 @@ import { Controller } from "@hotwired/stimulus"
 // с тем же именем поля, что у галок состава.
 export default class extends Controller {
   static targets = ["list"]
-  static values = { fieldName: String }
+  static values = {
+    fieldName: String,
+    rowClass: { type: String, default: "flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300" },
+    checkboxClass: { type: String, default: "rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" }
+  }
 
   add(event) {
     const { id, label } = event.detail
@@ -22,14 +26,14 @@ export default class extends Controller {
     }
 
     const checkboxLabel = document.createElement("label")
-    checkboxLabel.className = "flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300"
+    checkboxLabel.className = this.rowClassValue
 
     const checkbox = document.createElement("input")
     checkbox.type = "checkbox"
     checkbox.name = this.fieldNameValue
     checkbox.value = id
     checkbox.checked = true
-    checkbox.className = "rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100"
+    checkbox.className = this.checkboxClassValue
 
     const span = document.createElement("span")
     span.textContent = label

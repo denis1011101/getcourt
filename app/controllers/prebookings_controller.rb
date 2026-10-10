@@ -126,8 +126,8 @@ class PrebookingsController < ApplicationController
     scope = game.prebookings
     scope = scope.where(date: date) if date.present?
     taken = scope.where.not(user_id: nil).count
-    capacity = (game.players_count.to_i > 0 ? game.players_count.to_i : 4)
-    taken < capacity
+    # Мест на дату столько, сколько слотов: у занятия число может быть своё.
+    taken < game.prebooking_required_players(date)
   end
 
   def schedule_owner_notification(game, user)

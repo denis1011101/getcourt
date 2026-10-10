@@ -116,7 +116,7 @@ class ResetParticipationsJob < ApplicationJob
   # переноса сдвигалась на занятие назад — бронь на 17-е становилась бронью на
   # 14-е, — но человек записывается на конкретный день, а не в очередь.
   def apply_prebookings_for_occurrence!(game, nd)
-    players_needed = (game.players_count.to_i > 0 ? game.players_count.to_i : 4)
+    players_needed = game.prebooking_required_players(nd)
 
     ActiveRecord::Base.transaction do
       game.participations.delete_all

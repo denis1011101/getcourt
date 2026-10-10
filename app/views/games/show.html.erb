@@ -32,7 +32,48 @@
                 class: "shrink-0 inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5" %>
   </div>
 
-  <div class="bg-white rounded-lg border p-6 shadow-sm dark:bg-slate-800/80 dark:border-white/10">
+  <%# Страница длинная, а на телефоне до статистики или календаря листать долго:
+      липкая полоса якорей ведёт прямо к разделу. Пункты — только про разделы,
+      которые на странице есть. %>
+  <% show_plan = @game.training? && @game.training_blocks.any? %>
+  <% show_prebookings = @game.prebooking_enabled? || (@game.series? && @game.coach_accepted?) %>
+  <% section_icons = {
+       "game-details" => "M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-7-4a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM9 9a.75.75 0 0 0 0 1.5h.253a.25.25 0 0 1 .244.304l-.459 2.066A1.75 1.75 0 0 0 10.747 15H11a.75.75 0 0 0 0-1.5h-.253a.25.25 0 0 1-.244-.304l.459-2.066A1.75 1.75 0 0 0 9.253 9H9Z",
+       "game-participants" => "M7 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM14.5 9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM1.615 16.428a1.224 1.224 0 0 1-.569-1.175 6.002 6.002 0 0 1 11.908 0c.058.467-.172.92-.57 1.174A9.953 9.953 0 0 1 7 18a9.953 9.953 0 0 1-5.385-1.572ZM14.5 16h-.106c.07-.297.088-.611.048-.933a7.47 7.47 0 0 0-1.588-3.755 4.502 4.502 0 0 1 5.874 2.636.818.818 0 0 1-.36.98A7.465 7.465 0 0 1 14.5 16Z",
+       "game-plan" => "M6 4.75A.75.75 0 0 1 6.75 4h10.5a.75.75 0 0 1 0 1.5H6.75A.75.75 0 0 1 6 4.75ZM6 10a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H6.75A.75.75 0 0 1 6 10Zm0 5.25a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H6.75a.75.75 0 0 1-.75-.75ZM2 4.75a1 1 0 1 1 2 0 1 1 0 0 1-2 0ZM2 10a1 1 0 1 1 2 0 1 1 0 0 1-2 0Zm0 5.25a1 1 0 1 1 2 0 1 1 0 0 1-2 0Z",
+       "game-prebookings" => "M5.75 2a.75.75 0 0 1 .75.75V4h7V2.75a.75.75 0 0 1 1.5 0V4h.25A2.75 2.75 0 0 1 18 6.75v8.5A2.75 2.75 0 0 1 15.25 18H4.75A2.75 2.75 0 0 1 2 15.25v-8.5A2.75 2.75 0 0 1 4.75 4H5V2.75A.75.75 0 0 1 5.75 2Zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75Z",
+       "game-media" => "M1 5.25A2.25 2.25 0 0 1 3.25 3h13.5A2.25 2.25 0 0 1 19 5.25v9.5A2.25 2.25 0 0 1 16.75 17H3.25A2.25 2.25 0 0 1 1 14.75v-9.5Zm1.5 5.81v3.69c0 .414.336.75.75.75h13.5a.75.75 0 0 0 .75-.75v-2.69l-2.22-2.219a.75.75 0 0 0-1.06 0l-1.91 1.909.47.47a.75.75 0 1 1-1.06 1.06L6.53 8.091a.75.75 0 0 0-1.06 0l-2.97 2.97ZM12 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z",
+       "game-stats" => "M15.5 2A1.5 1.5 0 0 0 14 3.5v13a1.5 1.5 0 0 0 1.5 1.5h1a1.5 1.5 0 0 0 1.5-1.5v-13A1.5 1.5 0 0 0 16.5 2h-1ZM9.5 6A1.5 1.5 0 0 0 8 7.5v9A1.5 1.5 0 0 0 9.5 18h1a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 10.5 6h-1ZM3.5 10A1.5 1.5 0 0 0 2 11.5v5A1.5 1.5 0 0 0 3.5 18h1A1.5 1.5 0 0 0 6 16.5v-5A1.5 1.5 0 0 0 4.5 10h-1Z"
+     } %>
+  <% section_links = [
+       [ "game-details", t("games.show.nav.details") ],
+       [ "game-participants", t("games.show.nav.participants") ],
+       ([ "game-plan", t("games.show.nav.plan") ] if show_plan),
+       ([ "game-prebookings", t("games.show.nav.prebookings") ] if show_prebookings),
+       [ "game-media", t("games.show.nav.media") ],
+       [ "game-stats", t("games.show.nav.stats") ]
+     ].compact %>
+  <%# Плавающая капсула вместо полосы во всю ширину: фона страницы не
+      перекрывает, а текущий раздел подсвечивает section-nav. %>
+  <nav class="sticky top-16 z-20 mb-4 py-2" aria-label="<%= t("games.show.nav.label") %>" data-testid="game-section-nav"
+       data-controller="section-nav">
+    <ul class="mx-auto flex w-fit max-w-full gap-1 overflow-x-auto rounded-full border border-gray-200 bg-white/85 p-1 shadow-lg shadow-gray-900/5 backdrop-blur-md [scrollbar-width:none] dark:border-white/10 dark:bg-slate-800/85 dark:shadow-black/30"
+        data-section-nav-target="bar">
+      <% section_links.each_with_index do |(anchor, label), index| %>
+        <li class="shrink-0">
+          <%= link_to "##{anchor}",
+                      class: "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium text-gray-600 transition hover:bg-gray-900/5 hover:text-gray-900 aria-[current=true]:bg-indigo-600 aria-[current=true]:text-white aria-[current=true]:shadow-sm dark:text-slate-300 dark:hover:bg-white/10 dark:hover:text-white dark:aria-[current=true]:bg-indigo-500",
+                      aria: { current: (index.zero? ? "true" : nil) },
+                      data: { section_nav_target: "link", action: "section-nav#go" } do %>
+            <svg class="h-4 w-4 shrink-0 opacity-80" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="<%= section_icons[anchor] %>"/></svg>
+            <span><%= label %></span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </nav>
+
+  <div id="game-details" class="scroll-mt-32 bg-white rounded-lg border p-6 shadow-sm dark:bg-slate-800/80 dark:border-white/10">
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
       <div>
         <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("games.show.date") %></p>
@@ -108,7 +149,7 @@
       <% end %>
     </div>
 
-    <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2"><%= t("games.show.participants") %></h2>
+    <h2 id="game-participants" class="scroll-mt-32 text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2"><%= t("games.show.participants") %></h2>
     <%= render "participations/list", game: @game %>
     <%= render "participations/controls", game: @game %>
 
@@ -144,8 +185,8 @@
       </section>
     <% end %>
 
-    <% if @game.training? && @game.training_blocks.any? %>
-      <section class="mt-4 rounded-md border border-gray-200 p-3 dark:border-white/10" data-testid="training-plan">
+    <% if show_plan %>
+      <section id="game-plan" class="scroll-mt-32 mt-4 rounded-md border border-gray-200 p-3 dark:border-white/10" data-testid="training-plan">
         <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("games.show.training_plan") %></h2>
         <ol class="mt-2 space-y-2">
           <% @game.training_blocks.each_with_index do |block, index| %>
@@ -281,8 +322,10 @@
       </div>
     <% end %>
 
-    <% if @game.prebooking_enabled? || (@game.series? && @game.coach_accepted?) %>
-      <%= render "prebookings", game: @game, month: params[:month] %>
+    <% if show_prebookings %>
+      <div id="game-prebookings" class="scroll-mt-32">
+        <%= render "prebookings", game: @game, month: params[:month] %>
+      </div>
     <% end %>
 
     <% can_fill_stats = false %>
@@ -306,7 +349,7 @@
 
     <%= render "games/media", game: @game, can_contribute: can_fill_stats %>
 
-    <div class="mt-6 border-t dark:border-white/10 pt-4">
+    <div id="game-stats" class="scroll-mt-32 mt-6 border-t dark:border-white/10 pt-4">
       <% last_reset = @game.last_participations_reset_at %>
       <% stats_filled =
            if last_reset.present?
