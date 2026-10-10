@@ -37,14 +37,22 @@ class Cities::AliasesTest < ActiveSupport::TestCase
   end
 
   # Выборка из полной выгрузки cities1000: цели global-алиасов и все строки,
-  # чьё name или asciiname совпадает с global-написанием. Новый global-алиас без
-  # перевыборки упадёт на отсутствующей цели. Против всей выгрузки:
-  # GEONAMES_CITIES1000=path/to/cities1000.txt.
+  # чьё name или asciiname совпадает с global-написанием; строки «# checked:» —
+  # написания, по которым она собрана. Новое написание без перевыборки упадёт на
+  # сверке с конфигом. Против всей выгрузки: GEONAMES_CITIES1000=path/to/cities1000.txt.
   test "every global spelling names only its target across GeoNames" do
-    path = ENV["GEONAMES_CITIES1000"].presence || file_fixture("geonames/global_alias_namesakes.txt")
-    rows = File.foreach(path).map { |line| line.split("\t") }
+    full = ENV["GEONAMES_CITIES1000"].presence
+    comments, rows = File.foreach(full || file_fixture("geonames/global_alias_namesakes.txt")).partition { |line| line.start_with?("#") }
+    rows = rows.map { |line| line.split("\t") }
+    global = Cities::Aliases.default.entries.select(&:global)
 
-    Cities::Aliases.default.entries.select(&:global).each do |entry|
+    unless full
+      checked = comments.filter_map { |line| line[/\A# checked: (.+)$/, 1] }
+      assert_equal global.map { |entry| Cities::Resolver.normalize(entry.name) }.uniq.sort, checked.sort,
+                   "выборка собрана по другим написаниям — пересобери её из cities1000"
+    end
+
+    global.each do |entry|
       key = Cities::Resolver.normalize(entry.name)
       assert rows.any? { |fields| fields[0].to_i == entry.geoname_id }, "#{entry.label}: цели нет в выборке"
 

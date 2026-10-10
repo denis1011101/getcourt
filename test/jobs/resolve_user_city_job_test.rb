@@ -74,6 +74,22 @@ class ResolveUserCityJobTest < ActiveSupport::TestCase
     assert_equal moscow_timezone, @user.timezone
   end
 
+  test "a resolved city gives its own timezone even when a bigger neighbour is in another zone" do
+    city!("Orenburg", "RU", 515003, timezone: "Asia/Yekaterinburg", population: 550_204,
+          latitude: 51.7727, longitude: 55.0988)
+    sol_iletsk = city!("Sol-Iletsk", "RU", 490068, timezone: "Europe/Samara", population: 28_000,
+                       latitude: 51.6, longitude: 55.0)
+    @user.update!(city_name: "51.6,55.0", timezone: nil)
+
+    with_geocoder(city_name: "Sol-Iletsk", country_code: "RU", city_component: "locality") do
+      ResolveUserCityJob.perform_now(@user.id, "51.6,55.0")
+    end
+
+    @user.reload
+    assert_equal sol_iletsk, @user.city
+    assert_equal sol_iletsk.rails_timezone, @user.timezone
+  end
+
   test "unresolved coordinates get the nearby city name and timezone, but no city link" do
     # Самый населённый сосед — Москва, но геокодер назвал район: связь не ставим.
     city!("Moscow", "RU", 524901, timezone: "Europe/Moscow", population: 10_381_222,

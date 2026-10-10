@@ -3,9 +3,10 @@ class ResolveUserCityJob < ApplicationJob
 
   COORDS_REGEX = /\A\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*\z/
 
-  # Часовой пояс и город решаются раздельно. Пояс — как и раньше, по самому
-  # населённому кандидату: промах в нём безобиден. city_id — только строгим
-  # Cities::Resolver: кандидат для пояса основанием для связи не служит.
+  # Часовой пояс и город решаются раздельно. Пояс — по строго определённому
+  # городу, а без него, как и раньше, по самому населённому кандидату. city_id —
+  # только строгим Cities::Resolver: кандидат для пояса основанием для связи не
+  # служит.
   def perform(user_id, original_query)
     return if original_query.blank?
     return unless User.exists?(id: user_id)
@@ -36,7 +37,7 @@ class ResolveUserCityJob < ApplicationJob
     # collect attributes to update
     update_attrs = {}
 
-    tz_to_set = timezone_city&.rails_timezone
+    tz_to_set = (location.resolved? ? location.city : timezone_city)&.rails_timezone
     update_attrs[:timezone] = tz_to_set if tz_to_set.present? && user.timezone.to_s.strip != tz_to_set
 
     if coords
