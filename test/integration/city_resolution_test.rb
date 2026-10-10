@@ -9,21 +9,24 @@ require "test_helper"
 # GEOCODING_LIVE=1 — вместо записей ходить в настоящий геокодер (и в Google,
 # если задан ключ): так видно, не поменялись ли ответы.
 class CityResolutionTest < ActiveSupport::TestCase
+  include ActiveJob::TestHelper
+  include CacheHelper
+
   LIVE = ENV["GEOCODING_LIVE"].present?
 
   # Центр города по GeoNames; slug — имя записи в
-  # test/fixtures/files/geocoding/nominatim.
+  # test/fixtures/files/geocoding/nominatim, timezone — пояс Rails.
   POINTS = {
-    "yekaterinburg" => { lat: 56.85733, lon: 60.61529, geoname_id: 1486209, country: "RU" },
-    "kamensk_uralsky" => { lat: 56.40626, lon: 61.93347, geoname_id: 1504826, country: "RU" },
-    "kurgan" => { lat: 55.44905, lon: 65.34344, geoname_id: 1501321, country: "RU" },
-    "chelyabinsk" => { lat: 55.1611, lon: 61.42877, geoname_id: 1508291, country: "RU" },
-    "moscow" => { lat: 55.75204, lon: 37.61781, geoname_id: 524901, country: "RU" },
+    "yekaterinburg" => { lat: 56.85733, lon: 60.61529, geoname_id: 1486209, country: "RU", timezone: "Ekaterinburg" },
+    "kamensk_uralsky" => { lat: 56.40626, lon: 61.93347, geoname_id: 1504826, country: "RU", timezone: "Ekaterinburg" },
+    "kurgan" => { lat: 55.44905, lon: 65.34344, geoname_id: 1501321, country: "RU", timezone: "Ekaterinburg" },
+    "chelyabinsk" => { lat: 55.1611, lon: 61.42877, geoname_id: 1508291, country: "RU", timezone: "Ekaterinburg" },
+    "moscow" => { lat: 55.75204, lon: 37.61781, geoname_id: 524901, country: "RU", timezone: "Moscow" },
     # Отдельный город у границы Москвы: самый населённый сосед — Москва, но
     # корт в Химках остаётся в Химках.
-    "khimki" => { lat: 55.9001, lon: 37.42848, geoname_id: 550280, country: "RU" },
-    "astana" => { lat: 51.1801, lon: 71.44598, geoname_id: 1526273, country: "KZ" },
-    "yerevan" => { lat: 40.17765, lon: 44.5126, geoname_id: 616052, country: "AM" }
+    "khimki" => { lat: 55.9001, lon: 37.42848, geoname_id: 550280, country: "RU", timezone: "Moscow" },
+    "astana" => { lat: 51.1801, lon: 71.44598, geoname_id: 1526273, country: "KZ", timezone: "Almaty" },
+    "yerevan" => { lat: 40.17765, lon: 44.5126, geoname_id: 616052, country: "AM", timezone: "Yerevan" }
   }.freeze
 
   # Ввод в Телеграме: страны нет, связь даёт только global-алиас. «Москва» —
@@ -69,19 +72,18 @@ class CityResolutionTest < ActiveSupport::TestCase
       city = City.find_by!(geoname_id: point[:geoname_id])
       assert_equal city, user.city
       assert_equal city.canonical_name, user.city_name
-      assert user.timezone.present?, "timezone for #{slug}"
+      assert_equal point[:timezone], user.timezone
     end
   end
 
   TELEGRAM_INPUT.each do |text, geoname_id|
     test "Telegram city #{text} #{geoname_id ? "links to #{geoname_id}" : "stays unlinked"}" do
-      user = User.create!(email: "tg-#{geoname_id || "none"}-#{text.bytes.sum}@example.com")
-      # Как Telegram-флоу: транслит в city_name сразу, связь — позже в job.
-      user.update!(city_name: Russian.translit(text), city_id: nil)
+      user = User.create!(email: "tg-#{geoname_id || "none"}-#{text.bytes.sum}@example.com", telegram_chat_id: rand(10**9..10**10))
 
-      ResolveUserCityJob.perform_now(user.id, text)
+      reply_in_telegram(user, text)
 
       user.reload
+      assert_equal Russian.translit(text), user.city_name
       if geoname_id
         assert_equal geoname_id, user.city&.geoname_id
       else
@@ -91,6 +93,23 @@ class CityResolutionTest < ActiveSupport::TestCase
   end
 
   private
+
+  # Ответ на «Изменить город» через тот же вход, что у вебхука: разбор
+  # сообщения, сохранение профиля и поставленная им в очередь job.
+  def reply_in_telegram(user, text)
+    chat_id = user.telegram_chat_id.to_s
+
+    with_memory_cache do
+      Telegram::Helpers::Conversation.set(chat_id, { "flow" => "profile_field", "field" => "city" })
+      stub_singleton(Telegram::Api, :send_simple, ->(*) { }) do
+        stub_singleton(Telegram::Handlers::ProfileHandler, :show_profile, ->(*) { }) do
+          perform_enqueued_jobs(only: ResolveUserCityJob) do
+            assert Telegram::Processors::ReplyProcessor.process("chat" => { "id" => chat_id }, "text" => text)
+          end
+        end
+      end
+    end
+  end
 
   # Те же колонки, что читает rake import:geonames.
   def load_geonames_sample

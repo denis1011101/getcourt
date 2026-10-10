@@ -36,6 +36,24 @@ class Cities::AliasesTest < ActiveSupport::TestCase
     assert_equal %w[Astana Chelyabinsk Ekaterinburg Erevan Kamensk-Uralskiy Kamensk-Uralsky Kurgan Yekaterinburg Yerevan], global.sort
   end
 
+  # Выборка из полной выгрузки cities1000: цели global-алиасов и все строки,
+  # чьё name или asciiname совпадает с global-написанием. Новый global-алиас без
+  # перевыборки упадёт на отсутствующей цели. Против всей выгрузки:
+  # GEONAMES_CITIES1000=path/to/cities1000.txt.
+  test "every global spelling names only its target across GeoNames" do
+    path = ENV["GEONAMES_CITIES1000"].presence || file_fixture("geonames/global_alias_namesakes.txt")
+    rows = File.foreach(path).map { |line| line.split("\t") }
+
+    Cities::Aliases.default.entries.select(&:global).each do |entry|
+      key = Cities::Resolver.normalize(entry.name)
+      assert rows.any? { |fields| fields[0].to_i == entry.geoname_id }, "#{entry.label}: цели нет в выборке"
+
+      namesakes = rows.select { |fields| fields.values_at(1, 2).any? { |name| Cities::Resolver.normalize(name) == key } }
+                      .map { |fields| fields[0].to_i } - [ entry.geoname_id ]
+      assert_empty namesakes, "#{entry.label}: тёзки в GeoNames"
+    end
+  end
+
   test "problems reports missing, foreign and renamed targets" do
     City.create!(name: "Moskva", asciiname: "Moskva", country_code: "TJ", geoname_id: 524901)
     City.create!(name: "Wien", asciiname: "Wien", country_code: "AT", geoname_id: 2761369)
