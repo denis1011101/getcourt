@@ -54,7 +54,9 @@ GITHUB_TOKEN="${GITHUB_TOKEN:-}"
 # dependabot runs, and a green one on the same commit would wave a red CI
 # through.
 CI_WORKFLOW="${CI_WORKFLOW:-ci.yml}"
-TELEGRAM_BOT_TOKEN_DEPLOY="${TELEGRAM_BOT_DEPLOY_TOKEN:-}"
+# Same name pattern as TELEGRAM_CHAT_ID_DEPLOY. TELEGRAM_BOT_DEPLOY_TOKEN is the
+# old spelling the script used to read by mistake — still honoured.
+TELEGRAM_BOT_TOKEN_DEPLOY="${TELEGRAM_BOT_TOKEN_DEPLOY:-${TELEGRAM_BOT_DEPLOY_TOKEN:-}}"
 TELEGRAM_CHAT_ID_DEPLOY="${TELEGRAM_CHAT_ID_DEPLOY:-}"
 # -----------------------------------------------------------------------------
 
@@ -133,6 +135,7 @@ gh_api_error() {
 tg_notify() {
   local text="$1"
   if [[ -z "$TELEGRAM_BOT_TOKEN_DEPLOY" || -z "$TELEGRAM_CHAT_ID_DEPLOY" ]]; then
+    log "Telegram report skipped: TELEGRAM_BOT_TOKEN_DEPLOY or TELEGRAM_CHAT_ID_DEPLOY is not set"
     return 0
   fi
 
