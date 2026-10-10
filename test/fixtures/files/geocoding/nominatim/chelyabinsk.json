@@ -1,0 +1,33 @@
+{
+  "place_id": 201145771,
+  "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+  "osm_type": "way",
+  "osm_id": 26317416,
+  "lat": "55.1610972",
+  "lon": "61.4287588",
+  "class": "highway",
+  "type": "primary",
+  "place_rank": 26,
+  "importance": 0.11734328469919902,
+  "addresstype": "road",
+  "name": "Meridian Highway",
+  "display_name": "Meridian Highway, Traktorozavodskii District, Chelyabinsk, Chelyabinsk Oblast, Ural Federal District, 454007, Russia",
+  "address": {
+    "road": "Meridian Highway",
+    "suburb": "Traktorozavodskii District",
+    "city": "Chelyabinsk",
+    "county": "Chelyabinsk",
+    "state": "Chelyabinsk Oblast",
+    "ISO3166-2-lvl4": "RU-CHE",
+    "region": "Ural Federal District",
+    "postcode": "454007",
+    "country": "Russia",
+    "country_code": "ru"
+  },
+  "boundingbox": [
+    "55.1606286",
+    "55.1624641",
+    "61.4284210",
+    "61.4288746"
+  ]
+}

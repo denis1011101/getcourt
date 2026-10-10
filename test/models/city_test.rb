@@ -24,6 +24,7 @@ class CityTest < ActiveSupport::TestCase
 
   test "alias_names_for lists every spelling that folds into the name" do
     assert_equal %w[ekaterinburg yekaterinburg], City.alias_names_for("ekaterinburg").sort
-    assert_equal [ "moscow" ], City.alias_names_for("moscow")
+    assert_equal %w[moscow moskva], City.alias_names_for("moscow").sort
+    assert_equal [ "omsk" ], City.alias_names_for("omsk")
   end
 end

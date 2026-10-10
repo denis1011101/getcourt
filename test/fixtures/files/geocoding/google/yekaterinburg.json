@@ -1,0 +1,1177 @@
+{
+  "plus_code": {
+    "compound_code": "VJ48+W4 Yekaterinburg, Sverdlovsk Oblast, Russia",
+    "global_code": "9J82VJ48+W4"
+  },
+  "results": [
+    {
+      "address_components": [
+        {
+          "long_name": "35",
+          "short_name": "35",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Ulitsa Chelyuskintsev",
+          "short_name": "Ulitsa Chelyuskintsev",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Yekaterinburg",
+          "short_name": "Yekaterinburg",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Zheleznodorozhnyy",
+          "short_name": "Zheleznodorozhnyy",
+          "types": [
+            "administrative_area_level_3",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Yekaterinburg",
+          "short_name": "Yekaterinburg",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Sverdlovskaya oblast'",
+          "short_name": "Sverdlovskaya oblast'",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "620027",
+          "short_name": "620027",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Ulitsa Chelyuskintsev, 35, Yekaterinburg, Sverdlovskaya oblast', Russia, 620027",
+      "geometry": {
+        "location": {
+          "lat": 56.85765869999999,
+          "lng": 60.61537359999999
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 56.8590142302915,
+            "lng": 60.6167196802915
+          },
+          "southwest": {
+            "lat": 56.8563162697085,
+            "lng": 60.61402171970849
+          }
+        }
+      },
+      "place_id": "ChIJOVRc4HduwUMRtkh01tN7Lak",
+      "types": [
+        "premise",
+        "street_address"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "43",
+          "short_name": "43",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Ulitsa Chelyuskintsev",
+          "short_name": "Ulitsa Chelyuskintsev",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Yekaterinburg",
+          "short_name": "Yekaterinburg",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Zheleznodorozhnyy",
+          "short_name": "Zheleznodorozhnyy",
+          "types": [
+            "administrative_area_level_3",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Yekaterinburg",
+          "short_name": "Yekaterinburg",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Sverdlovskaya oblast'",
+          "short_name": "Sverdlovskaya oblast'",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "620027",
+          "short_name": "620027",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Ulitsa Chelyuskintsev, 43, Yekaterinburg, Sverdlovskaya oblast', Russia, 620027",
+      "geometry": {
+        "location": {
+          "lat": 56.8574932,
+          "lng": 60.615866
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 56.8588732802915,
+            "lng": 60.61720583029151
+          },
+          "southwest": {
+            "lat": 56.8561753197085,
+            "lng": 60.6145078697085
+          }
+        }
+      },
+      "place_id": "ChIJIzpM5XduwUMR5LCw99GpVyQ",
+      "plus_code": {
+        "compound_code": "VJ48+X8 Yekaterinburg, Sverdlovsk Oblast, Russia",
+        "global_code": "9J82VJ48+X8"
+      },
+      "types": [
+        "establishment",
+        "point_of_interest"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "129",
+          "short_name": "129",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Ulitsa Chelyuskintsev",
+          "short_name": "Ulitsa Chelyuskintsev",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Yekaterinburg",
+          "short_name": "Yekaterinburg",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Zheleznodorozhnyy",
+          "short_name": "Zheleznodorozhnyy",
+          "types": [
+            "administrative_area_level_3",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Yekaterinburg",
+          "short_name": "Yekaterinburg",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Sverdlovskaya oblast'",
+          "short_name": "Sverdlovskaya oblast'",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "620027",
+          "short_name": "620027",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Ulitsa Chelyuskintsev, 129, Yekaterinburg, Sverdlovskaya oblast', Russia, 620027",
+      "geometry": {
+        "location": {
+          "lat": 56.8575651,
+          "lng": 60.6160073
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 56.8588880302915,
+            "lng": 60.6173660302915
+          },
+          "southwest": {
+            "lat": 56.8561900697085,
+            "lng": 60.61466806970849
+          }
+        }
+      },
+      "place_id": "ChIJRUCw5HduwUMRmfetDnUtEr0",
+      "plus_code": {
+        "compound_code": "VJ58+2C Yekaterinburg, Sverdlovsk Oblast, Russia",
+        "global_code": "9J82VJ58+2C"
+      },
+      "types": [
+        "street_address"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Gortrans",
+          "short_name": "Gortrans",
+          "types": [
+            "establishment",
+            "point_of_interest",
+            "transit_station"
+          ]
+        },
+        {
+          "long_name": "35",
+          "short_name": "35",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Ulitsa Chelyuskintsev",
+          "short_name": "Ulitsa Chelyuskintsev",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Yekaterinburg",
+          "short_name": "Yekaterinburg",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Zheleznodorozhnyy",
+          "short_name": "Zheleznodorozhnyy",
+          "types": [
+            "administrative_area_level_3",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Yekaterinburg",
+          "short_name": "Yekaterinburg",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Sverdlovskaya oblast'",
+          "short_name": "Sverdlovskaya oblast'",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "620027",
+          "short_name": "620027",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Gortrans, Ulitsa Chelyuskintsev, 35, Yekaterinburg, Sverdlovskaya oblast', Russia, 620027",
+      "geometry": {
+        "location": {
+          "lat": 56.8579592,
+          "lng": 60.61569220000001
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 56.8592318302915,
+            "lng": 60.61709408029151
+          },
+          "southwest": {
+            "lat": 56.8565338697085,
+            "lng": 60.61439611970849
+          }
+        }
+      },
+      "place_id": "ChIJ1f4n5nduwUMRl032QBbEpCo",
+      "plus_code": {
+        "compound_code": "VJ58+57 Yekaterinburg, Sverdlovsk Oblast, Russia",
+        "global_code": "9J82VJ58+57"
+      },
+      "types": [
+        "establishment",
+        "point_of_interest",
+        "transit_station"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "дом 35",
+          "short_name": "дом 35",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Ulitsa Chelyuskintsev",
+          "short_name": "Ulitsa Chelyuskintsev",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Yekaterinburg",
+          "short_name": "Yekaterinburg",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Zheleznodorozhnyy",
+          "short_name": "Zheleznodorozhnyy",
+          "types": [
+            "administrative_area_level_3",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Yekaterinburg",
+          "short_name": "Yekaterinburg",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Sverdlovskaya oblast'",
+          "short_name": "Sverdlovskaya oblast'",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "620050",
+          "short_name": "620050",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Ulitsa Chelyuskintsev, дом 35, Yekaterinburg, Sverdlovskaya oblast', Russia, 620050",
+      "geometry": {
+        "location": {
+          "lat": 56.8580806,
+          "lng": 60.6158788
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 56.8593076802915,
+            "lng": 60.61727983029151
+          },
+          "southwest": {
+            "lat": 56.8566097197085,
+            "lng": 60.61458186970849
+          }
+        }
+      },
+      "place_id": "ChIJrd7Y4HduwUMRgyBdUlKeCKE",
+      "types": [
+        "street_address",
+        "subpremise"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "122",
+          "short_name": "122",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Ulitsa Chelyuskintsev",
+          "short_name": "Ulitsa Chelyuskintsev",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Yekaterinburg",
+          "short_name": "Yekaterinburg",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Zheleznodorozhnyy",
+          "short_name": "Zheleznodorozhnyy",
+          "types": [
+            "administrative_area_level_3",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Yekaterinburg",
+          "short_name": "Yekaterinburg",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Sverdlovskaya oblast'",
+          "short_name": "Sverdlovskaya oblast'",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "620027",
+          "short_name": "620027",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Ulitsa Chelyuskintsev, 122, Yekaterinburg, Sverdlovskaya oblast', Russia, 620027",
+      "geometry": {
+        "location": {
+          "lat": 56.8574475,
+          "lng": 60.6153421
+        },
+        "location_type": "RANGE_INTERPOLATED",
+        "viewport": {
+          "northeast": {
+            "lat": 56.8587964802915,
+            "lng": 60.6166910802915
+          },
+          "southwest": {
+            "lat": 56.8560985197085,
+            "lng": 60.61399311970849
+          }
+        }
+      },
+      "place_id": "ElBVbGl0c2EgQ2hlbHl1c2tpbnRzZXYsIDEyMiwgWWVrYXRlcmluYnVyZywgU3ZlcmRsb3Zza2F5YSBvYmxhc3QnLCBSdXNzaWEsIDYyMDAyNyIaEhgKFAoSCeWCau53bsFDEeDQ66ICLLn_EHo",
+      "types": [
+        "street_address"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Vostochnaya Ulitsa",
+          "short_name": "Vostochnaya Ulitsa",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Yekaterinburg",
+          "short_name": "Yekaterinburg",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Zheleznodorozhnyy",
+          "short_name": "Zheleznodorozhnyy",
+          "types": [
+            "administrative_area_level_3",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Yekaterinburg",
+          "short_name": "Yekaterinburg",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Sverdlovskaya oblast'",
+          "short_name": "Sverdlovskaya oblast'",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "620027",
+          "short_name": "620027",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Vostochnaya Ulitsa, Yekaterinburg, Sverdlovskaya oblast', Russia, 620027",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 56.8573051,
+            "lng": 60.61515290000001
+          },
+          "southwest": {
+            "lat": 56.8572704,
+            "lng": 60.61511969999999
+          }
+        },
+        "location": {
+          "lat": 56.85728775000108,
+          "lng": 60.61513630000756
+        },
+        "location_type": "GEOMETRIC_CENTER",
+        "viewport": {
+          "northeast": {
+            "lat": 56.85863673029151,
+            "lng": 60.6164852802915
+          },
+          "southwest": {
+            "lat": 56.85593876970851,
+            "lng": 60.61378731970849
+          }
+        }
+      },
+      "place_id": "ChIJOVGI7XduwUMRLbS8Hjm5lk4",
+      "types": [
+        "route"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "VJ48+W4",
+          "short_name": "VJ48+W4",
+          "types": [
+            "plus_code"
+          ]
+        },
+        {
+          "long_name": "Yekaterinburg",
+          "short_name": "Yekaterinburg",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Yekaterinburg",
+          "short_name": "Gorod Yekaterinburg",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Sverdlovsk Oblast",
+          "short_name": "Sverdlovsk Oblast",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "VJ48+W4 Yekaterinburg, Sverdlovsk Oblast, Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 56.857375,
+            "lng": 60.615375
+          },
+          "southwest": {
+            "lat": 56.85725,
+            "lng": 60.61524999999999
+          }
+        },
+        "location": {
+          "lat": 56.85733,
+          "lng": 60.61528999999999
+        },
+        "location_type": "GEOMETRIC_CENTER",
+        "viewport": {
+          "northeast": {
+            "lat": 56.8586614802915,
+            "lng": 60.6166614802915
+          },
+          "southwest": {
+            "lat": 56.8559635197085,
+            "lng": 60.61396351970849
+          }
+        }
+      },
+      "place_id": "Egs5SjgyVko0OCtXNCImOiQKCg10veMhFcQoISQQChoUChIJS9tioOplwUMRIH9W99dDAtU",
+      "plus_code": {
+        "compound_code": "VJ48+W4 Yekaterinburg, Sverdlovsk Oblast, Russia",
+        "global_code": "9J82VJ48+W4"
+      },
+      "types": [
+        "plus_code"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "620027",
+          "short_name": "620027",
+          "types": [
+            "postal_code"
+          ]
+        },
+        {
+          "long_name": "Yekaterinburg",
+          "short_name": "Yekaterinburg",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Yekaterinburg",
+          "short_name": "Gorod Yekaterinburg",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Sverdlovsk Oblast",
+          "short_name": "Sverdlovsk Oblast",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Yekaterinburg, Sverdlovsk Oblast, Russia, 620027",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 56.8603659,
+            "lng": 60.6220499
+          },
+          "southwest": {
+            "lat": 56.8432581,
+            "lng": 60.586056
+          }
+        },
+        "location": {
+          "lat": 56.8492032,
+          "lng": 60.5986999
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 56.8603659,
+            "lng": 60.6220499
+          },
+          "southwest": {
+            "lat": 56.8432581,
+            "lng": 60.586056
+          }
+        }
+      },
+      "place_id": "ChIJj1t1JtZtwUMRRdf4oYWzqME",
+      "types": [
+        "postal_code"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Zheleznodorozhnyy Rayon",
+          "short_name": "Zheleznodorozhnyy Rayon",
+          "types": [
+            "political",
+            "sublocality",
+            "sublocality_level_2"
+          ]
+        },
+        {
+          "long_name": "Yekaterinburg",
+          "short_name": "Yekaterinburg",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Yekaterinburg",
+          "short_name": "Gorod Yekaterinburg",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Sverdlovsk Oblast",
+          "short_name": "Sverdlovsk Oblast",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Zheleznodorozhnyy Rayon, Yekaterinburg, Sverdlovsk Oblast, Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 56.9281943,
+            "lng": 60.6255955
+          },
+          "southwest": {
+            "lat": 56.8440747,
+            "lng": 60.3808109
+          }
+        },
+        "location": {
+          "lat": 56.8811319,
+          "lng": 60.51911119999999
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 56.9281943,
+            "lng": 60.6255955
+          },
+          "southwest": {
+            "lat": 56.8440747,
+            "lng": 60.3808109
+          }
+        }
+      },
+      "place_id": "ChIJBa2Lp8lxwUMRSvtz0jCwspg",
+      "types": [
+        "political",
+        "sublocality",
+        "sublocality_level_2"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Zheleznodorozhnyy",
+          "short_name": "Zheleznodorozhnyy",
+          "types": [
+            "administrative_area_level_3",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Yekaterinburg",
+          "short_name": "Gorod Yekaterinburg",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Sverdlovsk Oblast",
+          "short_name": "Sverdlovsk Oblast",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Zheleznodorozhnyy, Sverdlovsk Oblast, Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 56.9621801,
+            "lng": 60.6254679
+          },
+          "southwest": {
+            "lat": 56.843751,
+            "lng": 60.2610001
+          }
+        },
+        "location": {
+          "lat": 56.9004762,
+          "lng": 60.4030019
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 56.9621801,
+            "lng": 60.6254679
+          },
+          "southwest": {
+            "lat": 56.843751,
+            "lng": 60.2610001
+          }
+        }
+      },
+      "place_id": "ChIJ937-tXJ6wUMReX8p4xB5_LQ",
+      "types": [
+        "administrative_area_level_3",
+        "political"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Yekaterinburg",
+          "short_name": "Yekaterinburg",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Yekaterinburg",
+          "short_name": "Gorod Yekaterinburg",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Sverdlovsk Oblast",
+          "short_name": "Sverdlovsk Oblast",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Yekaterinburg, Sverdlovsk Oblast, Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 56.96588,
+            "lng": 60.8555881
+          },
+          "southwest": {
+            "lat": 56.657884,
+            "lng": 60.3791731
+          }
+        },
+        "location": {
+          "lat": 56.8430993,
+          "lng": 60.64540859999999
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 56.96588,
+            "lng": 60.8555881
+          },
+          "southwest": {
+            "lat": 56.657884,
+            "lng": 60.3791731
+          }
+        }
+      },
+      "place_id": "ChIJS9tioOplwUMRIH9W99dDAtU",
+      "types": [
+        "locality",
+        "political"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Gorod Yekaterinburg",
+          "short_name": "Gorod Yekaterinburg",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Sverdlovsk Oblast",
+          "short_name": "Sverdlovsk Oblast",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Gorod Yekaterinburg, Sverdlovsk Oblast, Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 56.9827311,
+            "lng": 60.94428300000001
+          },
+          "southwest": {
+            "lat": 56.6036339,
+            "lng": 60.0072401
+          }
+        },
+        "location": {
+          "lat": 56.8431165,
+          "lng": 60.6453581
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 56.9827311,
+            "lng": 60.94428300000001
+          },
+          "southwest": {
+            "lat": 56.6036339,
+            "lng": 60.0072401
+          }
+        }
+      },
+      "place_id": "ChIJXz7AjpZlwUMRSJjC4Pore2k",
+      "types": [
+        "administrative_area_level_2",
+        "political"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Sverdlovsk Oblast",
+          "short_name": "Sverdlovsk Oblast",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Sverdlovsk Oblast, Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 61.9465099,
+            "lng": 66.185739
+          },
+          "southwest": {
+            "lat": 56.0522071,
+            "lng": 57.22832709999999
+          }
+        },
+        "location": {
+          "lat": 59.007735,
+          "lng": 61.9316226
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 61.9465099,
+            "lng": 66.185739
+          },
+          "southwest": {
+            "lat": 56.0522071,
+            "lng": 57.22832709999999
+          }
+        }
+      },
+      "place_id": "ChIJdSSInMv9lEMROHmOUj5RGJM",
+      "types": [
+        "administrative_area_level_1",
+        "political"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 82.1673907,
+            "lng": -168.9729426
+          },
+          "southwest": {
+            "lat": 41.1857844,
+            "lng": 19.6160999
+          }
+        },
+        "location": {
+          "lat": 61.52401,
+          "lng": 105.318756
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 70,
+            "lng": 179
+          },
+          "southwest": {
+            "lat": 40,
+            "lng": 27
+          }
+        }
+      },
+      "place_id": "ChIJ-yRniZpWPEURE_YRZvj9CRQ",
+      "types": [
+        "country",
+        "political"
+      ]
+    }
+  ],
+  "status": "OK"
+}

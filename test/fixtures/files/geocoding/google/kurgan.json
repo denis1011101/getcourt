@@ -1,0 +1,976 @@
+{
+  "plus_code": {
+    "compound_code": "C8XV+J9 Kurgan, Kurgan Oblast, Russia",
+    "global_code": "9J77C8XV+J9"
+  },
+  "results": [
+    {
+      "address_components": [
+        {
+          "long_name": "64А корпус 1",
+          "short_name": "64А корпус 1",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "улица Станционная Улица, Д. 64а/1",
+          "short_name": "Станционная Улица, Д.64а/1",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Kurgan",
+          "short_name": "Kurgan",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Kurgan",
+          "short_name": "Gorod Kurgan",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Kurganskaya oblast'",
+          "short_name": "Kurganskaya oblast'",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "640000",
+          "short_name": "640000",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Станционная Улица, Д.64а/1, 64А корпус 1, Kurgan, Kurganskaya oblast', Russia, 640000",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 55.4485195,
+            "lng": 65.3435429
+          },
+          "southwest": {
+            "lat": 55.448417,
+            "lng": 65.3433706
+          }
+        },
+        "location": {
+          "lat": 55.4484684,
+          "lng": 65.3434563
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 55.44977403029149,
+            "lng": 65.3447072802915
+          },
+          "southwest": {
+            "lat": 55.4470760697085,
+            "lng": 65.3420093197085
+          }
+        }
+      },
+      "place_id": "ChIJ_3kKu1K8t0MR-wf3CD8hdsM",
+      "types": [
+        "premise",
+        "street_address"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "101В корпус 4",
+          "short_name": "101В корпус 4",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Ulitsa Proletarskaya",
+          "short_name": "Ulitsa Proletarskaya",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Kurgan",
+          "short_name": "Kurgan",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Kurgan",
+          "short_name": "Gorod Kurgan",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Kurganskaya oblast'",
+          "short_name": "Kurganskaya oblast'",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "640007",
+          "short_name": "640007",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Ulitsa Proletarskaya, 101В корпус 4, Kurgan, Kurganskaya oblast', Russia, 640007",
+      "geometry": {
+        "location": {
+          "lat": 55.449789,
+          "lng": 65.343406
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 55.4510813802915,
+            "lng": 65.34455718029152
+          },
+          "southwest": {
+            "lat": 55.4483834197085,
+            "lng": 65.34185921970851
+          }
+        }
+      },
+      "place_id": "ChIJEUXSNa29t0MRwvZgvD-N6-0",
+      "types": [
+        "street_address",
+        "subpremise"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "64",
+          "short_name": "64",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Stantsionnaya Ulitsa",
+          "short_name": "Stantsionnaya Ulitsa",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Kurgan",
+          "short_name": "Kurgan",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Kurgan",
+          "short_name": "Gorod Kurgan",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Kurganskaya oblast'",
+          "short_name": "Kurganskaya oblast'",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "640002",
+          "short_name": "640002",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Stantsionnaya Ulitsa, 64, Kurgan, Kurganskaya oblast', Russia, 640002",
+      "geometry": {
+        "location": {
+          "lat": 55.44826,
+          "lng": 65.34301119999999
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 55.4496821802915,
+            "lng": 65.34423158029149
+          },
+          "southwest": {
+            "lat": 55.4469842197085,
+            "lng": 65.34153361970849
+          }
+        }
+      },
+      "place_id": "ChIJyV2Ao1K8t0MRVDH91oDm4Aw",
+      "plus_code": {
+        "compound_code": "C8XV+86 Kurgan, Kurgan Oblast, Russia",
+        "global_code": "9J77C8XV+86"
+      },
+      "types": [
+        "establishment",
+        "point_of_interest"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "106",
+          "short_name": "106",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Ulitsa Omskaya",
+          "short_name": "Ulitsa Omskaya",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Kurgan",
+          "short_name": "Kurgan",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Kurgan",
+          "short_name": "Gorod Kurgan",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Kurganskaya oblast'",
+          "short_name": "Kurganskaya oblast'",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "640007",
+          "short_name": "640007",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Ulitsa Omskaya, 106, Kurgan, Kurganskaya oblast', Russia, 640007",
+      "geometry": {
+        "location": {
+          "lat": 55.44912249999999,
+          "lng": 65.3413625
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 55.45050133029149,
+            "lng": 65.34270663029149
+          },
+          "southwest": {
+            "lat": 55.4478033697085,
+            "lng": 65.34000866970848
+          }
+        }
+      },
+      "place_id": "ChIJo_ddDM29t0MRWAnqVuidYuQ",
+      "plus_code": {
+        "compound_code": "C8XR+JG Kurgan, Kurgan Oblast, Russia",
+        "global_code": "9J77C8XR+JG"
+      },
+      "types": [
+        "street_address"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "68",
+          "short_name": "68",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Stantsionnaya Ulitsa",
+          "short_name": "Stantsionnaya Ulitsa",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Kurgan",
+          "short_name": "Kurgan",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Kurgan",
+          "short_name": "Gorod Kurgan",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Kurganskaya oblast'",
+          "short_name": "Kurganskaya oblast'",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "640000",
+          "short_name": "640000",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Stantsionnaya Ulitsa, 68, Kurgan, Kurganskaya oblast', Russia, 640000",
+      "geometry": {
+        "location": {
+          "lat": 55.4488816,
+          "lng": 65.3438367
+        },
+        "location_type": "RANGE_INTERPOLATED",
+        "viewport": {
+          "northeast": {
+            "lat": 55.4502305802915,
+            "lng": 65.3451856802915
+          },
+          "southwest": {
+            "lat": 55.4475326197085,
+            "lng": 65.34248771970849
+          }
+        }
+      },
+      "place_id": "EkVTdGFudHNpb25uYXlhIFVsaXRzYSwgNjgsIEt1cmdhbiwgS3VyZ2Fuc2theWEgb2JsYXN0JywgUnVzc2lhLCA2NDAwMDAiGhIYChQKEgkXBn23Ury3QxFH8gIdXYzlmhBE",
+      "types": [
+        "street_address"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "R354",
+          "short_name": "R354",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Kurgan",
+          "short_name": "Kurgan",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Kurgan",
+          "short_name": "Gorod Kurgan",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Kurganskaya oblast'",
+          "short_name": "Kurganskaya oblast'",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "640000",
+          "short_name": "640000",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "R354, Kurgan, Kurganskaya oblast', Russia, 640000",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 55.4493768,
+            "lng": 65.3439614
+          },
+          "southwest": {
+            "lat": 55.4485681,
+            "lng": 65.3432693
+          }
+        },
+        "location": {
+          "lat": 55.44897322474509,
+          "lng": 65.34361800554124
+        },
+        "location_type": "GEOMETRIC_CENTER",
+        "viewport": {
+          "northeast": {
+            "lat": 55.4503214302915,
+            "lng": 65.3449643302915
+          },
+          "southwest": {
+            "lat": 55.4476234697085,
+            "lng": 65.34226636970848
+          }
+        }
+      },
+      "place_id": "ChIJiwD8tlK8t0MRADx72sgqYBE",
+      "types": [
+        "route"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "C8XV+J9",
+          "short_name": "C8XV+J9",
+          "types": [
+            "plus_code"
+          ]
+        },
+        {
+          "long_name": "Kurgan",
+          "short_name": "Kurgan",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Kurgan",
+          "short_name": "Gorod Kurgan",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Kurgan Oblast",
+          "short_name": "Kurgan Oblast",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "C8XV+J9 Kurgan, Kurgan Oblast, Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 55.449125,
+            "lng": 65.34349999999999
+          },
+          "southwest": {
+            "lat": 55.449,
+            "lng": 65.343375
+          }
+        },
+        "location": {
+          "lat": 55.44905,
+          "lng": 65.34344000000002
+        },
+        "location_type": "GEOMETRIC_CENTER",
+        "viewport": {
+          "northeast": {
+            "lat": 55.45041148029149,
+            "lng": 65.3447864802915
+          },
+          "southwest": {
+            "lat": 55.44771351970849,
+            "lng": 65.3420885197085
+          }
+        }
+      },
+      "place_id": "Egs5Sjc3QzhYVitKOSImOiQKCg2E2gwhFSCe8iYQChoUChIJ1eOHeaG-t0MRIqQuN3gYCNc",
+      "plus_code": {
+        "compound_code": "C8XV+J9 Kurgan, Kurgan Oblast, Russia",
+        "global_code": "9J77C8XV+J9"
+      },
+      "types": [
+        "plus_code"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Tsentral'nyy Rayon",
+          "short_name": "Tsentral'nyy Rayon",
+          "types": [
+            "political",
+            "sublocality",
+            "sublocality_level_2"
+          ]
+        },
+        {
+          "long_name": "Kurgan",
+          "short_name": "Kurgan",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Kurgan",
+          "short_name": "Gorod Kurgan",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Kurgan Oblast",
+          "short_name": "Kurgan Oblast",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Tsentral'nyy Rayon, Kurgan, Kurgan Oblast, Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 55.453696,
+            "lng": 65.40698259999999
+          },
+          "southwest": {
+            "lat": 55.4228201,
+            "lng": 65.295619
+          }
+        },
+        "location": {
+          "lat": 55.4359239,
+          "lng": 65.3491134
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 55.453696,
+            "lng": 65.40698259999999
+          },
+          "southwest": {
+            "lat": 55.4228201,
+            "lng": 65.295619
+          }
+        }
+      },
+      "place_id": "ChIJm1oBTEW8t0MRmFaKR8yv4H8",
+      "types": [
+        "political",
+        "sublocality",
+        "sublocality_level_2"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "640002",
+          "short_name": "640002",
+          "types": [
+            "postal_code"
+          ]
+        },
+        {
+          "long_name": "Kurgan",
+          "short_name": "Kurgan",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Kurgan",
+          "short_name": "Gorod Kurgan",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Kurgan Oblast",
+          "short_name": "Kurgan Oblast",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Kurgan, Kurgan Oblast, Russia, 640002",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 55.452785,
+            "lng": 65.3798539
+          },
+          "southwest": {
+            "lat": 55.391508,
+            "lng": 65.3118301
+          }
+        },
+        "location": {
+          "lat": 55.419237,
+          "lng": 65.34010649999999
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 55.452785,
+            "lng": 65.3798539
+          },
+          "southwest": {
+            "lat": 55.391508,
+            "lng": 65.3118301
+          }
+        }
+      },
+      "place_id": "ChIJdzFUxhS8t0MRuiifL8W4seY",
+      "types": [
+        "postal_code"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Kurgan",
+          "short_name": "Kurgan",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Kurgan",
+          "short_name": "Gorod Kurgan",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Kurgan Oblast",
+          "short_name": "Kurgan Oblast",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Kurgan, Kurgan Oblast, Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 55.5336321,
+            "lng": 65.6703511
+          },
+          "southwest": {
+            "lat": 55.29139809999999,
+            "lng": 65.1170779
+          }
+        },
+        "location": {
+          "lat": 55.4590496,
+          "lng": 65.34932069999999
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 55.5336321,
+            "lng": 65.6703511
+          },
+          "southwest": {
+            "lat": 55.29139809999999,
+            "lng": 65.1170779
+          }
+        }
+      },
+      "place_id": "ChIJ1eOHeaG-t0MRIqQuN3gYCNc",
+      "types": [
+        "locality",
+        "political"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Gorod Kurgan",
+          "short_name": "Gorod Kurgan",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Kurgan",
+          "short_name": "Kurgan",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Kurgan Oblast",
+          "short_name": "Kurgan Oblast",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Gorod Kurgan, Kurgan, Kurgan Oblast, Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 55.53353389999999,
+            "lng": 65.67147
+          },
+          "southwest": {
+            "lat": 55.29150199999999,
+            "lng": 65.117322
+          }
+        },
+        "location": {
+          "lat": 55.425933,
+          "lng": 65.3437714
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 55.53353389999999,
+            "lng": 65.67147
+          },
+          "southwest": {
+            "lat": 55.29150199999999,
+            "lng": 65.117322
+          }
+        }
+      },
+      "place_id": "ChIJ1eOHeaG-t0MREpT1vPcWLHI",
+      "types": [
+        "administrative_area_level_2",
+        "political"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Kurgan Oblast",
+          "short_name": "Kurgan Oblast",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Kurgan Oblast, Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 56.84304789999999,
+            "lng": 68.72363279999999
+          },
+          "southwest": {
+            "lat": 54.1874291,
+            "lng": 61.9668221
+          }
+        },
+        "location": {
+          "lat": 55.4481548,
+          "lng": 65.11809749999999
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 56.84304789999999,
+            "lng": 68.72363279999999
+          },
+          "southwest": {
+            "lat": 54.1874291,
+            "lng": 61.9668221
+          }
+        }
+      },
+      "place_id": "ChIJDfgp0eiXt0MRK8axsd7DTXo",
+      "types": [
+        "administrative_area_level_1",
+        "political"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 82.1673907,
+            "lng": -168.9729426
+          },
+          "southwest": {
+            "lat": 41.1857844,
+            "lng": 19.6160999
+          }
+        },
+        "location": {
+          "lat": 61.52401,
+          "lng": 105.318756
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 70,
+            "lng": 179
+          },
+          "southwest": {
+            "lat": 40,
+            "lng": 27
+          }
+        }
+      },
+      "place_id": "ChIJ-yRniZpWPEURE_YRZvj9CRQ",
+      "types": [
+        "country",
+        "political"
+      ]
+    }
+  ],
+  "status": "OK"
+}

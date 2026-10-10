@@ -1,0 +1,957 @@
+{
+  "plus_code": {
+    "compound_code": "5GH7+32 Yerevan, Armenia",
+    "global_code": "8HG65GH7+32"
+  },
+  "results": [
+    {
+      "address_components": [
+        {
+          "long_name": "5GH7+33C",
+          "short_name": "5GH7+33C",
+          "types": [
+            "plus_code"
+          ]
+        },
+        {
+          "long_name": "Kentron",
+          "short_name": "Kentron",
+          "types": [
+            "political",
+            "sublocality",
+            "sublocality_level_1"
+          ]
+        },
+        {
+          "long_name": "Yerevan",
+          "short_name": "Yerevan",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Yerevan",
+          "short_name": "Yerevan",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Armenia",
+          "short_name": "AM",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "5GH7+33C, Yerevan, Armenia",
+      "geometry": {
+        "location": {
+          "lat": 40.1776945,
+          "lng": 44.5126511
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 40.1789376802915,
+            "lng": 44.51378683029149
+          },
+          "southwest": {
+            "lat": 40.1762397197085,
+            "lng": 44.5110888697085
+          }
+        }
+      },
+      "place_id": "ChIJkZZJKPq8akARdGwWJ9EU3is",
+      "types": [
+        "establishment",
+        "point_of_interest",
+        "tourist_attraction"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "7",
+          "short_name": "7",
+          "types": [
+            "subpremise"
+          ]
+        },
+        {
+          "long_name": "1",
+          "short_name": "1",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "King Pap Street",
+          "short_name": "King Pap St",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Kentron",
+          "short_name": "Kentron",
+          "types": [
+            "political",
+            "sublocality",
+            "sublocality_level_1"
+          ]
+        },
+        {
+          "long_name": "Yerevan",
+          "short_name": "Yerevan",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Yerevan",
+          "short_name": "Yerevan",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Armenia",
+          "short_name": "AM",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "0010",
+          "short_name": "0010",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "7, 1 King Pap St, Yerevan 0010, Armenia",
+      "geometry": {
+        "location": {
+          "lat": 40.1778219,
+          "lng": 44.5114348
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 40.1792556302915,
+            "lng": 44.5129835802915
+          },
+          "southwest": {
+            "lat": 40.1765576697085,
+            "lng": 44.5102856197085
+          }
+        }
+      },
+      "place_id": "ChIJxzxJAPy8akARO-XwjZR-yfA",
+      "types": [
+        "street_address",
+        "subpremise"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "1",
+          "short_name": "1",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "King Pap Street",
+          "short_name": "King Pap St",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Kentron",
+          "short_name": "Kentron",
+          "types": [
+            "political",
+            "sublocality",
+            "sublocality_level_1"
+          ]
+        },
+        {
+          "long_name": "Yerevan",
+          "short_name": "Yerevan",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Yerevan",
+          "short_name": "Yerevan",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Armenia",
+          "short_name": "AM",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "0010",
+          "short_name": "0010",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "1 King Pap St, Yerevan 0010, Armenia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 40.17831899999999,
+            "lng": 44.5116126
+          },
+          "southwest": {
+            "lat": 40.1774788,
+            "lng": 44.5110707
+          }
+        },
+        "location": {
+          "lat": 40.1778978,
+          "lng": 44.51134130000001
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 40.1792478802915,
+            "lng": 44.5127069802915
+          },
+          "southwest": {
+            "lat": 40.1765499197085,
+            "lng": 44.51000901970851
+          }
+        }
+      },
+      "place_id": "ChIJ28plefm8akARcS9Jdgs3G8A",
+      "types": [
+        "premise",
+        "street_address"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Republic Square",
+          "short_name": "Republic Square",
+          "types": [
+            "establishment",
+            "point_of_interest",
+            "transit_station"
+          ]
+        },
+        {
+          "long_name": "Nalbandyan poxoc",
+          "short_name": "Nalbandyan poxoc",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Kentron",
+          "short_name": "Kentron",
+          "types": [
+            "political",
+            "sublocality",
+            "sublocality_level_1"
+          ]
+        },
+        {
+          "long_name": "Yerevan",
+          "short_name": "Yerevan",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Yerevan",
+          "short_name": "Yerevan",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Armenia",
+          "short_name": "AM",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Republic Square, Nalbandyan poxoc, Yerevan, Armenia",
+      "geometry": {
+        "location": {
+          "lat": 40.1778692,
+          "lng": 44.5140561
+        },
+        "location_type": "GEOMETRIC_CENTER",
+        "viewport": {
+          "northeast": {
+            "lat": 40.1792560302915,
+            "lng": 44.5153624302915
+          },
+          "southwest": {
+            "lat": 40.1765580697085,
+            "lng": 44.5126644697085
+          }
+        }
+      },
+      "place_id": "ChIJW_AUPPq8akARij6augHf2VQ",
+      "plus_code": {
+        "compound_code": "5GH7+4J Yerevan, Armenia",
+        "global_code": "8HG65GH7+4J"
+      },
+      "types": [
+        "establishment",
+        "point_of_interest",
+        "transit_station"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "5GH7+32",
+          "short_name": "5GH7+32",
+          "types": [
+            "plus_code"
+          ]
+        },
+        {
+          "long_name": "Yerevan",
+          "short_name": "Yerevan",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Yerevan",
+          "short_name": "Yerevan",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Armenia",
+          "short_name": "AM",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "5GH7+32 Yerevan, Armenia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 40.17775,
+            "lng": 44.512625
+          },
+          "southwest": {
+            "lat": 40.177625,
+            "lng": 44.5125
+          }
+        },
+        "location": {
+          "lat": 40.17765,
+          "lng": 44.5126
+        },
+        "location_type": "GEOMETRIC_CENTER",
+        "viewport": {
+          "northeast": {
+            "lat": 40.17903648029149,
+            "lng": 44.5139114802915
+          },
+          "southwest": {
+            "lat": 40.1763385197085,
+            "lng": 44.5112135197085
+          }
+        }
+      },
+      "place_id": "Egs4SEc2NUdINyszMiImOiQKCg10n_IXFXAViBoQChoUChIJW4v8uNqiakARalLah655FD0",
+      "plus_code": {
+        "compound_code": "5GH7+32 Yerevan, Armenia",
+        "global_code": "8HG65GH7+32"
+      },
+      "types": [
+        "plus_code"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "32",
+          "short_name": "32",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Nalbandyan str.",
+          "short_name": "Nalbandyan str.",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Kentron",
+          "short_name": "Kentron",
+          "types": [
+            "political",
+            "sublocality",
+            "sublocality_level_1"
+          ]
+        },
+        {
+          "long_name": "Yerevan",
+          "short_name": "Yerevan",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Yerevan",
+          "short_name": "Yerevan",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Armenia",
+          "short_name": "AM",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "32 Nalbandyan str., Yerevan, Armenia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 40.1777734,
+            "lng": 44.5136968
+          },
+          "southwest": {
+            "lat": 40.1775565,
+            "lng": 44.512938
+          }
+        },
+        "location": {
+          "lat": 40.17758099455944,
+          "lng": 44.51335109033715
+        },
+        "location_type": "GEOMETRIC_CENTER",
+        "viewport": {
+          "northeast": {
+            "lat": 40.1790139302915,
+            "lng": 44.51466638029149
+          },
+          "southwest": {
+            "lat": 40.1763159697085,
+            "lng": 44.5119684197085
+          }
+        }
+      },
+      "place_id": "ChIJ167DJvq8akARWA8CR0sfqXo",
+      "types": [
+        "route"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "9",
+          "short_name": "9",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Vazgen Sargsyan Street",
+          "short_name": "Vazgen Sargsyan St",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Kentron",
+          "short_name": "Kentron",
+          "types": [
+            "political",
+            "sublocality",
+            "sublocality_level_1"
+          ]
+        },
+        {
+          "long_name": "Yerevan",
+          "short_name": "Yerevan",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Yerevan",
+          "short_name": "Yerevan",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Armenia",
+          "short_name": "AM",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "9 Vazgen Sargsyan St, Yerevan, Armenia",
+      "geometry": {
+        "location": {
+          "lat": 40.1773967,
+          "lng": 44.5116333
+        },
+        "location_type": "RANGE_INTERPOLATED",
+        "viewport": {
+          "northeast": {
+            "lat": 40.17874568029149,
+            "lng": 44.5129822802915
+          },
+          "southwest": {
+            "lat": 40.17604771970849,
+            "lng": 44.5102843197085
+          }
+        }
+      },
+      "place_id": "EiY5IFZhemdlbiBTYXJnc3lhbiBTdCwgWWVyZXZhbiwgQXJtZW5pYSIaEhgKFAoSCWUEn5z5vGpAEdicwK-WJ4UkEAk",
+      "types": [
+        "street_address"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "11/1",
+          "short_name": "11/1",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Arami poghots",
+          "short_name": "Arami poghots",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Kentron",
+          "short_name": "Kentron",
+          "types": [
+            "political",
+            "sublocality",
+            "sublocality_level_1"
+          ]
+        },
+        {
+          "long_name": "Yerevan",
+          "short_name": "Yerevan",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Yerevan",
+          "short_name": "Yerevan",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Armenia",
+          "short_name": "AM",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "11/1 Arami poghots, Yerevan, Armenia",
+      "geometry": {
+        "location": {
+          "lat": 40.1793965,
+          "lng": 44.51425589999999
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 40.1806721802915,
+            "lng": 44.51551613029149
+          },
+          "southwest": {
+            "lat": 40.1779742197085,
+            "lng": 44.5128181697085
+          }
+        }
+      },
+      "place_id": "ChIJFYGwqfu8akAR9_fNByZmta8",
+      "plus_code": {
+        "compound_code": "5GH7+QP Yerevan, Armenia",
+        "global_code": "8HG65GH7+QP"
+      },
+      "types": [
+        "street_address"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "6",
+          "short_name": "6",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Vazgen Sargsyan Street",
+          "short_name": "Vazgen Sargsyan St",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Kentron",
+          "short_name": "Kentron",
+          "types": [
+            "political",
+            "sublocality",
+            "sublocality_level_1"
+          ]
+        },
+        {
+          "long_name": "Yerevan",
+          "short_name": "Yerevan",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Yerevan",
+          "short_name": "Yerevan",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Armenia",
+          "short_name": "AM",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "0010",
+          "short_name": "0010",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "6 Vazgen Sargsyan St, Yerevan 0010, Armenia",
+      "geometry": {
+        "location": {
+          "lat": 40.1757593,
+          "lng": 44.5108027
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 40.1771722302915,
+            "lng": 44.5122991802915
+          },
+          "southwest": {
+            "lat": 40.1744742697085,
+            "lng": 44.50960121970851
+          }
+        }
+      },
+      "place_id": "ChIJnbGmNvi8akARE8sbQ45mSkY",
+      "plus_code": {
+        "compound_code": "5GG6+88 Yerevan, Armenia",
+        "global_code": "8HG65GG6+88"
+      },
+      "types": [
+        "airport",
+        "establishment",
+        "point_of_interest"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Kentron",
+          "short_name": "Kentron",
+          "types": [
+            "political",
+            "sublocality",
+            "sublocality_level_1"
+          ]
+        },
+        {
+          "long_name": "Yerevan",
+          "short_name": "Yerevan",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Yerevan",
+          "short_name": "Yerevan",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Armenia",
+          "short_name": "AM",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Kentron, Yerevan, Armenia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 40.1982146,
+            "lng": 44.5477401
+          },
+          "southwest": {
+            "lat": 40.1580615,
+            "lng": 44.4771211
+          }
+        },
+        "location": {
+          "lat": 40.1780888,
+          "lng": 44.5122203
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 40.1982146,
+            "lng": 44.5477401
+          },
+          "southwest": {
+            "lat": 40.1580615,
+            "lng": 44.4771211
+          }
+        }
+      },
+      "place_id": "ChIJqf0HN_m8akARnNJkxVUIr_Y",
+      "types": [
+        "political",
+        "sublocality",
+        "sublocality_level_1"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Yerevan",
+          "short_name": "Yerevan",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Yerevan",
+          "short_name": "Yerevan",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Armenia",
+          "short_name": "AM",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Yerevan, Armenia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 40.2426667,
+            "lng": 44.6150493
+          },
+          "southwest": {
+            "lat": 40.0641141,
+            "lng": 44.3620849
+          }
+        },
+        "location": {
+          "lat": 40.1872023,
+          "lng": 44.515209
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 40.2426667,
+            "lng": 44.6150493
+          },
+          "southwest": {
+            "lat": 40.0641141,
+            "lng": 44.3620849
+          }
+        }
+      },
+      "place_id": "ChIJW4v8uNqiakARalLah655FD0",
+      "types": [
+        "locality",
+        "political"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Yerevan",
+          "short_name": "Yerevan",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Armenia",
+          "short_name": "AM",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Yerevan, Armenia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 40.261712,
+            "lng": 44.66696109999999
+          },
+          "southwest": {
+            "lat": 40.08440600000001,
+            "lng": 44.416932
+          }
+        },
+        "location": {
+          "lat": 40.1794197,
+          "lng": 44.5408414
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 40.261712,
+            "lng": 44.66696109999999
+          },
+          "southwest": {
+            "lat": 40.08440600000001,
+            "lng": 44.416932
+          }
+        }
+      },
+      "place_id": "ChIJc-dHAcOiakAR9TDRSvqQzRU",
+      "types": [
+        "administrative_area_level_1",
+        "political"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Armenia",
+          "short_name": "AM",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Armenia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 41.3011445,
+            "lng": 46.6343433
+          },
+          "southwest": {
+            "lat": 38.8402439,
+            "lng": 43.447263
+          }
+        },
+        "location": {
+          "lat": 40.069099,
+          "lng": 45.038189
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 41.3011445,
+            "lng": 46.6343433
+          },
+          "southwest": {
+            "lat": 38.8402439,
+            "lng": 43.447263
+          }
+        }
+      },
+      "place_id": "ChIJx7pz54RWFUARIy2C63p1tNA",
+      "types": [
+        "country",
+        "political"
+      ]
+    }
+  ],
+  "status": "OK"
+}

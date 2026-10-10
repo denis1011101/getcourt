@@ -170,6 +170,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_090000) do
     t.text "surfaces"
     t.datetime "updated_at", null: false
     t.integer "user_id"
+    t.integer "city_id"
+    t.string "country_code", limit: 2
+    t.index ["city_id"], name: "index_courts_on_city_id"
     t.index ["city_name"], name: "index_courts_on_city_name"
     t.index ["moderation_status"], name: "index_courts_on_moderation_status"
     t.index ["sport"], name: "index_courts_on_sport"
@@ -632,6 +635,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_090000) do
     t.string "telegram_username"
     t.string "timezone", default: "Asia/Yekaterinburg"
     t.datetime "updated_at", null: false
+    t.integer "city_id"
+    t.index ["city_id"], name: "index_users_on_city_id"
     t.index ["email"], name: "index_users_on_email", unique: true, where: "email IS NOT NULL"
     t.index ["login_code"], name: "index_users_on_login_code"
     t.index ["merged_into_id"], name: "index_users_on_merged_into_id"
@@ -652,6 +657,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_090000) do
   add_foreign_key "court_suggestions", "courts"
   add_foreign_key "court_suggestions", "users"
   add_foreign_key "court_suggestions", "users", column: "reviewed_by_id"
+  add_foreign_key "courts", "cities", on_delete: :nullify
   add_foreign_key "courts", "users"
   add_foreign_key "favorite_courts", "courts"
   add_foreign_key "favorite_courts", "users"
@@ -702,5 +708,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_090000) do
   add_foreign_key "training_plan_proposals", "users"
   add_foreign_key "training_plan_votes", "training_plan_proposals"
   add_foreign_key "training_plan_votes", "users"
+  add_foreign_key "users", "cities", on_delete: :nullify
   add_foreign_key "users", "users", column: "merged_into_id"
 end

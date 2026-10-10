@@ -64,6 +64,90 @@ class Geocoding::AddressResolverTest < ActiveSupport::TestCase
   end
 
   # ---------------------------------------------------------------------------
+  # resolve — country code and the component the city name came from
+  # ---------------------------------------------------------------------------
+
+  test "resolve takes the country code and city component type from Google" do
+    [
+      [ "locality", "Moscow" ],
+      [ "postal_town", "Eastbourne" ],
+      [ "administrative_area_level_2", "Queens County" ]
+    ].each do |type, name|
+      payload = google_payload(
+        { "types" => [ type, "political" ], "long_name" => name, "short_name" => name },
+        { "types" => [ "country", "political" ], "long_name" => "Somewhere", "short_name" => "ru" }
+      )
+
+      with_env("GOOGLE_GEOCODING_API_KEY" => "test_key") do
+        with_stubbed_fetch_json(payload) do |resolver|
+          result = resolver.resolve(1, 2)
+          assert_equal name, result[:city_name]
+          assert_equal type, result[:city_component]
+          assert_equal "RU", result[:country_code]
+        end
+      end
+    end
+  end
+
+  test "resolve prefers locality over an administrative area from Google" do
+    payload = google_payload(
+      { "types" => [ "administrative_area_level_2" ], "long_name" => "Queens County" },
+      { "types" => [ "locality" ], "long_name" => "New York" },
+      { "types" => [ "country" ], "long_name" => "United States", "short_name" => "US" }
+    )
+
+    with_env("GOOGLE_GEOCODING_API_KEY" => "test_key") do
+      with_stubbed_fetch_json(payload) do |resolver|
+        result = resolver.resolve(1, 2)
+        assert_equal [ "New York", "locality", "US" ], result.values_at(:city_name, :city_component, :country_code)
+      end
+    end
+  end
+
+  test "resolve leaves country and component empty when Google has none" do
+    payload = google_payload({ "types" => [ "route" ], "long_name" => "Tverskaya St" })
+
+    with_env("GOOGLE_GEOCODING_API_KEY" => "test_key") do
+      with_stubbed_fetch_json(payload) do |resolver|
+        result = resolver.resolve(1, 2)
+        assert_nil result[:city_name]
+        assert_nil result[:city_component]
+        assert_nil result[:country_code]
+      end
+    end
+  end
+
+  test "resolve takes the country code and city key from Nominatim" do
+    [
+      [ { "city" => "Wien", "town" => "Ignored" }, "Wien", "city" ],
+      [ { "town" => "Umag" }, "Umag", "town" ],
+      [ { "village" => "Carouge" }, "Carouge", "village" ],
+      [ { "municipality" => "Pak Kret" }, "Pak Kret", "municipality" ]
+    ].each do |address, name, component|
+      payload = { "display_name" => "x", "address" => address.merge("country_code" => "at") }
+
+      with_env("GOOGLE_GEOCODING_API_KEY" => "") do
+        with_stubbed_fetch_json(payload) do |resolver|
+          result = resolver.resolve(1, 2)
+          assert_equal name, result[:city_name]
+          assert_equal component, result[:city_component]
+          assert_equal "AT", result[:country_code]
+        end
+      end
+    end
+  end
+
+  test "resolve drops a malformed Nominatim country code" do
+    payload = { "display_name" => "x", "address" => { "city" => "Somewhere", "country_code" => "xyz" } }
+
+    with_env("GOOGLE_GEOCODING_API_KEY" => "") do
+      with_stubbed_fetch_json(payload) do |resolver|
+        assert_nil resolver.resolve(1, 2)[:country_code]
+      end
+    end
+  end
+
+  # ---------------------------------------------------------------------------
   # resolve — both providers fail → nil
   # ---------------------------------------------------------------------------
 
@@ -158,6 +242,10 @@ class Geocoding::AddressResolverTest < ActiveSupport::TestCase
   end
 
   private
+
+  def google_payload(*components)
+    { "status" => "OK", "results" => [ { "address_components" => components } ] }
+  end
 
   def failing_http(error)
     http = Object.new

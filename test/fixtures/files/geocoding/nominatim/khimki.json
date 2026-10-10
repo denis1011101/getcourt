@@ -1,0 +1,33 @@
+{
+  "place_id": 194690759,
+  "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+  "osm_type": "way",
+  "osm_id": 314898211,
+  "lat": "55.8988665",
+  "lon": "37.4270585",
+  "class": "amenity",
+  "type": "parking",
+  "place_rank": 30,
+  "importance": 6.258869306472904e-05,
+  "addresstype": "amenity",
+  "name": "",
+  "display_name": "Leningradskoye Highway, Новые Химки, Khimki, Khimki Urban Okrug, Moscow Oblast, Central Federal District, 141407, Russia",
+  "address": {
+    "road": "Leningradskoye Highway",
+    "suburb": "Новые Химки",
+    "city": "Khimki",
+    "county": "Khimki Urban Okrug",
+    "state": "Moscow Oblast",
+    "ISO3166-2-lvl4": "RU-MOS",
+    "region": "Central Federal District",
+    "postcode": "141407",
+    "country": "Russia",
+    "country_code": "ru"
+  },
+  "boundingbox": [
+    "55.8986273",
+    "55.8991094",
+    "37.4266472",
+    "37.4274679"
+  ]
+}

@@ -186,6 +186,8 @@ module Telegram
           when "city"
             translit_input = translit_str(text)
             user.city_name = translit_input if user.respond_to?(:city_name=)
+            # Новый ввод — новая связь: её заново определит ResolveUserCityJob.
+            user.city_id = nil if user.respond_to?(:city_id=)
             user.location = text if user.respond_to?(:location=)
             if user.respond_to?(:timezone=)
               user.timezone = nil

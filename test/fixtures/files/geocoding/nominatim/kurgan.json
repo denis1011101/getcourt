@@ -1,0 +1,33 @@
+{
+  "place_id": 215658906,
+  "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+  "osm_type": "way",
+  "osm_id": 37978170,
+  "lat": "55.4490818",
+  "lon": "65.3434752",
+  "class": "highway",
+  "type": "primary",
+  "place_rank": 26,
+  "importance": 0.05339340581368731,
+  "addresstype": "road",
+  "name": "проспект Машиностроителей",
+  "display_name": "проспект Машиностроителей, Центральный район, Kurgan, Kurgan Oblast, Ural Federal District, 640002, Russia",
+  "address": {
+    "road": "проспект Машиностроителей",
+    "suburb": "Центральный район",
+    "city": "Kurgan",
+    "county": "Kurgan",
+    "state": "Kurgan Oblast",
+    "ISO3166-2-lvl4": "RU-KGN",
+    "region": "Ural Federal District",
+    "postcode": "640002",
+    "country": "Russia",
+    "country_code": "ru"
+  },
+  "boundingbox": [
+    "55.4486471",
+    "55.4495081",
+    "65.3430897",
+    "65.3438683"
+  ]
+}

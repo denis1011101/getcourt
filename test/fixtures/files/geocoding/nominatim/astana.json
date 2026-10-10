@@ -1,0 +1,33 @@
+{
+  "place_id": 214024449,
+  "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+  "osm_type": "node",
+  "osm_id": 9585094024,
+  "lat": "51.1801000",
+  "lon": "71.4459800",
+  "class": "shop",
+  "type": "tyres",
+  "place_rank": 30,
+  "importance": 6.872587167158034e-05,
+  "addresstype": "shop",
+  "name": "Шин Line",
+  "display_name": "Шин Line, Биші қайың тұйық көшесі, Bayqoñır district, Astana, 010000, Kazakhstan",
+  "address": {
+    "shop": "Шин Line",
+    "road": "Биші қайың тұйық көшесі",
+    "city_district": "Bayqoñır district",
+    "city": "Astana",
+    "ISO3166-2-lvl15": "KZ-AST",
+    "state": "Astana",
+    "ISO3166-2-lvl4": "KZ-71",
+    "postcode": "010000",
+    "country": "Kazakhstan",
+    "country_code": "kz"
+  },
+  "boundingbox": [
+    "51.1800500",
+    "51.1801500",
+    "71.4459300",
+    "71.4460300"
+  ]
+}

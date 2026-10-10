@@ -1,0 +1,122 @@
+# Проверенные написания городов, под которыми геокодер или пользователь называет
+# запись справочника cities, хотя в её name/asciiname этого написания нет.
+#
+# Читает Cities::Aliases, применяет Cities::Resolver. Поля записи:
+#   name         — вариант названия, как он приходит (сравнение по нормализации:
+#                  регистр, Unicode, пробелы; транслитерации нет);
+#   country_code — страна цели; алиас применяется только внутри неё;
+#   geoname_id   — цель (cities.geoname_id: локальные id в базах расходятся);
+#   city         — City#canonical_name цели — для ревью и проверки конфига;
+#                  отображаемое название всё равно берётся из справочника;
+#   global       — true, только если написание однозначно во всём мире: тогда
+#                  алиас годится и для ввода без страны (текст из Телеграма),
+#                  и для строкового сравнения City.normalize_name.
+#
+# Добавляем только подтверждённое данными: то же место, та же страна, цель —
+# запись справочника с этой страной. Районы синонимами городов не считаем
+# (Fatih → Istanbul, Koto City → Tokyo сюда не входят). Одно написание с
+# несколькими целями не перезаписывается, а остаётся неоднозначным.
+#
+# Основание — выгрузка с production от 2026-10-08 (корты и пользователи).
+aliases:
+  # Одно правило Ekaterinburg/Yekaterinburg, раньше жившее в City::NAME_ALIASES.
+  # Город с таким названием в мире один; «Ekaterinburg» — у 8 пользователей
+  # (Russian.translit от «Екатеринбург»), «Yekaterinburg» — у 9 кортов.
+  - name: Ekaterinburg
+    country_code: RU
+    geoname_id: 1486209
+    city: Yekaterinburg
+    global: true
+  - name: Yekaterinburg
+    country_code: RU
+    geoname_id: 1486209
+    city: Yekaterinburg
+    global: true
+
+  # Местные написания столиц и крупных городов от Nominatim. Внутри своей
+  # страны однозначны; вне её — нет (Vienna и Rome есть во многих штатах США,
+  # Roma — в AU, LS, RO и US). Moskva — согласованное исключение, см. ниже.
+  - name: Wien            # 8 кортов, 48.21,16.37
+    country_code: AT
+    geoname_id: 2761369
+    city: Vienna
+  - name: Beograd         # 3 корта, 44.79–44.81,20.46–20.49
+    country_code: RS
+    geoname_id: 792680
+    city: Belgrade
+  - name: T'bilisi        # 1 корт, 41.71,44.75
+    country_code: GE
+    geoname_id: 611717
+    city: Tbilisi
+  - name: Torino          # 1 корт, 45.07,7.66
+    country_code: IT
+    geoname_id: 3165524
+    city: Turin
+  - name: Roma            # 5 кортов, 41.93,12.47
+    country_code: IT
+    geoname_id: 3169070
+    city: Rome
+  # Продуктовое исключение из правила однозначности (2026-10-10): «Москва» из
+  # Телеграма — это Moskva, и без global связи с Москвой не было, а пояс
+  # брался у таджикской деревни Moskva (1220988, Asia/Dushanbe). Этот тёзка
+  # в cities1000 единственный; тест однозначности разрешает его поимённо.
+  - name: Moskva          # 1 корт, 55.76,37.62
+    country_code: RU
+    geoname_id: 524901
+    city: Moscow
+    global: true
+  - name: Sankt-Peterburg # 1 корт, 59.93,30.36
+    country_code: RU
+    geoname_id: 498817
+    city: Saint Petersburg
+  # «Тоshkent» с кириллическими «Т» и «о» (U+0422, U+043E) — ровно так он
+  # записан у 3 кортов (41.35,69.28–69.34). Похожие буквы глобально не
+  # подменяем, поэтому написание заведено отдельно.
+  - name: "Тоshkent"
+    country_code: UZ
+    geoname_id: 1512569
+    city: Tashkent
+
+  # Каменск-Уральский: геокодер пишет «Kamensk-Uralsky», Russian.translit от
+  # «Каменск-Уральский» даёт «Kamensk-Uralskiy», а в справочнике —
+  # «Kamensk-Ural’skiy» с типографским апострофом (56.41,61.93). Оба написания
+  # в cities1000 больше нигде не встречаются.
+  - name: Kamensk-Uralsky
+    country_code: RU
+    geoname_id: 1504826
+    city: Kamensk-Ural’skiy
+    global: true
+  - name: Kamensk-Uralskiy
+    country_code: RU
+    geoname_id: 1504826
+    city: Kamensk-Ural’skiy
+    global: true
+
+  # Ввод из Телеграма без страны (Russian.translit): написание совпадает с
+  # name в справочнике, но без global связи не было бы. Однозначность
+  # проверена по cities1000 на 2026-10-10: у каждого написания одна запись.
+  - name: Kurgan
+    country_code: RU
+    geoname_id: 1501321
+    city: Kurgan
+    global: true
+  - name: Chelyabinsk
+    country_code: RU
+    geoname_id: 1508291
+    city: Chelyabinsk
+    global: true
+  - name: Astana
+    country_code: KZ
+    geoname_id: 1526273
+    city: Astana
+    global: true
+  - name: Erevan           # Russian.translit от «Ереван»
+    country_code: AM
+    geoname_id: 616052
+    city: Yerevan
+    global: true
+  - name: Yerevan
+    country_code: AM
+    geoname_id: 616052
+    city: Yerevan
+    global: true

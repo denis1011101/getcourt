@@ -13,7 +13,12 @@ module Geocoding
     end
     self.nominatim_last_request_at = -Float::INFINITY
 
-    # Resolves lat/lng to { address: String, city_name: String | nil, street: String | nil } or nil.
+    # Resolves lat/lng to { address: String, city_name: String | nil, street: String | nil,
+    # country_code: "RU" | nil, city_component: String | nil } or nil.
+    # city_component — тип компонента, из которого взято city_name: у Google
+    # locality / postal_town / administrative_area_level_2, у Nominatim ключ
+    # address (city / town / village / municipality). По нему Cities::Resolver
+    # отличает город от административной единицы.
     # Tries Google first, falls back to Nominatim.
     def resolve(lat, lng)
       geocode_google_full(lat, lng) || geocode_nominatim_structured(lat, lng)
@@ -49,13 +54,15 @@ module Geocoding
       components = data["results"].first["address_components"]
       street  = gcomp(components, "route")
       number  = gcomp(components, "street_number")
-      city    = gcomp(components, "locality", "postal_town", "administrative_area_level_2")
+      city, city_component = gcomp_typed(components, "locality", "postal_town", "administrative_area_level_2")
       country = gcomp(components, "country")
+      country_code = normalize_country_code(gcomp(components, "country", name: "short_name"))
 
       street_line = [ street, number ].compact.join(" ").presence
       address = [ street_line, city, country ].compact.join(", ").presence
 
-      { address: address, city_name: city, street: street_line }
+      { address: address, city_name: city, street: street_line,
+        country_code: country_code, city_component: city_component }
     rescue => e
       Rails.logger.warn("Google geocoding error: #{redact_key(e.message)}")
       nil
@@ -111,10 +118,13 @@ module Geocoding
       end
       return nil unless data
 
-      addr      = data["address"]
-      city_name = addr && (addr["city"] || addr["town"] || addr["village"] || addr["municipality"])
-      street    = addr && [ addr["road"], addr["house_number"] ].compact.join(" ").presence
-      { address: data["display_name"], city_name: city_name, street: street }
+      addr           = data["address"]
+      city_component = addr && %w[city town village municipality].find { |key| addr[key] }
+      city_name      = city_component && addr[city_component]
+      street         = addr && [ addr["road"], addr["house_number"] ].compact.join(" ").presence
+      country_code   = normalize_country_code(addr && addr["country_code"])
+      { address: data["display_name"], city_name: city_name, street: street,
+        country_code: country_code, city_component: city_component }
     rescue => e
       Rails.logger.warn("Nominatim error: #{e.message}")
       nil
@@ -164,12 +174,21 @@ module Geocoding
       text.to_s.gsub(/key=[^&\s"]+/, "key=[FILTERED]")
     end
 
-    def gcomp(components, *types)
+    def gcomp(components, *types, name: "long_name")
+      gcomp_typed(components, *types, name: name).first
+    end
+
+    # Как gcomp, но вместе со значением отдаёт тип компонента, который сработал.
+    def gcomp_typed(components, *types, name: "long_name")
       types.each do |t|
-        v = components.find { |c| c["types"].include?(t) }&.dig("long_name")
-        return v if v.present?
+        v = components.find { |c| c["types"].include?(t) }&.dig(name)
+        return [ v, t ] if v.present?
       end
-      nil
+      [ nil, nil ]
+    end
+
+    def normalize_country_code(value)
+      Cities::Resolver.normalize_country_code(value)
     end
   end
 end

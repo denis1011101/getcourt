@@ -13,29 +13,33 @@ class City < ApplicationRecord
       .transform_values { |rows| rows.max_by { |(_, _, population)| population.to_i }[1] }
   end
 
-  # Написания одного города, разошедшиеся по базе: у пользователей город долго
-  # был свободным текстом, у кортов он приходит из геокодера. Ключ — вариант,
-  # значение — то, к чему приводим.
-  NAME_ALIASES = {
-    "yekaterinburg" => "ekaterinburg"
-  }.freeze
-
   # Единая нормализация названия города для сравнений. Живёт в модели, потому
   # что сравнивают города и контроллеры, и модели, и телеграм-хендлеры; пока
   # это лежало в концерне контроллеров, до него дотягивались не все, и часть
   # мест сравнивала сырой downcase — для «Ekaterinburg» против «Yekaterinburg»
-  # это молчаливое «город не совпал».
+  # это молчаливое «город не совпал». Написания одного города сводит вместе
+  # глобальный алиас из config/city_aliases.yml (см. Cities::Aliases).
   def self.normalize_name(value)
-    name = I18n.transliterate(value.to_s).downcase.strip.gsub(/\s+/, " ")
+    name = fold_name(value)
     return nil if name.blank?
 
-    NAME_ALIASES.fetch(name, name)
+    name_aliases.fetch(name, name)
   end
 
   # Все написания, которые нормализуются в это же название, — нужны там, где
   # город ищут запросом по справочнику, а не сравнением в памяти.
   def self.alias_names_for(name)
-    ([ name ] + NAME_ALIASES.select { |_variant, canonical| canonical == name }.keys).uniq
+    canonical = name_aliases.fetch(name, name)
+    ([ name, canonical ] + name_aliases.select { |_variant, target| target == canonical }.keys).uniq
+  end
+
+  def self.fold_name(value)
+    I18n.transliterate(value.to_s).downcase.strip.gsub(/\s+/, " ")
+  end
+
+  # Вариант → то, к чему приводим (в терминах fold_name).
+  def self.name_aliases
+    Cities::Aliases.default.name_aliases
   end
 
   # Каноническое имя города для профиля и матчинга с courts.city_name: берём

@@ -1,46 +1,64 @@
 class ResolveUserCityJob < ApplicationJob
   queue_as :default
 
+  COORDS_REGEX = /\A\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*\z/
+
+  # Часовой пояс и город решаются раздельно. Пояс — по строго определённому
+  # городу, а без него, как и раньше, по самому населённому кандидату. city_id —
+  # только строгим Cities::Resolver: кандидат для пояса основанием для связи не
+  # служит.
   def perform(user_id, original_query)
     return if original_query.blank?
+    return unless User.exists?(id: user_id)
 
+    coords = original_query.match?(COORDS_REGEX)
+
+    if coords
+      lat, lon = original_query.split(",").map { |s| s.to_f }
+      timezone_city = find_city_by_coords(lat, lon)
+      # Тот же геокодер, что у кортов, — с его лимитом частоты, таймаутами и
+      # запасным Nominatim.
+      location = Cities::Resolver.new.resolve_geocoded(Geocoding::AddressResolver.new.resolve(lat, lon))
+    else
+      timezone_city = Cities::SearchService.new(query: original_query, limit: 1).call.first rescue nil
+      # Без страны годится только алиас, явно разрешённый без страны.
+      location = Cities::Resolver.new.resolve_text(translit_str(original_query))
+    end
+
+    # Читаем пользователя после геокодера: пока тот отвечал, город могли
+    # сменить, и тогда этот результат уже не про него.
     user = User.find_by(id: user_id)
     return unless user
 
-    coords_regex = /\A\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*\z/
-
-    if original_query =~ coords_regex
-      lat, lon = original_query.split(",").map { |s| s.to_f }
-      city = find_city_by_coords(lat, lon)
-    else
-      city = Cities::SearchService.new(query: original_query, limit: 1).call.first rescue nil
-    end
-
-    return unless city
-
-    new_name = city.canonical_name
-    tz_to_set = city.rails_timezone
-
     # avoid clobbering if user changed city manually after save:
-    expected_current = original_query =~ coords_regex ? original_query : translit_str(original_query)
+    expected_current = coords ? original_query : translit_str(original_query)
     return unless user.city_name.to_s.strip == expected_current
 
     # collect attributes to update
     update_attrs = {}
 
-    if original_query =~ coords_regex
-      # if user submitted coords, replace coords with resolved city name and tz
+    tz_to_set = (location.resolved? ? location.city : timezone_city)&.rails_timezone
+    update_attrs[:timezone] = tz_to_set if tz_to_set.present? && user.timezone.to_s.strip != tz_to_set
+
+    if coords
+      # Название — как до связи со справочником: строго определённый город, а
+      # если не вышло — ближайший кандидат (по нему же считаем пояс). Иначе в
+      # профиле остались бы координаты, а сравнения по city_name не сработали.
+      # city_id — только строгий: кандидат по близости основанием не служит.
+      name_city = location.resolved? ? location.city : timezone_city
+      new_name = name_city&.canonical_name
       update_attrs[:city_name] = new_name if new_name.present? && user.city_name.to_s.strip != new_name
-      update_attrs[:timezone] = tz_to_set if tz_to_set.present? && user.timezone.to_s.strip != tz_to_set
+      update_attrs[:city_id] = location.city.id if location.resolved?
     else
       # for plain name input: do not overwrite user's city_name (we saved translit immediately)
-      update_attrs[:timezone] = tz_to_set if tz_to_set.present? && user.timezone.to_s.strip != tz_to_set
+      update_attrs[:city_id] = location.city.id if location.resolved?
     end
+    update_attrs.delete(:city_id) if update_attrs[:city_id] == user.city_id
 
     if update_attrs.any?
       begin
         user.update(update_attrs)
-        Rails.logger.info "[ResolveUserCityJob] updated User##{user.id} #{update_attrs.keys.join(',')}"
+        Rails.logger.info "[ResolveUserCityJob] updated User##{user.id} #{update_attrs.keys.join(',')} (#{location.reason})"
       rescue => e
         Rails.logger.warn "[ResolveUserCityJob] failed to update User##{user.id}: #{e.message}"
       end

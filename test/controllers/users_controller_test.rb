@@ -277,14 +277,17 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     user_email = "clear_city_redirect_#{SecureRandom.hex(4)}@example.com"
     post session_url, params: { email: user_email }
     user = User.find_by!(email: user_email)
-    user.update!(city_name: "Kurgan")
+    kurgan = City.create!(name: "Kurgan", asciiname: "Kurgan", country_code: "RU", geoname_id: 1501321)
+    user.update!(city_name: "Kurgan", city: kurgan)
 
     post clear_city_account_url
 
     assert_redirected_to profile_account_path
     assert_nil user.reload.city_name
+    assert_nil user.city_id
   ensure
     user&.destroy
+    kurgan&.destroy
   end
 
   test "account games shows past matches when user has no live games" do
@@ -577,6 +580,17 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
       user.reload
       assert_equal "Yekaterinburg", user.city_name
       assert_equal "Ekaterinburg", user.timezone
+      assert_equal cities[:yekaterinburg], user.city, "явный выбор сохраняем связью"
+    end
+  end
+
+  test "picking another city replaces the stored link" do
+    with_city_user do |user, cities|
+      user.update!(city_name: "Zyukayka", city: cities[:zyukayka])
+
+      patch account_url, params: { section: "profile", selected_city_id: cities[:yekaterinburg].id, user: { city_name: "" } }
+
+      assert_equal cities[:yekaterinburg], user.reload.city
     end
   end
 

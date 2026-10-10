@@ -51,6 +51,8 @@ module Users
         source_value = source.public_send(field)
         attributes[field] = source_value if target.public_send(field).blank? && source_value.present?
       end
+      # Связь с городом переезжает только вместе со своим city_name.
+      attributes[:city_id] = source.city_id if attributes.key?(:city_name)
       attributes[:preferred_sports] = (target.preferred_sports.to_a + source.preferred_sports.to_a).uniq
       attributes[:skill_levels] = source.skill_levels.to_h.merge(target.skill_levels.to_h)
       attributes[:notify_nearby] = target.notify_nearby? || source.notify_nearby?

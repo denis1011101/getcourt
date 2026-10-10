@@ -8,6 +8,15 @@ class Court < ApplicationRecord
   has_many :fans, through: :favorite_court_links, source: :user
   validates :name, presence: true
   belongs_to :user, optional: true
+  # Запись справочника, определённая по геокодингу (Cities::Resolver). Пустая
+  # связь — город не определён: район, неоднозначное или не найденное
+  # название. Строковый city_name живёт рядом как раньше.
+  belongs_to :city, optional: true
+
+  # Страна известна и тогда, когда город определить не удалось.
+  normalizes :country_code, with: ->(code) { code.to_s.strip.upcase.presence }
+  validates :country_code, format: { with: Cities::Resolver::COUNTRY_CODE_FORMAT }, allow_nil: true
+  validate :country_matches_city
 
   # `rubber` — резиновая крошка и наливная резина: их кладут вместо харда на
   # дворовых и школьных площадках, и на глаз это не хард, а отдельное покрытие.
@@ -17,6 +26,10 @@ class Court < ApplicationRecord
 
   before_validation :normalize_surfaces
   validate :surfaces_are_valid
+
+  # Город и страна выведены из координат: после их реальной смены прежняя
+  # связь уже не про этот корт. Новую запишет FetchCourtAddressJob.
+  before_save :forget_resolved_location, if: :coordinates_moved?
 
   # планируем асинхронное получение адреса при смене координат
   after_commit :enqueue_address_fetch, on: %i[create update], if: -> { saved_change_to_coordinates? }
@@ -181,6 +194,23 @@ class Court < ApplicationRecord
   end
 
   private
+
+  # Реальная смена — другая точка, а не другая запись той же («55.1,60.2»
+  # против «55.1, 60.2»).
+  def coordinates_moved?
+    will_save_change_to_coordinates? && self.class.parse_pair(coordinates_in_database) != coordinates_pair
+  end
+
+  def forget_resolved_location
+    self.city = nil
+    self.country_code = nil
+  end
+
+  def country_matches_city
+    return unless city
+
+    errors.add(:country_code, :inclusion) unless country_code == city.country_code
+  end
 
   def normalize_surfaces
     self.surfaces = Array(surfaces).map { |s| s.to_s.strip }.reject(&:blank?).uniq

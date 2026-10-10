@@ -1,0 +1,922 @@
+{
+  "plus_code": {
+    "compound_code": "WC2H+29 Khimki, Moscow Oblast, Russia",
+    "global_code": "9G7VWC2H+29"
+  },
+  "results": [
+    {
+      "address_components": [
+        {
+          "long_name": "24 корпус 115",
+          "short_name": "24 корпус 115",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Leningradskoye Highway",
+          "short_name": "Leningradskoye Hwy",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Khimki",
+          "short_name": "Khimki",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Novyye Khimki",
+          "short_name": "Novyye Khimki",
+          "types": [
+            "administrative_area_level_3",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Khimki Urban District",
+          "short_name": "Khimki Urban District",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Мосцощ Област",
+          "short_name": "Moscow Oblast",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "141401",
+          "short_name": "141401",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Leningradskoye Hwy, 24 корпус 115, Khimki, Moscow Oblast, Russia, 141401",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 55.901302,
+            "lng": 37.4290049
+          },
+          "southwest": {
+            "lat": 55.9008501,
+            "lng": 37.4282039
+          }
+        },
+        "location": {
+          "lat": 55.9010759,
+          "lng": 37.4286043
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 55.9024250302915,
+            "lng": 37.42995338029151
+          },
+          "southwest": {
+            "lat": 55.8997270697085,
+            "lng": 37.42725541970851
+          }
+        }
+      },
+      "place_id": "ChIJZVq1heU4tUYRFrGcfHxT32k",
+      "types": [
+        "premise",
+        "street_address"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "WC2H+29",
+          "short_name": "WC2H+29",
+          "types": [
+            "plus_code"
+          ]
+        },
+        {
+          "long_name": "Khimki",
+          "short_name": "Khimki",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Khimki Urban District",
+          "short_name": "Khimki Urban District",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Moscow Oblast",
+          "short_name": "МО",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "WC2H+29 Khimki, Moscow Oblast, Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 55.900125,
+            "lng": 37.4285
+          },
+          "southwest": {
+            "lat": 55.90000000000001,
+            "lng": 37.428375
+          }
+        },
+        "location": {
+          "lat": 55.90009999999999,
+          "lng": 37.42848
+        },
+        "location_type": "GEOMETRIC_CENTER",
+        "viewport": {
+          "northeast": {
+            "lat": 55.9014114802915,
+            "lng": 37.42978648029149
+          },
+          "southwest": {
+            "lat": 55.8987135197085,
+            "lng": 37.42708851970849
+          }
+        }
+      },
+      "place_id": "Egs5RzdWV0MySCsyOSImOiQKCg2orVEhFQAiTxYQChoUChIJwZ0-GCI_tUYR3balko5EhWA",
+      "plus_code": {
+        "compound_code": "WC2H+29 Khimki, Moscow Oblast, Russia",
+        "global_code": "9G7VWC2H+29"
+      },
+      "types": [
+        "plus_code"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "24б",
+          "short_name": "24б",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Leningradskoye Highway",
+          "short_name": "Leningradskoye Hwy",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Khimki",
+          "short_name": "Khimki",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Novyye Khimki",
+          "short_name": "Novyye Khimki",
+          "types": [
+            "administrative_area_level_3",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Khimki Urban District",
+          "short_name": "Khimki Urban District",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Moskovskaya oblast'",
+          "short_name": "МО",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "141402",
+          "short_name": "141402",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Leningradskoye Hwy, 24б, Khimki, Moskovskaya oblast', Russia, 141402",
+      "geometry": {
+        "location": {
+          "lat": 55.8985518,
+          "lng": 37.42614150000001
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 55.89998153029149,
+            "lng": 37.4274025302915
+          },
+          "southwest": {
+            "lat": 55.8972835697085,
+            "lng": 37.4247045697085
+          }
+        }
+      },
+      "place_id": "ChIJ1bHRq-84tUYR1i0iwDuZ5us",
+      "types": [
+        "street_address",
+        "subpremise"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "24б",
+          "short_name": "24б",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Leningradskoye Highway",
+          "short_name": "Leningradskoye Hwy",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Khimki",
+          "short_name": "Khimki",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Novyye Khimki",
+          "short_name": "Novyye Khimki",
+          "types": [
+            "administrative_area_level_3",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Khimki Urban District",
+          "short_name": "Khimki Urban District",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Moskovskaya oblast'",
+          "short_name": "МО",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "141402",
+          "short_name": "141402",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Leningradskoye Hwy, 24б, Khimki, Moskovskaya oblast', Russia, 141402",
+      "geometry": {
+        "location": {
+          "lat": 55.8985518,
+          "lng": 37.42614150000001
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 55.89998153029149,
+            "lng": 37.4274025302915
+          },
+          "southwest": {
+            "lat": 55.8972835697085,
+            "lng": 37.4247045697085
+          }
+        }
+      },
+      "place_id": "ChIJB3x9qe84tUYRifpeZjp5zWg",
+      "plus_code": {
+        "compound_code": "VCXG+CF Khimki, Moscow Oblast, Russia",
+        "global_code": "9G7VVCXG+CF"
+      },
+      "types": [
+        "establishment",
+        "point_of_interest"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "25",
+          "short_name": "25",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Leningradskoye Highway",
+          "short_name": "Leningradskoye Hwy",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Khimki",
+          "short_name": "Khimki",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Novyye Khimki",
+          "short_name": "Novyye Khimki",
+          "types": [
+            "administrative_area_level_3",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Khimki Urban District",
+          "short_name": "Khimki Urban District",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Moskovskaya oblast'",
+          "short_name": "МО",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "141407",
+          "short_name": "141407",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Leningradskoye Hwy, 25, Khimki, Moskovskaya oblast', Russia, 141407",
+      "geometry": {
+        "location": {
+          "lat": 55.8989278,
+          "lng": 37.4244403
+        },
+        "location_type": "RANGE_INTERPOLATED",
+        "viewport": {
+          "northeast": {
+            "lat": 55.9002767802915,
+            "lng": 37.4257892802915
+          },
+          "southwest": {
+            "lat": 55.8975788197085,
+            "lng": 37.4230913197085
+          }
+        }
+      },
+      "place_id": "EkNMZW5pbmdyYWRza295ZSBId3ksIDI1LCBLaGlta2ksIE1vc2tvdnNrYXlhIG9ibGFzdCcsIFJ1c3NpYSwgMTQxNDA3IhoSGAoUChIJH58s4-44tUYRIiuGh47wplAQGQ",
+      "types": [
+        "street_address"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "25-26",
+          "short_name": "25-26",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Leningradskoye Highway",
+          "short_name": "Leningradskoye Hwy",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Khimki",
+          "short_name": "Khimki",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Novyye Khimki",
+          "short_name": "Novyye Khimki",
+          "types": [
+            "administrative_area_level_3",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Khimki Urban District",
+          "short_name": "Khimki Urban District",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Moskovskaya oblast'",
+          "short_name": "МО",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "141407",
+          "short_name": "141407",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Leningradskoye Hwy, 25-26, Khimki, Moskovskaya oblast', Russia, 141407",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 55.8990516,
+            "lng": 37.4249247
+          },
+          "southwest": {
+            "lat": 55.8982341,
+            "lng": 37.4241934
+          }
+        },
+        "location": {
+          "lat": 55.89867544606578,
+          "lng": 37.42465755603003
+        },
+        "location_type": "GEOMETRIC_CENTER",
+        "viewport": {
+          "northeast": {
+            "lat": 55.8999918302915,
+            "lng": 37.4259080302915
+          },
+          "southwest": {
+            "lat": 55.89729386970851,
+            "lng": 37.4232100697085
+          }
+        }
+      },
+      "place_id": "ChIJH58s4-44tUYRIiuGh47wplA",
+      "types": [
+        "route"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Novyye Khimki",
+          "short_name": "Novyye Khimki",
+          "types": [
+            "administrative_area_level_3",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Khimki",
+          "short_name": "Khimki",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Khimki Urban District",
+          "short_name": "Khimki Urban District",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Moscow Oblast",
+          "short_name": "МО",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Novyye Khimki, Khimki, Moscow Oblast, Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 55.91676099999999,
+            "lng": 37.4628088
+          },
+          "southwest": {
+            "lat": 55.877394,
+            "lng": 37.3896839
+          }
+        },
+        "location": {
+          "lat": 55.8950853,
+          "lng": 37.4282223
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 55.91676099999999,
+            "lng": 37.4628088
+          },
+          "southwest": {
+            "lat": 55.877394,
+            "lng": 37.3896839
+          }
+        }
+      },
+      "place_id": "ChIJP6vI8e04tUYRc9uhCQZDfFQ",
+      "types": [
+        "administrative_area_level_3",
+        "political"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "141401",
+          "short_name": "141401",
+          "types": [
+            "postal_code"
+          ]
+        },
+        {
+          "long_name": "Moscow Oblast",
+          "short_name": "МО",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Moscow Oblast, Russia, 141401",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 55.946255,
+            "lng": 37.48527
+          },
+          "southwest": {
+            "lat": 55.888907,
+            "lng": 37.4036298
+          }
+        },
+        "location": {
+          "lat": 55.91424439999999,
+          "lng": 37.4450608
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 55.946255,
+            "lng": 37.48527
+          },
+          "southwest": {
+            "lat": 55.888907,
+            "lng": 37.4036298
+          }
+        }
+      },
+      "place_id": "ChIJ7S5Ri8I4tUYRq3vCNUfX_K8",
+      "postcode_localities": [
+        "Istok-2",
+        "Khimki",
+        "Moscow",
+        "Northern Administrative Okrug",
+        "Serebryanyye Rodniki",
+        "Starvil'"
+      ],
+      "types": [
+        "postal_code"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Khimki",
+          "short_name": "Khimki",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Khimki Urban District",
+          "short_name": "Khimki Urban District",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Moscow Oblast",
+          "short_name": "МО",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Khimki, Moscow Oblast, Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 55.9963035,
+            "lng": 37.5070268
+          },
+          "southwest": {
+            "lat": 55.8766064,
+            "lng": 37.2273954
+          }
+        },
+        "location": {
+          "lat": 55.8940553,
+          "lng": 37.44394870000001
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 55.9963035,
+            "lng": 37.5070268
+          },
+          "southwest": {
+            "lat": 55.8766064,
+            "lng": 37.2273954
+          }
+        }
+      },
+      "place_id": "ChIJwZ0-GCI_tUYR3balko5EhWA",
+      "types": [
+        "locality",
+        "political"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Khimki Urban District",
+          "short_name": "Khimki Urban District",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Moscow Oblast",
+          "short_name": "МО",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Khimki Urban District, Moscow Oblast, Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 56.0777752,
+            "lng": 37.5071904
+          },
+          "southwest": {
+            "lat": 55.87421089999999,
+            "lng": 37.1339959
+          }
+        },
+        "location": {
+          "lat": 55.9783471,
+          "lng": 37.3561091
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 56.0777752,
+            "lng": 37.5071904
+          },
+          "southwest": {
+            "lat": 55.87421089999999,
+            "lng": 37.1339959
+          }
+        }
+      },
+      "place_id": "ChIJT8UvICU_tUYRzO7tuzN8M6U",
+      "types": [
+        "administrative_area_level_2",
+        "political"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Moscow Oblast",
+          "short_name": "МО",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Moscow Oblast, Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 56.958422,
+            "lng": 40.2056649
+          },
+          "southwest": {
+            "lat": 54.25570399999999,
+            "lng": 35.1484662
+          }
+        },
+        "location": {
+          "lat": 55.340396,
+          "lng": 38.2917651
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 56.958422,
+            "lng": 40.2056649
+          },
+          "southwest": {
+            "lat": 54.25570399999999,
+            "lng": 35.1484662
+          }
+        }
+      },
+      "place_id": "ChIJ2cXDsDGySkERQvLeO8CzDJE",
+      "types": [
+        "administrative_area_level_1",
+        "political"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 82.1673907,
+            "lng": -168.9729426
+          },
+          "southwest": {
+            "lat": 41.1857844,
+            "lng": 19.6160999
+          }
+        },
+        "location": {
+          "lat": 61.52401,
+          "lng": 105.318756
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 70,
+            "lng": 179
+          },
+          "southwest": {
+            "lat": 40,
+            "lng": 27
+          }
+        }
+      },
+      "place_id": "ChIJ-yRniZpWPEURE_YRZvj9CRQ",
+      "types": [
+        "country",
+        "political"
+      ]
+    }
+  ],
+  "status": "OK"
+}

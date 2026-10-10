@@ -27,6 +27,7 @@ module Telegram
           # city → city_name
           if state["city"].present?
             attrs[:city_name] = state["city"]
+            attrs[:city_id] = nil
           end
 
           # selected_sports → preferred_sports (virtual :json attribute, assign array directly)
