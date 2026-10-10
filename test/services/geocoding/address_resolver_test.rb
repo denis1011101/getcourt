@@ -208,10 +208,60 @@ class Geocoding::AddressResolverTest < ActiveSupport::TestCase
     end
   end
 
+  # ---------------------------------------------------------------------------
+  # Ключ Google в лог не попадает
+  # ---------------------------------------------------------------------------
+
+  test "a failed Google request logs the host and path, not the key" do
+    http = failing_http(SocketError.new("getaddrinfo failed for https://maps.googleapis.com/maps/api/geocode/json?latlng=1,2&key=secret-key"))
+
+    log = capture_log do
+      with_env("GOOGLE_GEOCODING_API_KEY" => "secret-key") do
+        stub_singleton(Net::HTTP, :new, ->(*) { http }) do
+          Geocoding::AddressResolver.new.send(:geocode_google_full, 1, 2)
+        end
+      end
+    end
+
+    assert_includes log, "HTTP error for https://maps.googleapis.com/maps/api/geocode/json"
+    assert_includes log, "key=[FILTERED]"
+    assert_not_includes log, "secret-key"
+  end
+
+  test "a Google timeout logs the host and path, not the key" do
+    log = capture_log do
+      with_env("GOOGLE_GEOCODING_API_KEY" => "secret-key") do
+        stub_singleton(Net::HTTP, :new, ->(*) { failing_http(Net::OpenTimeout.new) }) do
+          Geocoding::AddressResolver.new.send(:geocode_google_full, 1, 2)
+        end
+      end
+    end
+
+    assert_includes log, "HTTP timeout for https://maps.googleapis.com/maps/api/geocode/json"
+    assert_not_includes log, "secret-key"
+  end
+
   private
 
   def google_payload(*components)
     { "status" => "OK", "results" => [ { "address_components" => components } ] }
+  end
+
+  def failing_http(error)
+    http = Object.new
+    %i[use_ssl= open_timeout= read_timeout=].each { |name| http.define_singleton_method(name) { |*| } }
+    http.define_singleton_method(:request) { |*| raise error }
+    http
+  end
+
+  def capture_log
+    io = StringIO.new
+    old = Rails.logger
+    Rails.logger = ActiveSupport::Logger.new(io)
+    yield
+    io.string
+  ensure
+    Rails.logger = old
   end
 
   def with_stubbed_fetch_json(return_value)
