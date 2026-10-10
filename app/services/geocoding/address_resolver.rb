@@ -57,7 +57,7 @@ module Geocoding
 
       { address: address, city_name: city, street: street_line }
     rescue => e
-      Rails.logger.warn("Google geocoding error: #{e.message}")
+      Rails.logger.warn("Google geocoding error: #{redact_key(e.message)}")
       nil
     end
 
@@ -73,7 +73,7 @@ module Geocoding
       loc = data["results"].first["geometry"]["location"]
       [ loc["lat"], loc["lng"] ]
     rescue => e
-      Rails.logger.warn("Google text geocoding error: #{e.message}")
+      Rails.logger.warn("Google text geocoding error: #{redact_key(e.message)}")
       nil
     end
 
@@ -146,12 +146,22 @@ module Geocoding
         nil
       rescue Net::ReadTimeout, Net::OpenTimeout => e
         retry if tries < retries
-        Rails.logger.warn("HTTP timeout for #{uri}: #{e.class}")
+        Rails.logger.warn("HTTP timeout for #{loggable_uri(uri)}: #{e.class}")
         nil
       rescue => e
-        Rails.logger.warn("HTTP error for #{uri}: #{e.class} #{e.message}")
+        Rails.logger.warn("HTTP error for #{loggable_uri(uri)}: #{e.class} #{redact_key(e.message)}")
         nil
       end
+    end
+
+    # Query в лог не пишем: в нём ключ Google (key=…) и адрес, который искали.
+    def loggable_uri(uri)
+      "#{uri.scheme}://#{uri.host}#{uri.path}"
+    end
+
+    # Текст исключения может нести URL целиком — ключ в нём маскируем.
+    def redact_key(text)
+      text.to_s.gsub(/key=[^&\s"]+/, "key=[FILTERED]")
     end
 
     def gcomp(components, *types)
