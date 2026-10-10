@@ -105,9 +105,10 @@ class ResolveUserCityJobTest < ActiveSupport::TestCase
     assert_equal moscow_timezone, @user.timezone
   end
 
-  # Ни ответа геокодера, ни города рядом в справочнике: заменить нечем —
+  # Ни ответа геокодера, ни одного кандидата в справочнике (поиск по близости
+  # без кандидатов в окрестности берёт ближайший город вообще): заменить нечем —
   # координаты остаются, как и до PR.
-  test "coordinates with no geocoder answer and no nearby city stay as they are" do
+  test "coordinates with no geocoder answer and an empty directory stay as they are" do
     @user.update!(city_name: "-60.0,-140.0", timezone: nil)
 
     with_geocoder(nil) do

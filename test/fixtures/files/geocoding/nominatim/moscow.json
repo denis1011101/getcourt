@@ -1,0 +1,34 @@
+{
+  "place_id": 195612035,
+  "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+  "osm_type": "node",
+  "osm_id": 311999396,
+  "lat": "55.7514667",
+  "lon": "37.6179211",
+  "class": "tourism",
+  "type": "attraction",
+  "place_rank": 30,
+  "importance": 0.4349345676509025,
+  "addresstype": "tourism",
+  "name": "Tsar Cannon",
+  "display_name": "Tsar Cannon, Cathedral Square, 19, Tverskoy District, Moscow, Central Federal District, 103073, Russia",
+  "address": {
+    "tourism": "Tsar Cannon",
+    "pedestrian": "Cathedral Square",
+    "quarter": "19",
+    "suburb": "Tverskoy District",
+    "city": "Moscow",
+    "state": "Moscow",
+    "ISO3166-2-lvl4": "RU-MOW",
+    "region": "Central Federal District",
+    "postcode": "103073",
+    "country": "Russia",
+    "country_code": "ru"
+  },
+  "boundingbox": [
+    "55.7514167",
+    "55.7515167",
+    "37.6178711",
+    "37.6179711"
+  ]
+}

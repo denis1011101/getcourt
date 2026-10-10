@@ -71,3 +71,48 @@ aliases:
     country_code: UZ
     geoname_id: 1512569
     city: Tashkent
+
+  # Каменск-Уральский: геокодер пишет «Kamensk-Uralsky», Russian.translit от
+  # «Каменск-Уральский» даёт «Kamensk-Uralskiy», а в справочнике —
+  # «Kamensk-Ural’skiy» с типографским апострофом (56.41,61.93). Оба написания
+  # в cities1000 больше нигде не встречаются.
+  - name: Kamensk-Uralsky
+    country_code: RU
+    geoname_id: 1504826
+    city: Kamensk-Ural’skiy
+    global: true
+  - name: Kamensk-Uralskiy
+    country_code: RU
+    geoname_id: 1504826
+    city: Kamensk-Ural’skiy
+    global: true
+
+  # Ввод из Телеграма без страны (Russian.translit): написание совпадает с
+  # name в справочнике, но без global связи не было бы. Однозначность
+  # проверена по cities1000 на 2026-10-10: у каждого написания одна запись.
+  # «Moskva» сюда не входит — в справочнике она только таджикская.
+  - name: Kurgan
+    country_code: RU
+    geoname_id: 1501321
+    city: Kurgan
+    global: true
+  - name: Chelyabinsk
+    country_code: RU
+    geoname_id: 1508291
+    city: Chelyabinsk
+    global: true
+  - name: Astana
+    country_code: KZ
+    geoname_id: 1526273
+    city: Astana
+    global: true
+  - name: Erevan           # Russian.translit от «Ереван»
+    country_code: AM
+    geoname_id: 616052
+    city: Yerevan
+    global: true
+  - name: Yerevan
+    country_code: AM
+    geoname_id: 616052
+    city: Yerevan
+    global: true

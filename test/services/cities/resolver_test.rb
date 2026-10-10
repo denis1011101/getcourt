@@ -151,13 +151,13 @@ class Cities::ResolverTest < ActiveSupport::TestCase
 
   test "text without a country resolves only through an explicitly global alias" do
     yekaterinburg = city!("Yekaterinburg", "RU", 1486209)
-    city!("Astana", "KZ", 1526273)
+    city!("Omsk", "RU", 1496153)
 
     assert_equal yekaterinburg, resolver.resolve_text("Ekaterinburg").city
     assert_equal yekaterinburg, resolver.resolve_text("yekaterinburg").city
     assert_equal "RU", resolver.resolve_text("Ekaterinburg").country_code
     # Единственное совпадение по названию — ещё не доказательство.
-    assert_unresolved :no_country, resolver.resolve_text("Astana")
+    assert_unresolved :no_country, resolver.resolve_text("Omsk")
     assert_unresolved :no_country, resolver.resolve_text("")
   end
 

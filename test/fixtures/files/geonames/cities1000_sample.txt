@@ -1,0 +1,712 @@
+174704	Zangakatun	Zangakatun	Chanakhchi,Nizhniye Chanakhchi,Sovetashen,Zangakatun,Зангакатун,Զանգակատուն	39.82233	45.04169	P	PPL	AM		02	13133029			1170		1679	Asia/Yerevan	2026-04-01
+174706	Goravan	Goravan	Goravan,Gorovan,Yenikend,Гораван	39.90539	44.73131	P	PPL	AM		02	13133031			2722		933	Asia/Yerevan	2026-08-13
+174709	Yeghegnavan	Yeghegnavan	Egegnavan,Ekhegnavan,Exegnavan,Shidlu,Yeghegnavan,Yexegnavan,Ехегнаван,Եղեգնավան	39.83893	44.61951	P	PPL	AM		02	13133031			1572		816	Asia/Yerevan	2026-04-01
+174713	Vostan	Vostan	Bedzhazlu,Ostan,Vostan,Востан,Ոստան	39.96515	44.55937	P	PPL	AM		02	13133028			3272		837	Asia/Yerevan	2026-04-01
+174714	Vosketap	Vosketap	Shiraz,Shirazlu,Vosketap',Vosketap’,Vsketap,Вскетап,Ոսկետափ	39.88114	44.64917	P	PPL	AM		02	13133031			5065		841	Asia/Yerevan	2026-08-20
+174725	Vedi	Vedi	Beyuk-Vedi,Biyuk-Vedi,Vedi,Vedis,Vedy,Venti,Wedi,bedi,fydy  ararat,vedi,veti,vuedi,wdy,Βεντί,Веди,Веды,Веді,Վեդի,فيدي، أرارات,ودی,বেদি,வேதி,വേദി,ვედი,ヴェディ	39.91291	44.72083	P	PPLA2	AM		02	13133031			12060		904	Asia/Yerevan	2026-04-01
+174745	Vanashen	Vanashen	Taitan,Taytan,Vanasen,Vanashen,Ванашен,Վանաշեն	39.90008	44.6889	P	PPL	AM		02	13133031			2739		873	Asia/Yerevan	2026-08-20
+174755	Surenavan	Surenavan	Surenavan,Суренаван,Սուրենավան	39.79449	44.77508	P	PPL	AM		02	13133029			2694		821	Asia/Yerevan	2026-08-13
+174764	Sisavan	Sisavan	Sisavan,Yengidzha,Сисаван,Սիսավան	39.90802	44.66721	P	PPL	AM		02	13133031			2281		865	Asia/Yerevan	2026-04-01
+174770	Lusarat	Lusarat	Lusarat,Lusarrat,Shikhlar,Shkhlar,Sxlar,lwsarat,shykhlr,Лусарат,Լուսառատ,Շխլար,شیخلر,لوسارات	39.87403	44.58678	P	PPL	AM		02	13133031			2738		821	Asia/Yerevan	2026-04-01
+174775	Shahumyan	Shahumyan	Sahumyan,Shahumian,Shahumyan,Shaumjan,Shaumyan,Yuva,Шаумян,Շահումյան	39.94171	44.57233	P	PPL	AM		02	13133028			4387		832	Asia/Yerevan	2026-04-01
+174805	Noyakert	Noyakert	Khalisa,Nojakert,Noyakert,Ноякерт,Նոյակերտ	39.83069	44.66949	P	PPL	AM		02	13133029			2173		827	Asia/Yerevan	2026-04-01
+174806	Nor Kyank	Nor Kyank	Nor Kjank,Nor Kyank,Nor Kyank',Nor Kyank’,Nor Kyanq,Нор Кянк,Նոր Կյանք	39.902	44.63	P	PPL	AM		02	13133031			2784		844	Asia/Yerevan	2026-08-13
+174820	Mrgavan	Mrgavan	Gedaklu,Mgravan,Mrgavan,Мграван,Մրգավան	39.97251	44.53565	P	PPL	AM		02	13133028			1896		840	Asia/Yerevan	2026-04-01
+174843	Pokr Vedi	Pokr Vedi	Kechik-Vedi,Kichik Vedi,Kyuchuk Vedi,P'ok'r Vedi,Pokr Vedi,Poqr Vedi,P’ok’r Vedi,Покр Веди,Փոքր Վեդի	39.90289	44.6029	P	PPL	AM		02	13133031			3519		827	Asia/Yerevan	2026-08-13
+174878	Kaghtsrashen	Kaghtsrashen	K'aghts'rashen,Kagcrashen,Kaghtsrashen,Kakhtsrashen,K’aghts’rashen,Qaxcrashen,Кагцрашен,Քաղցրաշեն	39.98053	44.62512	P	PPL	AM		02	13133028			3066		939	Asia/Yerevan	2026-08-13
+174885	Taperakan	Taperakan	Imeni Kirova,Tap'erakan,Taperakan,Tap’erakan,Таперакан,Տափերական	39.92511	44.59729	P	PPL	AM		02	13133031			4104		830	Asia/Yerevan	2026-08-20
+174916	Yelpin	Yelpin	Elpin,Elpʻin,Jelpin,Jelpina,Yelp'in,Yelpin,Yelp’in,elpini,ylpyn,ylpyں,Єлпін,Елпин,Ելփին,یلپین,یلپیں,ელფინი	39.80832	45.10985	P	PPL	AM		10	13133025			1246		1551	Asia/Yerevan	2026-04-01
+174931	Dalar	Dalar	Dalar,Dalular,Далар,Դալար	39.97539	44.52784	P	PPL	AM		02	13133028			2775		843	Asia/Yerevan	2026-04-01
+174940	Burastan	Burastan	Burastan,Garahamzalu,Karagamzalu,Tamamlu,Tʻamamlu,Tʻamamlə,Бурастан,Բուրաստան,Թամամլը,Թամամլու,Ղարահամզալու	39.98907	44.49785	P	PPL	AM		02	13133028			1996		839	Asia/Yerevan	2026-09-06
+174947	Berkanush	Berkanush	Berk'anush,Berkanush,Berk’anush,Berqanush,Ogurbeklu,Беркануш,Բերքանուշ	39.97729	44.52127	P	PPL	AM		02	13133028			1919		841	Asia/Yerevan	2026-08-13
+174955	Baghramyan	Baghramyan	Baghramian,Baghramyan,Bagramjan,Bagramyan,Bashnalu,Baxramyan,Баграмян,Բաղրամյան	39.98053	44.51392	P	PPL	AM		02	13133028			1841		839	Asia/Yerevan	2026-04-01
+174961	Azatavan	Azatavan	Azatavan,Chigdamlu,Chikdamlu,Cʻidamlu,Cʻigdamlu,Kir Bzovan,Азатаван,Ազատավան,Կիր Բզովան,Չիգդամլու,Չիդամլու,Չիղդամլու	39.98608	44.50568	P	PPL	AM		02	13133028			2991		840	Asia/Yerevan	2026-04-01
+174964	Aygezard	Aygezard	Ajgezard,Anastasavan,Aygedzor,Aygezard,Dargalu,Айгезард,Այգեզարդ	39.95436	44.60229	P	PPL	AM		02	13133028			3215		877	Asia/Yerevan	2026-04-01
+174965	Aygepat	Aygepat	Ajgepat,Aygepat,Dargalu Verkhniy,Masumlu,Verkhniy Dargalu,Айгепат,Այգեպատ	39.95565	44.59181	P	PPL	AM		02	13133028			1491		885	Asia/Yerevan	2026-04-01
+174968	Aygavan	Aygavan	Ajgavan,Aygavan,Reganlu,Айгаван,Այգավան	39.87327	44.66984	P	PPL	AM		02	13133031			4547		847	Asia/Yerevan	2026-04-01
+174969	Avshar	Avshar	Avsar,Avshar,Авшар,Ավշար	39.85388	44.68016	P	PPL	AM		02	13133029			4946		842	Asia/Yerevan	2026-08-13
+174979	Artashat	Artashat	Armenian Carthage,Artachat,Artasat,Artasata,Artasatas,Artasato,Artaschat,Artashat,Artasjat,Artaszat,Artaxat,Artaxata,Artaŝato,Artaşat,Artašat,Artašata,Artašatas,Artașat,Ghamarlu,Haykakan Kartʻagen,Kamarl,Kamarlu,Kamarlyu,Qəmərli,a er ta sha te,aleutasyateu,aratasata,artasata,artashat,artʼashatʼi,arutashato,aർttasatt,yartashat,ʿeritashati,Αρτασάτ,Арташат,Արտաշատ,Հայկական Կարթագեն,آرتاشات,أرتاشات,ئارتاشات,अर्तशात,আর্তাশাত,ਅਰਤਾਸ਼ਤ,അർട്ടാഷാത്ത്,არტაშატი,አርታሻት,アルタシャト,阿尔塔沙特,阿爾塔沙特,아르타샤트	39.95484	44.54874	P	PPLA	AM		02	13133028			22800		834	Asia/Yerevan	2026-04-13
+174983	Armash	Armash	Armas,Armash,Армаш,Արմաշ	39.76672	44.8111	P	PPL	AM		02	13133029			2678		840	Asia/Yerevan	2026-08-13
+174991	Ararat	Ararat	Ararat,Araratas,Ararato,Davalinskiy Tsemzavod,alalateu,ararat,ararata,ararato,araraۃ,ya la la,ʿerarati,Арарат,Արարատ,אררט,آرارات,أرارات,اراراۃ,अरारत,আরারাত,ਅਰਾਰਤ,არარატი,አራራት,アララト,亞拉臘,아라라트	39.85494	44.6947	P	PPLA2	AM		02	13133029			17598		844	Asia/Yerevan	2026-04-16
+174992	Ararat village	Ararat village	Ararat,Davalu,Dəvəli,Teveli,ararat,araratʼi,Арарат,Давалу,Արարատ,Դավալու,Տէվէլի,آرارات,არარატი	39.83166	44.70489	P	PPL	AM		02	13133029			8287		822	Asia/Yerevan	2026-08-27
+391233	Aralez	Aralez	Aralek,Aralez,Аралез,Արալեզ	39.90005	44.65086	P	PPL	AM		02	13133031			2661		869	Asia/Yerevan	2026-08-13
+391236	Urtsadzor	Urtsadzor	Urcadzor,Urts'adzor,Urts’adzor,Урцадзор,Ուրցաձոր	39.91949	44.82507	P	PPL	AM		02	13133031			3261		1061	Asia/Yerevan	2026-08-20
+613075	Margara	Margara	Margara,Markara,Маргара,Маркара,Մարգարա	40.03332	44.18048	P	PPL	AM		03	13156557			1485		843	Asia/Yerevan	2026-09-11
+616037	Zovaber	Zovaber	Yaydzhi,Zovaber,Зовабер,Զովաբեր	40.56671	44.79028	P	PPL	AM		04	13156123			1482		1765	Asia/Yerevan	2026-03-29
+616039	Zorak	Zorak	Donguzyan,Zangilar,Zorak,Зорак,Զորակ	40.09168	44.39447	P	PPL	AM		02	13133030			2226		835	Asia/Yerevan	2026-04-01
+616046	Zar	Zar	Zar,Zarr,Зар,Զառ	40.25848	44.73328	P	PPL	AM		05	13156548			1517		1622	Asia/Yerevan	2026-03-30
+616052	Yerevan	Yerevan	Ayrivan,Ayrivan  Erivan  Erevan  Ereun  Erivan  Iravan  Irvan  Revan  Rivan,Djerevan,EVN,Ehrivan',Eireavan,Eireaván,Ereban,Erebuni,Erehvan,Ereun,Erevan,Erevan osh,Erevana,Erevano,Erevanum,Erevàn,Ereván,Erevāna,Erewan,Erivan,Eriwan,Eruandawan,Ervandavan,Erywan,Erywań,Gierevan,Ierevan,Iereván,Iravan,Jerevan,Jerevanas,Jerevani,Jereván,Jerewan,Jerjewan,Revan,Siro Mayraqaxaq Yerevan,Yerevan,Yervandavan,Yerêvan,Yiriwan,Yèrèvan,Yérévan,ayrwan,ereban,erevani,iyerebhana,shhr ayrwan,ye li wen,yeleban,yeravana pranta,yere wan,yerevan,yerevana,yerevhana,yryfan,yrywan,Èrevan,Êrîvan,İrəvan,Γιερεβάν,Ερεβάν,Єреван,Јереван,Ереван,Ереван ош,Ерэван,Эривань,Այրիվան  Երիվան  Էրեվան  Էրեուն  Էրիվան  Իրավան  Իրվան  Րեվան  Րիվան,Երեւան,Երուանդաւան,Երվանդավան,Երևան,Էրեբունի,Յերեվան,יערעוואן,ירוואן,ایروان,شهر ایروان,يريفان,يېرېۋان,یریوان,یەریڤان,येरवान प्रान्त,येरेवान,येरेव्हान,ইয়েরেভান,யெரெவான்,เยเรวาน,ཡེ་རེ་ཝན།,ერევანი,ዬሬቫን,エレバン,葉里溫,예레반	40.17765	44.5126	P	PPLC	AM		11				1144700		1002	Asia/Yerevan	2026-08-31
+616055	Yeraskhahun	Yeraskhahun	Eraskhahun,Eraskhakhun,Erasxahun,Kuru-Araz,Yeraskhahun,Yeraskhaun,Yerasxahun,Ерасхахун,Երասխահուն	40.07233	44.21948	P	PPL	AM		03	13156557			1765		843	Asia/Yerevan	2026-08-20
+616061	Yeghegnut	Yeghegnut	Badal,Egegnut,Eghegnut,Ekhegnut,Exegnut,Molla Badal,Yeghegnut,Yekheknut,Yexegnut,Ехегнут,Եղեգնուտ	40.08893	44.16669	P	PPL	AM		03	13156557			2379		847	Asia/Yerevan	2026-03-31
+616062	Vagharshapat	Vagharshapat	Artemed,Artemed  Artemid  Artimed,Avan Vardgesi,Echmiadzin,Echmiatsin,Ecimiadzin,Ecmiadzin,Ecmijadzin,Ecsmiadzin,Eczmiadzyn,Ecʻmiajin  Iejmiacin,Edjmiatsin,Edjmiatsín,Edzjmiatsin,Ehchmiacin,Ejmiacin,Ejmiatsin,Etchmiadzin,Etjmiadzin,Etschmiadsin,Etsmiantzin,Eçmiadzin,Eĉmiadzin,Ečmiadzin,Ečmijadzin,Iejmiatsin,Kaynepolis,Kaynepolis  Kaynopolis,Kayrak'aghak',Kayrak’aghak’,Mayrakʻagakʻ  Norakʻagakʻ  Nor Kʻagakʻ  Kʻagakʻamayr  Kʻagakʻudast,Norak'aghak',Norak’aghak’,Owcʻkʻilisa,Uch'k'ilisa,Uch’k’ilisa,Uckilise,Vagarsapat,Vagarsapata,Vagarsapʻatʻ,Vagarshapat,Vagaršapat,Vagaršapata,Vagharsapat,Vagharshapat,Vagharsjapat,Vagharšapat,Vaharsapatas,Vaharšapatas,Valeroktista,Vardges  Vardgesavan,Vardgesavan,Wagarsapat,Wagaršapat,achmyadzyn,ai qi mi ya jin,atshmyadzyn,echimiajin,ehchmiadzin,fagharshabat,vagharshapat,vagharshapʼatʼi,vakarcapat,wa jia er sha pa te,wa kar s cha phat,wagharshapat,Üçkilise,Üçkilsə,Ετσμιαντζίν,Вагаршапат,Эчмиадзин,Эчмиацин,Արտեմեդ  Արտեմիդ  Արտիմեդ,Էչմիաձին  Իեջմիածին,Էջմիածին,Կայնեպոլիս  Կայնոպոլիս,Մայրաքաղաք  Նորաքաղաք  Նոր Քաղաք  Քաղաքամայր  Քաղաքուդաշտ,Ուչքիլիսա,Վալերոկտիստա,Վաղարշապատ,Վաղարշափաթ,Վարդգես  Վարդգեսավան,ואראשאפאט,إتشميادزين,اچمیادزین,فاغارشابات,واغارشاپات,ڤاغارشاپات,வாகர்சபாத்,വഘാർഷപത്,วาการ์สชาพัต,ვაღარშაპატი,エチミアジン,埃奇米亞津,瓦加尔沙帕特,에치미아진	40.16557	44.29462	P	PPLA2	AM		03	13156553			47989	853	877	Asia/Yerevan	2026-09-04
+616065	Yeghvard	Yeghvard	Agivard,Eghvard,Egivard,Eguard,Egvard,Exvard,Gegvarnt,Jeghvard,Jeghward,Jegvard,Jegvardas,Jegward,Yeghvard,Yegvard,Yegvart,Yevgard,Yexvard,Yeğvard,eghvardi,yghward,yghwrd,Γεγβάρντ,Єгвард,Јегвард,Егвард,Աղիվարդ,Եղիվարդ,Եղուարդ,Եղվարդ,يغوارد,یغوارد,یغورد,യെഗ്വാർഡ്,ეღვარდი	40.32293	44.48418	P	PPLA2	AM		05	13156540			13238		1356	Asia/Yerevan	2026-08-30
+616071	Voskevaz	Voskevaz	Kiziltamur,Oskevaz,Voskevaz,Воскеваз,Ոսկեվազ	40.27508	44.30011	P	PPL	AM		01	13156513			4701		1042	Asia/Yerevan	2026-03-30
+616075	Voskehat	Voskehat	Oskehat,Patridzh,Patrindzh,Voskeat,Voskehat,Voskevaz,Воскеваз,Ոսկեհատ	40.27789	44.27508	P	PPL	AM		01	13156513			1159		1028	Asia/Yerevan	2026-03-30
+616097	Verin Dvin	Verin Dvin	Aysori Dvin,Verin Dvin,Verin Ntvin,Verin-Dvin,Verkhnij Dvin,Verkhniy Dvin,Werin Dwin,fyyryn dfyn,verin-dvini,wryn dbuyn,wryn dwyn,Βερίν Ντβιν,Верин Двин,Верхний Двин,Верін-Двін,Վերին Դվին,فييرين دفين,ورین دوین,ܘܪܝܢ ܕܒܼܝܢ,ვერინ-დვინი	40.02393	44.5924	P	PPLA2	AM		02	13133032			1913		981	Asia/Yerevan	2026-04-01
+616100	Verin Artashat	Verin Artashat	Ardashar,Artashat,Verin Artasat,Verin Artashat,Verkhniy Artashat,Верин Арташат,Վերին Արտաշատ	39.99731	44.58893	P	PPL	AM		02	13133028			4022		893	Asia/Yerevan	2026-04-01
+616103	Varser	Varser	Chirchir,Varser,Варсер,Վարսեր	40.55548	44.90832	P	PPL	AM		04	13156123			1499		1917	Asia/Yerevan	2026-03-29
+616111	Vardanashen	Vardanashen	Chibukhchi,Vardanasen,Vardanashen,Варданашен,Վարդանաշեն	40.05242	44.19014	P	PPL	AM		03	13156557			1138		842	Asia/Yerevan	2026-08-20
+616121	Ushi	Ushi	Owsi,Ushi,Уши,Ուշի	40.34729	44.37512	P	PPL	AM		01	13156513			1767		1394	Asia/Yerevan	2026-08-20
+616126	Ujan	Ujan	Udzhan,Ujan,Vdzhan,Vjan,Vzhan,Вджан,Վջան	40.29671	44.205	P	PPL	AM		01	13156513			3107		1120	Asia/Yerevan	2026-08-20
+616137	Tsovazard	Tsovazard	Covazard,Gadzhi Mukhan,Mukhan,Tsovazard,covazard,Цовазард,ծովազարդ	40.4751	45.05011	P	PPL	AM		04	13156120			2032		1944	Asia/Yerevan	2026-03-29
+616139	Tsovagyugh	Tsovagyugh	Chabukhly,Chibukhly,Chubukhly,Chubuli,Chubuliki,Covagjukh,Covagyug,Covagyux,Tsovagyugh,Tsovagyukh,Tzovagyugh,Цовагюх,Ծովագյուղ	40.63348	44.96112	P	PPL	AM		04	13156123			4356		2016	Asia/Yerevan	2026-03-29
+616149	Tsaghkunk	Tsaghkunk	Cagkunk,Caxkunq,Tsaghkunk',Tsaghkunk’,Tsakhkunk,Tzaghkunk,Цагкунк,Ծաղկունք	40.57788	44.87793	P	PPL	AM		04	13156123			1049		1855	Asia/Yerevan	2026-08-20
+616150	Tsaghkunk	Tsaghkunk	Cagkunk,Caxkunq,Tsaghkunk',Tsaghkunk’,Tsakhkunk,Verin Aylanlu,Verkhnyaya Aylanlu,Цагкунк,Ծաղկունք	40.18048	44.27228	P	PPL	AM		03	13156555			1481		886	Asia/Yerevan	2026-08-20
+616158	Tsaghkahovit	Tsaghkahovit	Cagkahovit,Cakhkaovit,Caxkahovit,Gadzhi-Khalil,Tsaghkahovit,Tsakhkaovit,Tzaghkahovit,Цахкаовит,Ծաղկահովիտ	40.63883	44.22252	P	PPLA2	AM		01	13156510			2225		2117	Asia/Yerevan	2026-03-30
+616160	Tsaghkadzor	Tsaghkadzor	Cachkadzor,Cachkadzoras,Cagkadzor,Cagkajor,Cakhkadzor,Caxkadzor,Darachichag,Dərəçiçək,Tahkadzor,Tsachkadzor,Tsaghkadzor,Tsakhkadzor,Zaghkadsor,tsaghkadzwr,Țahkadzor,Цагкадзор,Цахкадзор,Ծաղկաձոր,تساغکادزور,წაღკაძორი	40.5325	44.72323	P	PPLA2	AM		05	13156551			1127		1864	Asia/Yerevan	2026-03-30
+616184	Tandzut	Tandzut	Armtʻlu,Armutlu,Tandzut,Tanjut,Армутлу,Тандзут,Արմթլու,Արմուտլու,Տանձուտ	40.06952	44.07788	P	PPL	AM		03	13156557			2142		854	Asia/Yerevan	2026-09-04
+616202	Spandaryan	Spandaryan	Ghulijan,Gulican,Gulijan,Kjulludzha,Kulidzhan,Kulijan,Kyulluja,Kʻyullija,Kʻyullja,Kʻyulluja,Kʻyuluja,Spandarjan,Spandaryan,Кулиджан,Кюллуджа,Спандарян,Գուլիճան,Գուլիջան,Կուլիջան,Ղուլիջան,Սպանդարյան,Քյուլլիջա,Քյուլլուջա,Քյուլլջա,Քյուլուջա	40.66105	44.01551	P	PPL	AM		07	13156477			1573		1825	Asia/Yerevan	2025-12-09
+616206	Nubarashen	Nubarashen	Nubarasen varcʻakan srjan,Nubaraseni,Nubarashen,Nubarashen varch'akan shrjan,Sovetashen,Нубарашен,Նուբարաշեն վարչական շրջան,Նուբարաշենի	40.09075	44.5519	P	PPLX	AM		11				11200		1153	Asia/Yerevan	2025-05-07
+616208	Alashkert	Alashkert	Alashkert,Alaskert,Kyarimarkh,Sovetakan,Советакан,Ալաշկերտ	40.10712	44.05108	P	PPL	AM		03	13156557			2034		857	Asia/Yerevan	2026-03-31
+616211	Solak	Solak	Solak,Солак,Սոլակ	40.46252	44.70709	P	PPL	AM		05	13156550			2002		1658	Asia/Yerevan	2026-03-30
+616213	Sis	Sis	Sarvanlar,Sis,Uliya Sarvanlar,Сис,Սիս	40.05829	44.38892	P	PPL	AM		02	13133030			1227		829	Asia/Yerevan	2026-04-01
+616218	Mushavan	Mushavan	Moesjavan,Musavan,Mushakan,Mushavan,Sharbulakh,Shorbulagh,Shorbulakh,Tsornatap,mwshafan,mwshawan,Мушаван,Մուշավան,موشافان,موشاوان	40.14584	44.56638	P	PPLX	AM		11				4263		1081	Asia/Yerevan	2026-03-08
+616230	Shenavan	Shenavan	Blkher,Senavan,Shenavan,Шенаван,Շենավան	40.48328	44.38348	P	PPL	AM		01	13156512			1929		1881	Asia/Yerevan	2024-12-20
+616231	Shenavan	Shenavan	Kyalagarkh,Senavan,Shenavan,Шенаван,Շենավան	40.05548	43.93048	P	PPL	AM		03	13156557			1776		896	Asia/Yerevan	2026-03-31
+616234	Shahumyan	Shahumyan	Molla Dursun,Sahumyan,Shahumian,Shahumyan,Shaumjan,Shaumyan,Шаумян,Շահումյան	40.21393	44.30011	P	PPL	AM		03	13156555			1277		930	Asia/Yerevan	2026-03-31
+616240	Shamiram	Shamiram	Samiram,Shamiram,Shamiran,Шамирам,Շամիրամ	40.27654	44.09846	P	PPLA2	AM		01	13156517			1170		1161	Asia/Yerevan	2026-08-20
+616250	Sevan	Sevan	Elenovka,Sarcʻasen,Sevan,Sevanas,Sewan,Ssewan,Yelenovka,sai fan,sevani,swan,Еленовка,Севан,Ելենովկա,Սառցաշեն,Սեվան,Սևան,سوان,სევანი,塞凡	40.548	44.95314	P	PPLA2	AM		04	13156123			19652		1892	Asia/Yerevan	2026-03-29
+616265	Saramej	Saramej	Chotur,Cʻotur,Cʻoturi,Cʻotʻur,Jotʻur,Saramech,Saramecʻ,Saramej,Сарамеч,Чотур,Չոթուռ,Չոթուր,Չոտուռ,Չոտուր,Չոտուրի,Ջոթուր,Սարամեչ,Սարամեջ	40.77487	44.2222	P	PPL	AM		06	13156281			1076		1780	Asia/Yerevan	2025-12-10
+616267	Saralanj	Saralanj	Arajin Baskʻend,Bas,Basgyug,Bashgjukh,Bashgyukh,Bashkeg,Bashkend,Baskʻend,Mec Basgyug,Nor Basgyug,Pʻokʻr Baskʻend,Saralandzh,Saralanj,Башгюх,Башкег,Башкенд,Сараландж,Առաջին Բաշքենդ,Բաշ,Բաշգյուղ,Բաշքենդ,Մեծ Բաշգյուղ,Նոր Բաշգյուղ,Սարալանջ,Փոքր Բաշքենդ	40.62116	44.02041	P	PPL	AM		07	13156477			1270		1976	Asia/Yerevan	2026-08-13
+616278	Geghakert	Geghakert	Gegakert,Geghakert,Gekhakert,Samagar,Samaghar,Samakhar,Самахар,Գեղակերտ	40.18516	44.24493	P	PPLA2	AM		03	13156555			2868		888	Asia/Yerevan	2026-03-31
+616284	Geghashen	Geghashen	Chatkran,Gegasen,Geghashen,Gekhashen,Gexashen,Razdan,Гехашен,Գեղաշեն	40.22754	44.72464	P	PPL	AM		05	13156544			4634		1641	Asia/Yerevan	2026-03-30
+616285	Ranchpar	Ranchpar	Ranchpar,Rranch'par,Rranch’par,Ранчпар,Ռանչպար	40.02789	44.36951	P	PPL	AM		02	13133030			1241		833	Asia/Yerevan	2026-08-13
+616288	Ptghni	Ptghni	Ptghni,Ptgni,Ptkhni,Ptxni,Ptykhni,Птхни,Պտղնի	40.25681	44.58195	P	PPL	AM		05	13156544			1915		1352	Asia/Yerevan	2026-03-30
+616289	Ptghunk	Ptghunk	Ptghunk',Ptghunk’,Ptgunk,Ptkhunk,Ptxunq,Птгунк,Պտղունք	40.16388	44.36389	P	PPL	AM		03	13156554			2006		868	Asia/Yerevan	2026-08-13
+616290	Pshatavan	Pshatavan	Igdalu,P'shatavan,Pshatavan,P’shatavan,Пшатаван,Փշատավան	40.03888	44.06671	P	PPL	AM		03	13156557			2274		860	Asia/Yerevan	2026-03-31
+616291	Proshyan	Proshyan	Proshian,Proshjan,Proshyan,Prosyan,Prroshyan,Прошян,Պռոշյան	40.24731	44.41949	P	PPL	AM		05	13156540			6238		1185	Asia/Yerevan	2026-08-13
+616297	Pokr Mantash	Pokr Mantash	Erkrord Arixvali,Malyj Arikhvali,Pokr Ajlur,Pokr Arikhvali,Pokr Arkhvali,Pokr Aylur,Pokr Mantash,Poqr Mantash,Pʻokʻr Araxvali,Pʻokʻr Arixvali,Pʻokʻr Arxvali,Pʻokʻr Arəxvali,Pʻokʻr Arəxveli,Pʻokʻr Aylur,Pʻokʻr Mantʻas,Малый Арихвали,Покр Айлур,Покр Арихвали,Покр Манташ,Երկրորդ Արիխվալի,Փոքր Այլուր,Փոքր Առըխվալի,Փոքր Արախվալի,Փոքր Արըխվալի,Փոքր Արըխվելի,Փոքր Արիխվալի,Փոքր Արխվալի,Փոքր Մանթաշ	40.64026	44.04666	P	PPL	AM		07	13156477			2068		1977	Asia/Yerevan	2025-12-09
+616299	Zoravan	Zoravan	Kargavank,Pokravan,Zoravan,Зораван,Զորավան	40.35553	44.52228	P	PPL	AM		05	13156540			1725		1469	Asia/Yerevan	2026-03-30
+616303	Pemzashen	Pemzashen	Karmirkend,Magmuddzhuk,Magmudjuk,Magmudzhuk,Magmujug,Mahmdjug,Mahmugjug,Mahmutcug,Mahmutcuk,Makhmudzhug,Maymudjug,Maymujug,Pemzasen,Pemzashen,Кармиркенд,Магмудджук,Махмуджуг,Пемзашен,Մահմդջուղ,Մահմուղջուղ,Մահմուտճուղ,Մաղմուջուղ,Մայմուդջուղ,Մայմուջուղ,Պեմզաշեն	40.58612	43.94311	P	PPL	AM		07	13156477			3055		1803	Asia/Yerevan	2025-12-09
+616305	Parpi	Parpi	Parpi,Pʻarpi,Парпи,Փարպի	40.32231	44.31141	P	PPL	AM		01	13156513			2212		1112	Asia/Yerevan	2026-09-04
+616307	Parakar	Parakar	P'arak'ar,Parakar,Paraqar,P’arak’ar,Shirabad,Паракар,Փարաքար	40.16388	44.4057	P	PPL	AM		03	13156554			7083		872	Asia/Yerevan	2026-03-31
+616309	Panik	Panik	Gevdarli,Kaftarly,Kavtarli,Kyavtarlu,Kʻaftʻarlu,Kʻavtʻarlu,Kʻeaftʻarlu,Kʻevdarli,Kʻyaftʻarli,Kʻyaftʻarlu,Kʻyaftʻarlə,Kʻyavtʻarli,Kʻyavtʻarlu,Panik,Pʻanik,Zvarcajor,Zvarchadzor,Зварчадзор,Кафтарлы,Паник,Գևդարլի,Զվարճաձոր,Կավտարլի,Պանիկ,Փանիկ,Քավթառլու,Քաֆթառլու,Քեաֆթարլու,Քյավթառլի,Քյավթառլու,Քյաֆթառլը,Քյաֆթառլի,Քյաֆթառլու,Քյաֆթարլի,Քևդարլի	40.66388	43.97089	P	PPL	AM		07	13156477			2883		1703	Asia/Yerevan	2026-03-14
+616320	Oshakan	Oshakan	Ochakan,Osakan,Oschakan,Oshakan,Osjakan,Oszakan,Oŝakan,Oşakan,awshakan,Ошакан,Օշական,أوشاكان,اوشاکان,ოშაკანი	40.26392	44.31671	P	PPL	AM		01	13156513			5237		1051	Asia/Yerevan	2026-09-04
+616328	Sardarapat	Sardarapat	Hoktember,Oktember,Oktemberjan,Sardarapat,Октемберян,Սարդարապատ	40.13206	44.00969	P	PPL	AM		03	13156558			6539		862	Asia/Yerevan	2024-12-21
+616329	Ohanavan	Ohanavan	Anavankʻ,Hovhannavankʻ,Oganavan,Ohanavan,Ohanawan,Yovhannavankʻ,Оганаван,Անավանք,Հովհաննավանք,Յովհաննավանք,Օհանավան,Օհանաւան	40.3485	44.38717	P	PPL	AM		01	13156513			2738		1344	Asia/Yerevan	2026-09-04
+616335	Nor Kyank	Nor Kyank	Majitli,Majətʻli,Mechedli,Mechetli,Mejdli,Nor Kjank,Nor Kyank,Nor Kyankʻ,Nor Kyanq,Мечетли,Нор Кянк,Մաջըթլի,Մեջդլի,Նոր Կյանկ,Նոր Կյանք	40.65832	43.93189	P	PPL	AM		07	13156477			1606		1629	Asia/Yerevan	2025-12-09
+616338	Nor Kharberd	Nor Kharberd	Nor Kharberd,Nor Kyank,Nor Xarberd,Нор Харберд,Նոր Խարբերդ	40.09168	44.48053	P	PPL	AM		02	13133030			8766		918	Asia/Yerevan	2026-04-01
+616340	Nor Gyugh	Nor Gyugh	Nor Gjug,Nor Gyug,Nor Gyugh,Nor Gyukh,Tazagyukh,Нор Гйуг,Նոր Գյուղ	40.26494	44.65471	P	PPL	AM		05	13156548			1836		1431	Asia/Yerevan	2026-08-20
+616341	Nor Geghi	Nor Geghi	Bazmavan,Chatkran,Nor Geghi,Nor Gegi,Nor Gekhi,Nor Gexi,Нор Гехи,Նոր Գեղի	40.31668	44.57785	P	PPL	AM		05	13156542			7048		1300	Asia/Yerevan	2026-03-30
+616347	Norashen	Norashen	Norasen,Norashen,Норашен,Նորաշեն	40.65722	44.07702	P	PPL	AM		01	13156510			1263		2005	Asia/Yerevan	2026-08-13
+616350	Norashen	Norashen	Norasen,Norashen,Verin Kurdkend,Норашен,Նորաշեն	40.0013	44.59296	P	PPL	AM		02	13133028			3733		906	Asia/Yerevan	2026-04-01
+616352	Nor Armavir	Nor Armavir	Nor Armavir,Нор Армавир,Նոր Արմավիր	40.08612	43.99451	P	PPL	AM		03	13156557			2014		888	Asia/Yerevan	2026-08-13
+616356	Noramarg	Noramarg	Abil'-kjand',Abilkend,Ablkend,Ablkʻend,Avelkʻend,Bulaglar,Bulagli,Bulakhly,Bulaxlar,Bulaxli,Habilkend,Habilkʻend,Hablkʻend,Imeni Kalinina,Kalinin,Kalinini anvan avan,Noramarg,Poselok Imeni Kalinina,Posëlok Imeni Kalinina,Абиль-кяндь,Аблкенд,Норамарг,Աբլքենդ,Ավելքենդ,Բուլախլար,Բուլախլի,Բուլաղլար,Բուլաղլի,Կալինինի անվան ավան,Հաբիլքենդ,Հաբլքենդ,Նորամարգ	40.02228	44.42511	P	PPL	AM		02	13133030			2291		829	Asia/Yerevan	2026-04-01
+616359	Norakert	Norakert	Norakert,Норакерт,Նորակերտ	40.19733	44.3501	P	PPL	AM		03	13156554			3168		942	Asia/Yerevan	2026-08-13
+616362	Nor Hachn	Nor Hachn	Nor Achin,Nor Acin,Nor Açin,Nor Ačin,Nor Chatsn,Nor Hacenas,Nor Hachn,Nor Hachyn,Nor Hacn,Nor Haczn,Nor Hacən,Nor Hagn,Nor Hatjn,Nor Hatschn,Nor Hačenas,Nor Hačn,Nor Haĝn,Nor-Achin,Nor-Achyn,Nor-Hachn,Norachin,nor-achini,nuo er ha qin shi,nwr hachn,nwr hatshn,Νορ Χατσν,Нор Ачин,Нор-Ачын,Нор-Ачін,Норачин,Նոր Հաճըն,Նոր Հաճն,نور هاتشن,نور هاچن,നോർ ഹാച്ൻ,ნორ-აჩინი,ノル・ハチン,诺尔哈钦市	40.30296	44.58314	P	PPLA2	AM		05	13156542			10460		1305	Asia/Yerevan	2026-03-30
+616371	Nerkin Sasnashen	Nerkin Sasnashen	Karakoymaz,Nerk'in Sasnashen,Nerkin Karakoymaz,Nerkin Sasnashen,Nerkʻin Sasnasen,Nerk’in Sasnashen,Nerqin Sasnashen,Nizhniy Karakoymaz,Неркин Саснашен,Ներքին Սասնաշեն	40.35553	43.9917	P	PPL	AM		01	13156514			1114		1785	Asia/Yerevan	2026-08-13
+616378	Nerkin Bazmaberd	Nerkin Bazmaberd	Agdzhakala,Nerkin Agjakala,Nerkin Bazmaberd,Nerkʻin Agjagala,Nerkʻin Bazmaberd,Nerkʻin Hajigala,Nizhnjaja Agdzhakala,Nizhnyaya Agjakala,Storin Agca Gale,Storin Agcagale,Неркин Базмаберд,Нижняя Агджакала,Ներքին Աղջաղալա,Ներքին Բազմաբերդ,Ներքին Հաջիղալա,Ստորին Ագճա Գալէ,Ստորին Ագճագալէ	40.33893	44.01392	P	PPL	AM		01	13156514			1537		1595	Asia/Yerevan	2026-03-30
+616385	Nalbandyan	Nalbandyan	Mets Shagriar,Nalbandjan,Nalbandyan,Shagriar,Shagriar Bol'shoy,Shagriar Bol’shoy,Налбандян,Նալբանդյան	40.0639	43.98889	P	PPL	AM		03	13156557			4428		870	Asia/Yerevan	2026-03-31
+616391	Basen	Basen	Basen,Mec Akhurjan,Mec Axuryan,Mec Kjapanak,Mec Kʻepʻenek,Mec Kʻyapʻanak,Mets Akhuryan,Mets Kyapanak,Musaeljan,Musayelyan,Басен,Мец Ахурян,Мец Кяпанак,Мусаелян,Բասեն,Մեծ Ախուրյան,Մեծ Քեփենեկ,Մեծ Քյափանակ	40.75767	43.99274	P	PPL	AM		07	13156476			1186		1638	Asia/Yerevan	2025-12-09
+616395	Mughni	Mughni	Mogni,Mughni,Mugni,Мугни,Մուղնի,Մօղնի	40.31198	44.36671	P	PPL	AM		01	13156513			1202		1213	Asia/Yerevan	2026-09-04
+616396	Hovtamej	Hovtamej	Hovtamej,Khovtamedzh,Mugan,Ovtamech,Ховтамедж,Հովտամեջ	40.18249	44.25383	P	PPL	AM		03	13156555			1024		880	Asia/Yerevan	2026-08-13
+616398	Mrgastan	Mrgastan	Gadzhilar,Mrgastan,Мргастан,Մրգաստան	40.20007	44.27789	P	PPL	AM		03	13156555			1139		902	Asia/Yerevan	2026-08-13
+616399	Mrgashen	Mrgashen	Mrgasen,Mrgashen,Мргашен,Մրգաշեն	40.28607	44.54449	P	PPL	AM		05	13156542			2325		1335	Asia/Yerevan	2026-08-13
+616400	Mrgashat	Mrgashat	Gecherlau,Gechrlu,Mrgasat,Mrgashat,Мргашат,Մրգաշատ	40.12283	44.06578	P	PPL	AM		03	13156557			6004		860	Asia/Yerevan	2026-04-27
+616401	Mrganush	Mrganush	Mrganush,Zograblu,Мргануш	40.02642	44.55953	P	PPL	AM		02	13133028			1086		922	Asia/Yerevan	2026-04-01
+616404	Mkhchyan	Mkhchyan	Imamsahlu,Imanshalu,Mkhch'yan,Mkhchjan,Mkhch’yan,Mxcʻean,Мхчян,Իմամշահլու,Մխչեան,Մխչյան	40.02228	44.4917	P	PPL	AM		02				5022		850	Asia/Yerevan	2026-10-01
+616412	Mets Mantash	Mets Mantash	Arajin Arixvali,Bol'shoj Arikhvali,Mantash,Mantʻas,Mec Ajlur,Mec Araxvali,Mec Arikhvali,Mec Arixvali,Mec Arxvali,Mec Arəxvali,Mec Arəxveli,Mec Aylur,Mec Mantash,Mec Mantʻas,Mets Arikhvali,Mets Arkhvali,Mets Mantash,Большой Арихвали,Манташ,Мец Айлур,Мец Арихвали,Мец Манташ,Առաջին Արիխվալի,Մանթաշ,Մեծ Այլուր,Մեծ Առըխվալի,Մեծ Արախվալի,Մեծ Արըխվալի,Մեծ Արըխվելի,Մեծ Արիխվալի,Մեծ Արխվալի,Մեծ Մանթաշ	40.64376	44.05653	P	PPL	AM		07	13156477			2147		1962	Asia/Yerevan	2025-12-09
+616417	Metsamor	Metsamor	Kamarlu,Mecamor,Metsamor,Мецамор,Մեծամոր	40.07246	44.2905	P	PPL	AM		03	13156556			1443		842	Asia/Yerevan	2026-03-31
+616418	Merdzavan	Merdzavan	Merdzavan,Merjavan,Mertsavan,Мердзаван,Մերձավան	40.1814	44.40033	P	PPL	AM		03	13156554			3981		939	Asia/Yerevan	2026-03-31
+616419	Melikgyugh	Melikgyugh	Melik'gyugh,Melikgjug,Melikgyukh,Melikkend,Melik’gyugh,Meliqgyux,Меликгйуг,Մելիքգյուղ	40.66545	44.35358	P	PPL	AM		01	13156512			1089		2098	Asia/Yerevan	2026-08-20
+616421	Meghrashen	Meghrashen	Gazancʻi,Ghazanchi,Kazanchi,Kazancʻi,Meghrashen,Megrasen,Megrashen,Mexrashen,Xazancʻi,Казанчи,Меграшен,Խազանչի,Կազանչի,Ղազանչի,Մեղրաշեն	40.67017	43.95652	P	PPL	AM		07	13156477			1223		1668	Asia/Yerevan	2025-12-09
+616424	Meghradzor	Meghradzor	Meghradzor,Megradzor,Megrajor,Mexradzor,Taycharukh,Меградзор,Մեղրաձոր	40.6068	44.64158	P	PPL	AM		05	13156551			2393		1781	Asia/Yerevan	2026-03-30
+616429	Mayakovski	Mayakovski	Majakovskij,Mayakovski,Mayakovskiy,Shaab,Маяковский,Մայակովսկի	40.24419	44.6341	P	PPL	AM		05	13156544			2341		1435	Asia/Yerevan	2026-03-30
+616435	Masis	Masis	Hrazdan,Masis,Narimanlu,Razdan,Takhanshalu,Tokhanshalu,Ulukhanlu,Zangibasar,Масис,Մասիս	40.06595	44.43669	P	PPL	AM		02	13133030			23136		838	Asia/Yerevan	2026-04-01
+616441	Marmarashen	Marmarashen	Marmarasen,Marmarashen,Marmorashen,Мармарашен,Մարմարաշեն	40.05829	44.47229	P	PPL	AM		02	13133030			3689		847	Asia/Yerevan	2026-04-01
+616445	Margahovit	Margahovit	Amzachiman,Bozi geg,Bozi gekh,Bozigekh,Bozigjukh,Bozigyug,Bozigyugh,Gamzachemanskaya,Gamzachiman,Hamgach'iman,Hamgach’iman,Hamzacʻiman,Margahovit,Margaovit,Tagavoranis,Tagavoranist,Takavoranist,Tʻagavoranis,Tʻagavoranist,Tʻakʻavoranist,Амзачиман,Бози гех,Бозигюх,Маргаовит,Тагаворанис,Тагаворанист,Такаворанист,Բոզի գեղ,Բոզիգյուղ,Թագավորանիս,Թագավորանիստ,Թաքավորանիստ,Համզաչիման,Մարգահովիտ	40.73381	44.68474	P	PPL	AM		06	13156277			3601		1752	Asia/Yerevan	2025-12-10
+616462	Lusagyugh	Lusagyugh	Lusagekh,Lusagjug,Lusagyug,Lusagyugh,Lusagyukh,Nerk'in Turkmenlu,Nerk’in Turkmenlu,Лусагйуг,Լուսագյուղ	40.08893	44.26947	P	PPL	AM		03	13156556			1078		841	Asia/Yerevan	2026-08-20
+616464	Lukashin	Lukashin	Imeni Mikoyana,Lukashin,Lukasin,Лукашин,Լուկաշին	40.18726	44.0039	P	PPL	AM		03	13156558			2793		874	Asia/Yerevan	2026-03-31
+616480	Lernanist	Lernanist	Lernanist,Lerrnanist,Verin Akhta,Verkhnyaya Akhta,Лернанист,Լեռնանիստ	40.46676	44.79249	P	PPL	AM		05	13156550			3037		1922	Asia/Yerevan	2026-03-30
+616481	Lernakert	Lernakert	Lernakert,Shirvandzhug,Shirvanjugh,Sirvanjug,Лернакерт,Ширванджуг,Լեռնակերտ,Շիրվանջուղ,Սիրվանջուղ	40.5625	43.9389	P	PPL	AM		07	13156477			1389		1984	Asia/Yerevan	2025-12-09
+616483	Lermontovo	Lermontovo	Lermontov,Lermontovo,Voskresenka,Voskresenovka,Voskresensk,Воскресенка,Воскресеновка,Воскресенск,Лермонтово,Լերմոնտովո,Վոսկրեսենկա,Վոսկրեսենովկա,Վոսկրեսենսկ	40.75843	44.63401	P	PPLA2	AM		06	13156278			908		1986	Asia/Yerevan	2025-12-10
+616484	Khoronk	Khoronk	Khoronk,Khoronk',Khoronk’,Lenughi,Lenugi,Nerkin Aylanlu,Nizhniy Aylanlu,Xoronq,Хоронк,Խորոնք	40.13611	44.24731	P	PPL	AM		03	13156556			2964		858	Asia/Yerevan	2026-08-13
+616488	Lchashen	Lchashen	Lcasen,Lchashen,Ordaklu,Лчашен,Լճաշեն	40.51947	44.93048	P	PPL	AM		04	13156123			4301		1929	Asia/Yerevan	2026-03-29
+616489	Lchap	Lchap	Agzibir,Agzipir,Axciber,Lchap,Lchap',Lchap’,Lehap,Лчап,Ախճիբեր,Աղզիպիր,Լճափ	40.45569	45.07507	P	PPL	AM		04	13156120			1138		1931	Asia/Yerevan	2026-03-29
+616513	Kuchak	Kuchak	Alikuchak,K'uch'ak,Krchak,Kuchak,K’uch’ak,Quchak,Кучак,Քուչակ	40.51915	44.39119	P	PPL	AM		01	13156512			2058		1876	Asia/Yerevan	2026-03-30
+616522	Kotayk	Kotayk	Kotajk,Kotayk',Kotayk’,Kotayq,Yelgovan,Котайк,Կոտայք	40.27789	44.66388	P	PPL	AM		05	13156548			1776		1443	Asia/Yerevan	2026-03-30
+616523	Kosh	Kosh	Kos,Kosh,Kuas,Кош,Կոշ,Կուաշ	40.29995	44.15252	P	PPL	AM		01	13156513			3146		1184	Asia/Yerevan	2026-09-04
+616535	Hnaberd	Hnaberd	Hnaberd,Khnaberd,Kirkhdagirman,Kyrkhdagirman,Хнаберд,Հնաբերդ	40.63721	44.14058	P	PPL	AM		01	13156510			2120		2110	Asia/Yerevan	2026-03-30
+616541	Khachpar	Khachpar	Khach'p'arr,Khachaparakh,Khachpar,Khach’p’arr,Xachpar,Zakhmat,Zakhmet,Хачпар,Խաչփառ	40.12512	44.4057	P	PPL	AM		02	13133030			2262		849	Asia/Yerevan	2026-08-13
+616551	Katnaghbyur	Katnaghbyur	Kat'naghbyur,Katnaghbyur,Katnaghpyur,Katnakhpjur,Katnakhpyur,Katnaxbyur,Kat’naghbyur,Megriban,Катнахпюр,Կաթնաղբյուր	40.38068	43.94733	P	PPL	AM		01	13156514			1060		1720	Asia/Yerevan	2026-03-30
+616573	Karbi	Karbi	Karbi,Karpi,Карби,Կարբի	40.33069	44.37793	P	PPL	AM		01	13156513			4851		1305	Asia/Yerevan	2026-09-11
+616590	Kaputan	Kaputan	Geykilisa,Gëykilisa,Kaputan,Капутан,Կապուտան	40.32507	44.70007	P	PPL	AM		05	13156548			1458		1765	Asia/Yerevan	2026-03-30
+616593	Kanakeravan	Kanakeravan	K'anak'erravan,Kanakeravan,Kenaker,Kenakeravan,K’anak’erravan,Murad Tapa,Qanaqeravan,Канакераван,Քանաքեռավան	40.24739	44.53511	P	PPL	AM		05	13156542			4247		1252	Asia/Yerevan	2026-08-13
+616595	Kanachut	Kanachut	Dokhkuz,Kanach'ut,Kanachut,Kanach’ut,Каначут,Կանաչուտ	40.0095	44.54531	P	PPL	AM		02	13133028			1183		875	Asia/Yerevan	2026-08-13
+616604	Kaghsi	Kaghsi	K'aghsi,Kagsi,Kakhsi,K’aghsi,Qaxsi,Кагси,Քաղսի	40.47196	44.73744	P	PPL	AM		05	13156550			2699		1773	Asia/Yerevan	2026-08-13
+616607	Kakavadzor	Kakavadzor	Kak'avadzor,Kakavadzor,Kakʻavajor,Kak’avadzor,Kaqavadzor,Yeshil,Какавадзор,Կաքավաձոր	40.35406	44.05435	P	PPL	AM		01	13156514			1235		1678	Asia/Yerevan	2026-08-13
+616617	Mayisyan	Mayisyan	Imeni Beriya,Imeni Zhdanova,Mayisyan,Zhdanov,Жданов,Մայիսյան	40.15701	44.09192	P	PPL	AM		03	13156558			1751		874	Asia/Yerevan	2026-03-31
+616620	Shahumyan	Shahumyan	Imeni Shaumyana,Sahumyan,Sahumyani anvan sovxozin kicʻ avan,Shahumian,Shahumyan,Shahumyan State Farm,Shahumyani Anvan Avazan,Shaumjan,Shaumjani anvan sovkhozin kic avan,Shaumyan,Шаумян,Шаумяни анван совхозин киц аван,Շահումյան,Շահումյանի անվան սովխոզին կից ավան	40.77482	44.54596	P	PPL	AM		06	13156280			2491		1520	Asia/Yerevan	2025-12-10
+616629	Hrazdan	Hrazdan	Akhta,Akhtala,Akhti,Asagi Axta,Aşağı Axta,Hrasdan,Hrazdan,Hrazdanas,Khrazdan,Nerkin Akhta,Nizhne Akhti,Nizhniye Akhty,Nizhnyaya Akhta,Razdan,furazudan,harajadana,he la zi dan,heulajeudan,hrajadana,hrazadana,hrazdan,razdani,Раздан,Храздан,Հրազդան,հրազդան,הרזדאן,هرازدان,ہرازدان,ह्राज़दान,হ্রাজদান,ਹਰਾਜਦਾਨ,რაზდანი,フラズダン,赫拉茲丹,흐라즈단	40.5169	44.75591	P	PPLA	AM		05	13156550			49500		1702	Asia/Yerevan	2026-04-13
+616631	Armavir	Armavir	Armavir,Armaviras,Armaviro,Armawir,Armawîr,Hoktemberean,Hoktemberyan,Oktemberjan,Oktemberyan,Sardar-Abad,Sardarabad  Sardarapat,Sardarapat,Sartarapat,Sərdarabad,a er ma wei er,aleumabileu,aramavira,armabhira,armafyr,armavir,armavira,armaviri,armawyr,arumavuiru,Армавир,Армавір,Октемберян,Сардарабад  Сардарапат,Արմավիր,Արմաւիր,Հոկտեմբերեան,Հոկտեմբերյան,Սարդարաբադ  Սարդարապատ,Սարտարապատ,արմավիր,آرماویر,أرمافير,अर्मावीर,আর্মাভির,ਆਰਮਾਵੀਰ,არმავირი,アルマヴィル,阿爾馬維爾,아르마비르	40.15553	44.0388	P	PPLA	AM		03	13156558			29700		878	Asia/Yerevan	2026-09-04
+616632	Hayanist	Hayanist	Dostlug,Hayanist,Khajanist,Хаянист,Հայանիստ	40.11995	44.37298	P	PPL	AM		02	13133030			2442		839	Asia/Yerevan	2026-08-13
+616633	Hatsik	Hatsik	Acik,Atsik,Hacik,Hacʻik,Hats'ik,Hatsik,Hats’ik,Imeni Voroshilova,Imeni Vorosilova,Nairi,Ацик,Имени Ворошилова,Наири,Իմենի Վորոշիլովա,Հացիկ,Նաիրի	40.17143	43.94993	P	PPL	AM		03	13156558			2259		888	Asia/Yerevan	2026-03-31
+616634	Haghartsin	Haghartsin	Carxecʻ,Cʻarxicʻi,Cʻurastan,Dzharkhech,Dzharkhedzh,Hagarcin,Haghardzin,Haghartsin,Haxarcin,Jarkhech,Jarxacʻ,Jarxe,Jarxej,Kujbyshev,Kuybisev,Kuybishev,Kuybyshev,Norsarxacʻ,Sarxacʻ,Куйбышев,Կույբիշև,Հաղարծին,Ճարխեչ,Նորշարխաչ,Շարխաչ,Չարխիչի,Չուրաստան,Ջարխաչ,Ջարխե,Ջարխեջ	40.77614	44.96847	P	PPL	AM		09	13156180			3586		1015	Asia/Yerevan	2026-03-29
+616640	Kamaris	Kamaris	Gamris,Geamris,Gyamrez,Kamaris,Камарис,Գամրիս,Գեամրիս,Կամարիս	40.23694	44.69153	P	PPL	AM		05	13156544			2401		1523	Asia/Yerevan	2026-08-13
+616645	Ghukasavan	Ghukasavan	Ghukasavan,Gukasavan,Kalara,Xukasavan,Гукасаван,Ղուկասավան	40.12394	44.41556	P	PPL	AM		02	13133030			2312		848	Asia/Yerevan	2026-04-01
+616650	Tsiatsan	Tsiatsan	Ciacan,Grampa,Tsiatsan,Циацан,Ծիածան	40.1861	44.26947	P	PPL	AM		03	13156555			1361		886	Asia/Yerevan	2026-03-31
+616652	Gosh	Gosh	Getik,Ghoshavank,Gos,Gosavankʻ,Gosh,Goshavank,Kos,Kosh,Nor Getik,Sen Gosavankʻ,Shen Ghoshavank,Shen Goshavank,Гош,Գետիկ,Գոշ,Գոշավանք,Կոշ,Ղոշավանք,Նոր Գետիկ,Շեն Գոշավանք,Շեն Ղոշավանք	40.73053	45.00012	P	PPL	AM		09	13156180			1123		1212	Asia/Yerevan	2026-03-29
+616657	Goght	Goght	Goght',Goght’,Gogt,Gokht,Goxt,Гогт,Գողթ	40.1347	44.78332	P	PPL	AM		05	13156546			2143		1578	Asia/Yerevan	2026-08-20
+616668	Getazat	Getazat	Agdzhakishlag,Getashen,Getazat,Гетазат,Գետազատ	40.03844	44.56369	P	PPL	AM		02	13133028			2103		939	Asia/Yerevan	2026-04-01
+616669	Getashen	Getashen	Dzhafarabat,Getasen,Getashen,Kalagar,Геташен,Գետաշեն	40.04449	43.94171	P	PPL	AM		03	13156557			2233		888	Asia/Yerevan	2026-03-31
+616681	Geghanist	Geghanist	Canka,Canki tʻapʻa,Chanka,Gegadir,Geganist,Geghadir,Geghanist,Gekhadir,Gekhanist,Gexanist,Gholghat,Golgat,Govlugatʻ,Гехадир,Голгат,Чанка,Գեղադիր,Գեղանիստ,Ղովլուղաթ,Ճանկա,Ճանկի թափա	40.68467	44.02333	P	PPL	AM		07	13156477			1225		1849	Asia/Yerevan	2025-12-09
+616682	Geghanist	Geghanist	Geganist,Geghanist,Gekhanist,Getapnia,Gexanist,Geygmbet,Gëygmbet,Геханист,Գեղանիստ	40.14587	44.43048	P	PPL	AM		02	13133030			3419		868	Asia/Yerevan	2026-04-01
+616692	Geghamavan	Geghamavan	Gegamavan,Geghamavan,Gexamavan,Shagriz,Гегамаван,Գեղամավան	40.5625	44.88892	P	PPL	AM		04	13156123			1870		1853	Asia/Yerevan	2026-03-29
+616697	Garni	Garni	Bash Gyarni,Garni,Garrni,Гарни,Գառնի	40.11931	44.73442	P	PPL	AM		05	13156546			8347		1413	Asia/Yerevan	2026-06-20
+616699	Gagarin	Gagarin	Gagarin,Гагарин,Գագարին	40.54026	44.86962	P	PPL	AM		04	13156123			1872		1891	Asia/Yerevan	2026-03-29
+616702	Fioletovo	Fioletovo	Fialetovo,Fioletovo,Nikitin,Nikitinka,Nikitino,Никитин,Никитинка,Никитино,Фиалетово,Фиолетово,Նիկիտին,Նիկիտինկա,Նիկիտինո,Ֆիալետովո,Ֆիոլետովո	40.72365	44.71664	P	PPLA2	AM		06	13156279			1219		1687	Asia/Yerevan	2025-12-10
+616712	Dzoraghbyur	Dzoraghbyur	Dzhorakhpyur,Dzoraghbyur,Dzoraghp'yur,Dzoraghp’yur,Dzorakhbjur,Dzorakhpyur,Dzoraxbyur,Joragbyur,Tedshirabad,Tedzhirabad,Tedzhrabak,Дзорахбюр,Ձորաղբյուր	40.2004	44.63438	P	PPL	AM		05	13156545			2948		1548	Asia/Yerevan	2026-03-30
+616721	Jrvezh	Jrvezh	Dzhivrishch',Dzhivrishch’,Dzhrvezh,Jrvej,Jrvez,Jrvezh,Джрвеж,Ջրվեժ	40.18889	44.62414	P	PPL	AM		05	13156545			6987		1540	Asia/Yerevan	2026-08-13
+616724	Jrashen	Jrashen	Dzhrashen,Jrasen,Jrashen,Nor Dzhrashen,Джрашен,Ջրաշեն	40.05275	44.51259	P	PPL	AM		02	13133028			1717		941	Asia/Yerevan	2026-04-01
+616725	Jrarat	Jrarat	Chirakhly,Chrakhli,Cragli,Cʻiraxlu,Cʻraxli,Dzhrarat,Jrarat,Джрарат,Чирахлы,Ճրագլի,Չիրախլու,Չրախլի,Ջրառատ	40.73817	44.02776	P	PPL	AM		07	13156476			1029		1890	Asia/Yerevan	2025-12-09
+616727	Jrarat	Jrarat	Dzhrarat,Jrarat,Jrarrat,Karkhun,Verin Karkhun,Verkhniy Karkhun,Джрарат,Ջրառատ	40.07214	44.27137	P	PPL	AM		03	13156556			3057		844	Asia/Yerevan	2026-08-13
+616729	Jrahovit	Jrahovit	Dzhabachalu,Dzharovit,Dzhraovit,Jrahovit,Джаровит,Ջրահովիտ	40.0473	44.4751	P	PPL	AM		02	13133030			1078		837	Asia/Yerevan	2026-04-01
+616735	Janfida	Janfida	Dzhanfida,Janfida,Джанфида,Ջանֆիդա	40.04449	44.02789	P	PPL	AM		03	13156557			3430		866	Asia/Yerevan	2026-03-31
+616741	Dvin	Dvin	Dvin,Dvin Armyanskiy,Nerkin Dvin,Nizhniy Dvin,Двин,Դվին	40.01984	44.58376	P	PPL	AM		02	13133028			2884		928	Asia/Yerevan	2026-04-01
+616748	Doghs	Doghs	Doghs,Dogs,Dokhs,Догс,Դողս	40.22229	44.27228	P	PPL	AM		03	13156555			1515		926	Asia/Yerevan	2026-09-04
+616752	Dilijan	Dilijan	Delijan,Delishan,Delizan,Delizhan,Dili,Dilican,Dilichan,Dilidjan,Dilidschan,Dilidzan,Dilidzhan,Dilidżan,Dilidžan,Diligano,Dilijan,Dilinan,Dilishan,Dilizanas,Dilizhan,Diliĝano,Diližanas,Hin Dilijan,Pokr Dili,Pʻokʻr Dili,Telican,Tili,Tilican,Tilichan,di li ran,dilijani,dylyjan,Дилиджан,Дилижан,Дилиџан,Діліжан,Դելիժան,Դելիջան,Դիլի,Դիլինան,Դիլիջան,Հին Դիլիջան,Տէլիճան,Տիլի,Տիլիճան,Փոքր Դիլի,دیلیجان,დილიჯანი,迪利然	40.74037	44.86344	P	PPL	AM		09	13156180			15914		1345	Asia/Yerevan	2026-08-29
+616757	Ddmashen	Ddmashen	Ddmasen,Ddmashen,Dodmashen,Totmashen,Ддмашен,Դդմաշեն,Դդմաշէն	40.57013	44.81609	P	PPL	AM		04	13156123			2675		1796	Asia/Yerevan	2026-08-28
+616758	Davtashen	Davtashen	Davidashen,Davitashen,Davt'ashen,Davtashen,Davtashen varch'akan shrjan,Davtashen varch’akan shrjan,Davtʻasen varcʻakan srjan,Davt’ashen,Давташен,Դավթաշեն,Դավթաշեն վարչական շրջան	40.21642	44.48088	P	PPLX	AM		11	13156596			52100		1118	Asia/Yerevan	2026-08-20
+616761	Dasht	Dasht	Dasht,Dast,Дашт,Դաշտ	40.2279	44.30011	P	PPL	AM		03	13156555			1008		935	Asia/Yerevan	2026-08-13
+616765	Darbnik	Darbnik	Darbnik,Demurchi,Malyye Demurchi,Pokr Shorlu Demurchi,Дарбник,Դարբնիկ	40.10828	44.37793	P	PPL	AM		02	13133030			1132		835	Asia/Yerevan	2026-08-13
+616785	Charentsavan	Charentsavan	Carencavan,Carencavanas,Carencawan,Carentsavan,Ch'arants'avan,Ch'arents'avan,Charehncavan,Charencavan,Charentsavan,Charentsawan,Choentsavan,Ch’arants’avan,Ch’arents’avan,Lusavan,Tjarentsavan,Tsarentsavan,Tscharenzawan,Tsharentshavan,Tšarentsavan,Tšharentshavan,charentsavani,charntsawan,tsharntsawan,Çarentsavan,Ĉarencavan,Čarencavan,Čarencavanas,Čarencawan,Τσαρεντσαβάν,Чаренцаван,Чарэнцаван,Չարենցավան,Չարենցաւան,تشارنتساوان,چارنتساوان,ჩარენცავანი	40.40289	44.64447	P	PPL	AM		05	13156549			22071		1661	Asia/Yerevan	2026-06-24
+616789	Bjni	Bjni	Bcni,Bdzhni,Bjni,Bzhni,Бджни,Բճնի,Բջնի	40.45382	44.64841	P	PPL	AM		05	13156549			2865		1580	Asia/Yerevan	2026-08-13
+616790	Byureghavan	Byureghavan	Biouregavan,Biureghawan,Biurehavanas,Biwregawan,Bjuregavan,Bjuregawan,Bjureghavan,Bjureghawan,Bjurehgavan,Byuregavan,Byureghavan,Byurexavan,biuregavani,bywrghawan,Μπιουρεγαβάν,Бюрегаван,Бюрэгаван,Բիւրեղաւան,Բյուրեղավան,بيورغاوان,بیورغاوان,ബ്യൂറെഘവാൻ,ბიურეგავანი	40.31335	44.59685	P	PPLA2	AM		05	13156547			11819		1411	Asia/Yerevan	2026-03-30
+616791	Byurakan	Byurakan	Biurakan,Biwrakan,Bjurakan,Burakan,Byurakan,Бюракан,Բիւրական,Բյուրական	40.33894	44.27275	P	PPL	AM		01	13156513			4334		1489	Asia/Yerevan	2026-06-17
+616792	Buzhakan	Buzhakan	Babakishi,Bujakan,Buzakan,Buzhakan,Бужакан,Բուժական	40.45569	44.51947	P	PPL	AM		05	13156540			1653		1845	Asia/Yerevan	2026-03-30
+616807	Bazmaghbyur	Bazmaghbyur	Bazmagbyur,Bazmaghbyur,Bazmakhpjur,Bazmakhpyur,Bazmaxbyur,Takiya,Базмахпюр,Բազմաղբյուր	40.3295	44.319	P	PPL	AM		01	13156513			1024		1203	Asia/Yerevan	2026-08-13
+616814	Gandzak	Gandzak	Batikjan,Batikyan,Batikyan  Badikyan,Batikyan  Batikian,Gandzak,Ganjagantar,Ganjagyug  Ganjaxantar  Ganjagan  Ganjagantar  Genjak  Nerkʻin Ganjak,Ganjak,Kesamamed,Kosa-Mamed,Kosa-Mamed  Kyosamamed,Kësamamed,Kʻeose-Mehmet,Kʻyosa Mahmad  Kʻyosa Mahmat  Kʻyosamanmed  Kʻyosa Mamad  Kʻyosa Mamed  Kʻyosa Muhamed,Батикян,Гандзак,Коса-Мамед,Բատիկյան  Բադիկյան,Գանձագյուղ  Գանձախանտառ  Գանձաղան  Գանձաղանտառ  Գենձակ  Ներքին Գանձակ,Գանձակ,Գանձաղանտառ,Քէօսէ-Մէհմէտ,Քյոսա Մահմադ  Քյոսա Մահմատ  Քյոսամանմեդ  Քյոսա Մամադ  Քյոսա Մամեդ  Քյոսա Մուհամեդ	40.32309	45.1103	P	PPL	AM		04	13156120			3810		1965	Asia/Yerevan	2026-06-20
+616822	Byuravan	Byuravan	Bambakavan,Bjuravan,Byuravan,Verin Kuylasar,Verkhniy Kuylasar,Бюраван,Բյուրավան	40.01604	44.51889	P	PPL	AM		02	13133028			1206		868	Asia/Yerevan	2026-04-01
+616823	Bambakashat	Bambakashat	Bambakasat,Bambakashat,Molla Bayazet,Бамбакашат,Բամբակաշատ	40.10828	44.01947	P	PPL	AM		03	13156557			3511		865	Asia/Yerevan	2026-03-31
+616824	Balahovit	Balahovit	Balahovit,Balakhovit,Balaovit,Mehub,Mekhub,Mgub,Балаовит,Балаховит,Բալահովիտ	40.25153	44.60828	P	PPL	AM		05	13156544			3962		1409	Asia/Yerevan	2026-03-30
+616838	Haytagh	Haytagh	Aytag,Aytakh,Hayt'agh,Haytax,Hayt’agh,Khajtag,Хайтаг,Հայթաղ	40.18048	44.23328	P	PPL	AM		03	13156555			2527		879	Asia/Yerevan	2026-08-13
+616845	Haykavan	Haykavan	Aykavan,Haykavan,Khajkavan,Tapadibi,Хайкаван,Հայկավան	40.08893	44.03888	P	PPL	AM		03	13156557			1494		855	Asia/Yerevan	2026-08-13
+616849	Aygestan	Aygestan	Ajgestan,Ayaslu,Aygestan,Айгестан,Այգեստան	40.00293	44.55829	P	PPL	AM		02	13133028			2449		869	Asia/Yerevan	2026-04-01
+616850	Aygeshat	Aygeshat	Ajgeshat,Aygesat,Aygeshat,Gadzhikara,Айгешат,Այգեշատ	40.23608	44.28888	P	PPL	AM		03	13156555			1893		942	Asia/Yerevan	2026-03-31
+616851	Aygeshat	Aygeshat	Ajgeshat,Aygesat,Aygeshat,Kuzigidan,Айгешат,Այգեշատ	40.07507	44.0611	P	PPL	AM		03	13156557			2171		859	Asia/Yerevan	2026-03-31
+616853	Aknalich	Aknalich	Aknalic,Aknalich,Aygerlich,Акналич,Ակնալիճ	40.14728	44.16669	P	PPL	AM		03	13156557			3265		862	Asia/Yerevan	2026-03-31
+616860	Metsadzor	Metsadzor	Avtona,Mecadzor,Mecajor,Metsadzor,Schanlu,Мецадзор,Մեծաձոր	40.38036	44.04591	P	PPLA2	AM		01	13156516			172		2008	Asia/Yerevan	2026-08-20
+616864	Avan	Avan	Avan,Avan varch'akan shrjan,Avan varch’akan shrjan,Avan varcʻakan srjan,Аван,Ավան,Ավան վարչական շրջան	40.21436	44.57846	P	PPLX	AM		11				58800		1276	Asia/Yerevan	2026-08-20
+616872	Artimet	Artimet	Alibeklu,Alibekʻlu,Artimet,Atarbekjan,Atarbekyan,Atʻarbekyan,Nerkʻin Alibeklu,Socʻarsav,Алибеклу,Артимет,Атарбекян,Աթարբեկյան,Ալիբեկլու,Ալիբեքլու,Արտիմետ,Ներքին Ալիբեկլու,Սոցարշավ	40.15008	44.26672	P	PPL	AM		03	13156556			2098		859	Asia/Yerevan	2026-03-31
+616877	Ashtarak	Ashtarak	Achtarak,Aschtarak,Ashharak,Ashtarak,Ashtarakats' Gyugh,Ashtarakats’ Gyugh,Astarak,Astarakas,Astarako,Asztarak,Aŝtarako,Aştarak,Aštarak,Aštarakas,Aștarak,a shen ta la ke,asataraka,ashtarak,ashtark,ashutaraku,astaraka,asyutalakeu,Əştərək,Аштарак,Ащарак,Աշտարակ,آشتاراك,آشتاراک,اشتارک,अश्तारक,অশ্তারক,ਅਸ਼ਤਾਰਕ,აშტარაკი,アシュタラク,阿什塔拉克,아슈타라크	40.2976	44.36152	P	PPLA	AM		01	13156513			17600		1140	Asia/Yerevan	2026-09-04
+616879	Ashnak	Ashnak	Ashnak,Asnak,Ашнак,Աշնակ	40.33069	43.91669	P	PPL	AM		01	13156514			1346		1429	Asia/Yerevan	2026-03-30
+616881	Arzni	Arzni	Arzni,arzny,ʾrzny,Арзни,Արզնի,آرزني,آرزنی,ܐܪܙܢܝ	40.29636	44.5958	P	PPLA2	AM		05	13156543			3417		1352	Asia/Yerevan	2026-03-30
+616882	Arzakan	Arzakan	Arzakan,Arzakyand,Арзакан,Արզական	40.45007	44.60828	P	PPL	AM		05	13156549			2648		1483	Asia/Yerevan	2026-03-30
+616887	Artik	Artik	Ardik,Ardikʻ,Artik,Artʻik,Artʻik tuf,Bol'shoj Artik,Mec Artik,Mec Artʻik,Mets Artik,Артик,Большой Артик,Мец Артик,Արդիկ,Արդիք,Արթիկ,Արթիկ տուֆ,Մեծ Արթիկ	40.61918	43.97207	P	PPL	AM		07	13156477			18145		1782	Asia/Yerevan	2025-12-09
+616890	Hartavan	Hartavan	Artavan,Hart'avan,Hart’avan,Karakilisa,Khartavan,Хартаван,Հարթավան	40.4779	44.40008	P	PPL	AM		01	13156512			1004		1884	Asia/Yerevan	2026-08-13
+616893	Artashar	Artashar	Artasar,Artashar,Арташар,Արտաշար	40.11108	44.18329	P	PPL	AM		03	13156557			1169		845	Asia/Yerevan	2026-09-04
+616898	Arshaluys	Arshaluys	Arsaluys,Arshalujs,Arshaluys,Kerpalu,Kërpalu,Аршалуйс,Արշալույս	40.16949	44.21393	P	PPL	AM		03	13156555			4300		868	Asia/Yerevan	2026-03-31
+616908	Arinj	Arinj	Arinc,Arindzh,Arinj,Arrinj,Ариндж,Առինճ,Առինջ	40.23356	44.58209	P	PPL	AM		05	13156544			7626		1327	Asia/Yerevan	2026-08-13
+616909	Harich	Harich	Arich,Gbcʻag,Gbcʻax,Gecʻag,Ghpchagh,Gpcʻax,Gpʻcʻag,Gpʻcʻax,Gəbcʻax,Gəpcʻag,Gəpʻcʻag,Haric,Harich,Haricʻ,Harij,Kipchag,Kipcʻax,Xpʻcʻax,Арич,Кипчаг,Խփչախ,Կիպչախ,Հառիճ,Հառիչ,Հառիջ,Ղբչախ,Ղբչաղ,Ղեչաղ,Ղըբչախ,Ղըպչաղ,Ղըփչաղ,Ղպչախ,Ղփչախ,Ղփչաղ	40.60947	44.00308	P	PPL	AM		07	13156477			1171		2009	Asia/Yerevan	2025-12-09
+616912	Argel	Argel	Argel,Arkel,Lusakert,Аргел,Արգել	40.37116	44.59618	P	PPL	AM		05	13156542			3245		1395	Asia/Yerevan	2026-09-04
+616913	Argavand	Argavand	Argavand,Dzhafarapat,Аргаванд,Արգավանդ	40.15289	44.4389	P	PPL	AM		02	13133030			2041		881	Asia/Yerevan	2026-04-01
+616914	Argavand	Argavand	Argavand,Uzunoba,Аргаванд,Արգավանդ	40.0611	44.09448	P	PPL	AM		03	13156557			2617		855	Asia/Yerevan	2026-03-31
+616915	Arevshat	Arevshat	Arevsat,Arevshat,Arewsat,Eganlar,Eganljar,Ekanlar,Ekilar,Ekinler,Yeganlar,Yekan,Yekanlar,Аревшат,Еганляр,Արեվշատ,Արեւշատ,Արևշատ,Եգանլար,Եկանլար,Եկիլար,Եկինլեր,Եկինլէր,Եղանլար,Յեգանլար	40.65345	44.04419	P	PPL	AM		07	13156477			1906		1913	Asia/Yerevan	2026-08-30
+616916	Arevshat	Arevshat	Arevsat,Arevshat,Arewsat,Arpavar,Lusakert,Mec Armalu,Nerkin Agbash,Nizhniy Agbash,Storin Ag-Bas,Storin Ag-Pas,Аревшат,Արեւշատ,Արևշատ,Մեծ Արմալու,Ստորին Ագ-Պաշ,Ստորին Աղ-Բաշ	40.03963	44.54179	P	PPL	AM		02	13133028			1717		931	Asia/Yerevan	2026-04-17
+616918	Arevik	Arevik	Agdzharkh,Arevik,Аревик,Արեվիկ,Արևիկ	40.1001	44.09448	P	PPL	AM		03	13156557			3018		853	Asia/Yerevan	2026-03-31
+616921	Arevashat	Arevashat	Arevasat,Arevashat,Arevashet,Varmaziar,Аревашат,Արեվաշատ,Արևաշատ	40.13984	44.3744	P	PPL	AM		03	13156554			2016		843	Asia/Yerevan	2026-03-31
+616932	Arbat	Arbat	Arbat,Arbat',Arbat’,Арбат,Արբաթ	40.13892	44.40289	P	PPL	AM		02	13133030			2257		856	Asia/Yerevan	2026-08-13
+616933	Arazap	Arazap	Arazap,Arazap',Arazap’,Evdzhilar,Аразап,Արազափ	40.04169	44.14728	P	PPL	AM		03	13156557			1749		847	Asia/Yerevan	2026-03-31
+616936	Aramus	Aramus	Aramus,Арамус,Արամուս	40.25095	44.66351	P	PPL	AM		05	13156544			4129		1441	Asia/Yerevan	2026-08-13
+616938	Araks	Araks	Arak's,Araks,Arak’s,Araqs,Nerkin Karkhun,Nizhniy Karkhun,Аракс,Արաքս	40.05548	44.30292	P	PPL	AM		03	13156556			2115		837	Asia/Yerevan	2026-08-13
+616941	Aragyugh	Aragyugh	Aragjukh,Aragyug,Aragyugh,Aragyukh,Aragyux,Karadzhoran,Арагюх,Արագյուղ	40.40289	44.54449	P	PPL	AM		05	13156540			1158		1631	Asia/Yerevan	2026-03-30
+616944	Aragats	Aragats	Aragac,Aragats,Kaznafar,Арагац,Արագած	40.48889	44.3529	P	PPL	AM		01	13156512			3643		1976	Asia/Yerevan	2024-12-20
+616946	Aragats	Aragats	Aragac,Aragats,Khznauz,Арагатс,Արագած	40.21948	44.23328	P	PPL	AM		03	13156555			2835		913	Asia/Yerevan	2026-03-31
+616953	Aparan	Aparan	Abaran,Abaran Verin,Aparan,Aparan Verin,Aparanas,Aparanbol,Aparanpol,Bas Aparan,Bash Abaran,Bash Aparan,Dash Abaron,K'asagh,K'asakh,Kʻasax,K’asagh,K’asakh,P'araznavert,Pas-Aparan,Pash Aparan,Pʻaraznakert,P’araznavert,a pa lan,abaran,aparan,aparana,Απαράν,Апаран,Ապարան,Բաշ Ապարան,Պաշ-Ապարան,Փարազնակերտ,Քասախ,آپاران,أباران,अपरन,অপারন,അപരാൻ,აპარანი,アパラン,阿帕兰,阿帕蘭	40.59297	44.35945	P	PPLA2	AM		01	13156512			6167		1892	Asia/Yerevan	2026-09-04
+616954	Apaga	Apaga	Apaga,Verin Turkmenlu,Апага,Ապագա	40.09729	44.25293	P	PPL	AM		03	13156556			2105		843	Asia/Yerevan	2026-03-31
+616955	Anushavan	Anushavan	Anusavan,Anushavan,Malyj Bekand',Parni,Parni Sultan,Parni Sultʻan,Pokr Bekand,Pokr Parni,Pʻokʻr Bekand,Pʻokʻr Bekʻyand,Pʻokʻr Parni,Sultʻani Parni,Анушаван,Малый Бекандь,Покр Беканд,Покр Парни,Անուշավան,Պարնի Սուլթան,Սուլթանի Պարնի,Փոքր Բեկանդ,Փոքր Բեքյանդ,Փոքր Պարնի	40.65008	43.98053	P	PPL	AM		07	13156477			2023		1722	Asia/Yerevan	2025-12-09
+616970	Amasia	Amasia	Amasia,Amasija,Amasiya,Амасия,Ամասիա	40.08331	43.96668	P	PPL	AM		03	13156557			1069		893	Asia/Yerevan	2026-08-13
+616978	Alapars	Alapars	Agberkʻ,Alaberkʻ,Alapars,Alapʻars,Aylaber,Aylaberkʻ,Owxt,Vardanavan,Алапарс,Ալաբերք,Ալափարս,Աղբերք,Այլաբեր,Այլաբերք,Ուխտ,Վարդանավան	40.4223	44.63348	P	PPL	AM		05	13156549			2021		1543	Asia/Yerevan	2026-04-28
+616979	Alagyaz	Alagyaz	Alagez,Alagjaz,Alagyaz,Alagëz,Bol'shoy Dzhamushli,Bol’shoy Dzhamushli,Dzhamushli,Dzhamushlu Bol'shoy,Dzhamushlu Bol’shoy,Elegez,Mets Dzhamshlu,Mets Jamyshlu,Алагяз,Ալագյազ	40.68082	44.28797	P	PPLA2	AM		01	13156511			406		2051	Asia/Yerevan	2026-03-30
+616981	Akunk	Akunk	Akunk,Akunk',Akunk’,Akunq,Bashgyukh,Акунк,Ակունք	40.26672	44.6861	P	PPL	AM		05	13156548			2396		1459	Asia/Yerevan	2026-08-13
+617002	Aghavnatun	Aghavnatun	Agavnatun,Agawnatun,Aghavnatun,Akhavnatukh,Akhavnatun,Агавнатун,Ахавнатун,Աղավնատուն,Աղաւնատուն	40.2333	44.25295	P	PPL	AM		03	13156555			3750		931	Asia/Yerevan	2026-03-31
+617003	Aghavnadzor	Aghavnadzor	Agavnadzor,Agavnajor,Aghavnadzor,Akhavnadzor,Axavnadzor,Babakishi,Агавнадзор,Աղավնաձոր	40.57848	44.69948	P	PPL	AM		05	13156551			1279		1767	Asia/Yerevan	2026-03-30
+617010	Aghdzk	Aghdzk	Agck,Agcʻkʻ,Aghdzk,Aghtsk,Agis,Agjkʻ,Akhis,Dzorap,Агцк,Աղիս,Աղձք,Աղցք	40.3139	44.25568	P	PPL	AM		01	13156513			1613		1255	Asia/Yerevan	2026-08-13
+617015	Tsaghkalanj	Tsaghkalanj	Agdzhakala,Cagkalandzh,Cagkalanj,Caxkalanj,Tsaghkalanj,Tsakhkaladzh,Цагкаландж,Ծաղկալանջ	40.20007	44.23053	P	PPL	AM		03	13156555			1352		891	Asia/Yerevan	2026-08-20
+617019	Agarakavan	Agarakavan	Agarak,Agarakavan,Kharaba-Akerak,Tʻalis-Xaraba,Tʻalisi Agarak,Xaraba Agarak,Агарак,Агаракаван,Хараба-Акерак,Ագարակ,Ագարակավան,Թալիշ-Խարաբա,Թալիշի Ագարակ,Խարաբա Ագարակ	40.33069	44.07233	P	PPL	AM		01	13156514			1100		1445	Asia/Yerevan	2026-03-30
+617020	Agarak	Agarak	Agarak,Akerak,Akeran,Агарак,Акерак,Акеран,Ագարակ,Ակերակ,Ակերան	40.30191	44.27923	P	PPL	AM		01	13156513			1998		1102	Asia/Yerevan	2026-03-30
+617026	Abovyan	Abovyan	Abovean,Abovian,Abovianas,Abovjan,Abovyan,Abowian,Abowjan,Abowyan,Ehjljar,Ehlar,Elar,Eliar,Ellar,Ellər,Eylar,Ilar,a bo wei yang,aboviani,abwfyan  ararat,abwwyan,Абовян,Абовјан,Эйляр,Элар,Աբովեան,Աբովյան,Էլառ,Էլար,Էլիար,Էլլար,Էյլառ,Էյլար,Իլար,آبوویان,أبوفيان، أرارات,აბოვიანი,阿博維揚	40.2717	44.63342	P	PPLA2	AM		05	13156544			50556		1450	Asia/Yerevan	2026-09-11
+617027	Abovyan	Abovyan	Abovean,Abovjan,Abovyan,Agbash,Pʻokʻr Armalu,Verin Ag-Bas,Verin Ag-Pas,Verin Agbas,Verin Agbash,Verkhnij Agbash,Verkhniy Agbash,Абовян,Верхний Агбаш,Աբովեան,Աբովյան,Վերին Ագ-Պաշ,Վերին Աղ-Բաշ,Վերին Աղբաշ,Փոքր Արմալու	40.04851	44.54742	P	PPL	AM		02	13133028			1319		956	Asia/Yerevan	2026-04-01
+793672	Bardzrashen	Bardzrashen	Bardzrashen,Barjrasen,Bartsrashen,Бардзрашен,Բարձրաշեն	40.08533	44.57957	P	PPL	AM		02	13133028			1309		1154	Asia/Yerevan	2026-08-13
+793693	Nshavan	Nshavan	Nsavan,Nshavan,Ншаван,Նշավան	40.02787	44.52565	P	PPL	AM		02	13133028			1588		886	Asia/Yerevan	2026-08-13
+799614	Norabats	Norabats	Norabac,Norabats',Norabats’,Norashen,Норабац,Նորաբաց	40.10553	44.43329	P	PPL	AM		02	13133030			2625		864	Asia/Yerevan	2026-08-13
+823790	Aruch	Aruch	Aruc,Aruch,Arum,Аруч,Արուճ	40.28749	44.07798	P	PPL	AM		01	13156513			1284		1219	Asia/Yerevan	2026-03-30
+823791	Nor Yerznka	Nor Yerznka	Nor Erznka,Nor Yerznka,Нор Ерзнка,Նոր Երզնկա	40.30011	44.38892	P	PPL	AM		01	13156513			1861		1193	Asia/Yerevan	2026-08-13
+823793	Sasunik	Sasunik	Nor Sasunik,Sasunik,Сасуник,Սասունիկ	40.25012	44.34448	P	PPL	AM		01	13156513			2571		1071	Asia/Yerevan	2026-08-13
+823795	Zovuni	Zovuni	Zovuni,Зовуни,Զովունի	40.23307	44.51129	P	PPL	AM		05	13156540			7483		1128	Asia/Yerevan	2026-08-20
+823796	Kasakh	Kasakh	K'asakh,Kasakh,K’asakh,Qasax,Касах,Քասախ	40.23555	44.45162	P	PPL	AM		05	13156540			6756		1190	Asia/Yerevan	2026-08-13
+823802	Myasnikyan	Myasnikyan	Mjasnikjan,Myasnikyan,Мясникян,Մյասնիկյան	40.18048	43.91949	P	PPL	AM		03	13156558			4582		906	Asia/Yerevan	2026-03-31
+823804	Hushakert	Hushakert	Husakert,Hushakert,Khushakert,Хушакерт,Հուշակերտ	40.08331	43.93048	P	PPL	AM		03	13156559			1032		903	Asia/Yerevan	2026-08-13
+823805	Lenughi	Lenughi	Lenughi,Lenugi,Lenuxi,Ленуги,Լենուղի	40.12512	43.96393	P	PPL	AM		03	13156558			1765		887	Asia/Yerevan	2026-08-13
+823806	Zartonk	Zartonk	Zart'onk',Zartonk,Zartonq,Zart’onk’,Зартонк,Զարթոնք	40.10828	44.16388	P	PPL	AM		03	13156557			2117		850	Asia/Yerevan	2026-08-20
+823807	Metsamor	Metsamor	Mecamor,Metsamor,Мецамор,Մեծամոր	40.14459	44.11484	P	PPLA2	AM		03	13156557			9450		864	Asia/Yerevan	2026-03-31
+823808	Gay	Gay	Gai,Gaj,Gay,Гай,Գայ	40.08444	44.30528	P	PPL	AM		03	13156556			3723		840	Asia/Yerevan	2026-08-13
+823809	Baghramyan	Baghramyan	Baghramyan,Bagramjan,Bagramyan,Баграмян,Բաղրամյան	40.19324	44.36934	P	PPL	AM		03	13156554			3166		952	Asia/Yerevan	2026-08-13
+823810	Musaler	Musaler	Musaler,Musalerr,Мусалер,Մուսալեռ	40.1557	44.37793	P	PPL	AM		03	13156554			3287		862	Asia/Yerevan	2026-08-13
+823811	Darakert	Darakert	Darakert,Даракерт,Դարակերտ	40.10553	44.41388	P	PPL	AM		02	13133030			2825		844	Asia/Yerevan	2026-08-13
+823812	Dashtavan	Dashtavan	Dashtavan,Dastavan,Даштаван,Դաշտավան	40.1001	44.39172	P	PPL	AM		02	13133030			2108		836	Asia/Yerevan	2026-08-13
+823813	Nizami	Nizami	Nizami,Низами,Նիզամի	40.09168	44.4057	P	PPL	AM		02	13133030			1332		838	Asia/Yerevan	2026-08-13
+823814	Ayntap	Ayntap	Ajntap,Aynt'ap,Aynt’ap,Айнтап,Այնթապ	40.09659	44.4646	P	PPL	AM		02	13133030			10433		888	Asia/Yerevan	2026-08-13
+823816	Masis	Masis	Masis,Масис	39.99772	44.49349	P	PPL	AM		02	13133028			1557		844	Asia/Yerevan	2026-08-13
+866081	Taronik	Taronik	Taronik,Тароник,Տարոնիկ	40.13367	44.19957	P	PPL	AM		03	13156557			2470		851	Asia/Yerevan	2026-08-20
+866082	Aratashen	Aratashen	Aratasen,Aratashen,Arratashen,Араташен,Առատաշեն	40.12824	44.22803	P	PPL	AM		03	13156556			3031		849	Asia/Yerevan	2026-08-13
+866089	Aknashen	Aknashen	Aknasen,Aknashen,Акнашен,Ակնաշեն	40.09275	44.29157	P	PPL	AM		03	13156556			1688		842	Asia/Yerevan	2026-08-13
+866090	Haykashen	Haykashen	Aykashen,Haykasen,Haykashen,Khajkashen,Хайкашен,Հայկաշեն	40.07233	44.30829	P	PPL	AM		03	13156556			1418		837	Asia/Yerevan	2026-08-13
+866091	Hovtashat	Hovtashat	Hovtasat,Hovtashat,Khovtashat,Ovtashat,Ховташат,Հովտաշատ	40.09729	44.34448	P	PPL	AM		02	13133030			4242		836	Asia/Yerevan	2026-08-13
+866092	Sayat-Nova	Sayat-Nova	Sajat-Nova,Sayat'-Nova,Sayat’-Nova,Саят-Нова,Սայաթ-Նովա	40.07507	44.40008	P	PPL	AM		02	13133030			2376		833	Asia/Yerevan	2026-08-13
+866093	Voskehat	Voskehat	Oskehat,Voskeat,Voskehat,Vskekhat,Вскехат,Ոսկեհատ	40.14172	44.33069	P	PPL	AM		03	13156553			3223		857	Asia/Yerevan	2026-08-20
+866095	Griboyedov	Griboyedov	Griboedov,Griboyedov,Грибоедов,Գրիբոյեդով	40.11307	44.27169	P	PPL	AM		03	13156556			2221		845	Asia/Yerevan	2026-08-13
+866097	Amberd	Amberd	Amberd,Gmbet',Gmbet’,Амберд,Ամբերդ	40.24177	44.27128	P	PPL	AM		03	13156555			1645		946	Asia/Yerevan	2026-08-13
+866098	Aygek	Aygek	Ajgek,Aygek,Айгек,Այգեկ	40.1889	44.38611	P	PPL	AM		03	13156554			1592		948	Asia/Yerevan	2026-08-13
+866099	Ferik	Ferik	Ferik,Ферик,Ֆերիկ	40.1874	44.20952	P	PPLA2	AM		03	13156552			397		883	Asia/Yerevan	2026-08-20
+866104	Nor Yedesia	Nor Yedesia	Nor Amanos,Nor Edesia,Nor Edesija,Nor Yedesia,Nor-Yedisia,Нор Едесия,Նոր Եդեսիա	40.22229	44.13348	P	PPL	AM		01	13156513			1432		1064	Asia/Yerevan	2026-08-13
+866110	Nor Artamet	Nor Artamet	Nor Artamet,Nor Artanet,Нор Артамет,Նոր Արտամետ	40.30046	44.55787	P	PPL	AM		05	13156542			1146		1354	Asia/Yerevan	2026-08-20
+866111	Tairov	Tairov	T'airov,Tairov,T’airov,Таиров,Թաիրով	40.16078	44.43435	P	PPL	AM		03	13156554			2976		906	Asia/Yerevan	2026-08-13
+866112	Verin Ptghni	Verin Ptghni	Verin Ptghni,Verin Ptgni,Verin Ptxni,Верин Птгни,Վերին Պտղնի	40.24387	44.5741	P	PPL	AM		05	13156544			1073		1352	Asia/Yerevan	2026-08-20
+866134	Hovtashen	Hovtashen	Hovtasen,Hovtashen,Khovtashen,Ovtashen,Ховташен,Հովտաշեն	40.02508	44.45007	P	PPL	AM		02	13133028			1141		826	Asia/Yerevan	2026-08-13
+866135	Dimitrov	Dimitrov	Dimitrov,Димитров,Դիմիտրով	40.00848	44.4917	P	PPL	AM		02	13133028			1156		845	Asia/Yerevan	2026-08-13
+866137	Mrgavet	Mrgavet	Mrgavet,Мргавет,Մրգավետ	40.02789	44.48328	P	PPL	AM		02	13133028			2502		842	Asia/Yerevan	2026-08-13
+866138	Arevabuyr	Arevabuyr	Arevabujr,Arevabuyr,Аревабуйр,Արեվաբույր,Արևաբույր	40.03607	44.46948	P	PPL	AM		02	13133030			1383		834	Asia/Yerevan	2026-08-13
+866140	Nor Kyurin	Nor Kyurin	Nor Kjurin,Nor Kyurin,Нор Кйурин,Նոր Կյուրին	40.07386	44.49731	P	PPL	AM		02	13133030			1238		949	Asia/Yerevan	2026-08-20
+866141	Getapnya	Getapnya	Getap'nya,Getapnia,Getapnja,Getap’nya,Гетапня,Գետափնյա	40.1381	44.42795	P	PPL	AM		02	13133030			1541		885	Asia/Yerevan	2026-08-13
+866146	Lanjazat	Lanjazat	Landzhazat,Lanjazat,Lendzhazat,Ланджазат	40.06102	44.57544	P	PPL	AM		02	13133028			1476		976	Asia/Yerevan	2026-08-13
+866152	Erebuni	Erebuni	Ehrebuni,Erebouni,Erebuni,Erebuni varch'akan shrjan,Erebuni varch’akan shrjan,Erebuni varcʻakan srjan,Erebuno,Еребуні,Эребуни,Էրեբունի,Էրեբունի վարչական շրջան	40.13309	44.53009	P	PPLX	AM		11	13156597			129700		1005	Asia/Yerevan	2025-12-10
+866153	Nor Nork	Nor Nork	Nor Nork,Nor Nork',Nor Nork' varch'akan shrjan,Nor Norkʻ varcʻakan srjan,Nor Nork’,Nor Nork’ varch’akan shrjan,Nor Norq,Nor Norq varchakan shrjan,Nor-Norka,Нор Норк,Նոր Նորք,Նոր Նորք վարչական շրջան	40.19661	44.5669	P	PPLX	AM		11	13156602			137300		1302	Asia/Yerevan	2026-08-20
+866160	Nork-Marash	Nork-Marash	Nork'-Marash,Nork'-Marash varch'akan shrjan,Nork-Marash,Norkʻ-Maras varcʻakan srjan,Nork’-Marash,Norq-Marash,Norq-Marash varchakan shrjan,Норк-Мараш,Նորք-Մարաշ,Նորք-Մարաշ վարչական շրջան	40.17417	44.54083	P	PPLX	AM		11	13156601			13900		1225	Asia/Yerevan	2026-08-20
+866164	Ajapnyak	Ajapnyak	Adzhapnjak,Ajap'nyak,Ajapnyak,Ajapnyak varch'akan shrjan,Ajapnyak varch’akan shrjan,Ajapʻnyak varcʻakan srjan,Ajap’nyak,Аджапняк,Աջափնյակ,Աջափնյակ վարչական շրջան	40.19917	44.47056	P	PPLX	AM		11	13156594			122800		1061	Asia/Yerevan	2026-08-20
+7647071	Kanaker-Zeytun	Kanaker-Zeytun	K'anak'err-Zeyt'un varch'akan shrjan,Kanaker-Zejtun administrativnyj rajon,Kanaker-Zeytun,Kʻanakʻer-Zeytʻun,Kʻanakʻer-Zeytʻun varcʻakan srjan,Qanaqer-Zeytun varchakan shrjan,Канакер-Зейтун административный район,Քանաքեռ-Զեյթուն,Քանաքեռ-Զեյթուն վարչական շրջան	40.22	44.53833	P	PPLX	AM		11				75500		1280	Asia/Yerevan	2026-08-20
+7647812	Narek	Narek	Narek,Нарек,Նարեկ	40.00041	44.66482	P	PPL	AM		02	13133028			1250		1031	Asia/Yerevan	2026-08-13
+7669109	Noravan	Noravan	Noravan,Нораван,Նորավան	40.17244	44.02979	P	PPL	AM		03	13156558			1379		879	Asia/Yerevan	2026-08-13
+7669111	Khanjyan	Khanjyan	Khandzhjan,Khanjyan,Xanjyan,Ханджян,Խանջյան	40.18742	43.97718	P	PPL	AM		03	13156558			1864		884	Asia/Yerevan	2026-08-13
+7670934	Malatia-Sebastia	Malatia-Sebastia	Banglades,Bangladesh,Malat'ia-Sebastia,Malat'ia-Sebastia varch'akan shrjan,Malatia-Sebastia,Malatia-Sebastia administrativnyj rajon,Malatʻia-Sebastia,Malatʻia-Sebastia varcʻakan srjan,Malat’ia-Sebastia,Malat’ia-Sebastia varch’akan shrjan,Малатиа-Себастиа административный район,Բանգլադեշ,Մալաթիա-Սեբաստիա,Մալաթիա-Սեբաստիա վարչական շրջան	40.17396	44.4457	P	PPLX	AM		11				150500		943	Asia/Yerevan	2026-08-20
+7670941	Kentron	Kentron	Kedron,Kentron,Kentron District,Kentron varch'akan shrjan,Kentron varch’akan shrjan,Kentrono,ken te long qu,kentoron de qu,kentran jilla,nahyh kntrwn,Кентрон,Կեդրոն,Կենտրոն,Կենտրոն վարչական շրջան,مقاطعة كينترون,ناحیه کنترون,ناوچەی کێنترۆن,కెంట్రాన్ జిల్లా,კენტრონის რაიონი,ケントロン地区,肯特隆区,肯特隆區	40.17806	44.51303	P	PPLX	AM		11				133000		997	Asia/Yerevan	2025-12-10
+11107440	Aygevan	Aygevan	Ajgevan,Aygevan,Айгеван,Այգեվան	40.14172	43.9751	P	PPL	AM		03	13156558			1814		875	Asia/Yerevan	2026-08-13
+11107455	Araks	Araks	Arak's,Araks,Arak’s,Araqs,Аракс,Արաքս	40.09729	43.95569	P	PPL	AM		03	13156558			1633		906	Asia/Yerevan	2026-08-13
+11111027	Shengavit	Shengavit	Sengavitʻ varcʻakan srjan,Shengavit,Shengavit',Shengavit' varch'akan shrjan,Shengavit’,Шенгавит,Շենգավիթ,Շենգավիթ վարչական շրջան	40.1557	44.4779	P	PPLX	AM		11	13156604			140600		930	Asia/Yerevan	2026-08-20
+11224273	Nor Artagers	Nor Artagers	Nor Artagers,Нор Артагерс,Նոր Արտագերս	40.06952	44.00568	P	PPL	AM		03	13156557			1663		867	Asia/Yerevan	2026-08-20
+11224304	Norapat	Norapat	Norapat,Норапат,Նորապատ	40.14172	44.03332	P	PPL	AM		03	13156557			2466		860	Asia/Yerevan	2026-08-13
+11224578	Jrarbi	Jrarbi	Dzhrarbi,Jrarbi,Джрарби,Ջրարբի	40.08738	44.23995	P	PPL	AM		03	13156556			1726		846	Asia/Yerevan	2026-08-13
+13156560	Armavir	Armavir	Armavir,Ghurdughuli,Gurduguli,Армавир,Արմավիր,Ղուրդուղուլի	40.08298	44.05777	P	PPL	AM		03	13156557			3428		864	Asia/Yerevan	2026-08-13
+13156582	Arabkir	Arabkir	Arabkir,Арабкир	40.20624	44.50365	P	PPLX	AM		11	616205			119300		1157	Asia/Yerevan	2026-08-20
+147282	Sedarak	Sedarak	Sadarak,Sedarak,Sederek,Sədərək,Սադարակ	39.71427	44.88455	P	PPL	AZ		35	409387			1853		860	Asia/Baku	2026-07-11
+8326746	Heydarabad	Heydarabad	Gajdarabad,Gejdarabad,Heydarabad,Heydərabad,haidarabada,haidarabado,heyidarabadi,hydrabad,Гайдарабад,Гейдарабад,حيدرآباد,حیدرآباد,हैदराबाद,হৈদরাবাদ,ਹੈਦਰਾਬਾਦ,ሄይዳራባድ,ハイダラバード	39.72286	44.84846	P	PPLA2	AZ		35	409387			2300		818	Asia/Baku	2026-06-25
+1516527	Zholymbet	Zholymbet	Dzhalambet,Dzholonbet,Dzhoronbet,Zholymbet,Жолымбет	51.74259	71.70971	P	PPL	KZ		03				6876		307	Asia/Almaty	2026-08-30
+1519050	Shortandy	Shortandy	Shartandy,Shortandinskiy,Shortandy,Шортанды	51.69934	70.99129	P	PPLA2	KZ		03				6980		367	Asia/Almaty	2026-08-30
+1521193	Aqmol	Aqmol	Akmol,Akmolinskiy,Aqmol,Malinovka,Malīnovka,Sovkhoz Akmolinskiy,Акмол,Ақмол,Малиновка	51.06568	70.97777	P	PPLA2	KZ		03				0		347	Asia/Almaty	2022-05-21
+1522202	Koshi	Koshi	Koshi,Qosshy,Коши,Қосшы	50.97075	71.35311	P	PPLA2	KZ		03				0		335	Asia/Almaty	2023-06-14
+1526273	Astana	Astana	Ak-Mola,Akmola,Akmolins'k,Akmolinsk,Aqmola,Astana,Astano,Astanà,Astaná,Asztana,Aστάνα,Bozok,Cilinograd,NQZ,Noer-Soeltan,Nour-Soultan,Nur-Soltan,Nur-Sultan,Nur-Sultano,Nur-Sultán,Nursultʻan,Nұr-Sұltan,Ostona,Qaraotkel,Qaraötkel,TSE,Tselinograd,a si ta na,aseutana,astana,astanh,astant,astanٱ,astanہ,astʼana,asutana,nwr sltan,nwrsltan,nwrswltan,nۇrsۇltan,yastana,ʼstnh,Ак-Мола,Акмола,Акмолінськ,Астана,Нур-Солтан,Нур-Султан,Нұр-Сұлтан,Остона,Цілиноград,Աստանա,Նուրսուլթան,אסטנה,آستانا,آستانه,آستانٱ,آستانہ,أستانة,أسطانا,ئاستانا,استانا,استانه,نور سلطان,نورسلطان,نورسولتان,نۇرسۇلتان,আস্তানা,ასტანა,አስታና,アスタナ,阿斯塔纳,아스타나	51.1801	71.44598	P	PPLC	KZ		05				1544142		358	Asia/Almaty	2026-06-12
+461740	Zyuzino	Zyuzino	Zjuzino,Zyuzino,Зюзино	55.65608	37.56846	P	PPLX	RU		48				121000		203	Europe/Moscow	2013-04-02
+461835	Zyablikovo	Zyablikovo	Zjablikovo,Zyablikovo,Зябликово	55.61667	37.76667	P	PPLX	RU		48	490025			129000		145	Europe/Moscow	2016-04-01
+461920	Zvenigorod	Zvenigorod	Svenigorod,Swenigorod,Zvenigorod,Zveniqorod,Zvenígorod,Zwienigorod,Zwjenigorod,ci wei ni ge luo de,jeubenigolodeu,zfynyghwrwd,zuvuenigorodo,zwnygwrwd,zwynygrwd,Звенигород,Звенигород балһсн,زفينيغورود,زونیگورود,زوینیگرود,ズヴェニゴロド,兹韦尼哥罗德,즈베니고로드	55.73401	36.85918	P	PPL	RU		47				16395		178	Europe/Moscow	2012-01-17
+462745	Zhulebino	Zhulebino	Zhelyabino,Zhulebino,Жулебино	55.7	37.85	P	PPLX	RU		48				150000		140	Europe/Moscow	2014-02-06
+462755	Zhukovsky	Zhukovsky	Otdykh,Schukowski,Stakhanovo,ZIA,Zhukovskij,Zhukovskiy,Zhukovskogo,Zhukovsky,Zjukovskij,Zukovski,Žukovski,Жуковский	55.59528	38.12028	P	PPL	RU		47				97200		137	Europe/Moscow	2023-05-29
+462815	Zhukovka	Zhukovka	Zhukovka,Zjukovka,Жуковка	56.48333	37.51667	P	PPL	RU		47				2647		159	Europe/Moscow	2012-01-17
+463355	Zheleznodorozhnyy	Zheleznodorozhnyy	Obiralovka,Zheleznodorozhny,Zheleznodorozhnyj,Zheleznodorozhnyy,Zjeleznodorozjnyj,Железнодорожный	55.744	38.01684	P	PPL	RU		47	579462			141648		146	Europe/Moscow	2016-04-11
+463465	Zhavoronki	Zhavoronki	Zhavoronki,Zjavoronki,Жаворонки	55.64943	37.10101	P	PPL	RU		47				2899		195	Europe/Moscow	2014-06-26
+463826	Zelenogradskiy	Zelenogradskiy	Zelenogradskij,Zelenogradskiy,Зеленоградский	56.1	37.91667	P	PPL	RU		47				2155		175	Europe/Moscow	2014-06-26
+463829	Zelenograd	Zelenograd	Selenograd,Zelenograd,Зеленоград	55.9825	37.18139	P	PPL	RU		48				215727		220	Europe/Moscow	2023-07-08
+464176	Zavety Il’icha	Zavety Il'icha	Zavety Il'icha,Заветы Ильича	56.04284	37.85153	P	PPL	RU		47				20000		168	Europe/Moscow	2021-06-15
+465057	Zamoskvorech’ye	Zamoskvorech'ye	Zamoskvorech'e,Zamoskvorech'ye,Zamoskvorech’ye,Замоскворечье	55.73333	37.63333	P	PPLX	RU		48				55000		128	Europe/Moscow	2014-02-06
+465632	Zagoryanskiy	Zagoryanskiy	Zagaryanskiy,Zagorjanskij,Zagoryanskiy,Zagoryanskoye,Загорянский	55.9325	37.95806	P	PPL	RU		47				7514		143	Europe/Moscow	2012-01-17
+466171	Yushkovo	Yushkovo	Jushkovo,Kalininec,Yushkovo,Калининец,Юшково	55.55741	36.97176	P	PPL	RU		47				25324		203	Europe/Moscow	2024-09-10
+467104	Yershovo	Yershovo	Ershovo,Yershovo,Ершово	55.76911	36.85929	P	PPL	RU		47				9367		205	Europe/Moscow	2012-07-04
+467235	Yermolino	Yermolino	Opytnoye Khozyaystvo Yermolino,Poselok Opytno-Pokazatel'nogo Khozyaystva Yermolino,Posjolok Opytno-Pokazatel'nogo Khozjajstva Ermolino,Posëlok Opytno-Pokazatel’nogo Khozyaystva Yermolino,Yermolino,Посёлок Опытно-Показательного Хозяйства Ермолино	56.14887	37.49112	P	PPL	RU		47				1334		197	Europe/Moscow	2020-06-10
+468011	Yel’digino	Yel'digino	El'digino,Shkol'nyy,Shkol’nyy,Yel'digino,Yel’digino,Ельдигино	56.11667	37.81667	P	PPL	RU		47				2100		179	Europe/Moscow	2014-12-03
+468809	Yasenevo	Yasenevo	Jasenevo,Yasenevo,Ясенево	55.60686	37.51991	P	PPLX	RU		48				180000		228	Europe/Moscow	2021-01-26
+469341	Yam	Yam	Jam,Starry Frolovskiy Yam,Stary Yam,Staryy Yam,Yam,Ям	55.48785	37.74458	P	PPL	RU		47				3244		125	Europe/Moscow	2014-01-31
+469533	Yakovlevskoye	Yakovlevskoye	Jakovlevskoe,Jakovlevskoje,Yakovlevskaya,Yakovlevskoye,Yakovleyskoye,Яковлевское	55.44194	37.94806	P	PPL	RU		47				4330		141	Europe/Moscow	2012-01-17
+469655	Yakhroma	Yakhroma	Jakhroma,Yakhroma,Яхрома	56.30055	37.4577	P	PPL	RU		47				12666		216	Europe/Moscow	2025-12-15
+470451	Vykhino-Zhulebino	Vykhino-Zhulebino	Vykhino,Vykhino-Zhulebino,Выхино-Жулебино	55.70196	37.81178	P	PPLX	RU		48				216000		133	Europe/Moscow	2014-02-06
+471456	Vostryakovo	Vostryakovo	Vostrjakovo,Vostryakovo,Востряково	55.66667	37.45	P	PPLX	RU		47				30000		182	Europe/Moscow	2014-03-05
+471457	Vostryakovo	Vostryakovo	Vostrjakovo,Vostryakovo,Востряково	55.39934	37.80829	P	PPL	RU		47				16509		163	Europe/Moscow	2014-06-26
+471501	Vostochnyy	Vostochnyy	Stalinskiy,Vostochnyj,Vostochnyy,Восточный	55.81667	37.86667	P	PPLX	RU		48				13011		168	Europe/Moscow	2012-01-17
+472072	Altuf’yevskiy	Altuf'yevskiy	Altuf'evskij,Altuf'yevskiy,Altuf’yevskiy,Vorob'yevskiy,Vorob’yëvskiy,Алтуфьевский	55.88333	37.58333	P	PPLX	RU		48				54000		169	Europe/Moscow	2014-02-06
+472079	Vorob’yovo	Vorob'yovo	Vorob'evo,Воробьево	55.71667	37.53333	P	PPLX	RU		48				30000		177	Europe/Moscow	2014-01-31
+472487	Volodarskogo	Volodarskogo	Poselok Volodarskogo,Posëlok Volodarskogo,Stalino,Volodarskij,Volodarskiy,Volodarskogo,Володарский	55.50349	37.94174	P	PPL	RU		47				3500		155	Europe/Moscow	2015-06-03
+472732	Nagornyy	Nagornyy	Nagornyj,Nagornyy,Volkhonka,Нагорный	55.65	37.61667	P	PPLX	RU		48	490025	9883006		76000		185	Europe/Moscow	2021-11-11
+473122	Vlasikha	Vlasikha	Sovkhoz Vlasikho,Vlasikha,Власиха	55.68423	37.19661	P	PPLA2	RU		47				0		194	Europe/Moscow	2023-07-11
+473127	Novovladykino	Novovladykino	Novovladykino,Vladykino,Нововладыкино	55.85	37.58333	P	PPLX	RU		48				50000		149	Europe/Moscow	2013-04-02
+473382	Vishnyakovskiye Dachi	Vishnyakovskiye Dachi	Vishnjakovskie Dachi,Vishnyakovskiye Dachi,Visjnjakovskije Datsji,Вишняковские Дачи	55.7647	38.13334	P	PPL	RU		47				1773		135	Europe/Moscow	2012-02-28
+473535	Vinogradovo	Vinogradovo	Vinogradovo,Виноградово	55.94668	37.5384	P	PPL	RU		47				9600		191	Europe/Moscow	2026-06-17
+473778	Vidnoye	Vidnoye	Poselok Vidnoye,Posëlok Vidnoye,Vidnoe,Vidnoje,Vidnoye,Widnoje,Видное	55.5523	37.70885	P	PPLA2	RU		47	536086			51721		170	Europe/Moscow	2023-07-11
+473972	Veshnyaki	Veshnyaki	Veshnjaki,Veshnyaki,Вешняки	55.72393	37.81952	P	PPLX	RU		48	8520891	9882961		122000		155	Europe/Moscow	2016-04-03
+475700	Vereya	Vereya	Vereja,Vereya,Верея	55.61472	38.03917	P	PPL	RU		47				3900		126	Europe/Moscow	2014-07-08
+476368	Vatutino	Vatutino	Vatutine,Vatutino,Ватутино,Ватутіне	55.88441	37.69055	P	PPLH	RU		48				50000		149	Europe/Moscow	2016-07-07
+476372	Vatutinki	Vatutinki	Poselok Vatutinki,Posëlok Vatutinki,Vatucinki,Vatutinki,Watutinki,fatwtynky,Ватутинки,Ватуцінкі,Վատուտինկի,فاتوتينكي	55.4965	37.32988	P	PPL	RU		48				9502		161	Europe/Moscow	2015-09-27
+477377	Vagonoremont	Vagonoremont	Vagonoremont,Вагоноремонт	55.9	37.55	P	PPLX	RU		48				50000		177	Europe/Moscow	2015-01-07
+479640	Udel’naya	Udel'naya	Udel'naja,Udel'naya,Udel'noye,Udel’naya,Udel’noye,Удельная	55.636	38.045	P	PPL	RU		47				13357		142	Europe/Moscow	2025-03-03
+481453	Troparëvo	Troparevo	Troparevo,Troparjovo,Troparëvo,Тропарёво	55.65625	37.48496	P	PPLH	RU		48				118000		197	Europe/Moscow	2016-04-06
+481608	Troitsk	Troitsk	Troick,Troickaj,Troitsk,Troitsk i Moskva oblast,Troizk,Troïtsk,te luo yi ci ke,trwytsk,trwytsk  awblast mskw,Троицк,Троицкай,تروئتسک,ترويتسك,ترویتسک، اوبلاست مسکو,特羅伊茨克	55.48498	37.30736	P	PPL	RU		48	8520893			37591		170	Europe/Moscow	2023-07-08
+482260	Tomilino	Tomilino	Tamilina,Tomilinas,Tomilino,tomirino,tuo mi li nuo,twmylynw,Таміліна,Томилино,Томіліно,تومیلینو,トミリノ,托米利诺	55.65619	37.94713	P	PPL	RU		47				28310		133	Europe/Moscow	2012-01-17
+482329	Tolstopal’tsevo	Tolstopal'tsevo	Poselok Tolstopal'tsevo,Posëlok Tolstopal’tsevo,Tolstopal'cevo,Tolstopal'tsevo,Tolstopal’tsevo,Толстопальцево	55.61026	37.21834	P	PPLX	RU		48				1300		195	Europe/Moscow	2014-09-28
+483551	Tyoply Stan	Tyoply Stan	Nizhniy Teplyy Stan,Tjoplyj Stan,Тёплый Стан	55.62047	37.49338	P	PPLX	RU		48	562221			125000		240	Europe/Moscow	2016-03-31
+483826	Tekstil’shchiki	Tekstil'shchiki	Poselok Tekstil'shchiki,Poselok Tekstil’shchiki,Sadki,Tekstil'shchiki,Tekstil'shhiki,Tekstil’shchiki,Текстильщики	55.70033	37.74271	P	PPLX	RU		48				100000		142	Europe/Moscow	2020-06-10
+484449	Tarasovka	Tarasovka	Tarasovka,Тарасовка	55.95722	37.84333	P	PPL	RU		47				2807		148	Europe/Moscow	2017-03-04
+484912	Taganskiy	Taganskiy	Taganka,Taganskij,Taganskiy,Таганский	55.73333	37.66667	P	PPLX	RU		48				116000		135	Europe/Moscow	2014-01-31
+485630	Sviblovo	Sviblovo	Estacao Sviblovo,Estação Sviblovo,Sviblovo,Swiblowo,Swibłowo,Свиблово,Свіблово	55.85	37.63333	P	PPLX	RU		48				60000		145	Europe/Moscow	2013-04-02
+485763	Sverdlovskiy	Sverdlovskiy	Sverdlovskij,Sverdlovskiy,Свердловский	55.90968	38.14978	P	PPL	RU		47				5636		142	Europe/Moscow	2012-02-28
+487150	Strogino	Strogino	Strogino,Строгино	55.81838	37.41224	P	PPLX	RU		48				152000		125	Europe/Moscow	2013-04-02
+487441	Stolbovaya	Stolbovaya	Stolbovaja,Stolbovaya,Столбовая	55.25021	37.49249	P	PPL	RU		47				5142		187	Europe/Moscow	2012-01-17
+489162	Staraya Kupavna	Staraya Kupavna	Kupavna,Staraja Kupavna,Staraya Kupavna,Купавна,Старая Купавна	55.80799	38.1805	P	PPL	RU		47				22099		145	Europe/Moscow	2018-08-27
+490971	Solntsevo	Solntsevo	Solncevo,Solntsevo,Солнцево	55.63711	37.38115	P	PPLX	RU		48				120000		178	Europe/Moscow	2012-09-20
+490996	Solnechnogorsk	Solnechnogorsk	Gomsina,Gomzino,Solnechangorski,Solnechnogors'k,Solnechnogorsk,Solnechnogorski,Solnechnogorskiy,Solnecinogorsk,Solnecnogorsk,Solnecnoqorsk,Solnetchnogorsk,Solnetschnogorsk,Solnetsjnogorsk,Solnetsnogorsk,Solnetšnogorsk,Solneçnoqorsk,Solneĉnogorsk,Solnečnogorsk,Solniecznogorsk,Solnjecnogorsk,Solnječnogorsk,Solněčnogorsk,Sołniecznogorsk,suo er nie qi nuo ge er si ke,swlnchnwgwrsk,swlntshnwghwrsk,swlnychnwgwrsk,Гомзино,Солнечногорск,Солнечногорск балһсн,Солнечногорськ,سولنتشنوغورسك,سولنچنوگورسک,سولنیچنوگورسک,索爾涅奇諾戈爾斯克	56.17527	36.97082	P	PPLA2	RU		47				58891		202	Europe/Moscow	2025-07-16
+491250	Sokol’niki	Sokol'niki	Sokol'niki,Sokol’niki,Сокольники	55.80202	37.67159	P	PPLX	RU		48				57000		157	Europe/Moscow	2013-04-02
+491280	Sokol	Sokol	Sokol,Сокол	55.8	37.51667	P	PPLX	RU		48				57000		159	Europe/Moscow	2013-04-02
+491352	Sofrino	Sofrino	Sofrino,Софрино	56.15	37.93333	P	PPL	RU		47				15265		184	Europe/Moscow	2014-09-01
+491538	Snegiri	Snegiri	Snegiri,Snigiri,Снегири	55.88867	37.02421	P	PPL	RU		47				3465		216	Europe/Moscow	2012-01-17
+491895	Slobodka	Slobodka	Slobodka,Слободка	55.86667	37.58333	P	PPLX	RU		48				20000		156	Europe/Moscow	2013-04-02
+492396	Skolkovo	Skolkovo	Skolkovo,Сколково	55.68784	37.36836	P	PPL	RU		47				1500		164	Europe/Moscow	2014-09-06
+492448	Skhodnya	Skhodnya	Schodne,Schodnia,Schodnja,Schodnė,Shodnja,Skhodnja,Skhodnya,Sĥodnja,Сходня	55.94806	37.29778	P	PPL	RU		47				18897		196	Europe/Moscow	2012-01-17
+492768	Novosin’kovo	Novosin'kovo	Novosin'kovo,Novosinkovo,Новосиньково	56.37737	37.32871	P	PPL	RU		47				8073		163	Europe/Moscow	2014-08-18
+494806	Sheremet’yevskiy	Sheremet'yevskiy	Sheremet'evskij,Sheremet'yevskiy,Sheremet’yevskiy,Shermet'yevo,Shermet’yevo,Sjeremetjevskij,Шереметьевский	55.97583	37.49417	P	PPL	RU		47				6500		180	Europe/Moscow	2012-05-23
+495136	Shchukino	Shchukino	Shchukino,Shhukino,Щукино	55.8	37.45	P	PPLX	RU		48				102000	158	153	Europe/Moscow	2026-05-02
+495260	Shcherbinka	Shcherbinka	Shcherbinka,Shcherbinki,Shherbinka,Sjtsjerbinka,Щербинка	55.498	37.5579	P	PPL	RU		48	8520892			28065		175	Europe/Moscow	2026-07-13
+495344	Shchyolkovo	Shchyolkovo	Schtscholkowo,Scolkovo,Shchelkovo,Shcholkovo,Shchyolkovo,Shhelkovo,Shhjolkovo,Ščolkovo,Шчолково,Щелково,Щёлково	55.92497	37.97218	P	PPL	RU		47				113000		145	Europe/Moscow	2023-05-28
+496348	Severnyy	Severnyy	Severnyj,Severnyy,Северный	55.93583	37.54889	P	PPLX	RU		48				200000		186	Europe/Moscow	2013-03-31
+496456	Setun’	Setun'	Setun',Setun’,Сетунь	55.71667	37.41667	P	PPLX	RU		48				20000		144	Europe/Moscow	2013-04-02
+496638	Sergiyev Posad	Sergiyev Posad	Sergiev Posad,Sergijev Posad,Sergijev Possad,Sergijew Possad,Sergiyev,Sergiyev Posad,Sergiyevskiy Posad,Siergijew Posad,Zagorsk,Сергиев Посад,Сергијев Посад	56.31204	38.13869	P	PPLA2	RU		47				109252		205	Europe/Moscow	2023-07-11
+497165	Semkhoz	Semkhoz	Semkhoz,Семхоз	56.28333	38.06667	P	PPL	RU		47				2838		240	Europe/Moscow	2012-01-17
+497271	Semënovskoye	Semenovskoye	Semenovskoye,Semjonovskoe,Semënovskoye,Семёновское	55.68333	37.55	P	PPLX	RU		47				50000		175	Europe/Moscow	2013-04-02
+497534	Selyatino	Selyatino	Seljatino,Selyatino,Селятино	55.51514	36.97746	P	PPL	RU		47				12954		202	Europe/Moscow	2012-01-17
+499133	Saltykovka	Saltykovka	Saltykovka,Салтыковка	55.76679	37.93533	P	PPL	RU		47				4573		150	Europe/Moscow	2012-01-17
+499727	Rzhavki	Rzhavki	Bol'shie Rzhavki,Bol'shiye Rzhavki,Bol’shiye Rzhavki,Malye Rzhavki,Malyye Rzhavki,Novye Rzhavki,Novyye Rzhavki,Rzhavki,Rzjavki,Большие Ржавки,Малые Ржавки,Новые Ржавки,Ржавки	56.01629	37.22717	P	PPL	RU		47				4084		206	Europe/Moscow	2026-06-17
+500843	Rublëvo	Rublevo	Rublevo,Rubljovo,Rublëvo,Рублево,Рублёво	55.78514	37.35481	P	PPLX	RU		48				20000		151	Europe/Moscow	2023-01-10
+501012	Rozhdestveno	Rozhdestveno	Rozhdestveno,Rozhdestvino,Рождествено	55.85444	37.04935	P	PPL	RU		47				3062		184	Europe/Moscow	2012-01-17
+501187	Rostokino	Rostokino	Rostckino,Rostokino,Ростокино	55.83333	37.66667	P	PPLX	RU		48				37000		146	Europe/Moscow	2013-04-02
+501666	Rogachëvo	Rogachevo	Rogachevo,Rogachjovo,Rogachëvo,Rogatsjevo,Рогачево,Рогачёво	56.43212	37.16078	P	PPL	RU		47				3379		147	Europe/Moscow	2025-06-12
+501732	Rodniki	Rodniki	Ovrazhki-Vyalki,Rodniki,Родники	55.65204	38.06685	P	PPL	RU		47				3710		134	Europe/Moscow	2012-01-17
+502018	Reutov	Reutov	Reoutov,Reutov,Reutova,Reutovas,Reutovo,Reutow,Rieutow,Rjeutov,Rjeutow,Réutov,lie wu tuo fu,rywtwf,Реутов,Реутов балһсн,Рјеутов,رئوتوف,ريوتوف,ریوتوف,列烏托夫	55.76273	37.86303	P	PPLA2	RU		47				78370		167	Europe/Moscow	2023-07-11
+502971	Ramenki	Ramenki	Ramenka,Ramenki,Раменки	55.7	37.5	P	PPLX	RU		48				130000		179	Europe/Moscow	2013-04-02
+503226	Radumlya	Radumlya	Radomlya,Radumlja,Radumlya,Радумля	56.06901	37.14979	P	PPL	RU		47				2250		185	Europe/Moscow	2014-11-18
+503977	Pushkino	Pushkino	Poesjkino,Pouchkino,Puschkino,Pushkino,Pusjkino,Puskino,Puszkino,Puŝkino,Puşkino,Puškino,Púshkino,bwshkynw,pu xi jin nuo,pwshkynw,pwshkynw  astan mskw,Пушкино,Пушкіно,بوشكينو,پوشکینو,پوشکینو، استان مسکو,普希金諾	55.99456	37.82897	P	PPLA2	RU		47				102816		150	Europe/Moscow	2023-07-11
+504063	Purshevo	Purshevo	Purshevo,Пуршево	55.72124	38.03277	P	PPL	RU		47	579462			2055		127	Europe/Moscow	2016-03-31
+505597	Pravdinskiy	Pravdinskiy	Pravda,Pravdinskij,Pravdinskiy,Правдинский	56.06034	37.86266	P	PPL	RU		47				10372		167	Europe/Moscow	2014-11-17
+505824	Povarovo	Povarovo	Pavarovo,Povarovo,Povorovo,Поварово	56.06667	37.05	P	PPL	RU		47				7539		217	Europe/Moscow	2012-01-17
+506043	Kotlovka	Kotlovka	Imeni Likhacheva,Imeni Likhachëva,Kotlovka,Poselok ZIL,Posëlok ZIL,Котловка	55.65928	37.60404	P	PPLX	RU		48				64000		185	Europe/Moscow	2013-04-02
+506117	Annino	Annino	Anino,Annino,Estacao Annino,Estação Annino,Poselok Annin,Posëlok Annin,annino yeog,Аннино,Анніно,안니노 역	55.58333	37.6	P	PPLX	RU		48				30000		184	Europe/Moscow	2014-02-06
+507338	Pokrovskoye-Streshnëvo	Pokrovskoye-Streshnevo	Bsatsevo,Pokrovsk-Streshnevo,Pokrovsk-Streshnëvo,Pokrovsko-Streshnevo,Pokrovsko-Streshnëvo,Pokrovskoe-Streshnjovo,Pokrovskoye-Streshnevo,Pokrovskoye-Streshnëvo,Покровское-Стрешнёво	55.80797	37.45814	P	PPLX	RU		48				55000		157	Europe/Moscow	2020-06-10
+508101	Podolsk	Podolsk	OSF,Podol'sk,Podolsk,Подольск	55.42419	37.55472	P	PPL	RU		47	508091			179400		162	Europe/Moscow	2022-10-05
+508751	Ryazanskiy	Ryazanskiy	Plyushchevo,Plyushchëvo,Rjazanskij,Ryazanskiy,Рязанский	55.73333	37.76667	P	PPLX	RU		48				101000		153	Europe/Moscow	2013-04-02
+509392	Pirogovskiy	Pirogovskiy	Pirogovskij,Pirogovskiy,Пироговский	55.97806	37.73361	P	PPL	RU		47				6208		152	Europe/Moscow	2012-01-17
+509981	Petrovskaya	Petrovskaya	Petrovskaja,Petrovskaya,Петровская	55.55	37.78333	P	PPL	RU		47				30000		169	Europe/Moscow	2013-04-02
+509998	Petrovo-Dal’neye	Petrovo-Dal'neye	Petrovo-Dal'nee,Petrovo-Dal'neye,Petrovo-Dalneje,Petrovo-Dal’neye,Petrovskoye,Petrovskoye-Dal'neye,Petrovskoye-Dal’neye,Петрово-Дальнее	55.74679	37.17347	P	PPL	RU		47				2850		141	Europe/Moscow	2020-06-10
+510541	Peshki	Peshki	Peshki,Pesjki,Пешки	56.13333	37.06667	P	PPL	RU		47				1063		245	Europe/Moscow	2014-11-18
+510988	Bakhchivandzhi	Bakhchivandzhi	Bahchivandzhi,Bakhchivandzhi,Shhelkovo-4,Shhjolkovo-4,Бахчиванджи,Щелково-4,Щёлково-4	55.88333	38.08333	P	PPLL	RU		47				2000		152	Europe/Moscow	2015-02-15
+511510	Novo-Peredelkino	Novo-Peredelkino	Novo-Peredelkino,Peredelkino,Ново-Переделкино	55.64528	37.33583	P	PPL	RU		48				115536		166	Europe/Moscow	2014-06-10
+511980	Pavshino	Pavshino	Pavshino,Pavshuno,Pavsjino,Павшино	55.81667	37.35	P	PPLX	RU		47				1020		137	Europe/Moscow	2012-01-17
+512039	Pavlovskaya Sloboda	Pavlovskaya Sloboda	Pavlovskaja Sloboda,Pavlovskaja-Sloboda,Pavlovskaya Sloboda,Павловская Слобода	55.81517	37.08246	P	PPL	RU		47				5937		161	Europe/Moscow	2013-12-14
+513896	Otradnoye	Otradnoye	Otradnoe,Otradnoye,Отрадное	55.86667	37.6	P	PPLX	RU		48				18000		147	Europe/Moscow	2013-04-02
+514042	Ostrovtsy	Ostrovtsy	Ostrovcy,Ostrovtsy,Островцы	55.5875	38.00556	P	PPL	RU		47				3683		118	Europe/Moscow	2012-01-17
+514284	Ostankinskiy	Ostankinskiy	Novoostankino,Ostankino,Ostankinskij,Ostankinskiy,Pushkinskoye,Останкинский	55.82957	37.61604	P	PPLX	RU		48				60000		161	Europe/Moscow	2013-04-02
+514719	Orud’yevo	Orud'yevo	Orud'evo,Orud'yevo,Orudjevo,Orud’yevo,Орудьево	56.43333	37.53333	P	PPL	RU		47				1334		153	Europe/Moscow	2012-01-17
+515027	Orekhovo-Borisovo Severnoye	Orekhovo-Borisovo Severnoye	Orekhovo,Orekhovo-Borisovo Severnoe,Orekhovo-Borisovo Severnoye,Орехово-Борисово Северное	55.61667	37.68333	P	PPLX	RU		48	490025			128000		151	Europe/Moscow	2016-04-01
+515186	Opalikha	Opalikha	Opalikha,Опалиха	55.82593	37.25278	P	PPL	RU		47				5081		188	Europe/Moscow	2012-01-17
+515873	Oktyabr’skiy	Oktyabr'skiy	Oktjabr'skij,Oktyabr'skiy,Oktyabrsky,Oktyabr’skiy,Октябрьский	55.60806	37.97738	P	PPL	RU		47				11000		125	Europe/Moscow	2015-06-03
+516215	Odintsovo	Odintsovo	Adzincova,Odincova,Odincovas,Odincovo,Odincowo,Odintovo,Odintsovo,Odinzowo,Odințovo,ao jin zuo wo,awdynstww,awdyntswfw,odinchobo,ojintsuobo,xo din t so wo,Адзінцова,Одинтсово,Одинцово,Одинцово балһсн,أودينتسوفو,اودینتسوفو,اودینستوو,โอดินต์โซโว,オジンツォボ,奧金佐沃,오딘초보	55.66977	37.27716	P	PPLA2	RU		47				137041		186	Europe/Moscow	2023-07-11
+516264	Ochakovo-Matveyevskoye	Ochakovo-Matveyevskoye	Ochakovo,Ochakovo-Matveevskoe,Ochakovo-Matveyevskoye,Очаково-Матвеевское	55.68432	37.44654	P	PPLX	RU		48				114000		171	Europe/Moscow	2013-04-02
+517121	Novyye Kuz’minki	Novyye Kuz'minki	Novye Kuz'minki,Novyye Kuz'minki,Novyye Kuz’minki,Новые Кузьминки	55.7	37.75	P	PPLX	RU		48				143000		141	Europe/Moscow	2013-04-02
+517161	Novyye Cherëmushki	Novyye Cheremushki	Novye Cherjomushki,Novyye Cheremushki,Novyye Cherëmushki,Новые Черёмушки	55.7	37.58333	P	PPLX	RU		48				101000		160	Europe/Moscow	2013-04-02
+518337	Novopodrezkovo	Novopodrezkovo	Novopodrezkovo,Новоподрезково	55.93972	37.34417	P	PPL	RU		47				10271		190	Europe/Moscow	2012-01-17
+518657	Novokuz’minki	Novokuz'minki	Novokuz'minki,Novokuz’minki,Новокузьминки	55.71667	37.78333	P	PPLX	RU		48				50000		146	Europe/Moscow	2013-04-02
+518740	Novokhovrino	Novokhovrino	Khovrino,Novokhovrino,Novoye Khovrino,Новоховрино	55.86667	37.5	P	PPLH	RU		48				50000		171	Europe/Moscow	2016-07-13
+518805	Novoivanovskoye	Novoivanovskoye	Novoivanovski,Novoivanovskoe,Novoivanovskoye,nwwwywanwwskwy,xin yi wan nuo fu si ke ye,Новоивановски,Новоивановское,Նովոիվանովսկոե,نووویوانووسکوی,新伊万诺夫斯科耶	55.70381	37.3651	P	PPL	RU		47				5885		182	Europe/Moscow	2014-09-11
+518858	Grebnevo	Grebnevo	Grebnevo,Гребнево	55.95074	38.07973	P	PPL	RU		47	495337			1161		158	Europe/Moscow	2012-05-26
+518879	Novogireyevo	Novogireyevo	Novogireevo,Novogireyevo,Новогиреево	55.75455	37.81834	P	PPLX	RU		48	8520891			95000		158	Europe/Moscow	2026-06-17
+521416	Nikulino	Nikulino	Nikulino,Никулино	55.66943	37.46598	P	PPLH	RU		48				30000		180	Europe/Moscow	2016-04-06
+521500	Nikol’skoye	Nikol'skoye	Nikol'skoe,Nikol'skoye,Nikolskiy,Nikol’skoye,Никольское	55.68333	37.48333	P	PPLX	RU		48				50000		171	Europe/Moscow	2020-06-10
+521821	Nikolina Gora	Nikolina Gora	Nikolina Gora,Николина Гора	55.73433	37.04364	P	PPL	RU		47				7046		175	Europe/Moscow	2012-01-17
+522730	Nemchinovka	Nemchinovka	Nemchinovka,Nemchinovo,Nemtsjinovka,Немчиновка	55.72288	37.36086	P	PPL	RU		47				4938		178	Europe/Moscow	2012-01-17
+522803	Nekrasovskiy	Nekrasovskiy	Nekrasovskij,Nekrasovskiy,Некрасовский	56.08667	37.49753	P	PPL	RU		47				11740		191	Europe/Moscow	2021-06-15
+522839	Nekrasovka	Nekrasovka	Nekrasovka,Некрасовка	55.69733	37.94282	P	PPLX	RU		48				7994		120	Europe/Moscow	2026-08-10
+523090	Nazar'yevo	Nazar'yevo	Nazar'evo,Nazar’yevo,posjolok Nazar'evo,Назарьево,посёлок Назарьево	55.67417	37.04028	P	PPL	RU		47				2500		185	Europe/Moscow	2014-09-10
+523553	Nakhabino	Nakhabino	Nakhabino,Нахабино	55.84854	37.17789	P	PPL	RU		47				31715		183	Europe/Moscow	2012-01-17
+523812	Mytishchi	Mytishchi	Mitischi,Mitisci,Mitishchi,Mitishhi,Mitisi,Mitisxi,Mitiŝĉi,Mitišči,Mityiscsi,Miytisci,Motistsi,Mycishchy,Mytichtchi,Mytischtschi,Mytisci,Mytisciai,Mytishchi,Mytishhi,Mytishi,Mytisjtji,Mytisjtsji,Mytistsi,Mytiszczi,Mytištši,Mytišći,Mytišči,Mytiščiai,Mîtișci,Mõtištši,Mıtişi,Mıytişçi,maytshy,mei ji xi,mitisi,mitisichi,muitishi,muy thich chi,mytyshchy,Митишчи,Митищі,Мытищи,Мытищи балһсн,Мыцішчы,مايتشي,میتیشچی,มืยทิชชี,ムィティシ,梅季希,미티시,미티시치	55.91099	37.72964	P	PPLA2	RU		47				160542		158	Europe/Moscow	2023-07-11
+524423	Muranovo	Muranovo	Muranovo,Мураново	56.18333	37.9	P	PPL	RU		47				6500		225	Europe/Moscow	2012-01-17
+524901	Moscow	Moscow	MOW,Maeskuy,Maskav,Maskava,Maskva,Mat-xco-va,Matxcova,Matxcơva,Mosca,Moscfa,Moscha,Mosco,Moscou,Moscova,Moscovo,Moscow,Moscoƿ,Moscu,Moscua,Moscòu,Moscó,Moscù,Moscú,Moskva,Moska,Moskau,Mosko,Moskokh,Moskou,Moskov,Moskova,Moskovu,Moskow,Moskowa,Mosku,Moskua,Moskuas,Moskva,Moskvo,Moskwa,Moszkva,Muskav,Musko,Mát-xcơ-va,Mòskwa,Məskeu,Məskəү,masko,maskw,mo si ke,moseukeuba,mosko,mosukuwa,mskw,mwskva,mwskw,mwsqbh,mx s ko,Μόσχα,Мæскуы,Маскав,Масква,Москва,Москова,Москох,Москъва,Мускав,Муско,Мәскеу,Мәскәү,Մոսկուա,Մոսկվա,מאָסקװע,מאסקווע,מוסקבה,ماسکو,مسکو,موسكو,موسكۋا,ܡܘܣܩܒܐ,मास्को,मॉस्को,মস্কো,மாஸ்கோ,มอสโก,མོ་སི་ཁོ།,მოსკოვი,ሞስኮ,モスクワ,莫斯科,모스크바	55.75204	37.61781	P	PPLC	RU		48				10381222		155	Europe/Moscow	2025-09-09
+525396	Monino	Monino	Monin,Monino,Монино	55.84244	38.19362	P	PPL	RU		47				19852		153	Europe/Moscow	2012-01-17
+525510	Molokovo	Molokovo	Irininskoye,Molokovo,Молоково	55.56186	37.86492	P	PPL	RU		47	536086			3080		143	Europe/Moscow	2013-08-04
+527057	Mikhalkovo	Mikhalkovo	Mikhalkovo,Михалково	55.68333	37.43333	P	PPLX	RU		48				30000		167	Europe/Moscow	2013-04-02
+527581	Mendeleyevo	Mendeleyevo	Mendeleevo,Mendelejevo,Mendeleyevo,Менделеево	56.03333	37.21667	P	PPL	RU		47				7964		214	Europe/Moscow	2012-01-17
+527955	Medvezh’i Ozëra	Medvezh'i Ozera	Medvezh'i Ozera,Medvezh'i Ozjora,Medvezh'l Ozera,Medvezh’i Ozëra,Medvezh’l Ozera,Медвежьи Озёра	55.86935	37.98613	P	PPL	RU		47				2278		154	Europe/Moscow	2014-11-17
+528454	Matveyevskoye	Matveyevskoye	Matveevskoe,Matveyevskoye,Матвеевское	55.71112	37.47502	P	PPLX	RU		48				30000		164	Europe/Moscow	2017-03-25
+529237	Mar’ino	Mar'ino	Mar'ina,Mar'ino,Mar’ina,Mar’ino,Марьино	55.65	37.71667	P	PPLX	RU		48				243000		118	Europe/Moscow	2013-04-02
+529367	Marfino	Marfino	Marfino,Марфино	56.07237	37.55899	P	PPL	RU		47				4234		184	Europe/Moscow	2016-04-05
+529368	Marfino	Marfino	Marfino,Марфино	55.70267	37.38322	P	PPL	RU		47				3687		168	Europe/Moscow	2012-01-17
+529638	Mamontovka	Mamontovka	Mamontovka,Мамонтовка	55.98083	37.81972	P	PPL	RU		47				8817		160	Europe/Moscow	2012-01-17
+530088	Yaroslavskiy	Yaroslavskiy	Jaroslavskij,Malyye Mytishchi,Yaroslavskiy,Ярославский	55.88333	37.71667	P	PPLX	RU		48				91000		144	Europe/Moscow	2014-02-06
+531820	Malakhovka	Malakhovka	Malakhovka,Малаховка	55.64776	38.02486	P	PPL	RU		47				18399		137	Europe/Moscow	2012-01-17
+532477	Lyubuchany	Lyubuchany	Ljubuchany,Ljubutsjany,Lyubuchany,Любучаны	55.25088	37.54988	P	PPL	RU		47				3537		158	Europe/Moscow	2012-01-17
+532535	Lyublino	Lyublino	Ljublino,Lublino,Lyublino,Lyublino-Dachnoye,Люблино	55.67738	37.76005	P	PPLX	RU		48				172000		141	Europe/Moscow	2024-06-09
+532615	Lyubertsy	Lyubertsy	Lioubertsy,Liubercai,Liuberti,Liubertsi,Liubertsy,Liuberțî,Liúbertsy,Ljoebertsy,Ljuberci,Ljubercy,Ljubertso,Ljubertsy,Ljubertsõ,Ljuberzy,Luberci,Lubertsi,Lubiercy,Lyubertsi,Lyubertsy,Lyubertsı,liu bie er qi,liubertsi,lyubeleuchi,lywbartsy,lywbrtsy,lywbyrtsy,ryuberutsui,Ļuberci,Љуберци,Люберци,Люберцы,Люберці,ليوبارتسي,لیوبرتسی,لیوبیرتسی,ლიუბერცი,リュベルツィ,柳別爾齊,류베르치	55.67719	37.89322	P	PPLA2	RU		47				154650		139	Europe/Moscow	2023-07-11
+532657	Lytkarino	Lytkarino	Litkarino,Lytkarino,Lytkaryna,Lytkorino,Lîtkarino,Lıtkarino,lei te ka li nuo,lytkarynw,lytkrynw,Łytkarino,Литкарино,Литкаріно,Лыткарино,Лыткарино балһсн,Лыткарына,ليتكرينو,لیتکارینو,雷特卡里諾	55.57653	37.91245	P	PPLA2	RU		47				50619		164	Europe/Moscow	2023-07-11
+533008	L’vovskiy	L'vovskiy	L'vovskaya,L'vovskij,L'vovskiy,L'vovskoye,Lvovskij,L’vovskaya,L’vovskiy,L’vovskoye,Львовский	55.31872	37.52337	P	PPL	RU		47				11202		183	Europe/Moscow	2012-01-17
+533067	Luzhniki	Luzhniki	Luzhniki,Лужники	55.71599	37.55376	P	PPLX	RU		48				30000		161	Europe/Moscow	2013-04-02
+533651	Lugovaya	Lugovaya	Lugovaja,Lugovaya,Lugovoy,Луговая	56.05	37.48333	P	PPL	RU		47				3086		207	Europe/Moscow	2012-01-17
+533891	Lozhki	Lozhki	Loshki,Lozhki,Lozjki,Ложки	56.09387	37.10873	P	PPL	RU		47				2141		230	Europe/Moscow	2014-11-18
+534015	Losino-Petrovskiy	Losino-Petrovskiy	Losino-Petrovskij,Losino-Petrovskiy,Лосино-Петровский	55.87006	38.19318	P	PPLA2	RU		47				22116		154	Europe/Moscow	2023-07-11
+534595	Lobnya	Lobnya	Krasnaya Polyana,Lobnja,Lobnya,Лобня	56.02714	37.46793	P	PPLA2	RU		47				61772		197	Europe/Moscow	2023-07-11
+535270	Likhobory	Likhobory	Likhobory,Лихоборы	55.85	37.56667	P	PPLX	RU		48				50000		147	Europe/Moscow	2013-04-02
+535330	Lianozovo	Lianozovo	Lianozovo,Lyanosovo,Lyanozovo,Лианозово	55.89783	37.5868	P	PPLX	RU		48	579866	9881980		86000		168	Europe/Moscow	2018-11-14
+535679	Lesnyye Polyany	Lesnyye Polyany	Lesnye Poljany,Lesnyye Polyany,Лесные Поляны	55.96667	37.86667	P	PPL	RU		47				3695		168	Europe/Moscow	2012-01-17
+535695	Lesnoy Gorodok	Lesnoy Gorodok	Lesnoj Gorodok,Lesnoj Gorodokas,Lesnoy Gorodok,lie si nuo yi zhen,lznwy qwrwdwk,Лесной Городок,لزنوی قورودوک,列斯诺伊镇	55.63893	37.20829	P	PPL	RU		47				5056		201	Europe/Moscow	2012-01-17
+535741	Lesnoy	Lesnoy	Lesnoj,Lesnoy,Лесной	56.06667	37.91667	P	PPL	RU		47				8689		181	Europe/Moscow	2012-01-17
+535966	Leonovo	Leonovo	Leonovo,Леоново	55.85	37.65	P	PPLX	RU		48				30000		140	Europe/Moscow	2013-04-02
+536098	Leninskiye Gory	Leninskiye Gory	Leninskie gory,Ленинские горы	55.7	37.56667	P	PPLX	RU		47				30000		175	Europe/Moscow	2014-01-31
+536164	Tsaritsyno	Tsaritsyno	Caricino,Caricyno,Imeni Chkalova V.P.,Imeni V.P. Chkalova,Lenino,Sartino,Tsaritsyno,Tsaritsyno-Dachnoye,Tsartino,Царицино,Царицыно	55.6254	37.65032	P	PPLX	RU		48				123000		164	Europe/Moscow	2019-08-13
+536206	Yubileyny	Yubileyny	Ioubileiny,Ioubileïny,Iubileini,Jubileiny,Jubileinyi,Jubilejnaj,Jubilejni,Jubilejnij,Jubilejny,Jubilejnyj,Jubilejnyj i Moskva oblast,Yubileyniy,Yubileynıy,you bi lie yi nei,ywbylyny,ywbylyny  awblast mskw,ywbylyyny,Јубиљејни,Юбилейнай,Юбилейный,Юбілейний,Юбілейны,يوبيلييني,یوبیلینی,یوبیلینی، اوبلاست مسکو,尤比列伊內	55.93333	37.83333	P	PPL	RU		47				32508		163	Europe/Moscow	2019-09-05
+536398	Lefortovo	Lefortovo	Lefortovo,Лефортово	55.76667	37.7	P	PPLX	RU		48				91000		144	Europe/Moscow	2013-04-02
+537832	Kuz’minki	Kuz'minki	Kuz'minki,Kuz’minki,Кузьминки	55.7	37.8	P	PPLX	RU		48				143000		144	Europe/Moscow	2013-04-02
+538321	Kuskovo	Kuskovo	Kuskovo,Кусково	55.73796	37.79542	P	PPLX	RU		47				30000		149	Europe/Moscow	2026-06-17
+538472	Kur’yanovo	Kur'yanovo	Kur'janovo,Kur'yanova,Kur'yanovo,Kur’yanova,Kur’yanovo,Курьяново	55.65581	37.70094	P	PPLX	RU		48	532527	9882973		30000		122	Europe/Moscow	2026-07-13
+538836	Kurganinsk	Kurganinsk	Koerganinsk,Kourganinsk,Kurganins'k,Kurganinsk,Kurganińsk,Kurgannaja,Kurgannaya,Kurgàninsk,Kurgáninsk,Kurqaninsk,ku er jia ning si ke,kwrganynsk,kwrghannsk,Курганинск,Курганинск балһсн,Курганинськ,Курганінск,كورغاننسك,کورگانینسک,庫爾加寧斯克	44.88448	40.58893	P	PPLA2	RU		38				47681		169	Europe/Moscow	2024-09-12
+539069	Kupavna	Kupavna	Kupavna,Купавна	55.74576	38.13136	P	PPL	RU		47				11000		143	Europe/Moscow	2012-12-20
+539110	Kuntsevo	Kuntsevo	Kuncevo,Kuncewo,Kuncjovo,Kuntsevo,Kuntsevo Destrict,Kuntsevo District,Kunzewo,Кунцево,Кунцёво	55.74216	37.40225	P	PPLX	RU		48				147497		181	Europe/Moscow	2026-04-16
+540834	Krivtsovo	Krivtsovo	Krivcovo,Krivtsovo,Кривцово	56.15	36.88333	P	PPL	RU		47				2063		195	Europe/Moscow	2018-10-14
+541286	Kratovo	Kratovo	Kratovo,Кратово	55.59728	38.17743	P	PPL	RU		47				6799		144	Europe/Moscow	2012-01-17
+541406	Biryulëvo Zapadnoye	Biryulevo Zapadnoye	Birjuljovo Zapadnoe,Biryulevo Zapadnoye,Biryulëvo Zapadnoye,Krasny Stroitel',Krasny Stroitel’,Krasnyj Stroitel',Krasnyy Stroitel',Krasnyy Stroitel’,Бирюлёво Западное,Красный Строитель	55.58726	37.64579	P	PPLX	RU		48				89000		185	Europe/Moscow	2026-07-13
+542287	Golovinskiy	Golovinskiy	Golovinskiy,Krasnooktjabr'skij,Krasnooktyabr'skiy,Krasnooktyabr’skiy,Краснооктябрьский	55.85381	37.49604	P	PPLX	RU		48				10000		155	Europe/Moscow	2013-04-02
+542374	Krasnogorsk	Krasnogorsk	Ban'ki,Ban’ki,Krasnogors'k,Krasnogorsk,Krasnogorsk i Moskva oblast,Krasnogorska,Krasnoqorsk,ke la si nuo ge er si ke,keulaseunogoleuseukeu,krasnwghwrsk,krasnwgwrsk,krasnwgwrsk  mskw,kurasunogorusuku,Красногорск,Красногорск балһсн,Красногорськ,كراسنوغورسك,کراسنوگورسک,کراسنوگورسک، مسکو,クラスノゴルスク,克拉斯諾戈爾斯克,크라스노고르스크	55.81904	37.32984	P	PPLA2	RU		47				92932		164	Europe/Moscow	2023-07-11
+542463	Krasnoarmeysk	Krasnoarmeysk	Krasnoarmeisk,Krasnoarmejsk,Krasnoarmejsk i Moskva oblast,Krasnoarmeysk,Krasnoarmeyskiy,Krasnoarmeïsk,Krasnoarmiejsk,Krasnoarmijs'k,hong jun cheng,keulaseunoaleumeiseukeu,krasnwarmysk,krasnwarmysk  astan mskw,krasnwarmyysk,kurasunoarumeisuku,Красноармейск,Красноармейск балһсн,Красноармејск,Красноармійськ,كراسنوارميسك,کراسنوآرمیئسک,کراسنوارمیسک، استان مسکو,クラスノアルメイスク,紅軍城,크라스노아르메이스크	56.1	38.13333	P	PPL	RU		47				25688		156	Europe/Moscow	2012-04-04
+542634	Presnenskiy	Presnenskiy	Krasnaja Presnja,Krasnaya Presnya,Presnenskij,Presnenskiy,Красная Пресня,Пресненский	55.75894	37.55816	P	PPLX	RU		48				122000		164	Europe/Moscow	2026-06-17
+542841	Kraskovo	Kraskovo	Kraskovo,Красково	55.658	37.98	P	PPL	RU		47				11832		137	Europe/Moscow	2025-02-03
+543254	Kozhukhovo	Kozhukhovo	Kozhukhovo,Кожухово	55.70601	37.67563	P	PPLX	RU		48				50000		124	Europe/Moscow	2026-06-17
+543344	Kozeyevo	Kozeyevo	Kozeevo,Kozeyevo,Козеево	55.86667	37.61667	P	PPLX	RU		48				50000		148	Europe/Moscow	2013-04-02
+543731	Kotel’niki	Kotel'niki	Kotel'niki,Kotel`nika,Kotelniki,Kotel’niki,Котельники	55.65384	37.86234	P	PPLA2	RU		47				18300		140	Europe/Moscow	2023-07-11
+543948	Kostino	Kostino	Kostino,Костино	56.03333	37.91667	P	PPL	RU		47				3000		186	Europe/Moscow	2012-07-23
+544904	Korenëvo	Korenevo	Korenevo,Korenjovo,Korenëvo,Коренёво	55.67194	38.00778	P	PPL	RU		47				5555		132	Europe/Moscow	2026-07-02
+545078	Koptëvo	Koptevo	Koptevo,Koptjovo,Koptëvo,Коптёво	55.833	37.522	P	PPLX	RU		47				9700		169	Europe/Moscow	2024-06-21
+545782	Kommunarka	Kommunarka	Kommunarka,Sovkhoz Kommunarka,Коммунарка,Совхоз Коммунарка	55.56931	37.49027	P	PPL	RU		48				4684		193	Europe/Moscow	2026-07-13
+546244	Kolomenskoye	Kolomenskoye	Kolomenskoe,Kolomenskoye,Коломенское	55.66667	37.68333	P	PPLX	RU		48				30000		120	Europe/Moscow	2013-04-02
+546606	Kokoshkino	Kokoshkino	Kokoshkino,Kokoshkinskiy,Кокошкино	55.59913	37.17114	P	PPL	RU		48	8520892			9818		195	Europe/Moscow	2026-08-10
+547560	Klimovsk	Klimovsk	Klimausk,Klimovs'k,Klimovsk,Klimovska,Klimovskaj,Klimovskas,Klimovskiy,Klimowsk,Kļimovska,ke li mo fu si ke,klymwfsk,klymwwsk,kurimofusuku,Климовск,Климовск балһсн,Климовскай,Климовськ,Клімаўск,كليموفسك,کلیموفسک,کلیمووسک,クリモフスク,克利莫夫斯克	55.36352	37.52984	P	PPL	RU		47				55206		176	Europe/Moscow	2019-09-05
+549373	Khot'kovo	Khot'kovo	Khot'kovo,Хотьково	56.25699	37.99544	P	PPL	RU		47				20872		200	Europe/Moscow	2008-05-07
+549479	Khoroshëvo-Mnevniki	Khoroshevo-Mnevniki	Khoroshevo,Khoroshevo-Mnevniki,Khoroshjovo,Khoroshjovo-Mnjovniki,Khoroshëvo,Khoroshëvo-Mnevniki,Хорошёво,Хорошёво-Мнёвники	55.78363	37.47137	P	PPLX	RU		48				159000		148	Europe/Moscow	2026-06-17
+550280	Khimki	Khimki	Chimkai,Chimki,Himki,Jimki,Khimki,Moskau-Chimki,SVO,Ximki,himki,himuki,hymqy,khymky,xi mu ji,Ĥimki,Химки,Химки балһсн,Хімки,Хімкі,Խիմկի,חימקי,خيمكي,خیمکی,ヒムキ,希姆基,힘키	55.9001	37.42848	P	PPLA2	RU		47	550279			239967		186	Europe/Moscow	2026-04-04
+551835	Kastanayevo	Kastanayevo	Kastanaevo,Kastanayevo,Кастанаево	55.71667	37.5	P	PPLX	RU		47				20000		134	Europe/Moscow	2013-04-02
+553034	Kapotnya	Kapotnya	Kapotnja,Kapotnya,Капотня	55.63806	37.79306	P	PPLX	RU		48				29594		140	Europe/Moscow	2013-04-02
+553399	Kamensk-Shakhtinsky	Kamensk-Shakhtinsky	Kamensk,Kamensk-Sahtinski,Kamensk-Schachtinski,Kamensk-Shakhtinskij,Kamensk-Shakhtinskiy,Kamensk-Shakhtinsky,Kamensk-Šahtinski,Kamenskaya,Каменск,Каменск-Шахтинский	48.31779	40.25948	P	PPLA2	RU		61				75814		57	Europe/Moscow	2023-06-04
+554233	Korolev	Korolev	Kaliningrad,Kalininskiy,Karaljou,Korol'ov,Korolev,Koroliov,Koroliovas,Koroljov,Koroljov balһsn,Koroljow,Korolov,Korolova,Korolow,Korolyov,Korolëv,Koroļova,karwlyw,ke luo liao fu,kolollyopeu,kororyofu,kwrwlywf,kwrwlyww,qwrwlywb,Калининград,Каралёў,Королев,Корольов,Королёв,Королёв балһсн,Корољов,קורוליוב,كوروليوف,کارولیو,کورولیوف,کورولیوو,コロリョフ,科羅廖夫,코롤료프	55.91417	37.82556	P	PPLA2	RU		47	8521441			139798		161	Europe/Moscow	2019-01-18
+554787	Izmaylovo	Izmaylovo	Izmajlovo,Izmaylovo,Измайлово	55.7966	37.78242	P	PPLX	RU		48				104000		163	Europe/Moscow	2026-06-17
+555111	Ivanteyevka	Ivanteyevka	Ivanteevka,Ivantejevka,Ivanteyevka,Ivanteyevskiy,Iwantejewka,Ивантеевка	55.97111	37.92083	P	PPL	RU		47				51085		140	Europe/Moscow	2023-06-04
+555129	Ivanovskoye	Ivanovskoye	Ivanovskoe,Ivanovskoye,Ивановское	55.76667	37.83333	P	PPLX	RU		48	8520891			128000		156	Europe/Moscow	2016-04-01
+555746	Istra	Istra	Istra,Voskresensk,iseuteula,yi si te la,Истра,伊斯特拉,이스트라	55.91979	36.86876	P	PPLA2	RU		47				33390		175	Europe/Moscow	2023-07-11
+557140	Il’inskiy	Il'inskiy	Il'inskij,Il'inskiy,Il'inskoye,Il’inskiy,Il’inskoye,Ильинский	55.61902	38.11818	P	PPL	RU		47				8284		134	Europe/Moscow	2012-01-17
+557382	Iksha	Iksha	Iksa,Iksha,Iksja,Iksza,Ikŝa,Ikša,ayksha  rwsyh,yi ke sha,İkşa,Ікша,Икша,ایکشا، روسیه,伊克沙	56.17292	37.50297	P	PPL	RU		47				3707		174	Europe/Moscow	2025-12-15
+559853	Gorki Vtoryye	Gorki Vtoryye	Gorki Vtorye,Gorki Vtoryye,Gorki-2,Горки Вторые,Горки-2	55.72565	37.1635	P	PPL	RU		47				2966		159	Europe/Moscow	2012-04-26
+559862	Gorki-Leninskiye	Gorki-Leninskiye	Gorki Leninskie,Gorki Leninskije,Gorki-Leninskie,Gorki-Leninskiye,Leninskiye Gorki,Sovkhoz Gorki-Leninskiye,Горки Ленинские,Горки-Ленинские	55.50855	37.77618	P	PPL	RU		47	536086			1715		166	Europe/Moscow	2017-04-08
+560465	Gol’yanovo	Gol'yanovo	Gol'janovo,Gol'yanovo,Gol’yanovo,Гольяново	55.82299	37.81306	P	PPLX	RU		48				158000		157	Europe/Moscow	2013-04-02
+560756	Golitsyno	Golitsyno	Galicyna,Golicino,Golicyno,Golitino,Golitsino,Golitsyno,Golizyno,Golițîno,Golytsyno,ge li qi nuo,ghwlytsynw,gollichino,gwltsynw,gwlytsynw,Галіцына,Голитсино,Голицино,Голицыно,Голіцино,غوليتسينو,گولتسینو,گولیتسینو,戈利齊諾,골리치노	55.60928	36.98212	P	PPL	RU		47				16056		183	Europe/Moscow	2019-09-05
+562319	Fryazino	Fryazino	Frjasino,Frjazino,Fryazino,Фрязино	55.96131	38.04643	P	PPLA2	RU		47				52255		169	Europe/Moscow	2023-07-11
+562625	Firsanovka	Firsanovka	Firsanovka,Firsanovskiy,Фирсановка	55.95361	37.24083	P	PPL	RU		47				2824		200	Europe/Moscow	2012-01-17
+562814	Filimonki	Filimonki	Filimonki,Филимонки	55.55789	37.3475	P	PPL	RU		48				1329		160	Europe/Moscow	2026-07-13
+562820	Fili	Fili	Fili,Фили	55.74543	37.48837	P	PPLX	RU		48				80000		143	Europe/Moscow	2026-06-17
+562960	Fedurnovo	Fedurnovo	Fedurnovo,Федурново	55.75488	38.04696	P	PPL	RU		47	579462			1814		140	Europe/Moscow	2016-03-31
+563522	Elektrougli	Elektrougli	Ehlektravugli,Ehlektrougli,Elektroiugli,Elektroougli,Elektrouegli,Elektrougli,Elektrouqli,Elektroügli,ai lie ke te luo wu ge li,alktrwgly,alyktrwawgly,aylyktrwghly,erekutorouguri,yellegteulougeulli,Ėlektrougli,Електроугли,Електроуглі,Электравуглі,Электроугли,Электроугли балһсн,إيليكتروغلي,الکتروگلی,الیکترواوگلی,エレクトロウグリ,埃列克特羅烏格利,옐렉트로우글리	55.72445	38.20908	P	PPL	RU		47				20000		145	Europe/Moscow	2019-09-05
+563705	Dzerzhinskiy	Dzerzhinskiy	Dzerzhinskij,Dzerzhinskiy,Dzerzjinskij,Дзержинский	55.62868	37.8443	P	PPLA2	RU		47				41146		164	Europe/Moscow	2023-07-11
+564517	Dubrovitsy	Dubrovitsy	Dubrovicy,Dubrovitsy,Sovkhoz Dubrovitsy,Дубровицы	55.43969	37.4867	P	PPL	RU		47				5000		143	Europe/Moscow	2012-01-17
+564912	Druzhba	Druzhba	Druzhba,Дружба	55.88603	37.74267	P	PPL	RU		47				4058		163	Europe/Moscow	2012-01-17
+565197	Dorogomilovo	Dorogomilovo	Dorogomilovo,Дорогомилово	55.7418	37.54706	P	PPLX	RU		48				68000		144	Europe/Moscow	2026-06-17
+565381	Domodedovo	Domodedovo	DME,Damadzedava,Domodedova,Domodedovas,Domodedovo,Domodedowo,Domodidove,Domodiedowo,Domodédovo,Domodědovo,domodedobo,domojedovuo,duo mo jie duo wo,dwmwddwfw,dwmwdydwfw,dwmwdydww,Дамадзедава,Домодедово,Домодедово балһсн,Домодєдово,Домодідове,دوموددوفو,دوموديدوفو,دومودیدوو,ドモジェドヴォ,多莫傑多沃,도모데도보	55.44223	37.75372	P	PPLA2	RU		47	565379			53887		167	Europe/Moscow	2026-04-04
+565614	Dolgoprudnyy	Dolgoprudnyy	Dolgoprodnyy,Dolgoprudni,Dolgoprudny,Dolgoprudnyi,Dolgoprudnyj,Dolgoprudnyy,Dolgoprudyy,Долгопрудный	55.94958	37.50183	P	PPL	RU		47				68259		173	Europe/Moscow	2023-05-28
+565955	Dmitrov	Dmitrov	Demitriovia,Dmitrov,Dmitrow,Dmítrov,Dzmitrau,de mi te luo fu,deumiteulopeu,dmitrov,dmtrwf,dmytrwf,domitorofu,dymytrwf,Дзмітраў,Дмитров,Дмитров балһсн,دمتروف,دميتروف,دیمیتروف,ドミトロフ,德米特罗夫,드미트로프	56.34485	37.52041	P	PPL	RU		47				61607		138	Europe/Moscow	2023-06-11
+566854	Dedovsk	Dedovsk	Dedovo,Dedovs'k,Dedovsk,Dedovskaj,Dedovskiy,Dedowsk,Diedowsk,Dzedausk,Dédovsk,ddwfsk,dedobseukeu,dedofusuku,dydwfsk,dykwwsk,jie duo fu si ke,Дедовск,Дедовск балһсн,Дедовскай,Дзедаўск,Дєдовськ,ددوفسک,ديدوفسك,دیکووسک,デドフスク,傑多夫斯克,데돕스크	55.86861	37.12222	P	PPL	RU		47				27001		192	Europe/Moscow	2019-09-05
+566891	Dedenëvo	Dedenevo	Dedenevo,Dedenjovo,Dedenëvo,Деденёво	56.24283	37.51769	P	PPL	RU		47				6455		168	Europe/Moscow	2014-02-06
+566976	Davydkovo	Davydkovo	Davydkovo,Давыдково	55.71815	37.47271	P	PPLX	RU		48				30000		136	Europe/Moscow	2013-04-02
+567896	Chkalovskiy	Chkalovskiy	CKL,Chkalovskaya,Chkalovskij,Chkalovskiy,Shhelkovo-3,Shhjolkovo-3,Чкаловский,Щелково-3,Щёлково-3	55.89534	38.07763	P	PPLX	RU		47				3000		157	Europe/Moscow	2017-01-21
+569077	Chornoye	Chornoye	Chernoe,Chernoye,Chjornoe,Chornoye,Chërnoye,Черное,Чёрное	55.74611	38.06889	P	PPL	RU		47	579462			4047		137	Europe/Moscow	2018-08-27
+569144	Cherkizovo	Cherkizovo	Cherkizovo,Tekstil'shchiki,Tekstil’shchiki,Tsjerkizovo,Черкизово	55.97583	37.7875	P	PPL	RU		47				3439		157	Europe/Moscow	2012-01-17
+569273	Cherëmushki	Cheremushki	Cheremushki,Cherjomushki,Cherëmushki,Черёмушки	55.66473	37.56135	P	PPLA3	RU		48	562221	9883012		106587		190	Europe/Moscow	2016-04-03
+569841	Chashnikovo	Chashnikovo	Chashnikovo,Tsjasjnikovo,Чашниково	56.03333	37.16667	P	PPL	RU		47				3300		213	Europe/Moscow	2017-09-04
+570298	Bykovo	Bykovo	Bykovo,Быково	55.63614	38.08027	P	PPL	RU		47				10700		136	Europe/Moscow	2014-06-30
+570300	Bykovo	Bykovo	Bykovo,Быково	55.62075	38.0797	P	PPL	RU		47				1721		133	Europe/Moscow	2014-07-08
+571719	Bratovshchina	Bratovshchina	Bratovshchina,Bratovshhina,Bratovsjtsjina,Братовщина	56.05	37.88333	P	PPL	RU		47				1394		157	Europe/Moscow	2016-07-16
+571741	Brateyevo	Brateyevo	Bratyevo,Brateevo,Brateyevo,Brat”yevo,Братеево	55.63755	37.76438	P	PPLX	RU		48	490025			102000		119	Europe/Moscow	2016-04-01
+572449	Orekhovo-Borisovo Yuzhnoye	Orekhovo-Borisovo Yuzhnoye	Orekhovo-Borisovo Juzhnoe,Orekhovo-Borisovo Yuzhnoye,Орехово-Борисово Южное	55.63333	37.73333	P	PPLA3	RU		48	490025	9883008		0		131	Europe/Moscow	2016-04-03
+573922	Bol'shiye Vyazëmy	Bol'shiye Vyazemy	Bol'shie Vjazjomy,Большие Вязёмы	55.62058	36.9762	P	PPL	RU		47				4876		183	Europe/Moscow	2010-07-16
+574307	Bolshevo	Bolshevo	Bolshevo,Болшево	55.93486	37.83002	P	PPLX	RU		47				10133		159	Europe/Moscow	2014-10-05
+574675	Bol’shaya Setun’	Bol'shaya Setun'	Bol'shaja Setun',Bol'shaya Setun',Bol’shaya Setun’,Большая Сетунь	55.71667	37.41667	P	PPLX	RU		47				20000		144	Europe/Moscow	2013-04-02
+575505	Bogorodskoye	Bogorodskoye	Bogorodskoe,Bogorodskoye,Богородское	55.81396	37.72117	P	PPLX	RU		48	8520891	9882949		103000		144	Europe/Moscow	2026-06-17
+575897	Bobrovo	Bobrovo	Bobrovo,Боброво	55.5275	37.615	P	PPL	RU		47				14991		157	Europe/Moscow	2024-04-15
+576279	Biryulëvo	Biryulevo	Birjuljovo,Biryulevo,Biryulëvo,Бирюлёво	55.58635	37.67781	P	PPLX	RU		48				144000		175	Europe/Moscow	2013-04-02
+576432	Bibirevo	Bibirevo	Bibirevo,Бибирево	55.88333	37.6	P	PPLX	RU		48				159000		155	Europe/Moscow	2018-11-14
+577551	Belyye Stolby	Belyye Stolby	Belye Stolby,Belyye Stolby,Белые Столбы	55.33136	37.854	P	PPL	RU		47				5563		176	Europe/Moscow	2012-01-17
+578940	Barybino	Barybino	Barybino,Boribino,Барыбино	55.26768	37.89333	P	PPL	RU		47				5000		173	Europe/Moscow	2015-01-12
+578953	Barvikha	Barvikha	Barvikha,Барвиха	55.74212	37.27926	P	PPL	RU		47				4193		146	Europe/Moscow	2012-01-17
+579464	Balashikha	Balashikha	Balachikha,Balaschicha,Balashikha,Balashikhae,Balashikhe,Balashykha,Balasicha,Balasiha,Balasihha,Balasixa,Balasjicha,Balasjikha,Balaszycha,Balaŝiĥa,Balaşiha,Balaşixa,Balašicha,Balašiha,Balašihha,Balașiha,Balishikha,Bałaszycha,ba la xi ha,balashyka,balashykha,ballasiha,barashiha,Балашихæ,Балашиха,Балашихе,Балашыха,بالاشيكا,بالاشیخا,バラシハ,巴拉希哈,발라시하	55.79479	37.94794	P	PPLA2	RU		47				150103		136	Europe/Moscow	2023-07-11
+579870	Babushkin	Babushkin	Babushkin,Babusjkin,Losinoostrovskaya,Бабушкин	55.86931	37.72966	P	PPLX	RU		48				86000		158	Europe/Moscow	2013-04-02
+580597	Ashukino	Ashukino	Ashchukino,Ashukino,Ashukinskiy,Ашукино	56.16667	37.95	P	PPL	RU		47				6310		191	Europe/Moscow	2013-08-07
+580994	Arkhangel’skoye	Arkhangel'skoye	Arkhangel'skoe,Arkhangel'skoye,Arkhangelskoje,Arkhangel’skoye,Poselok Arkhangel'skoye,Posëlok Arkhangel’skoye,Архангельское	55.78791	37.29984	P	PPL	RU		47				3600		159	Europe/Moscow	2012-01-17
+581321	Aprelevka	Aprelevka	Aprehleuka,Aprelevka,Aprelewka,Aprielewka,Aprjelewka,Aprélevka,a pu lei lie fu ka,abrylyfka,apeulellebka,aprlfka,aprylfka,aprylywka,apurerefuka,Апрелевка,Апрелевка балһсн,Апрелєвка,Апрељевка,Апрэлеўка,آپرلفکا,أبريليفكا,اپریلفکا,اپریلیوکا,アプレレフカ,阿普雷列夫卡,아프렐렙카	55.55194	37.0801	P	PPL	RU		47	523425			17780		199	Europe/Moscow	2019-09-05
+581928	Andreyevskoye	Andreyevskoye	Andreevskoe,Andrejevskoje,Andreyevka,Andreyevskaya,Andreyevskoye,Андреевское	55.55487	37.92566	P	PPL	RU		47				20000		129	Europe/Moscow	2013-04-02
+582001	Andreyevka	Andreyevka	Andreevka,Andrejevka,Andreyevka,Андреевка	55.98028	37.135	P	PPL	RU		47				8395		218	Europe/Moscow	2012-01-17
+582266	Amin’yevo	Amin'yevo	Amin'evo,Amin'yevo,Aminjevo,Amin’yevo,Аминьево	55.7	37.46667	P	PPLX	RU		48				30000		164	Europe/Moscow	2013-04-02
+582846	Alekseyevka	Alekseyevka	Alekseevka,Aleksejevka,Alekseyevo,Алексеевка	55.63	37.8	P	PPLX	RU		47				78000		142	Europe/Moscow	2013-04-02
+583491	Alabushevo	Alabushevo	Alabushevo,Alabusjevo,Алабушево	56.01667	37.15	P	PPL	RU		47				2733		224	Europe/Moscow	2012-01-17
+583589	Levoberezhnyy	Levoberezhnyy	Aksin'ino,Aksinino,Aksin’ino,Levoberezh'ye,Levoberezhnaja,Levoberezhnaya,Levoberezhnyj,Levoberezhnyy,Levoberezh’ye,Аксиньино,Левобережная,Левобережный	55.86477	37.47342	P	PPLX	RU		48				52000		174	Europe/Moscow	2026-06-17
+817525	Il’inskoye	Il'inskoye	Il'inskoe,Il'inskoye,Il’inskoye,Ильинское	55.24917	37.95805	P	PPL	RU		47				4320		172	Europe/Moscow	2015-01-12
+819552	Annino	Annino	Annino,Аннино	55.58264	37.26223	P	PPLQ	RU		48				30000		187	Europe/Moscow	2026-07-14
+819740	Drozhzhino	Drozhzhino	Drozhzhino,Дрожжино	55.52376	37.58948	P	PPL	RU		47	536086			32345		166	Europe/Moscow	2026-07-14
+819827	Razvilka	Razvilka	Razvilka,Развилка	55.59209	37.74085	P	PPL	RU		47				8701		175	Europe/Moscow	2012-01-19
+857689	Vnukovo	Vnukovo	Vnukovo,Внуково	55.61194	37.29611	P	PPL	RU		48	490968	473021		20000		190	Europe/Moscow	2016-04-29
+857690	Moskovskiy	Moskovskiy	Moskovskij,Moskovskiy,Московский	55.5991	37.3552	P	PPL	RU		48	8520892			15435		185	Europe/Moscow	2026-07-14
+857691	Zhitnevo	Zhitnevo	Zhitnevo,Zjitnevo,Житнево	55.34233	37.91464	P	PPL	RU		47				3193		152	Europe/Moscow	2012-01-20
+1484889	Zyuzel’skiy	Zyuzel'skiy	Ziuzelskij,Zjuzel'skij,Zyuzel'skiy,Zyuzel’skiy,Зюзельский	56.4856	60.1331	P	PPL	RU		71				1300		402	Asia/Yekaterinburg	2012-01-17
+1485193	Zheleznodorozhnyy	Zheleznodorozhnyy	Zheleznodorozhnyj,Zheleznodorozhnyy,Железнодорожный	55.10183	61.54926	P	PPL	RU		13				7337		223	Asia/Yekaterinburg	2012-12-05
+1485389	Zaural’skiy	Zaural'skiy	Yemanzhelinskaya,Zaural'skij,Zaural'skiy,Zauralskij,Zaural’skiy,Зауральский	54.7855	61.2421	P	PPL	RU		13				6878		261	Asia/Yekaterinburg	2024-04-15
+1485849	Yetkul’	Yetkul'	Etkul',Jetkul,Yetkul',Yetkul’,Еткуль	54.8231	61.5838	P	PPLA2	RU		13				6163		230	Asia/Yekaterinburg	2025-02-18
+1486039	Yemanzhelinsk	Yemanzhelinsk	Emanzelinsk,Emanzhalinsk,Emanzhelinka,Emanzhelins'k,Emanzhelinsk,Emanzhelinskij,Emanželinsk,Iemanjelinsk,Jamanuelga,Jemanjelinsk,Jemanschelinsk,Jemanzelinsk,Jemanzhelinsk,Jemanzjelinsk,Jemanĵelinsk,Jemanželinsk,Yemanjelinsk,Yemanzhelinka,Yemanzhelinsk,Yemanzhelinskiy,ye man re lin si ke,ymanzhlynsk,ymnjlnsk,Єманжелинськ,Јеманжелинск,Еманжалінск,Еманжелинка,Еманжелинск,Еманжелинский,Яманъелга,يمنجلنسك,یمانژلینسک,葉曼熱林斯克	54.75472	61.32083	P	PPL	RU		13	1535934			29849		232	Asia/Yekaterinburg	2019-09-05
+1486040	Yemanzhelinka	Yemanzhelinka	Emanzhelinka,Emanzhelinsk,Jemanzjelinsk,Yemanzhelinka,Yemanzhelinskiy,Еманжелинка,Еманжелинск	54.801	61.2989	P	PPL	RU		13				4117		240	Asia/Yekaterinburg	2014-06-27
+1486164	Yelanskiy	Yelanskiy	Elanskij,Jelanskij,Yelanskiy,Еланский	56.8419	62.5014	P	PPL	RU		71				8653		114	Asia/Yekaterinburg	2012-01-17
+1486209	Yekaterinburg	Yekaterinburg	Catharinoburgum,Ekaterimburgo,Ekaterinbourg,Ekaterinburg,Ekaterinburgo,Ekatěrinburg,Jekaterinburg,Jekaterinburga,Jekaterinburgas,Jekaterinenburg,Jekaterynburg,Jekatyerinburg,SVX,Sverdlovsk,Sverolovsk,Yekaterinburg,Yekaterinburq,ekaterinburuku,iyekaterinabarga,ye ka jie lin bao,yekatelinbuleukeu,yekaterinabaraga,yekaterinabarga,ykatrnbrg,ykatrynbrg,ykatrynbrj,yqtrynbwrg,ʿikateriniburiግ,Екатеринбург,Свердловск,יקטרינבורג,يكاترينبرج,یکاترنبرگ,یکاترینبرگ,येकातेरिनबर्ग,ইয়েকাটেরিনবার্গ,ਯੇਕਾਤੇਰਿਨਬਰਗ,ኢካተሪንቡርግ,エカテリンブルク,葉卡捷琳堡,예카테린부르크	56.85733	60.61529	P	PPLA	RU		71				1495066		278	Asia/Yekaterinburg	2026-04-14
+1486677	Vvedenskoye	Vvedenskoye	Vvedenskoe,Vvedenskoye,Vvednskoe,Введенское,Введнское	55.47426	65.08449	P	PPL	RU		40				3895		94	Asia/Yekaterinburg	2012-07-04
+1487260	Verkhnyaya Sysert’	Verkhnyaya Sysert'	Verkhne Sysertskiy,Verkhnjaja Sysert,Verkhnjaja Sysert',Verkhnyaya Sysert',Verkhnyaya Sysert’,Верхняя Сысерть	56.44012	60.75563	P	PPL	RU		71				1115		248	Asia/Yekaterinburg	2020-06-10
+1487281	Verkhnyaya Pyshma	Verkhnyaya Pyshma	Aukstutine Pysma,Aukštutinė Pyšma,Jugary Pyshma,Pyshma,Turi Pyshma,Verchniagia Pisma,Verchnjaja Pysjma,Verchnjaja Pysma,Verchnjaja Pyšma,Verhnjaja Pisma,Verhnjaja Pišma,Verhnjaja Posma,Verhnjaja Pysma,Verhnjaja Pyšma,Verhnjaja Põšma,Verkhnaja Pishma,Verkhniaia Pychma,Verkhniaïa Pychma,Verkhnja Pishma,Verkhnjaja Pishma,Verkhnjaja Pyshma,Verkhnjaja Pysjma,Verkhnyaya Pyshma,Verxnyaya Pisma,Verxnyaya Pışma,Verĥnjaja Piŝma,Werchnjaja Pyschma,Wierchniaja Pyszma,Wjerchnjaja Pysma,Wjerchnjaja Pyšma,beleuheunyayapisima,fyrkhnyaya byshma,shang pei shen ma,wrkhnyaya pyshma,wrkhnyya pyshma,Βέρχνιαγια Πησμά,Верхня Пишма,Верхняя Пишма,Верхняя Пышма,Верхњаја Пишма,Пышма,Тури Пышмă,Югары Пышма,فيرخنيايا بيشما,ورخنیایا پیشما,ورخنییا پیشما,上佩什馬,베르흐냐야피시마	56.97047	60.58219	P	PPLA2	RU		71				59061		276	Asia/Yekaterinburg	2024-04-20
+1487504	Verkh-Neyvinskiy	Verkh-Neyvinskiy	Verkhne-Neivinsk,Verkhne-Neyvinskiy,Verkhneivinsk,Verkhniye-Nevinsk	57.27013	60.13762	P	PPL	RU		71				5156		303	Asia/Yekaterinburg	2009-03-09
+1487520	Verkhneye Dubrovo	Verkhneye Dubrovo	Dubrovinskiy,Verkhnee Dubrovo,Verkhneje Dubrovo,Verkhneye Dubrovo,Верхнее Дуброво	56.75689	61.05313	P	PPL	RU		71				4596		265	Asia/Yekaterinburg	2024-04-20
+1487783	Vargashi	Vargashi	Vargashi,Vargasi,Vargasji,Варгаши	55.37564	65.81072	P	PPLA2	RU		40				0		158	Asia/Yekaterinburg	2025-02-18
+1487784	Vargashi	Vargashi	Vargashi,Vargasji,Варгаши	55.35556	65.84667	P	PPL	RU		40				9728		148	Asia/Yekaterinburg	2014-06-27
+1487839	Vakhrushevo	Vakhrushevo	Vakhrushevo,Вахрушево	55.2317	61.7173	P	PPL	RU		13				4152		196	Asia/Yekaterinburg	2012-01-17
+1488258	Ust’-Bagaryak	Ust'-Bagaryak	Nizhnyaya,Ust'-Bagarjak,Ust'-Bagaryak,Ust-Bagarjak,Ust’-Bagaryak,Усть-Багаряк	56.13278	61.84722	P	PPL	RU		13				3400		130	Asia/Yekaterinburg	2020-06-10
+1490277	Talitsa	Talitsa	Talica,Talitsa,Талица	56.8804	60.0213	P	PPLX	RU		71				19100		332	Asia/Yekaterinburg	2012-01-17
+1490402	Sysert’	Sysert'	Sysert,Sysert',Sysert’,Сысерть	56.50171	60.81978	P	PPLA2	RU		71				21942		240	Asia/Yekaterinburg	2024-04-20
+1490686	Sukhoy Log	Sukhoy Log	Sukhoj Log,Sukhoy Log,Сухой Лог	56.90832	62.03433	P	PPLA2	RU		71				36329		161	Asia/Yekaterinburg	2024-04-20
+1490962	Staropyshminsk	Staropyshminsk	Pyshminskiy,Staropyshminsk,Staropysjminsk,Старопышминск	56.93867	60.90295	P	PPL	RU		71				1679		225	Asia/Yekaterinburg	2012-01-17
+1491159	Sredneuralsk	Sredneuralsk	Sjarehdnjaural'sk,Sredneoeralsk,Sredneouralsk,Sredneural's'k,Sredneural'sk,Sredneuralsk,Srednjeuralsk,Srentneouralsk,Sriednieuralsk,asrdnywralsk,srydnwralsk,zhong wu la er si ke,Σρεντνεουράλσκ,Среднеуралск,Среднеуральск,Средњеураљск,Срєднєуральськ,Сярэдняўральск,اسردنئورالسک,سريدنورالسك,中烏拉爾斯克	56.98921	60.46662	P	PPL	RU		71				20169		277	Asia/Yekaterinburg	2019-09-05
+1491215	Sovkhoznyy	Sovkhoznyy	Sovkhoznyj,Sovkhoznyy,Совхозный	56.5599	61.426	P	PPL	RU		71				3546		227	Asia/Yekaterinburg	2012-01-17
+1492142	Shirokaya Rechka	Shirokaya Rechka	Shirokaja Rechka,Shirokaya Rechka,Sjirokaja-Retsjka,Широкая Речка	56.79858	60.48522	P	PPL	RU		71				1131		274	Asia/Yekaterinburg	2012-01-17
+1492342	Shchelkun	Shchelkun	Shchelkun,Shchelkunskoye,Shhelkun,Sjtsjelkun,Щелкун	56.30338	60.94831	P	PPL	RU		71				3044		262	Asia/Yekaterinburg	2012-01-17
+1492536	Shabrovskiy	Shabrovskiy	Pereskachka,Shabrovskij,Shabrovskiy,Sjabrovskij,Шабровский	56.63597	60.58065	P	PPL	RU		71				3868		321	Asia/Yekaterinburg	2012-01-17
+1492637	Severka	Severka	Severka,Северка	56.8688	60.3015	P	PPL	RU		71				3325		274	Asia/Yekaterinburg	2012-01-17
+1492822	Selezyan	Selezyan	Selezian,Selezjan,Selezyan,Selezyanskiy,Селезян	54.90583	61.82444	P	PPL	RU		13				1400		197	Asia/Yekaterinburg	2019-05-08
+1493001	Sargazy	Sargazy	Sargazy,Саргазы	55.02064	61.24985	P	PPL	RU		13				1827		263	Asia/Yekaterinburg	2013-09-22
+1493273	Sovkhoznyy	Sovkhoznyy	Sadovyy,Sovkhoznyj,Sovkhoznyy,Sverdlovskiy,Совхозный	56.76374	60.54938	P	PPL	RU		71				2968		270	Asia/Yekaterinburg	2012-01-17
+1493511	Roza	Roza	Rosa,Roza,Роза	54.9163	61.4586	P	PPL	RU		13				14491		232	Asia/Yekaterinburg	2012-01-17
+1494071	Prosvet	Prosvet	Prosvet,Просвет	55.57028	65.0825	P	PPL	RU		40				2961		119	Asia/Yekaterinburg	2012-01-17
+1494309	Potanino	Potanino	Potanino,Потанино	55.1786	61.6222	P	PPL	RU		13				8717		206	Asia/Yekaterinburg	2012-01-17
+1494573	Polevskoy	Polevskoy	Polevskoj,Polevskoy,Tolevskoy,Полевской	56.44222	60.18778	P	PPLA2	RU		71				65770		358	Asia/Yekaterinburg	2024-04-20
+1494587	Poletayevo	Poletayevo	Poletaevo,Poletajevo,Poletayevo,Poletayevo Pervoye,Полетаево	55.0336	61.1138	P	PPL	RU		13				6532		244	Asia/Yekaterinburg	2012-01-17
+1494603	Pokrovskoye	Pokrovskoye	Pokrovskoe,Pokrovskoje,Pokrovskoye,Покровское	56.4704	61.6092	P	PPL	RU		71				3573		187	Asia/Yekaterinburg	2012-01-17
+1496738	Novosineglazovskiy	Novosineglazovskiy	Novosineglazovskij,Novosineglazovskiy,Sineglazovo,Новосинеглазовский	55.03928	61.3768	P	PPL	RU		13				14620		252	Asia/Yekaterinburg	2012-12-05
+1497780	Neyvo-Rudyanka	Neyvo-Rudyanka	Nejvo-Rudjanka,Neyvo-Rudyanka,Нейво-Рудянка	57.3444	60.1343	P	PPL	RU		71				2895		252	Asia/Yekaterinburg	2012-01-17
+1498179	Muslyumovo	Muslyumovo	Musljumovo,Muslyumova,Muslyumovo,Муслюмово	55.6133	61.626	P	PPL	RU		13				4500		175	Asia/Yekaterinburg	2012-01-17
+1498456	Monetnyy	Monetnyy	Monetnaya,Monetny,Monetnyj,Monetnyy,Монетный	57.0472	60.8794	P	PPL	RU		71				5540		275	Asia/Yekaterinburg	2012-01-17
+1498887	Miasskoye	Miasskoye	Miasskiy,Miasskoe,Miasskoje,Miasskoye,Миасское	55.28155	61.89266	P	PPLA2	RU		13				9524		156	Asia/Yekaterinburg	2025-02-18
+1499288	Martyush	Martyush	Marcjush,Martiusz,Martjus,Martjusch,Martjush,Martjusj,Martjuš,Martues,Martyus,Martyush,Martyuş,Martüş,ma er qiu shen,martywsh  rwsyh,Мартюш,Марцюш,Մարտյուշ,مارتیوش، روسیه,马尔秋什	56.4	61.88194	P	PPL	RU		71				4110		167	Asia/Yekaterinburg	2012-01-17
+1500335	Losinyy	Losinyy	Losinyj,Losinyy,Лосиный	57.13862	61.06663	P	PPL	RU		71				2189		246	Asia/Yekaterinburg	2012-01-17
+1500629	Lesnikovo	Lesnikovo	Lesnikovo,Лесниково	55.28222	65.3175	P	PPL	RU		40				5864		86	Asia/Yekaterinburg	2012-01-17
+1501321	Kurgan	Kurgan	Curgan,KRO,Koergan,Kourgan,Kurgan,Kurgan Pervyy,Kurgan i Kurgan oblast,Kurgana,Kurganas,Kurgano,Kurgon,Kurgán,Kurgāna,Kurqan,Kˌorgan,krgan,krghan,ku er gan,kuleugan,kuragana,kurgana,kurigani,kurugan,kwrgan  awblast kwrgan,kwrgan  kwrgan awblast,kwrghan,Курган,Курғон,Қорған,كورغان,کرغان,کرگان,کورگان، اوبلاست کورگان,کورگان، کورگان اوبلاست,कुर्गान,কুরগান,ਕੁਰਗਾਨ,ኩርጋን,クルガン,库尔干,쿠르간	55.44905	65.34344	P	PPLA	RU		40				309285		80	Asia/Yekaterinburg	2026-04-14
+1501402	Kunashak	Kunashak	Kunashak,Kunasjak,Кунашак	55.70155	61.54932	P	PPLA2	RU		13				5950		177	Asia/Yekaterinburg	2025-02-18
+1501925	Krasnyy Oktyabr’	Krasnyy Oktyabr'	Krasnyj Oktjabr',Krasnyy Oktyabr',Krasnyy Oktyabr’,Красный Октябрь	55.65667	64.81333	P	PPL	RU		40				4084		126	Asia/Yekaterinburg	2012-01-17
+1502112	Krasnogorskiy	Krasnogorskiy	Krasnogorskij,Krasnogorskiy,Красногорский	54.6025	61.231	P	PPL	RU		13				13603		246	Asia/Yekaterinburg	2012-01-17
+1502280	Koyelga	Koyelga	Koelga,Koelskaja,Koelskaya Staniza,Kojelga,Koyelga,Koëlskaja,Коелга	54.65224	60.9049	P	PPL	RU		13				4053		235	Asia/Yekaterinburg	2020-05-11
+1502536	Korkino	Korkino	Korkino,ke er ji nuo,Коркино,科爾基諾	54.89151	61.39201	P	PPLA2	RU		13	1535937			40046		253	Asia/Yekaterinburg	2025-02-18
+1502603	Kopeysk	Kopeysk	Kopeisk,Kopejsk,Kopeysk,Kopi,Kopiejsk,Ugolnye Kopi,Копейск	55.11686	61.61807	P	PPLA2	RU		13				70780		211	Asia/Yekaterinburg	2025-02-18
+1503169	Klyuchevsk	Klyuchevsk	Kljuchevsk,Kljutsjevsk,Klyuchevsk,Teply-Klyuch,Teplyy Klyuch,Tëplyy Klyuch,Ключевск	57.1216	60.9414	P	PPL	RU		71				1955		232	Asia/Yekaterinburg	2012-01-17
+1503335	Kirovgrad	Kirovgrad	Kalata,Kiraugrad,Kirovgrad,Kirovgrád,Kirovnkrant,Kirovqrad,Kirowgrad,ji luo fu ge lei,kilobeugeuladeu,kyrwfghrad,kyrwfgrad,Κιροβγκράντ,Калата,Кировград,Кіраўград,Кіровград,كيروفغراد,کیروفگراد,基洛夫格勒,키로브그라드	57.43134	60.06172	P	PPLA2	RU		71				22685		270	Asia/Yekaterinburg	2024-04-20
+1503879	Ketovo	Ketovo	Ketovo,Кетово	55.34831	65.33142	P	PPLA2	RU		40				6966		98	Asia/Yekaterinburg	2025-02-18
+1503931	Kedrovoye	Kedrovoye	Kedrovoe,Kedrovoje,Kedrovoye,Кедровое	57.1576	60.5698	P	PPL	RU		71				2163		270	Asia/Yekaterinburg	2012-01-17
+1504826	Kamensk-Ural’skiy	Kamensk-Ural'skiy	Kamenisk,Kamensk,Kamensk-Ural'skij,Kamensk-Ural'skiy,Kamensk-Uraljski,Kamensk-Uralski,Kamensk-Uralskij,Kamensk-Uralsky,Kamensk-Ural’skiy,Каменск,Каменск-Уральский	56.40626	61.93347	P	PPLA2	RU		71				182500		158	Asia/Yekaterinburg	2024-04-20
+1505003	Kalinovo	Kalinovo	Kalinovo,Калиново	57.1317	60.1464	P	PPL	RU		71				2901		290	Asia/Yekaterinburg	2012-01-17
+1505472	Iset’	Iset'	Iset,Iset',Iset’,Исеть	56.9779	60.3718	P	PPL	RU		71				3191		266	Asia/Yekaterinburg	2012-01-17
+1505946	Ikovka	Ikovka	Ikovka,Иковка	55.60889	64.9375	P	PPL	RU		40				5243		135	Asia/Yekaterinburg	2012-01-17
+1506107	Gryaznovskoye	Gryaznovskoye	Grjaznovskoe,Gryaznovskoye,Грязновское	56.7825	61.7053	P	PPL	RU		71				1486		199	Asia/Yekaterinburg	2012-08-04
+1506244	Gornyy Shchit	Gornyy Shchit	Gornoshchitskoye,Gornoshitski,Gornoshitskoye,Gornyj Shhit,Gornyj Sjtsjit,Gornyy Shchit,Горный Щит	56.68815	60.51947	P	PPL	RU		71				4648		286	Asia/Yekaterinburg	2012-01-17
+1506258	Gornyak	Gornyak	Gornjak,Gornyak,Горняк	55.13446	61.68268	P	PPLX	RU		13				13946		204	Asia/Yekaterinburg	2012-12-05
+1506499	Glyadyanskoye	Glyadyanskoye	Gljadjanskoe,Gljadjanskoje,Glyadyanskoye,Глядянское	54.90973	65.08843	P	PPLA2	RU		40				4237		88	Asia/Yekaterinburg	2025-02-18
+1507059	Dvurechensk	Dvurechensk	Dvurechensk,Dvuretsjensk,Khrompik,Двуреченск	56.5982	61.0953	P	PPL	RU		71				5121		198	Asia/Yekaterinburg	2012-01-17
+1507300	Dolgoderevenskoye	Dolgoderevenskoye	Dolgoderevenskoe,Dolgoderevenskoje,Dolgoderevenskoye,Долгодеревенское	55.35013	61.34155	P	PPLA2	RU		13				6976		227	Asia/Yekaterinburg	2025-02-18
+1507488	Degtyarsk	Degtyarsk	Degtjarka,Degtjarsk,Degtyarka,Degtyarsk,Дегтярка,Дегтярск	56.704	60.0879	P	PPL	RU		71				15294		350	Asia/Yekaterinburg	2024-04-20
+1508291	Chelyabinsk	Chelyabinsk	CEK,Celabinsk,Celabinska,Celaebinsk,Celeabinsk,Celiabinsc,Celiabinsca,Celiabinskas,Celjabinsk,Celjabinsko,Celyabinsk,Chaljabinsk,Chelepi,Cheliabinsk,Cheliábinsk,Cheljaba,Cheljaba osh,Cheljabe,Cheljabi,Cheljabins'k,Cheljabinsk,Chelyabinsk,Chilobinsk,Cseljabinszk,Czelabinsk,Czelabińsk,Tcheliabinsk,Tchelyabinsk,Tchéliabïnsk,Tjeljabinsk,Tscheljabinsk,Tseliampinsk,Tseljabinsk,Tsjeljabinsk,Tsyelyabinsk,Txeliabinsk,Txeliàbinsk,Tšeljabinsk,celi'abinasaka,celiyabinska,celyabinska,ceልyabinisiki,che li ya bin si ke,chellyabinseukeu,cheryabinsuku,chlyabnsk,chlyabynsk,chylyabnsk,tshylyabnsk,zlyʼbynsq,Çelyabinsk,Ĉeljabinsko,Čeliabinskas,Čeljabinsk,Čeläbinsk,Čeļabinska,Čeľabinsk,Τσελιάμπινσκ,Силәбе,Чалябінск,Челепи,Челяба,Челяба ош,Челябе,Челябинск,Челябі,Челябінськ,Чељабинск,Чилобинск,Чиләбе,Чєлѣбиньскъ,Չելյաբինսկ,טשעליאבינסק,צליאבינסק,تشيليابنسك,چلیابنسک,چلیابینسک,چیلیابنسک,चेलियाबिन्स्क,चेल्याबिंस्क,চেলিয়াবিন্‌স্ক,ਚੇਲਿਆਬਿਨਸਕ,ჩელიაბინსკი,ቼልያቢንስክ,チェリャビンスク,車里雅賓斯克,첼랴빈스크	55.1611	61.42877	P	PPLA	RU		13	1535932			1202371		232	Asia/Yekaterinburg	2026-04-14
+1509888	Bogdanovich	Bogdanovich	Bogdandvich,Bogdanovich,Bogdanovichi,Bogdanovikhi,Bogdanovitsj,Богданович	56.77675	62.05072	P	PPLA2	RU		71				32270		163	Asia/Yekaterinburg	2024-04-20
+1509929	Bobrovskiy	Bobrovskiy	Bobrovskij,Bobrovskiy,Bobrovskoye,Бобровский	56.6732	60.9807	P	PPL	RU		71				5198		211	Asia/Yekaterinburg	2012-01-17
+1510203	Beryozovsky	Beryozovsky	Berjozovskij,Beryozovsky,Берёзовский	56.9083	60.8019	P	PPL	RU		71				47000		257	Asia/Yekaterinburg	2014-04-11
+1510421	Belozerskoye	Belozerskoye	Belozerskoe,Belozerskoye,Belozërskoye,Белозерское	55.82411	65.58757	P	PPLA2	RU		40				4364		77	Asia/Yekaterinburg	2025-02-18
+1510451	Beloyarskiy	Beloyarskiy	Belojarskaja Sloboda,Belojarskij,Beloyarsk,Beloyarskaya Sloboda,Beloyarskiy,Beloyarskoye,Белоярская Слобода,Белоярский	56.75713	61.41629	P	PPLA2	RU		71				12438		206	Asia/Yekaterinburg	2024-04-20
+1510924	Baraba	Baraba	Baraba,Бараба	56.75	61.76667	P	PPL	RU		71				1153		210	Asia/Yekaterinburg	2012-07-26
+1511428	Argayash	Argayash	Argajash,Argayash,Аргаяш	55.48847	60.87364	P	PPLA2	RU		13				10096		247	Asia/Yekaterinburg	2025-02-18
+1511466	Aramil	Aramil	Aramil,Aramil',Aramilis,Aramiľ,a la mi er,alamil,aramyl,Αραμίλ,Арамил,Арамиль,Арамиљ,Араміль,Әрәмәле,آرامیل,أراميل,ارامیل,阿拉米爾,아라밀	56.6977	60.8369	P	PPL	RU		71				15237		215	Asia/Yekaterinburg	2019-09-05
+1536529	Shuvakish	Shuvakish	Shuvakish,Шувакиш	56.9187	60.47727	P	PPL	RU		71				1067		270	Asia/Yekaterinburg	2013-09-29
+1536648	Istok	Istok	Istok,Kompressornyj,Kompressornyy,Исток,Компрессорный	56.79086	60.77889	P	PPL	RU		71				5670		245	Asia/Yekaterinburg	2014-04-30
+1536656	Ural’skiy	Ural'skiy	Khrizolitovyy,Kosulino-1,Ural'skij,Ural'skiy,Ural’skiy,Косулино-1,Уральский	56.6757	61.0824	P	PPLA2	RU		71				0		278	Asia/Yekaterinburg	2024-04-20
+1538636	Novoural’sk	Novoural'sk	Novoural'sk,Novouraljsk,Novoural’sk,Nowouralsk,Sverdlovsk-44,Verkh-Nejvinskij,Верх-Нейвинский,Новоуральск,Свердловск-44	57.25483	60.09052	P	PPLA2	RU		71				93849		293	Asia/Yekaterinburg	2024-04-20
+1540436	Pervomayskiy	Pervomayskiy	Pervomajskij,Pervomayskiy,Первомайский	54.86639	61.17028	P	PPL	RU		13				9524		274	Asia/Yekaterinburg	2024-04-15
+1540852	Starokamyshinsk	Starokamyshinsk	Starokamyshinsk,Starokamysjinsk,Старокамышинск	55.03912	61.58778	P	PPLX	RU		13				11158		209	Asia/Yekaterinburg	2012-12-06
+1540882	Bazhovo	Bazhovo	Bazhovo,Bazjovo,Imeni Bazhova,Бажово	55.05955	61.60445	P	PPL	RU		13				11537		213	Asia/Yekaterinburg	2012-12-06
+1540905	Roshchino	Roshchino	Roshchino,Roshhino,Рощино	55.31012	61.26363	P	PPL	RU		13				5231		239	Asia/Yekaterinburg	2012-12-06
+6416944	Kurilovo	Kurilovo	Kurilovo	55.37271	37.37703	P	PPL	RU		47				1738		182	Europe/Moscow	2018-12-06
+6417315	Lopatino	Lopatino	Lopatino,Лопатино	55.52799	37.64666	P	PPL	RU		47				13687		158	Europe/Moscow	2024-04-15
+6417422	Izmaylovo	Izmaylovo	Izmajlovo,Izmaylovo,Sovkhoz Izmaylovo,Измайлово	55.56428	37.64254	P	PPL	RU		47	536086			1639		171	Europe/Moscow	2017-04-08
+6417459	Krasnoznamensk	Krasnoznamensk	Golicyno-2,Golitsyno-2,Krasnaznamensk,Krasnosnamensk,Krasnoznamens'k,Krasnoznamensk,Krasnoznamiensk,Krasnoznamjensk,ke la si nuo zi na mian si ke,keulaseunojeunamenseukeu,krasnwznamnsk,krasnwznamnsk  astan mskw,kurasunozunamensuku,qrsnwznʼmnsq,Голицыно-2,Красназнаменск,Краснознаменск,Краснознаменск балһсн,Краснознаменськ,קרסנוזנאמנסק,كراسنوزنامنسك,کراسنوزنامنسک,کراسنوزنامنسک، استان مسکو,クラスノズナメンスク,克拉斯諾茲納緬斯克,크라스노즈나멘스크	55.59525	37.05235	P	PPLA2	RU		47				33700		193	Europe/Moscow	2023-07-11
+6417495	Shishkin Les	Shishkin Les	Shishkin Les,Шишкин Лес	55.41261	37.18865	P	PPL	RU		48				3913		167	Europe/Moscow	2026-06-17
+6417525	Posëlok Mar’ino	Poselok Mar'ino	Poselok Mar'ino,Posjolok Mar'ino,Posëlok Mar’ino,Посёлок Марьино	55.55	37.32	P	PPL	RU		47				1500		170	Europe/Moscow	2012-09-20
+6417535	Mosrentgen	Mosrentgen	Mosrentgen,Poselok Zavoda Mosrentgen,Posëlok Zavoda Mosrentgen,Teplyy Stan,Tjoplyj Stan,Tëplyy Stan,Мосрентген,Тёплый Стан	55.61831	37.46619	P	PPL	RU		48				5214		219	Europe/Moscow	2026-07-14
+6417635	Zarech’ye	Zarech'ye	Zarech'e,Zarech'ye,Zarech’ye,Заречье	55.68667	37.3924	P	PPL	RU		47				6144		168	Europe/Moscow	2015-08-23
+6417667	Usovo-Tupik	Usovo-Tupik	Usovo-Tupik,Усово-Тупік	55.72968	37.22014	P	PPL	RU		47				1223		161	Europe/Moscow	2026-04-17
+6418052	Povedniki	Povedniki	Povedniki,Поведники	55.97	37.6	P	PPL	RU		47				2200		195	Europe/Moscow	2012-05-23
+6418146	Chertanovo Yuzhnoye	Chertanovo Yuzhnoye	Chertanovo Vtoroe,Chertanovo Yuzhnoye,Poselok Mosgazoprovod,Posëlok Mosgazoprovod,Чертаново Второе	55.59072	37.59519	P	PPLX	RU		48				142000		191	Europe/Moscow	2016-04-11
+6418201	Zagor’ye	Zagor'ye	Zagor'e,Zagor'ye,Zagor’ye,Загорье	55.57657	37.66709	P	PPLX	RU		48				30000		163	Europe/Moscow	2015-01-07
+6418220	Orekhovo-Borisovo	Orekhovo-Borisovo	Orekhovo-Borisovo,Орехово-Борисово	55.61252	37.72639	P	PPLX	RU		48				144000		176	Europe/Moscow	2013-04-02
+6418787	Metrogorodok	Metrogorodok	Metrogorodok,Poselok Metrostroya,Posëlok Metrostroya,Метрогородок	55.80961	37.78739	P	PPLX	RU		48				50000		161	Europe/Moscow	2013-04-02
+6697077	Kievskiy	Kievskiy	Kievskij,Kievskiy,Kiyevskiy,Киевский	55.42999	36.8666	P	PPL	RU		47				9700		198	Europe/Moscow	2017-08-22
+7117880	Zarya	Zarya	Zarja,Заря	55.75533	38.09578	P	PPLX	RU		47				27000		158	Europe/Moscow	2013-01-04
+7601170	Shevlyakovo	Shevlyakovo	Shevljakovo,Shevlyakova,Shevlyakovo,Шевляково	56.39733	36.85973	P	PPL	RU		47				1664		149	Europe/Moscow	2014-11-10
+8505053	Vostochnoe Degunino	Vostochnoe Degunino	Vostochnoe Degunino,Восточное Дегунино	55.8801	37.55758	P	PPLA3	RU		48	471823	9881972		95000		174	Europe/Moscow	2018-11-14
+8521440	Dzerzhinsky	Dzerzhinsky	Dzerzhinskij,Дзержинский	55.62737	37.85803	P	PPL	RU		47				47163		143	Europe/Moscow	2018-10-19
+8669631	Rybnoye	Rybnoye	Rybnoe,Rybnoye,Рыбное	56.41349	37.6218	P	PPL	RU		47				1765		154	Europe/Moscow	2014-08-17
+8675153	Podosinki	Podosinki	Podosinki,Подосинки	56.20837	37.54741	P	PPL	RU		47				1564		161	Europe/Moscow	2014-11-19
+9389126	Avtopoligon	Avtopoligon	Avtopoligon,Автополигон	56.34984	37.32296	P	PPL	RU		47				1194		199	Europe/Moscow	2014-08-16
+9389143	Budenovetc	Budenovetc	Budenovetc,Budjonovec,Будёновец	56.37975	37.62774	P	PPL	RU		47				1268		179	Europe/Moscow	2014-08-17
+9827992	Gorshkovo	Gorshkovo	Gorshkovo,Горшково	56.37561	37.4124	P	PPL	RU		47				2386		163	Europe/Moscow	2014-11-10
+11152665	LMS	LMS	LMS,Poselok LugoMeliorativnoj stancii,ЛМС,Поселок ЛугоМелиоративной станции	55.31425	37.18546	P	PPLA3	RU		48	8520893			5238		198	Europe/Moscow	2016-05-12
+11152666	Krasnaya Pahra	Krasnaya Pahra	Krasnaja Pakhra,Красная Пахра	55.43223	37.26966	P	PPLA3	RU		48	8520893			2434		185	Europe/Moscow	2016-05-12
+11189102	Poselok Turisticheskogo pansionata "Klyazminskoe vodohranilische"	Poselok Turisticheskogo pansionata "Klyazminskoe vodohranilische"	Kljaz'minskoe vodokhranilishhe,Pansionat «Kljaz'minskoe vodokhranilishhe»,Poselok Pansionat Kljaz'minskoe vodokhranilishhe,Poselok Pansionat «Kljaz'minskoe vodokhranilishhe»,Poselok Turisticheskogo pansionata Klyazminskoe vodohranilische,Posjolok Turisticheskogo pansionata «Kljaz'minskoe vodokhranilishhe»,Клязьминское водохранилище,Пансионат «Клязьминское водохранилище»,Поселок Пансионат «Клязьминское водохранилище»,Поселок Пансионат Клязьминское водохранилище,Посёлок Туристического пансионата «Клязьминское водохранилище»	55.99507	37.67199	P	PPL	RU		47				1520		172	Europe/Moscow	2016-07-18
+11238229	Obruchevo	Obruchevo		55.6591	37.52291	P	PPL	RU		48	562221	9883017		85616		211	Europe/Moscow	2020-04-10
+11888170	Vniissok	Vniissok	VNIISSOK,ВНИИССОК	55.65639	37.21194	P	PPL	RU		47	516210			7876		196	Europe/Moscow	2018-07-05
+12129530	Zagorskie Dali	Zagorskie Dali	Zagorskie dali,Загорские дали	56.39101	37.99201	P	PPL	RU		47				1935		215	Europe/Moscow	2020-03-01
+12129531	Im. Telmana Posyolok	Im. Telmana Posyolok	Poselok imeni Tel'mana,Posjolok imeni Tel'mana,Поселок имени Тельмана,Посёлок имени Тельмана	55.56444	38.03902	P	PPL	RU		47				3673		121	Europe/Moscow	2020-03-01
+12188499	Loza	Loza	Loza,Лоза	56.25922	38.21375	P	PPL	RU		47				2775	206	199	Europe/Moscow	2020-09-19
+12542005	Zvëzdnyy Gorodok	Zvezdnyy Gorodok	Zvezdnyi Gorodok,Zvezdnyj Gorodok,Zvezdnyy Gorodok,Zvyozdny Gorodok,Zvyozdnyi Gorodok,Zvëzdnyy Gorodok,Звëздный Городок	55.87794	38.11262	P	PPLA2	RU		47				5622		160	Europe/Moscow	2026-09-16
+13631665	gorod Solnetchnogorsk	gorod Solnetchnogorsk	g. Solnechnogorsk,г. Солнечногорск	56.18595	36.97561	P	PPLA2	RU		47				62000		196	Europe/Moscow	2026-05-03
+1220988	Moskva	Moskva	Chubek,Moskovskiy,Moskva,Москва	37.66101	69.62849	P	PPLA2	TJ		02				0		486	Asia/Dushanbe	2026-08-27
+296489	Yukarıçamurlu	Yukaricamurlu	Yukari Camurlu,Yukaricamurlu,Yukarı Çamurlu,Yukarıçamurlu	39.94972	44.39722	P	PPL	TR		88	8630872			1329		823	Europe/Istanbul	2026-08-30
+300008	Suveren	Suveren	Orgor,Orkof,Suveren,Суверен	39.80479	44.06151	P	PPL	TR		88	13308774			3414		1186	Europe/Istanbul	2026-09-02
+302990	Panik	Panik	Banik,OEzdemir,Panik,Özdemir,Բանիկ	39.98306	44.05444	P	PPL	TR		88	13308774			2401		862	Europe/Istanbul	2026-06-04
+305754	Küllük	Kuelluek	Gulluk,Güllük,Kulluk,Küllük	39.98488	43.91884	P	PPL	TR		88	13308774			3010		885	Europe/Istanbul	2026-06-01
+309570	Karakuyu	Karakuyu	Karakuyu,Karakuyu Koyu,Karakuyu Köyü	39.86667	44.03333	P	PPL	TR		88	13308774			2865		857	Europe/Istanbul	2026-06-01
+309609	Karakoyunlu	Karakoyunlu	Garagoyunlu,Kara Koyun,Karakojunlu,Karakoyunlu,Qaraqoyunlu,Каракоюнлу,Գարագօյունլու,Կարակոյունլու	39.97058	44.17678	P	PPL	TR		88	8630874			2429		845	Europe/Istanbul	2026-08-30
+311665	Iğdır	Igdir	gdur,Colakert,IGD,Idir,Igdir,Igdira,Igdyr,Igdyras,Iidir,Iktir,Iğdır,Iıdır,agdyr,aghdyr,ayghdr,ayghdyr,e de er,idileu,igadira,igdira,igdiri,udouru,ygdyr,Îdir,Īgdira,İğdır,ʿiግdiri,Игдир,Игдыр,Цолакерт,Ъгдър,Ыгдыр,Իգդիր,Իկտիր,Ցոլակերտ,اغدير,اگدیر,ایغدر,ایغدیر,ڕەشقەلاس,इग्दीर,ইগদির,ਇਗਦੀਰ,იგდირი,ኢግዲር,ウードゥル,厄德尔,이디르	39.92371	44.045	P	PPLA	TR		88	13308774			101700		860	Europe/Istanbul	2026-10-01
+312484	Hasanhan	Hasanhan	Hasancan,Hasanhan	39.95694	44.34667	P	PPL	TR		88	8630872			2143		828	Europe/Istanbul	2026-08-30
+312698	Yeni Mahallesi	Yeni Mahallesi	Hanago,Hanako	39.9088	44.11089	P	PPLX	TR		88	13308774	13432973	13697191	1213		851	Europe/Istanbul	2026-08-31
+314412	Gödekli	Goedekli	Asagi Godekli,Aşağı Gödekli,Godekli,Gödekli	39.81972	44.59833	P	PPL	TR		88	8630872			2049		812	Europe/Istanbul	2026-08-30
+315138	Evci	Evci	Evci,Evcilar,Evjilar,Էվճիլար,Էվջիլար	40.0303	44.1441	P	PPL	TR		88	8630874			1302		846	Europe/Istanbul	2026-09-11
+315559	Enginalan	Enginalan	Blur,Enginalan,Pilur,Pilûr,Pulur,Բլուր	39.96115	44.03146	P	PPL	TR		88	13308774			3096		862	Europe/Istanbul	2026-06-17
+320457	Bulakbaşı	Bulakbasi	Bulakbasi,Bulakbaşı	39.93797	44.25664	P	PPL	TR		88	8630874			1491		838	Europe/Istanbul	2026-08-30
+323381	Aşağıerhacı	Asagierhaci	Argach,Argaci Koy,Argaci Köy,Asagi Erhaci,Asagierhaci,Aşağı Erhacı,Aşağıerhacı,Erhaci,Erhacı	39.88565	44.0838	P	PPL	TR		88	13308774			4392		850	Europe/Istanbul	2026-08-31
+323735	Aralık	Aralik	Aralik,Aralık,Araləg,Araləx,Baskoy,Başköy,Արալըգ,Արալըխ	39.87278	44.51917	P	PPLA2	TR		88	8630872			5809		817	Europe/Istanbul	2026-06-10
+324041	Ali Kamerli Mahallesi	Ali Kamerli Mahallesi	Alegamar,Aligamar,Aligamarlu,Alikamarlu,Alikamer,Alikamerli,Alikʻamarlu,Alikʻemerlu,Alkamer,Ալեղամար,Ալիկամարլու,Ալիղամար,Ալիղամարլու,Ալիքամարլու,Ալիքեմերլու	39.94201	43.99876	P	PPLX	TR		88	13308774	13432973	13697191	2288		867	Europe/Istanbul	2026-08-31
+737108	Yüzbaşılar	Yuezbasilar	Aletlu,Aletʻlu,Alit,Alut,Alyt,Alût,Alıt,Yuezbasilar,Yüzbaşılar,Алетлу,Алыт,Ալեթլու,Ալէթլու	39.99759	44.05096	P	PPL	TR		88	13308774			1936		860	Europe/Istanbul	2026-06-01
+741423	Mürşitali	Muersitali	Mursitali,Mürşitali	40.02529	44.1328	P	PPL	TR		88	8630874			1516		849	Europe/Istanbul	2026-08-30
+6611122	Karşıyaka	Karsiyaka		39.87722	44.49889	P	PPLX	TR		88	8630872			2808		819	Europe/Istanbul	2026-08-30
+11192614	Kerimbeyli	Kerimbeyli	Kerimbeyli	39.99065	44.37878	P	PPL	TR		88	8630874			1421		827	Europe/Istanbul	2026-08-30
+13697147	Köprüler	Koeprueler		39.87843	44.51613	P	PPLX	TR		88	8630872			1095		821	Europe/Istanbul	2026-08-30
+13697156	Ergenekon	Ergenekon	Ergenekon	39.96999	44.18187	P	PPLX	TR		88	8630874	11192305		1715		849	Europe/Istanbul	2026-08-30
+13697165	Bağlar Mahallesi	Baglar Mahallesi		39.92775	44.04055	P	PPLX	TR		88	13308774	13432973	13697191	17505		863	Europe/Istanbul	2026-08-31
+13697166	Topçular Mahallesi	Topcular Mahallesi		39.92468	44.03526	P	PPLX	TR		88	13308774	13432973	13697191	11979		864	Europe/Istanbul	2026-08-31
+13697167	Özgür Mahallesi	OEzguer Mahallesi		39.90553	44.04893	P	PPLX	TR		88	13308774	13432973	13697191	11243		856	Europe/Istanbul	2026-08-31
+13697168	Emek	Emek		39.92091	44.02574	P	PPLX	TR		88	13308774	13432973		10000		864	Europe/Istanbul	2026-08-31
+13697169	14 Kasım Mahallesi	14 Kasim Mahallesi		39.92962	44.05309	P	PPLX	TR		88	13308774	13432973	13697191	9202		859	Europe/Istanbul	2026-08-31
+13697170	Söğütlü Mahallesi	Soeguetlue Mahallesi	Soeguetlue Mahallesi,Söğütlü Mahallesi	39.92122	44.05236	P	PPLX	TR		88	13308774	13432973	13697191	8568		860	Europe/Istanbul	2026-08-31
+13697171	Karaağaç Mahallesi	Karaagac Mahallesi		39.90993	44.03513	P	PPLX	TR		88	13308774	13432973	13697191	8306		862	Europe/Istanbul	2026-08-31
+13697172	Cumhuriyet Mahallesi	Cumhuriyet Mahallesi		39.91764	44.04926	P	PPLX	TR		88	13308774	13432973	13697191	7996		863	Europe/Istanbul	2026-08-31
+13697173	Konaklı Mahallesi	Konakli Mahallesi		39.89443	44.06605	P	PPLX	TR		88	13308774	13432973	13697191	6655		855	Europe/Istanbul	2026-08-31
+13697174	Pir Sultan Abdal Mahallesi	Pir Sultan Abdal Mahallesi		39.93992	44.05516	P	PPLX	TR		88	13308774	13432973	13697191	4657		859	Europe/Istanbul	2026-08-31
+13697175	Atatürk Mahallesi	Atatuerk Mahallesi		39.93443	44.04455	P	PPLX	TR		88	13308774	13432973	13697191	3763		859	Europe/Istanbul	2026-08-31
+13697176	Yunus Emre Mahallesi	Yunus Emre Mahallesi		39.92604	44.00596	P	PPLX	TR		88	13308774	13432973	312863	2196		864	Europe/Istanbul	2026-08-31
+13697177	Said Nursi Mahallesi	Said Nursi Mahallesi		39.89915	44.01869	P	PPLX	TR		88	13308774	13432973	312863	2094		858	Europe/Istanbul	2026-08-31
+13697178	Bahçelievler Mahallesi	Bahcelievler Mahallesi		39.90497	44.00226	P	PPLX	TR		88	13308774	13432973	312863	1523		860	Europe/Istanbul	2026-08-31
+13697180	Özvatan Mahallesi	OEzvatan Mahallesi		39.88945	43.98278	P	PPLX	TR		88	13308774	13432973	312863	1462		873	Europe/Istanbul	2026-08-31
+13697181	Mehmet Akif Ersoy Mahallesi	Mehmet Akif Ersoy Mahallesi		39.94726	44.09309	P	PPLX	TR		88	13308774	13432973	304657	1288		856	Europe/Istanbul	2026-08-31
+13697182	Karabağ Mahallesi	Karabag Mahallesi		39.9423	44.10363	P	PPLX	TR		88	13308774	13432973	304657	1276		857	Europe/Istanbul	2026-08-31
+13697183	Turgut Özal Mahallesi	Turgut OEzal Mahallesi		39.89255	43.99357	P	PPLX	TR		88	13308774	13432973	312863	1090		862	Europe/Istanbul	2026-08-31
+5202009	Moscow	Moscow	Dunnings,Moscow,Moskva,Москва	41.33675	-75.51852	P	PPL	US		PA	069	51208		1960	476	477	America/New_York	2018-11-02
+5601538	Moscow	Moscow	Hog Heaven,Moscow,Moskou,Moskov,Moskva,Paradise Valley,S'maqw'l,masko,moseuko,mosuko,mskw  aydahw,mwskw,Москва,Москов,Москоу,ماسکو، ایڈاہو,مسکو، آیداهو,موسكو,मस्को,მოსკოვი,モスコー,모스코	46.73239	-117.00017	P	PPLA2	US		ID	057			25060	786	788	America/Los_Angeles	2017-03-09

@@ -1,0 +1,30 @@
+{
+  "place_id": 208292212,
+  "licence": "Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright",
+  "osm_type": "way",
+  "osm_id": 380633460,
+  "lat": "40.1778341",
+  "lon": "44.5127468",
+  "class": "highway",
+  "type": "primary",
+  "place_rank": 26,
+  "importance": 0.05340703669794763,
+  "addresstype": "road",
+  "name": "Republic Square",
+  "display_name": "Republic Square, Kentron, Yerevan, 0010, Armenia",
+  "address": {
+    "road": "Republic Square",
+    "suburb": "Kentron",
+    "city": "Yerevan",
+    "ISO3166-2-lvl4": "AM-ER",
+    "postcode": "0010",
+    "country": "Armenia",
+    "country_code": "am"
+  },
+  "boundingbox": [
+    "40.1775194",
+    "40.1781008",
+    "44.5124122",
+    "44.5131416"
+  ]
+}

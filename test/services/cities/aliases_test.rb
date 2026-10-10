@@ -12,7 +12,12 @@ class Cities::AliasesTest < ActiveSupport::TestCase
     3169070 => [ "Rome", "IT" ],
     524901 => [ "Moscow", "RU" ],
     498817 => [ "Saint Petersburg", "RU" ],
-    1512569 => [ "Tashkent", "UZ" ]
+    1512569 => [ "Tashkent", "UZ" ],
+    1504826 => [ "Kamensk-Ural’skiy", "RU" ],
+    1501321 => [ "Kurgan", "RU" ],
+    1508291 => [ "Chelyabinsk", "RU" ],
+    1526273 => [ "Astana", "KZ" ],
+    616052 => [ "Yerevan", "AM" ]
   }.freeze
 
   test "every configured target exists in the directory with the stated country and name" do
@@ -28,7 +33,7 @@ class Cities::AliasesTest < ActiveSupport::TestCase
   test "global is set only on spellings that are unambiguous worldwide" do
     global = Cities::Aliases.default.entries.select(&:global).map(&:name)
 
-    assert_equal %w[Ekaterinburg Yekaterinburg], global.sort
+    assert_equal %w[Astana Chelyabinsk Ekaterinburg Erevan Kamensk-Uralskiy Kamensk-Uralsky Kurgan Yekaterinburg Yerevan], global.sort
   end
 
   test "problems reports missing, foreign and renamed targets" do
@@ -66,6 +71,9 @@ class Cities::AliasesTest < ActiveSupport::TestCase
   end
 
   test "global aliases keep the old string comparison of Ekaterinburg and Yekaterinburg" do
-    assert_equal({ "ekaterinburg" => "yekaterinburg" }, Cities::Aliases.default.name_aliases)
+    # Каменск сводится к написанию справочника: ’ после транслитерации — «?».
+    expected = { "ekaterinburg" => "yekaterinburg", "erevan" => "yerevan",
+                 "kamensk-uralsky" => "kamensk-ural?skiy", "kamensk-uralskiy" => "kamensk-ural?skiy" }
+    assert_equal expected, Cities::Aliases.default.name_aliases
   end
 end
