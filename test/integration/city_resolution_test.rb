@@ -133,7 +133,8 @@ class CityResolutionTest < ActiveSupport::TestCase
   end
 
   # Только этот провайдер: у Google — ключ, у Nominatim — без ключа, как
-  # запасной путь. Запрос к другому провайдеру — ошибка теста, а не фолбэк.
+  # запасной путь. Запрос к другому провайдеру — ошибка теста, а не фолбэк, и
+  # в live-режиме тоже: иначе отказ Google незаметно прошёл бы через Nominatim.
   def with_geocoder(provider, &block)
     saved_key = ENV["GOOGLE_GEOCODING_API_KEY"]
     if provider == "nominatim"
@@ -143,24 +144,32 @@ class CityResolutionTest < ActiveSupport::TestCase
     elsif saved_key.blank?
       skip "GOOGLE_GEOCODING_API_KEY не задан"
     end
-    return block.call if LIVE
 
     # Записанным ответам ждать секунду между запросами незачем.
-    Geocoding::AddressResolver.nominatim_last_request_at = -Float::INFINITY
-    resolver = recorded_resolver(provider)
+    Geocoding::AddressResolver.nominatim_last_request_at = -Float::INFINITY unless LIVE
+    unexpected = []
+    resolver = guarded_resolver(provider, unexpected)
     stub_singleton(Geocoding::AddressResolver, :new, -> { resolver }, &block)
+    assert_empty unexpected, "#{provider}: запросы к другому провайдеру"
   ensure
     saved_key ? ENV["GOOGLE_GEOCODING_API_KEY"] = saved_key : ENV.delete("GOOGLE_GEOCODING_API_KEY")
   end
 
-  def recorded_resolver(provider)
+  # Чужой запрос записывается в unexpected и получает пустой ответ (исключение
+  # проглотил бы rescue геокодера). Свой — в live уходит в сеть, иначе берётся
+  # из записи.
+  def guarded_resolver(provider, unexpected)
     host, path, coordinates = PROVIDERS.fetch(provider)
     recordings = Pathname(file_fixture_path).join("geocoding", provider)
 
     resolver = Geocoding::AddressResolver.new
-    resolver.define_singleton_method(:fetch_json) do |uri, **|
+    resolver.define_singleton_method(:fetch_json) do |uri, **options|
       uri = URI(uri)
-      raise "unexpected request to #{uri.host}#{uri.path}" unless uri.host == host && uri.path == path
+      unless uri.host == host && uri.path == path
+        unexpected << "#{uri.host}#{uri.path}"
+        next nil
+      end
+      next super(uri, **options) if LIVE
 
       lat, lon = coordinates.call(URI.decode_www_form(uri.query).to_h)
       slug = POINTS.find { |_, point| point[:lat].to_s == lat && point[:lon].to_s == lon }&.first
