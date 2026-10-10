@@ -13,6 +13,10 @@ class OccurrenceSettingsController < ApplicationController
     setting = @game.occurrence_settings.find_or_initialize_by(date: date)
     params[:reset].present? ? setting.assign_attributes(kind: nil, with_coach: nil, coach_id: nil, second_coach_id: nil, guest_coach_name: nil, court_id: nil, without_court: false, players_count: nil) : setting.assign_attributes(setting_params)
 
+    # Форма шлёт тип и галку тренера всегда; совпадающее с серией validate
+    # сводит к пустому, и только после этого видно, нужна ли запись вообще.
+    setting.validate
+
     if setting.blank_setting?
       setting.destroy if setting.persisted?
       redirect_to_prebooking_month @game, date, notice: t("games.occurrence_settings.saved")

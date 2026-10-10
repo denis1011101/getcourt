@@ -346,8 +346,6 @@ es:
       duration_any: "— sin especificar —"
       duration_hint: Tiempo de juego aproximado o exacto. Ayuda a otros a saber cuánto
         tiempo estará ocupada la pista.
-      as_series: "Como en la serie — %{name}"
-      coach_hint: "Solo para esta fecha — el entrenador no recibe invitación."
       court: Lugar
       court_hint: Elige una pista de la lista o pulsa un marcador en el mapa.
       court_blank: "— pista aún sin elegir —"
@@ -409,6 +407,8 @@ es:
       assign_no_user: Jugador no encontrado — elige uno de las sugerencias.
       assign_already_booked: "%{name} ya tiene plaza en esa fecha."
     occurrence_settings:
+      as_series: "Como en la serie — %{name}"
+      coach_hint: "Solo para esta fecha — el entrenador no recibe invitación."
       toggle: Configurar esta sesión
       without_coach: Sin entrenador
       court: Pista
