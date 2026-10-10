@@ -30,10 +30,15 @@ class Cities::AliasesTest < ActiveSupport::TestCase
     assert_empty aliases.problems
   end
 
+  # Продуктовые исключения из однозначности: написание => разрешённые тёзки.
+  # Moskva → Moscow (2026-10-10): «Москва» из Телеграма; тёзка — таджикская
+  # деревня Moskva.
+  ACCEPTED_NAMESAKES = { "moskva" => [ 1220988 ] }.freeze
+
   test "global is set only on spellings that are unambiguous worldwide" do
     global = Cities::Aliases.default.entries.select(&:global).map(&:name)
 
-    assert_equal %w[Astana Chelyabinsk Ekaterinburg Erevan Kamensk-Uralskiy Kamensk-Uralsky Kurgan Yekaterinburg Yerevan], global.sort
+    assert_equal %w[Astana Chelyabinsk Ekaterinburg Erevan Kamensk-Uralskiy Kamensk-Uralsky Kurgan Moskva Yekaterinburg Yerevan], global.sort
   end
 
   # Выборка из полной выгрузки cities1000: цели global-алиасов и все строки,
@@ -58,7 +63,7 @@ class Cities::AliasesTest < ActiveSupport::TestCase
 
       namesakes = rows.select { |fields| fields.values_at(1, 2).any? { |name| Cities::Resolver.normalize(name) == key } }
                       .map { |fields| fields[0].to_i } - [ entry.geoname_id ]
-      assert_empty namesakes, "#{entry.label}: тёзки в GeoNames"
+      assert_equal ACCEPTED_NAMESAKES.fetch(key, []), namesakes.sort, "#{entry.label}: тёзки в GeoNames"
     end
   end
 
@@ -99,7 +104,8 @@ class Cities::AliasesTest < ActiveSupport::TestCase
   test "global aliases keep the old string comparison of Ekaterinburg and Yekaterinburg" do
     # Каменск сводится к написанию справочника: ’ после транслитерации — «?».
     expected = { "ekaterinburg" => "yekaterinburg", "erevan" => "yerevan",
-                 "kamensk-uralsky" => "kamensk-ural?skiy", "kamensk-uralskiy" => "kamensk-ural?skiy" }
+                 "kamensk-uralsky" => "kamensk-ural?skiy", "kamensk-uralskiy" => "kamensk-ural?skiy",
+                 "moskva" => "moscow" }
     assert_equal expected, Cities::Aliases.default.name_aliases
   end
 end

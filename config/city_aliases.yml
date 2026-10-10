@@ -35,7 +35,7 @@ aliases:
 
   # Местные написания столиц и крупных городов от Nominatim. Внутри своей
   # страны однозначны; вне её — нет (Vienna и Rome есть во многих штатах США,
-  # Moskva в справочнике только таджикская, Roma — в AU, LS, RO и US).
+  # Roma — в AU, LS, RO и US). Moskva — согласованное исключение, см. ниже.
   - name: Wien            # 8 кортов, 48.21,16.37
     country_code: AT
     geoname_id: 2761369
@@ -56,10 +56,15 @@ aliases:
     country_code: IT
     geoname_id: 3169070
     city: Rome
+  # Продуктовое исключение из правила однозначности (2026-10-10): «Москва» из
+  # Телеграма — это Moskva, и без global связи с Москвой не было, а пояс
+  # брался у таджикской деревни Moskva (1220988, Asia/Dushanbe). Этот тёзка
+  # в cities1000 единственный; тест однозначности разрешает его поимённо.
   - name: Moskva          # 1 корт, 55.76,37.62
     country_code: RU
     geoname_id: 524901
     city: Moscow
+    global: true
   - name: Sankt-Peterburg # 1 корт, 59.93,30.36
     country_code: RU
     geoname_id: 498817
@@ -90,7 +95,6 @@ aliases:
   # Ввод из Телеграма без страны (Russian.translit): написание совпадает с
   # name в справочнике, но без global связи не было бы. Однозначность
   # проверена по cities1000 на 2026-10-10: у каждого написания одна запись.
-  # «Moskva» сюда не входит — в справочнике она только таджикская.
   - name: Kurgan
     country_code: RU
     geoname_id: 1501321

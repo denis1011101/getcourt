@@ -30,7 +30,8 @@ class CityResolutionTest < ActiveSupport::TestCase
   }.freeze
 
   # Ввод в Телеграме: страны нет, связь даёт только global-алиас. «Москва» —
-  # «Moskva», а Moskva в справочнике только таджикская: связи нет.
+  # «Moskva», а Moskva в справочнике только таджикская: Москву и её пояс даёт
+  # согласованное исключение Moskva → Moscow.
   TELEGRAM_INPUT = {
     "Екатеринбург" => 1486209,
     "Каменск-Уральский" => 1504826,
@@ -38,7 +39,7 @@ class CityResolutionTest < ActiveSupport::TestCase
     "Челябинск" => 1508291,
     "Астана" => 1526273,
     "Ереван" => 616052,
-    "Москва" => nil
+    "Москва" => 524901
   }.freeze
 
   setup do
@@ -86,6 +87,7 @@ class CityResolutionTest < ActiveSupport::TestCase
       assert_equal Russian.translit(text), user.city_name
       if geoname_id
         assert_equal geoname_id, user.city&.geoname_id
+        assert_equal user.city.rails_timezone, user.timezone
       else
         assert_nil user.city_id
       end

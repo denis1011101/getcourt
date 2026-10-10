@@ -10,16 +10,18 @@ class ResolveUserCityJobTest < ActiveSupport::TestCase
 
   # --- Текст из Телеграма (страны нет) -----------------------------------------
 
-  test "Telegram input Москва keeps city_id empty when the only Moskva is Tajik" do
-    moskva_tj = city!("Moskva", "TJ", 1220988, timezone: "Asia/Dushanbe", population: 4_000)
+  test "Telegram input Москва links to Moscow with its timezone despite the Tajik Moskva" do
+    moscow = city!("Moscow", "RU", 524901, timezone: "Europe/Moscow", population: 10_381_222)
+    city!("Moskva", "TJ", 1220988, timezone: "Asia/Dushanbe", population: 4_000)
 
     reply_city_in_telegram("Москва")
 
     @user.reload
     assert_equal "Moskva", @user.city_name
-    assert_nil @user.city_id, "без явного выбора или global-алиаса связи нет"
-    # Пояс — по-прежнему от первого результата поиска по населению.
-    assert_equal moskva_tj.rails_timezone, @user.timezone
+    # Поиск по «Moskva» находит только таджикскую деревню; город и пояс даёт
+    # global-алиас Moskva → Moscow.
+    assert_equal moscow, @user.city
+    assert_equal moscow_timezone, @user.timezone
   end
 
   test "Telegram input resolves through an explicitly global alias" do

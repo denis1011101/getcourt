@@ -61,7 +61,8 @@ module Cities
 
     # Текст без страны: годится только алиас, явно разрешённый без страны.
     # Совпадение с name/asciiname — даже единственное — не доказательство:
-    # «Москва» → «Moskva» есть в справочнике только в Таджикистане.
+    # «Москва» → «Moskva» есть в справочнике только в Таджикистане, а Москву
+    # даёт лишь global-алиас.
     def resolve_text(name)
       key = self.class.normalize(name)
       entries = key ? @aliases.global_entries_for(key) : []
