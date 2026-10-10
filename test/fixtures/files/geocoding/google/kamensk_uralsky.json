@@ -1,0 +1,814 @@
+{
+  "plus_code": {
+    "compound_code": "CW4M+G9 Kamensk-Uralsky, Sverdlovsk Oblast, Russia",
+    "global_code": "9J83CW4M+G9"
+  },
+  "results": [
+    {
+      "address_components": [
+        {
+          "long_name": "18",
+          "short_name": "18",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Ulitsa Ryabova",
+          "short_name": "Ulitsa Ryabova",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Kamensk-Uralsky",
+          "short_name": "Kamensk-Uralsky",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Kamensk-Ural'skiy",
+          "short_name": "Gorod Kamensk-Ural'skiy",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Sverdlovskaya oblast'",
+          "short_name": "Sverdlovskaya oblast'",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "623402",
+          "short_name": "623402",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Ulitsa Ryabova, 18, Kamensk-Uralsky, Sverdlovskaya oblast', Russia, 623402",
+      "geometry": {
+        "location": {
+          "lat": 56.4065409,
+          "lng": 61.93474929999999
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 56.4078931802915,
+            "lng": 61.9359843302915
+          },
+          "southwest": {
+            "lat": 56.4051952197085,
+            "lng": 61.93328636970848
+          }
+        }
+      },
+      "place_id": "ChIJMyMecrvZxkMRmsof7QaPwNc",
+      "plus_code": {
+        "compound_code": "CW4M+JV Kamensk-Uralsky, Sverdlovsk Oblast, Russia",
+        "global_code": "9J83CW4M+JV"
+      },
+      "types": [
+        "establishment",
+        "health",
+        "point_of_interest"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "18",
+          "short_name": "18",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Ulitsa Ryabova",
+          "short_name": "Ulitsa Ryabova",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Kamensk-Uralsky",
+          "short_name": "Kamensk-Uralsky",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Kamensk-Ural'skiy",
+          "short_name": "Gorod Kamensk-Ural'skiy",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Sverdlovskaya oblast'",
+          "short_name": "Sverdlovskaya oblast'",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "623402",
+          "short_name": "623402",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Ulitsa Ryabova, 18, Kamensk-Uralsky, Sverdlovskaya oblast', Russia, 623402",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 56.4067289,
+            "lng": 61.9355048
+          },
+          "southwest": {
+            "lat": 56.4064849,
+            "lng": 61.9347319
+          }
+        },
+        "location": {
+          "lat": 56.4066087,
+          "lng": 61.93511230000001
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 56.4079558802915,
+            "lng": 61.93650463029151
+          },
+          "southwest": {
+            "lat": 56.4052579197085,
+            "lng": 61.9338066697085
+          }
+        }
+      },
+      "place_id": "ChIJGznLc7vZxkMRAkPI4nusB58",
+      "types": [
+        "premise",
+        "street_address"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "18",
+          "short_name": "18",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Ulitsa Ryabova",
+          "short_name": "Ulitsa Ryabova",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Kamensk-Uralsky",
+          "short_name": "Kamensk-Uralsky",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Kamensk-Ural'skiy",
+          "short_name": "Gorod Kamensk-Ural'skiy",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Sverdlovskaya oblast'",
+          "short_name": "Sverdlovskaya oblast'",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "623402",
+          "short_name": "623402",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Ulitsa Ryabova, 18, Kamensk-Uralsky, Sverdlovskaya oblast', Russia, 623402",
+      "geometry": {
+        "location": {
+          "lat": 56.4062924,
+          "lng": 61.9335734
+        },
+        "location_type": "RANGE_INTERPOLATED",
+        "viewport": {
+          "northeast": {
+            "lat": 56.4076413802915,
+            "lng": 61.9349223802915
+          },
+          "southwest": {
+            "lat": 56.4049434197085,
+            "lng": 61.9322244197085
+          }
+        }
+      },
+      "place_id": "EkpVbGl0c2EgUnlhYm92YSwgMTgsIEthbWVuc2stVXJhbHNreSwgU3ZlcmRsb3Zza2F5YSBvYmxhc3QnLCBSdXNzaWEsIDYyMzQwMiIaEhgKFAoSCaudquq72cZDES6t27_VYARBEBI",
+      "types": [
+        "street_address"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "20",
+          "short_name": "20",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Ulitsa Ryabova",
+          "short_name": "Ulitsa Ryabova",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Kamensk-Uralsky",
+          "short_name": "Kamensk-Uralsky",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Kamensk-Ural'skiy",
+          "short_name": "Gorod Kamensk-Ural'skiy",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Sverdlovskaya oblast'",
+          "short_name": "Sverdlovskaya oblast'",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "623402",
+          "short_name": "623402",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Ulitsa Ryabova, 20, Kamensk-Uralsky, Sverdlovskaya oblast', Russia, 623402",
+      "geometry": {
+        "location": {
+          "lat": 56.40498580000001,
+          "lng": 61.9338281
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 56.4063663802915,
+            "lng": 61.9350078302915
+          },
+          "southwest": {
+            "lat": 56.4036684197085,
+            "lng": 61.93230986970849
+          }
+        }
+      },
+      "place_id": "ChIJY7uPo7zZxkMRi9vzAWkcEv0",
+      "types": [
+        "street_address",
+        "subpremise"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "CW4M+G9",
+          "short_name": "CW4M+G9",
+          "types": [
+            "plus_code"
+          ]
+        },
+        {
+          "long_name": "Kamensk-Uralsky",
+          "short_name": "Kamensk-Uralsky",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Kamensk-Ural'skiy",
+          "short_name": "Gorod Kamensk-Ural'skiy",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Sverdlovsk Oblast",
+          "short_name": "Sverdlovsk Oblast",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "CW4M+G9 Kamensk-Uralsky, Sverdlovsk Oblast, Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 56.406375,
+            "lng": 61.9335
+          },
+          "southwest": {
+            "lat": 56.40625,
+            "lng": 61.93337500000001
+          }
+        },
+        "location": {
+          "lat": 56.40626,
+          "lng": 61.93346999999999
+        },
+        "location_type": "GEOMETRIC_CENTER",
+        "viewport": {
+          "northeast": {
+            "lat": 56.4076614802915,
+            "lng": 61.93478648029151
+          },
+          "southwest": {
+            "lat": 56.4049635197085,
+            "lng": 61.9320885197085
+          }
+        }
+      },
+      "place_id": "Egs5SjgzQ1c0TStHOSImOiQKCg2I6Z4hFSxM6iQQChoUChIJI1WotJXZxkMRNKHaAq-JBGs",
+      "plus_code": {
+        "compound_code": "CW4M+G9 Kamensk-Uralsky, Sverdlovsk Oblast, Russia",
+        "global_code": "9J83CW4M+G9"
+      },
+      "types": [
+        "plus_code"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "18",
+          "short_name": "18",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Ulitsa Ryabova",
+          "short_name": "Ulitsa Ryabova",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Kamensk-Uralsky",
+          "short_name": "Kamensk-Uralsky",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Kamensk-Ural'skiy",
+          "short_name": "Gorod Kamensk-Ural'skiy",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Sverdlovskaya oblast'",
+          "short_name": "Sverdlovskaya oblast'",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "623402",
+          "short_name": "623402",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Ulitsa Ryabova, 18, Kamensk-Uralsky, Sverdlovskaya oblast', Russia, 623402",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 56.4062925,
+            "lng": 61.9335736
+          },
+          "southwest": {
+            "lat": 56.4060119,
+            "lng": 61.9335599
+          }
+        },
+        "location": {
+          "lat": 56.40615220000017,
+          "lng": 61.9335667499755
+        },
+        "location_type": "GEOMETRIC_CENTER",
+        "viewport": {
+          "northeast": {
+            "lat": 56.4075011802915,
+            "lng": 61.93491573029151
+          },
+          "southwest": {
+            "lat": 56.4048032197085,
+            "lng": 61.9322177697085
+          }
+        }
+      },
+      "place_id": "ChIJq52q6rvZxkMR72j7uHQvbwg",
+      "types": [
+        "route"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "623402",
+          "short_name": "623402",
+          "types": [
+            "postal_code"
+          ]
+        },
+        {
+          "long_name": "Kamensk-Uralsky",
+          "short_name": "Kamensk-Uralsky",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Kamensk-Ural'skiy",
+          "short_name": "Gorod Kamensk-Ural'skiy",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Sverdlovsk Oblast",
+          "short_name": "Sverdlovsk Oblast",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Kamensk-Uralsky, Sverdlovsk Oblast, Russia, 623402",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 56.4168479,
+            "lng": 61.9379909
+          },
+          "southwest": {
+            "lat": 56.404253,
+            "lng": 61.91136700000001
+          }
+        },
+        "location": {
+          "lat": 56.4103053,
+          "lng": 61.92308240000001
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 56.4168479,
+            "lng": 61.9379909
+          },
+          "southwest": {
+            "lat": 56.404253,
+            "lng": 61.91136700000001
+          }
+        }
+      },
+      "place_id": "ChIJ24tI4r7ZxkMRpJ221n6aC_0",
+      "types": [
+        "postal_code"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Kamensk-Uralsky",
+          "short_name": "Kamensk-Uralsky",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Kamensk-Ural'skiy",
+          "short_name": "Gorod Kamensk-Ural'skiy",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Sverdlovsk Oblast",
+          "short_name": "Sverdlovsk Oblast",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Kamensk-Uralsky, Sverdlovsk Oblast, Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 56.4557981,
+            "lng": 62.01687510000001
+          },
+          "southwest": {
+            "lat": 56.33651210000001,
+            "lng": 61.798845
+          }
+        },
+        "location": {
+          "lat": 56.4253389,
+          "lng": 61.9222979
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 56.4557981,
+            "lng": 62.01687510000001
+          },
+          "southwest": {
+            "lat": 56.33651210000001,
+            "lng": 61.798845
+          }
+        }
+      },
+      "place_id": "ChIJI1WotJXZxkMRNKHaAq-JBGs",
+      "types": [
+        "locality",
+        "political"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Gorod Kamensk-Ural'skiy",
+          "short_name": "Gorod Kamensk-Ural'skiy",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Sverdlovsk Oblast",
+          "short_name": "Sverdlovsk Oblast",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Gorod Kamensk-Ural'skiy, Sverdlovsk Oblast, Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 56.4697499,
+            "lng": 62.0455929
+          },
+          "southwest": {
+            "lat": 56.28668709999999,
+            "lng": 61.765308
+          }
+        },
+        "location": {
+          "lat": 56.4253637,
+          "lng": 61.9223046
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 56.4697499,
+            "lng": 62.0455929
+          },
+          "southwest": {
+            "lat": 56.28668709999999,
+            "lng": 61.765308
+          }
+        }
+      },
+      "place_id": "ChIJO1WotJXZxkMRWk9BtP_rbGU",
+      "types": [
+        "administrative_area_level_2",
+        "political"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Sverdlovsk Oblast",
+          "short_name": "Sverdlovsk Oblast",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Sverdlovsk Oblast, Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 61.9465099,
+            "lng": 66.185739
+          },
+          "southwest": {
+            "lat": 56.0522071,
+            "lng": 57.22832709999999
+          }
+        },
+        "location": {
+          "lat": 59.007735,
+          "lng": 61.9316226
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 61.9465099,
+            "lng": 66.185739
+          },
+          "southwest": {
+            "lat": 56.0522071,
+            "lng": 57.22832709999999
+          }
+        }
+      },
+      "place_id": "ChIJdSSInMv9lEMROHmOUj5RGJM",
+      "types": [
+        "administrative_area_level_1",
+        "political"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 82.1673907,
+            "lng": -168.9729426
+          },
+          "southwest": {
+            "lat": 41.1857844,
+            "lng": 19.6160999
+          }
+        },
+        "location": {
+          "lat": 61.52401,
+          "lng": 105.318756
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 70,
+            "lng": 179
+          },
+          "southwest": {
+            "lat": 40,
+            "lng": 27
+          }
+        }
+      },
+      "place_id": "ChIJ-yRniZpWPEURE_YRZvj9CRQ",
+      "types": [
+        "country",
+        "political"
+      ]
+    }
+  ],
+  "status": "OK"
+}

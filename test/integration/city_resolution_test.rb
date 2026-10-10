@@ -3,19 +3,27 @@ require "test_helper"
 # Сквозная проверка определения города на натуральных данных, а не на
 # выдуманных: справочник — настоящие строки выгрузки GeoNames cities1000 (её же
 # импортирует rake import:geonames) вокруг каждой точки плюс тёзки из других
-# стран, ответы геокодера — записанные ответы Nominatim. Подменяется только
-# HTTP: разбор ответа, Cities::Resolver, алиасы и обе job — боевые.
+# стран, ответы геокодера — записанные ответы Google (с прода, 2026-10-10) и
+# Nominatim. Подменяется только HTTP: разбор ответа, Cities::Resolver, алиасы и
+# обе job — боевые.
 #
-# GEOCODING_LIVE=1 — вместо записей ходить в настоящий геокодер (и в Google,
-# если задан ключ): так видно, не поменялись ли ответы.
+# GEOCODING_LIVE=1 — вместо записей ходить в настоящие геокодеры (в Google —
+# если задан GOOGLE_GEOCODING_API_KEY): так видно, не поменялись ли ответы.
 class CityResolutionTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
   include CacheHelper
 
   LIVE = ENV["GEOCODING_LIVE"].present?
 
+  # Прод сначала спрашивает Google, Nominatim — запасной путь: проверяем оба.
+  # Запрос — хост, путь и как достать из параметров координаты точки.
+  PROVIDERS = {
+    "google" => [ "maps.googleapis.com", "/maps/api/geocode/json", ->(params) { params["latlng"].split(",") } ],
+    "nominatim" => [ "nominatim.openstreetmap.org", "/reverse", ->(params) { params.values_at("lat", "lon") } ]
+  }.freeze
+
   # Центр города по GeoNames; slug — имя записи в
-  # test/fixtures/files/geocoding/nominatim, timezone — пояс Rails.
+  # test/fixtures/files/geocoding/<provider>, timezone — пояс Rails.
   POINTS = {
     "yekaterinburg" => { lat: 56.85733, lon: 60.61529, geoname_id: 1486209, country: "RU", timezone: "Ekaterinburg" },
     "kamensk_uralsky" => { lat: 56.40626, lon: 61.93347, geoname_id: 1504826, country: "RU", timezone: "Ekaterinburg" },
@@ -46,11 +54,11 @@ class CityResolutionTest < ActiveSupport::TestCase
     load_geonames_sample
   end
 
-  POINTS.each do |slug, point|
-    test "court at #{slug} gets its city and country from the geocoder" do
+  PROVIDERS.each_key.to_a.product(POINTS.to_a).each do |provider, (slug, point)|
+    test "court at #{slug} gets its city and country from #{provider}" do
       court = Court.create!(name: "Court #{slug}", coordinates: "#{point[:lat]},#{point[:lon]}", moderation_status: "approved")
 
-      with_recorded_geocoder do
+      with_geocoder(provider) do
         Geocoding::FetchCourtAddressJob.perform_now(court.id)
       end
 
@@ -60,12 +68,12 @@ class CityResolutionTest < ActiveSupport::TestCase
       assert court.city_name.present?
     end
 
-    test "user sharing coordinates at #{slug} gets the city, its name and a timezone" do
-      user = User.create!(email: "coords-#{slug}@example.com")
+    test "user sharing coordinates at #{slug} gets the city, its name and a timezone from #{provider}" do
+      user = User.create!(email: "coords-#{provider}-#{slug}@example.com")
       query = "#{point[:lat]},#{point[:lon]}"
       user.update!(city_name: query, timezone: nil)
 
-      with_recorded_geocoder do
+      with_geocoder(provider) do
         ResolveUserCityJob.perform_now(user.id, query)
       end
 
@@ -124,27 +132,42 @@ class CityResolutionTest < ActiveSupport::TestCase
     City.insert_all(rows, unique_by: :geoname_id)
   end
 
-  def with_recorded_geocoder(&block)
-    return block.call if LIVE
-
-    recordings = Pathname(file_fixture_path).join("geocoding/nominatim")
-    resolver = Geocoding::AddressResolver.new
-    resolver.define_singleton_method(:fetch_json) do |uri, **|
-      uri = URI(uri)
-      raise "unexpected request to #{uri.host}#{uri.path}" unless uri.host == "nominatim.openstreetmap.org" && uri.path == "/reverse"
-
-      params = URI.decode_www_form(uri.query).to_h
-      slug = POINTS.find { |_, point| point[:lat].to_s == params["lat"] && point[:lon].to_s == params["lon"] }&.first
-      raise "no Nominatim recording for #{params["lat"]},#{params["lon"]}" unless slug
-
-      JSON.parse(recordings.join("#{slug}.json").read)
+  # Только этот провайдер: у Google — ключ, у Nominatim — без ключа, как
+  # запасной путь. Запрос к другому провайдеру — ошибка теста, а не фолбэк.
+  def with_geocoder(provider, &block)
+    saved_key = ENV["GOOGLE_GEOCODING_API_KEY"]
+    if provider == "nominatim"
+      ENV.delete("GOOGLE_GEOCODING_API_KEY")
+    elsif !LIVE
+      ENV["GOOGLE_GEOCODING_API_KEY"] = "recorded"
+    elsif saved_key.blank?
+      skip "GOOGLE_GEOCODING_API_KEY не задан"
     end
+    return block.call if LIVE
 
     # Записанным ответам ждать секунду между запросами незачем.
     Geocoding::AddressResolver.nominatim_last_request_at = -Float::INFINITY
-    google_key = ENV.delete("GOOGLE_GEOCODING_API_KEY")
+    resolver = recorded_resolver(provider)
     stub_singleton(Geocoding::AddressResolver, :new, -> { resolver }, &block)
   ensure
-    ENV["GOOGLE_GEOCODING_API_KEY"] = google_key if google_key
+    saved_key ? ENV["GOOGLE_GEOCODING_API_KEY"] = saved_key : ENV.delete("GOOGLE_GEOCODING_API_KEY")
+  end
+
+  def recorded_resolver(provider)
+    host, path, coordinates = PROVIDERS.fetch(provider)
+    recordings = Pathname(file_fixture_path).join("geocoding", provider)
+
+    resolver = Geocoding::AddressResolver.new
+    resolver.define_singleton_method(:fetch_json) do |uri, **|
+      uri = URI(uri)
+      raise "unexpected request to #{uri.host}#{uri.path}" unless uri.host == host && uri.path == path
+
+      lat, lon = coordinates.call(URI.decode_www_form(uri.query).to_h)
+      slug = POINTS.find { |_, point| point[:lat].to_s == lat && point[:lon].to_s == lon }&.first
+      raise "no #{provider} recording for #{lat},#{lon}" unless slug
+
+      JSON.parse(recordings.join("#{slug}.json").read)
+    end
+    resolver
   end
 end

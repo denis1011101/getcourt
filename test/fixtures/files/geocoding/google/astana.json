@@ -1,0 +1,993 @@
+{
+  "plus_code": {
+    "compound_code": "5CJW+29 Astana, Kazakhstan",
+    "global_code": "9J3H5CJW+29"
+  },
+  "results": [
+    {
+      "address_components": [
+        {
+          "long_name": "5CJW+2G2",
+          "short_name": "5CJW+2G2",
+          "types": [
+            "plus_code"
+          ]
+        },
+        {
+          "long_name": "43а",
+          "short_name": "43а",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Култегин",
+          "short_name": "Култегин",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Baikonur District",
+          "short_name": "Baikonur District",
+          "types": [
+            "political",
+            "sublocality",
+            "sublocality_level_1"
+          ]
+        },
+        {
+          "long_name": "Astana",
+          "short_name": "Astana",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Astana",
+          "short_name": "Astana",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Kazakhstan",
+          "short_name": "KZ",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "020000",
+          "short_name": "020000",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "5CJW+2G2, Култегин 43а, Astana 020000, Kazakhstan",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 51.1802083,
+            "lng": 71.44638929999999
+          },
+          "southwest": {
+            "lat": 51.1798924,
+            "lng": 71.4459071
+          }
+        },
+        "location": {
+          "lat": 51.180054,
+          "lng": 71.44614729999999
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 51.1813979802915,
+            "lng": 71.4475393302915
+          },
+          "southwest": {
+            "lat": 51.1787000197085,
+            "lng": 71.4448413697085
+          }
+        }
+      },
+      "place_id": "ChIJMz6bvd6ARUIRTV3qh_pfpHo",
+      "types": [
+        "premise",
+        "street_address"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "45",
+          "short_name": "45",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Култегин",
+          "short_name": "Култегин",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Baikonur District",
+          "short_name": "Baikonur District",
+          "types": [
+            "political",
+            "sublocality",
+            "sublocality_level_1"
+          ]
+        },
+        {
+          "long_name": "Astana",
+          "short_name": "Astana",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Astana",
+          "short_name": "Astana",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Kazakhstan",
+          "short_name": "KZ",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "020000",
+          "short_name": "020000",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Култегин 45, Astana 020000, Kazakhstan",
+      "geometry": {
+        "location": {
+          "lat": 51.1801553,
+          "lng": 71.44639719999999
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 51.1815710302915,
+            "lng": 71.44777778029149
+          },
+          "southwest": {
+            "lat": 51.1788730697085,
+            "lng": 71.44507981970848
+          }
+        }
+      },
+      "place_id": "ChIJ_xeol96ARUIRpz4ywQHvrmA",
+      "plus_code": {
+        "compound_code": "5CJW+3H Astana, Kazakhstan",
+        "global_code": "9J3H5CJW+3H"
+      },
+      "types": [
+        "street_address"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Jienkulov St",
+          "short_name": "Jienkulov St",
+          "types": [
+            "establishment",
+            "point_of_interest",
+            "transit_station"
+          ]
+        },
+        {
+          "long_name": "Baikonur District",
+          "short_name": "Baikonur District",
+          "types": [
+            "political",
+            "sublocality",
+            "sublocality_level_1"
+          ]
+        },
+        {
+          "long_name": "Astana",
+          "short_name": "Astana",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Astana",
+          "short_name": "Astana",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Kazakhstan",
+          "short_name": "KZ",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "020000",
+          "short_name": "020000",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Jienkulov St, 020000 Astana, Kazakhstan",
+      "geometry": {
+        "location": {
+          "lat": 51.180848,
+          "lng": 71.446725
+        },
+        "location_type": "GEOMETRIC_CENTER",
+        "viewport": {
+          "northeast": {
+            "lat": 51.18219268029149,
+            "lng": 71.44806973029151
+          },
+          "southwest": {
+            "lat": 51.17949471970849,
+            "lng": 71.4453717697085
+          }
+        }
+      },
+      "place_id": "ChIJCxIvg96ARUIRSIpufl8c0n0",
+      "plus_code": {
+        "compound_code": "5CJW+8M Astana, Kazakhstan",
+        "global_code": "9J3H5CJW+8M"
+      },
+      "types": [
+        "establishment",
+        "point_of_interest",
+        "transit_station"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "д.22/1",
+          "short_name": "д.22/1",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Shara Zhienqulova Street",
+          "short_name": "Shara Zhienqulova St",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Baikonur District",
+          "short_name": "Baikonur District",
+          "types": [
+            "political",
+            "sublocality",
+            "sublocality_level_1"
+          ]
+        },
+        {
+          "long_name": "Astana",
+          "short_name": "Astana",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Astana",
+          "short_name": "Astana",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Kazakhstan",
+          "short_name": "KZ",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "010000",
+          "short_name": "010000",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Shara Zhienqulova St д.22/1, Astana 010000, Kazakhstan",
+      "geometry": {
+        "location": {
+          "lat": 51.180791,
+          "lng": 71.44695329999999
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 51.1821667802915,
+            "lng": 71.4483286302915
+          },
+          "southwest": {
+            "lat": 51.1794688197085,
+            "lng": 71.44563066970849
+          }
+        }
+      },
+      "place_id": "ChIJnWJ0g96ARUIR2zQh5zdiQbk",
+      "plus_code": {
+        "compound_code": "5CJW+8Q Astana, Kazakhstan",
+        "global_code": "9J3H5CJW+8Q"
+      },
+      "types": [
+        "establishment",
+        "point_of_interest"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "24",
+          "short_name": "24",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Shara Zhienqulova Street",
+          "short_name": "Shara Zhienqulova St",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Baikonur District",
+          "short_name": "Baikonur District",
+          "types": [
+            "political",
+            "sublocality",
+            "sublocality_level_1"
+          ]
+        },
+        {
+          "long_name": "Astana",
+          "short_name": "Astana",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Astana",
+          "short_name": "Astana",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Kazakhstan",
+          "short_name": "KZ",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "010000",
+          "short_name": "010000",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Shara Zhienqulova St 24, Astana 010000, Kazakhstan",
+      "geometry": {
+        "location": {
+          "lat": 51.18126729999999,
+          "lng": 71.4465562
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 51.1826630302915,
+            "lng": 71.44774218029151
+          },
+          "southwest": {
+            "lat": 51.1799650697085,
+            "lng": 71.44504421970849
+          }
+        }
+      },
+      "place_id": "ChIJ3ajGKNyARUIR0OKJQBB-HN0",
+      "types": [
+        "street_address",
+        "subpremise"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "5CJW+29",
+          "short_name": "5CJW+29",
+          "types": [
+            "plus_code"
+          ]
+        },
+        {
+          "long_name": "Astana",
+          "short_name": "Astana",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Astana",
+          "short_name": "Astana",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Kazakhstan",
+          "short_name": "KZ",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "5CJW+29 Astana, Kazakhstan",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 51.180125,
+            "lng": 71.446
+          },
+          "southwest": {
+            "lat": 51.18000000000001,
+            "lng": 71.44587500000002
+          }
+        },
+        "location": {
+          "lat": 51.1801,
+          "lng": 71.44597999999999
+        },
+        "location_type": "GEOMETRIC_CENTER",
+        "viewport": {
+          "northeast": {
+            "lat": 51.1814114802915,
+            "lng": 71.44728648029152
+          },
+          "southwest": {
+            "lat": 51.1787135197085,
+            "lng": 71.4445885197085
+          }
+        }
+      },
+      "place_id": "Egs5SjNINUNKVysyOSImOiQKCg2odoEeFZjKlSoQChoUChIJCUa1fcSARUIRKJKx3Y0U-Zc",
+      "plus_code": {
+        "compound_code": "5CJW+29 Astana, Kazakhstan",
+        "global_code": "9J3H5CJW+29"
+      },
+      "types": [
+        "plus_code"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Anuar Alimzhanov Street",
+          "short_name": "Anuar Alimzhanov St",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Baikonur District",
+          "short_name": "Baikonur District",
+          "types": [
+            "political",
+            "sublocality",
+            "sublocality_level_1"
+          ]
+        },
+        {
+          "long_name": "Astana",
+          "short_name": "Astana",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Astana",
+          "short_name": "Astana",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Kazakhstan",
+          "short_name": "KZ",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "010000",
+          "short_name": "010000",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Anuar Alimzhanov St, Astana 010000, Kazakhstan",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 51.1802249,
+            "lng": 71.4468043
+          },
+          "southwest": {
+            "lat": 51.17948579999999,
+            "lng": 71.4458538
+          }
+        },
+        "location": {
+          "lat": 51.17982650073942,
+          "lng": 71.44638856187834
+        },
+        "location_type": "GEOMETRIC_CENTER",
+        "viewport": {
+          "northeast": {
+            "lat": 51.1812043302915,
+            "lng": 71.4476780302915
+          },
+          "southwest": {
+            "lat": 51.1785063697085,
+            "lng": 71.44498006970849
+          }
+        }
+      },
+      "place_id": "ChIJCf-Jld6ARUIRtGdJv838GaE",
+      "types": [
+        "route"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "24",
+          "short_name": "24",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Shara Zhienqulova Street",
+          "short_name": "Shara Zhienqulova St",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Baikonur District",
+          "short_name": "Baikonur District",
+          "types": [
+            "political",
+            "sublocality",
+            "sublocality_level_1"
+          ]
+        },
+        {
+          "long_name": "Astana",
+          "short_name": "Astana",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Astana",
+          "short_name": "Astana",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Kazakhstan",
+          "short_name": "KZ",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "010000",
+          "short_name": "010000",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Shara Zhienqulova St 24, Astana 010000, Kazakhstan",
+      "geometry": {
+        "location": {
+          "lat": 51.1811338,
+          "lng": 71.44606449999999
+        },
+        "location_type": "RANGE_INTERPOLATED",
+        "viewport": {
+          "northeast": {
+            "lat": 51.1824827802915,
+            "lng": 71.4474134802915
+          },
+          "southwest": {
+            "lat": 51.1797848197085,
+            "lng": 71.4447155197085
+          }
+        }
+      },
+      "place_id": "EjJTaGFyYSBaaGllbnF1bG92YSBTdCAyNCwgQXN0YW5hIDAxMDAwMCwgS2F6YWtoc3RhbiIaEhgKFAoSCWke8SLcgEVCEYxYLEMgR5pkEBg",
+      "types": [
+        "street_address"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Baikonur District",
+          "short_name": "Baikonur District",
+          "types": [
+            "political",
+            "sublocality",
+            "sublocality_level_1"
+          ]
+        },
+        {
+          "long_name": "Astana",
+          "short_name": "Astana",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Astana",
+          "short_name": "Astana",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Kazakhstan",
+          "short_name": "KZ",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "020000",
+          "short_name": "020000",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Baikonur District, 020000 Astana, Kazakhstan",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 51.35111,
+            "lng": 71.7063331
+          },
+          "southwest": {
+            "lat": 51.14754259999999,
+            "lng": 71.29809360000002
+          }
+        },
+        "location": {
+          "lat": 51.1669964,
+          "lng": 71.43989660000001
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 51.35111,
+            "lng": 71.7063331
+          },
+          "southwest": {
+            "lat": 51.14754259999999,
+            "lng": 71.29809360000002
+          }
+        }
+      },
+      "place_id": "ChIJk050VvV_T0IRf_bS87H74Fk",
+      "types": [
+        "political",
+        "sublocality",
+        "sublocality_level_1"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "010000",
+          "short_name": "010000",
+          "types": [
+            "postal_code"
+          ]
+        },
+        {
+          "long_name": "Zh. Omarov Street",
+          "short_name": "Zh. Omarov St",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Astana",
+          "short_name": "Astana",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Kazakhstan",
+          "short_name": "KZ",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Zh. Omarov St, 010000 Astana, Kazakhstan",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 51.2903453,
+            "lng": 71.7427397
+          },
+          "southwest": {
+            "lat": 51.0055461,
+            "lng": 71.2160397
+          }
+        },
+        "location": {
+          "lat": 51.1624777,
+          "lng": 71.3668407
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 51.2903453,
+            "lng": 71.7427397
+          },
+          "southwest": {
+            "lat": 51.0055461,
+            "lng": 71.2160397
+          }
+        }
+      },
+      "place_id": "ChIJ-Vn4DS-BRUIRRa6FpUx8iuM",
+      "postcode_localities": [
+        "Almaty District",
+        "Astana",
+        "Baikonur District",
+        "Esil District",
+        "Karaatkel",
+        "Kuprinka",
+        "Saryarka District",
+        "каражар"
+      ],
+      "types": [
+        "postal_code"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Astana",
+          "short_name": "Astana",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Astana",
+          "short_name": "Astana",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Kazakhstan",
+          "short_name": "KZ",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Astana, Kazakhstan",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 51.35111,
+            "lng": 71.7851913
+          },
+          "southwest": {
+            "lat": 50.85760759999999,
+            "lng": 71.21797339999999
+          }
+        },
+        "location": {
+          "lat": 51.0847256,
+          "lng": 71.4204121
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 51.35111,
+            "lng": 71.7851913
+          },
+          "southwest": {
+            "lat": 50.85760759999999,
+            "lng": 71.21797339999999
+          }
+        }
+      },
+      "place_id": "ChIJ1UY-xJiDRUIRsZY4F8d3SIo",
+      "types": [
+        "administrative_area_level_1",
+        "political"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Astana",
+          "short_name": "Astana",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Astana",
+          "short_name": "Astana",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Kazakhstan",
+          "short_name": "KZ",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Astana, Kazakhstan",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 51.35111,
+            "lng": 71.7851913
+          },
+          "southwest": {
+            "lat": 50.85760759999999,
+            "lng": 71.21777560000001
+          }
+        },
+        "location": {
+          "lat": 51.1655126,
+          "lng": 71.4272222
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 51.35111,
+            "lng": 71.7851913
+          },
+          "southwest": {
+            "lat": 50.85760759999999,
+            "lng": 71.21777560000001
+          }
+        }
+      },
+      "place_id": "ChIJCUa1fcSARUIRKJKx3Y0U-Zc",
+      "types": [
+        "locality",
+        "political"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Kazakhstan",
+          "short_name": "KZ",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Kazakhstan",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 55.4428918,
+            "lng": 87.3154151
+          },
+          "southwest": {
+            "lat": 40.5686886,
+            "lng": 46.4932078
+          }
+        },
+        "location": {
+          "lat": 48.019573,
+          "lng": 66.923684
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 55.4428918,
+            "lng": 87.3154151
+          },
+          "southwest": {
+            "lat": 40.5686886,
+            "lng": 46.4932078
+          }
+        }
+      },
+      "place_id": "ChIJR6n87AcQqTgRGw6z5C-Ee18",
+      "types": [
+        "country",
+        "political"
+      ]
+    }
+  ],
+  "status": "OK"
+}

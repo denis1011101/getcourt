@@ -1,0 +1,1056 @@
+{
+  "plus_code": {
+    "compound_code": "5C6H+CG Chelyabinsk, Chelyabinsk Oblast, Russia",
+    "global_code": "9J735C6H+CG"
+  },
+  "results": [
+    {
+      "address_components": [
+        {
+          "long_name": "26а/2",
+          "short_name": "26а/2",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Prospekt Lenina",
+          "short_name": "Prospekt Lenina",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Chelyabinsk",
+          "short_name": "Chelyabinsk",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Chelyabinsk",
+          "short_name": "Chelyabinsk",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Chelyabinskaya oblast'",
+          "short_name": "Chelyabinskaya oblast'",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "454091",
+          "short_name": "454091",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Prospekt Lenina, 26а/2, Chelyabinsk, Chelyabinskaya oblast', Russia, 454091",
+      "geometry": {
+        "location": {
+          "lat": 55.1615851,
+          "lng": 61.4294664
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 55.16291158029149,
+            "lng": 61.4310128802915
+          },
+          "southwest": {
+            "lat": 55.1602136197085,
+            "lng": 61.42831491970848
+          }
+        }
+      },
+      "place_id": "ChIJ34au-qHtxUMR-dsw8IvuUCQ",
+      "plus_code": {
+        "compound_code": "5C6H+JQ Chelyabinsk, Chelyabinsk Oblast, Russia",
+        "global_code": "9J735C6H+JQ"
+      },
+      "types": [
+        "beauty_salon",
+        "establishment",
+        "point_of_interest"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "28В корпус 1",
+          "short_name": "28В корпус 1",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Prospekt Lenina",
+          "short_name": "Prospekt Lenina",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Chelyabinsk",
+          "short_name": "Chelyabinsk",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Chelyabinsk",
+          "short_name": "Chelyabinsk",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Chelyabinskaya oblast'",
+          "short_name": "Chelyabinskaya oblast'",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "454091",
+          "short_name": "454091",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Prospekt Lenina, 28В корпус 1, Chelyabinsk, Chelyabinskaya oblast', Russia, 454091",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 55.1615763,
+            "lng": 61.4279622
+          },
+          "southwest": {
+            "lat": 55.1614581,
+            "lng": 61.42784589999999
+          }
+        },
+        "location": {
+          "lat": 55.1615172,
+          "lng": 61.42790400000001
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 55.1628661802915,
+            "lng": 61.4292832302915
+          },
+          "southwest": {
+            "lat": 55.1601682197085,
+            "lng": 61.42658526970848
+          }
+        }
+      },
+      "place_id": "ChIJe2dFPlvtxUMREfz07LfKm-Q",
+      "types": [
+        "premise",
+        "street_address"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "26-1",
+          "short_name": "26-1",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Prospekt Lenina",
+          "short_name": "Prospekt Lenina",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "пос. Токмасский",
+          "short_name": "пос. Токмасский",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Chelyabinsk",
+          "short_name": "Chelyabinsk",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Chelyabinskaya oblast'",
+          "short_name": "Chelyabinskaya oblast'",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "456488",
+          "short_name": "456488",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Prospekt Lenina, 26-1, пос. Токмасский, Chelyabinskaya oblast', Russia, 456488",
+      "geometry": {
+        "location": {
+          "lat": 55.1614744,
+          "lng": 61.43034699999999
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 55.1628011302915,
+            "lng": 61.4317028802915
+          },
+          "southwest": {
+            "lat": 55.1601031697085,
+            "lng": 61.42900491970849
+          }
+        }
+      },
+      "place_id": "ChIJUVUJZFvtxUMRXUqn2BgiQtk",
+      "types": [
+        "street_address",
+        "subpremise"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "26",
+          "short_name": "26",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Prospekt Lenina",
+          "short_name": "Prospekt Lenina",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Chelyabinsk",
+          "short_name": "Chelyabinsk",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Chelyabinsk",
+          "short_name": "Chelyabinsk",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Chelyabinskaya oblast'",
+          "short_name": "Chelyabinskaya oblast'",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "454091",
+          "short_name": "454091",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Prospekt Lenina, 26, Chelyabinsk, Chelyabinskaya oblast', Russia, 454091",
+      "geometry": {
+        "location": {
+          "lat": 55.1610966,
+          "lng": 61.42892620000001
+        },
+        "location_type": "RANGE_INTERPOLATED",
+        "viewport": {
+          "northeast": {
+            "lat": 55.1624455802915,
+            "lng": 61.43027518029151
+          },
+          "southwest": {
+            "lat": 55.1597476197085,
+            "lng": 61.4275772197085
+          }
+        }
+      },
+      "place_id": "EkhQcm9zcGVrdCBMZW5pbmEsIDI2LCBDaGVseWFiaW5zaywgQ2hlbHlhYmluc2theWEgb2JsYXN0JywgUnVzc2lhLCA0NTQwOTEiGhIYChQKEgmLsScTW-3FQxFX0eban0CcxxAa",
+      "types": [
+        "street_address"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "26",
+          "short_name": "26",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Prospekt Lenina",
+          "short_name": "Prospekt Lenina",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Chelyabinsk",
+          "short_name": "Chelyabinsk",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Chelyabinsk",
+          "short_name": "Chelyabinsk",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Chelyabinskaya oblast'",
+          "short_name": "Chelyabinskaya oblast'",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "454091",
+          "short_name": "454091",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Prospekt Lenina, 26, Chelyabinsk, Chelyabinskaya oblast', Russia, 454091",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 55.16109669999999,
+            "lng": 61.42892639999999
+          },
+          "southwest": {
+            "lat": 55.1610858,
+            "lng": 61.4287105
+          }
+        },
+        "location": {
+          "lat": 55.16109125004751,
+          "lng": 61.42881844998554
+        },
+        "location_type": "GEOMETRIC_CENTER",
+        "viewport": {
+          "northeast": {
+            "lat": 55.1624402302915,
+            "lng": 61.4301674302915
+          },
+          "southwest": {
+            "lat": 55.1597422697085,
+            "lng": 61.42746946970849
+          }
+        }
+      },
+      "place_id": "ChIJi7EnE1vtxUMRV9Hm2p9AnMc",
+      "types": [
+        "route"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Agentstvo vozdushnykh soobscheniy",
+          "short_name": "Agentstvo vozdushnykh soobscheniy",
+          "types": [
+            "establishment",
+            "point_of_interest",
+            "transit_station"
+          ]
+        },
+        {
+          "long_name": "Chelyabinsk",
+          "short_name": "Chelyabinsk",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Chelyabinsk",
+          "short_name": "Chelyabinsk",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Chelyabinskaya oblast'",
+          "short_name": "Chelyabinskaya oblast'",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "454091",
+          "short_name": "454091",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Agentstvo vozdushnykh soobscheniy, Chelyabinsk, Chelyabinskaya oblast', Russia, 454091",
+      "geometry": {
+        "location": {
+          "lat": 55.160842,
+          "lng": 61.426422
+        },
+        "location_type": "GEOMETRIC_CENTER",
+        "viewport": {
+          "northeast": {
+            "lat": 55.16215218029149,
+            "lng": 61.4277676802915
+          },
+          "southwest": {
+            "lat": 55.15945421970849,
+            "lng": 61.42506971970848
+          }
+        }
+      },
+      "place_id": "ChIJs8vj2lrtxUMRkTHJ_hL0wjs",
+      "plus_code": {
+        "compound_code": "5C6G+8H Chelyabinsk, Chelyabinsk Oblast, Russia",
+        "global_code": "9J735C6G+8H"
+      },
+      "types": [
+        "establishment",
+        "point_of_interest",
+        "transit_station"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "5C6H+CG",
+          "short_name": "5C6H+CG",
+          "types": [
+            "plus_code"
+          ]
+        },
+        {
+          "long_name": "Chelyabinsk",
+          "short_name": "Chelyabinsk",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Chelyabinsk",
+          "short_name": "Gorod Chelyabinsk",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Chelyabinsk Oblast",
+          "short_name": "Chelyabinsk Oblast",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "5C6H+CG Chelyabinsk, Chelyabinsk Oblast, Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 55.161125,
+            "lng": 61.428875
+          },
+          "southwest": {
+            "lat": 55.16099999999999,
+            "lng": 61.42874999999999
+          }
+        },
+        "location": {
+          "lat": 55.1611,
+          "lng": 61.42877000000001
+        },
+        "location_type": "GEOMETRIC_CENTER",
+        "viewport": {
+          "northeast": {
+            "lat": 55.1624114802915,
+            "lng": 61.4301614802915
+          },
+          "southwest": {
+            "lat": 55.1597135197085,
+            "lng": 61.42746351970849
+          }
+        }
+      },
+      "place_id": "Egs5SjczNUM2SCtDRyImOiQKCg146uAgFVRJnSQQChoUChIJjTpKEMuSxUMRvxEXbSpKIu8",
+      "plus_code": {
+        "compound_code": "5C6H+CG Chelyabinsk, Chelyabinsk Oblast, Russia",
+        "global_code": "9J735C6H+CG"
+      },
+      "types": [
+        "plus_code"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "21А",
+          "short_name": "21А",
+          "types": [
+            "street_number"
+          ]
+        },
+        {
+          "long_name": "Prospekt Lenina",
+          "short_name": "Prospekt Lenina",
+          "types": [
+            "route"
+          ]
+        },
+        {
+          "long_name": "Chelyabinsk",
+          "short_name": "Chelyabinsk",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Chelyabinsk",
+          "short_name": "Chelyabinsk",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Chelyabinskaya oblast'",
+          "short_name": "Chelyabinskaya oblast'",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        },
+        {
+          "long_name": "454091",
+          "short_name": "454091",
+          "types": [
+            "postal_code"
+          ]
+        }
+      ],
+      "formatted_address": "Prospekt Lenina, 21А, Chelyabinsk, Chelyabinskaya oblast', Russia, 454091",
+      "geometry": {
+        "location": {
+          "lat": 55.1599315,
+          "lng": 61.4264959
+        },
+        "location_type": "ROOFTOP",
+        "viewport": {
+          "northeast": {
+            "lat": 55.1613817302915,
+            "lng": 61.42783103029151
+          },
+          "southwest": {
+            "lat": 55.1586837697085,
+            "lng": 61.42513306970849
+          }
+        }
+      },
+      "place_id": "ChIJo1Wy-1rtxUMR2qHMLlMWeWI",
+      "plus_code": {
+        "compound_code": "5C5G+XH Chelyabinsk, Chelyabinsk Oblast, Russia",
+        "global_code": "9J735C5G+XH"
+      },
+      "types": [
+        "street_address"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "454091",
+          "short_name": "454091",
+          "types": [
+            "postal_code"
+          ]
+        },
+        {
+          "long_name": "Chelyabinsk",
+          "short_name": "Chelyabinsk",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Chelyabinsk",
+          "short_name": "Gorod Chelyabinsk",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Chelyabinsk Oblast",
+          "short_name": "Chelyabinsk Oblast",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Chelyabinsk, Chelyabinsk Oblast, Russia, 454091",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 55.171875,
+            "lng": 61.4313461
+          },
+          "southwest": {
+            "lat": 55.13326499999999,
+            "lng": 61.3897691
+          }
+        },
+        "location": {
+          "lat": 55.1554884,
+          "lng": 61.41105570000001
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 55.171875,
+            "lng": 61.4313461
+          },
+          "southwest": {
+            "lat": 55.13326499999999,
+            "lng": 61.3897691
+          }
+        }
+      },
+      "place_id": "ChIJTdwDY1CNxUMRzcFn6bZmmyE",
+      "types": [
+        "postal_code"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Traktorozavodskiy Rayon",
+          "short_name": "Traktorozavodskiy Rayon",
+          "types": [
+            "political",
+            "sublocality",
+            "sublocality_level_2"
+          ]
+        },
+        {
+          "long_name": "Chelyabinsk",
+          "short_name": "Chelyabinsk",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Chelyabinsk",
+          "short_name": "Gorod Chelyabinsk",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Chelyabinsk Oblast",
+          "short_name": "Chelyabinsk Oblast",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Traktorozavodskiy Rayon, Chelyabinsk, Chelyabinsk Oblast, Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 55.2411977,
+            "lng": 61.5840123
+          },
+          "southwest": {
+            "lat": 55.1479822,
+            "lng": 61.4203532
+          }
+        },
+        "location": {
+          "lat": 55.18644339999999,
+          "lng": 61.52068310000001
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 55.2411977,
+            "lng": 61.5840123
+          },
+          "southwest": {
+            "lat": 55.1479822,
+            "lng": 61.4203532
+          }
+        }
+      },
+      "place_id": "ChIJBebSB8LtxUMRdZICgYhguw8",
+      "types": [
+        "political",
+        "sublocality",
+        "sublocality_level_2"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Chelyabinsk",
+          "short_name": "Chelyabinsk",
+          "types": [
+            "locality",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Gorod Chelyabinsk",
+          "short_name": "Gorod Chelyabinsk",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Chelyabinsk Oblast",
+          "short_name": "Chelyabinsk Oblast",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Chelyabinsk, Chelyabinsk Oblast, Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 55.31864599999999,
+            "lng": 61.59090599999999
+          },
+          "southwest": {
+            "lat": 54.985372,
+            "lng": 61.226235
+          }
+        },
+        "location": {
+          "lat": 55.1644419,
+          "lng": 61.4368431
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 55.31864599999999,
+            "lng": 61.59090599999999
+          },
+          "southwest": {
+            "lat": 54.985372,
+            "lng": 61.226235
+          }
+        }
+      },
+      "place_id": "ChIJjTpKEMuSxUMRvxEXbSpKIu8",
+      "types": [
+        "locality",
+        "political"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Gorod Chelyabinsk",
+          "short_name": "Gorod Chelyabinsk",
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Chelyabinsk Oblast",
+          "short_name": "Chelyabinsk Oblast",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Gorod Chelyabinsk, Chelyabinsk Oblast, Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 55.319632,
+            "lng": 61.59090599999999
+          },
+          "southwest": {
+            "lat": 54.985372,
+            "lng": 61.226235
+          }
+        },
+        "location": {
+          "lat": 55.1504115,
+          "lng": 61.38724259999999
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 55.319632,
+            "lng": 61.59090599999999
+          },
+          "southwest": {
+            "lat": 54.985372,
+            "lng": 61.226235
+          }
+        }
+      },
+      "place_id": "ChIJl2rk5buSxUMReO1BuXCXlCA",
+      "types": [
+        "administrative_area_level_2",
+        "political"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Chelyabinsk Oblast",
+          "short_name": "Chelyabinsk Oblast",
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ]
+        },
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Chelyabinsk Oblast, Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 56.367262,
+            "lng": 63.35167990000001
+          },
+          "southwest": {
+            "lat": 51.99089379999999,
+            "lng": 57.13156499999999
+          }
+        },
+        "location": {
+          "lat": 54.43194219999999,
+          "lng": 60.87889629999999
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 56.367262,
+            "lng": 63.35167990000001
+          },
+          "southwest": {
+            "lat": 51.99089379999999,
+            "lng": 57.13156499999999
+          }
+        }
+      },
+      "place_id": "ChIJeS5_7Xgj0EMRsJhFUq_GAwE",
+      "types": [
+        "administrative_area_level_1",
+        "political"
+      ]
+    },
+    {
+      "address_components": [
+        {
+          "long_name": "Russia",
+          "short_name": "RU",
+          "types": [
+            "country",
+            "political"
+          ]
+        }
+      ],
+      "formatted_address": "Russia",
+      "geometry": {
+        "bounds": {
+          "northeast": {
+            "lat": 82.1673907,
+            "lng": -168.9729426
+          },
+          "southwest": {
+            "lat": 41.1857844,
+            "lng": 19.6160999
+          }
+        },
+        "location": {
+          "lat": 61.52401,
+          "lng": 105.318756
+        },
+        "location_type": "APPROXIMATE",
+        "viewport": {
+          "northeast": {
+            "lat": 70,
+            "lng": 179
+          },
+          "southwest": {
+            "lat": 40,
+            "lng": 27
+          }
+        }
+      },
+      "place_id": "ChIJ-yRniZpWPEURE_YRZvj9CRQ",
+      "types": [
+        "country",
+        "political"
+      ]
+    }
+  ],
+  "status": "OK"
+}
