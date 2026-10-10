@@ -26,92 +26,90 @@
       <button type="button"
               data-action="click->stats-matches#remove"
               aria-label="<%= t("games.show.remove_match") %>"
-              class="rounded px-2 py-1 text-sm text-gray-500 hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-700">
-        x
+              class="flex h-10 w-10 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-red-600 dark:text-slate-300 dark:hover:bg-slate-700">
+        <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z"/></svg>
       </button>
     <% end %>
   </div>
 
+  <%# Статистику обычно заполняют с телефона прямо на корте: строка игрока —
+      крупная зона нажатия с галкой, а команды различаются цветом. %>
+  <% teams = [
+       [ "a", prefill_a_ids, prefill_a_guests, "bg-indigo-500",
+         "has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50 dark:has-[:checked]:border-indigo-400 dark:has-[:checked]:bg-indigo-500/20", "text-indigo-600" ],
+       [ "b", prefill_b_ids, prefill_b_guests, "bg-amber-500",
+         "has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50 dark:has-[:checked]:border-amber-400 dark:has-[:checked]:bg-amber-500/20", "text-amber-600" ]
+     ] %>
   <div class="grid grid-cols-1 gap-4 border-b pb-4 dark:border-white/10 sm:grid-cols-2">
-    <div>
-      <h4 class="mb-2 text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("games.show.team_a") %></h4>
-      <div class="space-y-1">
-        <% participants.each do |u| %>
-          <% label = user_display_label(u) %>
-          <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-            <%= check_box_tag "matches[#{index}][team_a_user_ids][]", u.id, prefill_a_ids.include?(u.id), class: "rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
-            <span><%= label %></span>
-          </label>
-        <% end %>
-        <% guest_participations.each do |gp| %>
-          <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-            <%= check_box_tag "matches[#{index}][team_a_guest_names][]", gp.guest_name, prefill_a_guests.include?(gp.guest_name), class: "rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
-            <span><%= gp.guest_name %> (<%= t("games.show.guest_badge") %>)</span>
-          </label>
-        <% end %>
+    <% teams.each do |team, prefill_ids, prefill_guests, dot_class, checked_classes, check_color| %>
+      <% row_class = "flex min-h-12 cursor-pointer items-center gap-3 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800 transition select-none dark:border-white/10 dark:text-slate-200 #{checked_classes}" %>
+      <% checkbox_class = "h-6 w-6 shrink-0 rounded-md border-gray-300 #{check_color} focus:ring-2 focus:ring-indigo-500 dark:border-white/20 dark:bg-slate-700" %>
+      <div>
+        <h4 class="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-slate-300">
+          <span class="inline-block h-3 w-3 rounded-full <%= dot_class %>" aria-hidden="true"></span>
+          <%= t("games.show.team_#{team}") %>
+        </h4>
+        <div class="space-y-2">
+          <% participants.each do |u| %>
+            <label class="<%= row_class %>">
+              <%= check_box_tag "matches[#{index}][team_#{team}_user_ids][]", u.id, prefill_ids.include?(u.id), id: nil, class: checkbox_class %>
+              <span class="min-w-0 truncate"><%= user_display_label(u) %></span>
+            </label>
+          <% end %>
+          <% guest_participations.each do |gp| %>
+            <label class="<%= row_class %>">
+              <%= check_box_tag "matches[#{index}][team_#{team}_guest_names][]", gp.guest_name, prefill_guests.include?(gp.guest_name), id: nil, class: checkbox_class %>
+              <span class="min-w-0 truncate"><%= gp.guest_name %> <span class="text-xs text-gray-500 dark:text-slate-400">(<%= t("games.show.guest_badge") %>)</span></span>
+            </label>
+          <% end %>
+        </div>
+        <div class="mt-3">
+          <label class="mb-1 block text-sm text-gray-600 dark:text-slate-400"><%= t("games.show.guest_label") %></label>
+          <%= text_field_tag "matches[#{index}][team_#{team}_guests]", (prefill_guests - guest_participations.map(&:guest_name)).join(", ").presence, placeholder: t("games.show.guest_placeholder"), class: "min-h-11 w-full rounded-lg border-gray-300 text-base sm:text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+        </div>
+        <div class="mt-3"
+             data-controller="team-players"
+             data-action="user-picker:selected->team-players#add"
+             data-team-players-field-name-value="matches[<%= index %>][team_<%= team %>_user_ids][]"
+             data-team-players-row-class-value="<%= row_class %>"
+             data-team-players-checkbox-class-value="<%= checkbox_class %>">
+          <label class="mb-1 block text-sm text-gray-600 dark:text-slate-400"><%= t("games.show.add_player_label") %></label>
+          <%= render "shared/user_picker", clear: true, placeholder: t("games.show.add_player_prompt"), aria_label: t("games.show.add_team_player") %>
+          <div data-team-players-target="list" class="mt-2 space-y-2"></div>
+        </div>
       </div>
-      <div class="mt-3">
-        <label class="mb-1 block text-sm text-gray-600 dark:text-slate-400"><%= t("games.show.guest_label") %></label>
-        <%= text_field_tag "matches[#{index}][team_a_guests]", (prefill_a_guests - guest_participations.map(&:guest_name)).join(", ").presence, placeholder: t("games.show.guest_placeholder"), class: "w-full rounded border-gray-300 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
-      </div>
-      <div class="mt-3"
-           data-controller="team-players"
-           data-action="user-picker:selected->team-players#add"
-           data-team-players-field-name-value="matches[<%= index %>][team_a_user_ids][]">
-        <label class="mb-1 block text-sm text-gray-600 dark:text-slate-400"><%= t("games.show.add_player_label") %></label>
-        <%= render "shared/user_picker", clear: true, placeholder: t("games.show.add_player_prompt"), aria_label: t("games.show.add_team_player") %>
-        <div data-team-players-target="list" class="mt-2 space-y-1"></div>
-      </div>
-    </div>
-
-    <div>
-      <h4 class="mb-2 text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("games.show.team_b") %></h4>
-      <div class="space-y-1">
-        <% participants.each do |u| %>
-          <% label = user_display_label(u) %>
-          <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-            <%= check_box_tag "matches[#{index}][team_b_user_ids][]", u.id, prefill_b_ids.include?(u.id), class: "rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
-            <span><%= label %></span>
-          </label>
-        <% end %>
-        <% guest_participations.each do |gp| %>
-          <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-            <%= check_box_tag "matches[#{index}][team_b_guest_names][]", gp.guest_name, prefill_b_guests.include?(gp.guest_name), class: "rounded border-gray-300 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
-            <span><%= gp.guest_name %> (<%= t("games.show.guest_badge") %>)</span>
-          </label>
-        <% end %>
-      </div>
-      <div class="mt-3">
-        <label class="mb-1 block text-sm text-gray-600 dark:text-slate-400"><%= t("games.show.guest_label") %></label>
-        <%= text_field_tag "matches[#{index}][team_b_guests]", (prefill_b_guests - guest_participations.map(&:guest_name)).join(", ").presence, placeholder: t("games.show.guest_placeholder"), class: "w-full rounded border-gray-300 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
-      </div>
-      <div class="mt-3"
-           data-controller="team-players"
-           data-action="user-picker:selected->team-players#add"
-           data-team-players-field-name-value="matches[<%= index %>][team_b_user_ids][]">
-        <label class="mb-1 block text-sm text-gray-600 dark:text-slate-400"><%= t("games.show.add_player_label") %></label>
-        <%= render "shared/user_picker", clear: true, placeholder: t("games.show.add_player_prompt"), aria_label: t("games.show.add_team_player") %>
-        <div data-team-players-target="list" class="mt-2 space-y-1"></div>
-      </div>
-    </div>
+    <% end %>
   </div>
 
   <div class="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-[10rem_minmax(0,1fr)]">
-    <div>
-      <span class="mb-2 block text-sm text-gray-600 dark:text-slate-400"><%= t("games.show.winner") %></span>
-      <label class="mb-1 flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-        <%= radio_button_tag "matches[#{index}][winner_team]", "a", group && group[:winner] == "a" %>
-        <span><%= t("games.show.team_a") %></span>
-      </label>
-      <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-        <%= radio_button_tag "matches[#{index}][winner_team]", "b", group && group[:winner] == "b" %>
-        <span><%= t("games.show.team_b") %></span>
-      </label>
-      <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-slate-300">
-        <%= radio_button_tag "matches[#{index}][winner_team]", "draw", group && group[:winner] == "draw" %>
-        <span><%= t("games.show.draw") %></span>
-      </label>
-    </div>
+    <%# Победитель — три большие кнопки вместо мелких радио: по ним легко
+        попасть пальцем. %>
+    <fieldset>
+      <legend class="mb-2 block text-sm text-gray-600 dark:text-slate-400"><%= t("games.show.winner") %></legend>
+      <div class="grid grid-cols-3 gap-2 lg:grid-cols-1">
+        <% winner_options = [
+             [ "a", t("games.show.team_a"), "text-indigo-600 dark:text-indigo-300",
+               "peer-checked:border-indigo-500 peer-checked:bg-indigo-50 dark:peer-checked:border-indigo-400 dark:peer-checked:bg-indigo-500/20" ],
+             [ "b", t("games.show.team_b"), "text-amber-600 dark:text-amber-300",
+               "peer-checked:border-amber-500 peer-checked:bg-amber-50 dark:peer-checked:border-amber-400 dark:peer-checked:bg-amber-500/20" ],
+             [ "draw", t("games.show.draw"), "text-gray-500 dark:text-slate-300",
+               "peer-checked:border-gray-500 peer-checked:bg-gray-100 dark:peer-checked:border-slate-300 dark:peer-checked:bg-white/10" ]
+           ] %>
+        <% winner_options.each do |value, label, icon_class, checked_classes| %>
+          <label class="cursor-pointer">
+            <%= radio_button_tag "matches[#{index}][winner_team]", value, group && group[:winner] == value, id: nil, class: "peer sr-only" %>
+            <span class="flex min-h-14 flex-col items-center justify-center gap-1 rounded-lg border border-gray-200 px-2 py-2 text-center text-sm font-medium text-gray-700 transition select-none peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-400 dark:border-white/10 dark:text-slate-200 lg:flex-row lg:justify-start lg:gap-2 <%= checked_classes %>">
+              <% if value == "draw" %>
+                <svg class="h-5 w-5 <%= icon_class %>" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M4 7.25a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H4.75A.75.75 0 0 1 4 7.25Zm0 5.5a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H4.75a.75.75 0 0 1-.75-.75Z" clip-rule="evenodd"/></svg>
+              <% else %>
+                <svg class="h-5 w-5 <%= icon_class %>" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 1c-1.828 0-3.623.149-5.371.435a.75.75 0 0 0-.629.74v.387c-.827.157-1.642.345-2.445.564a.75.75 0 0 0-.552.698 5 5 0 0 0 4.503 5.152 6 6 0 0 0 2.946 1.822A6.451 6.451 0 0 1 7.768 13H7.5A1.5 1.5 0 0 0 6 14.5V17h-.75C4.56 17 4 17.56 4 18.25c0 .414.336.75.75.75h10.5a.75.75 0 0 0 .75-.75c0-.69-.56-1.25-1.25-1.25H14v-2.5a1.5 1.5 0 0 0-1.5-1.5h-.268a6.453 6.453 0 0 1-.684-2.202 6 6 0 0 0 2.946-1.822 5 5 0 0 0 4.503-5.152.75.75 0 0 0-.552-.698A31.804 31.804 0 0 0 16 2.562v-.387a.75.75 0 0 0-.629-.74A33.227 33.227 0 0 0 10 1ZM2.525 4.422C3.012 4.3 3.504 4.19 4 4.09V5c0 .74.134 1.448.38 2.103a3.503 3.503 0 0 1-1.855-2.68Zm14.95 0a3.503 3.503 0 0 1-1.854 2.68C15.866 6.449 16 5.74 16 5v-.91c.496.099.988.21 1.475.332Z" clip-rule="evenodd"/></svg>
+              <% end %>
+              <span class="leading-tight"><%= label %></span>
+            </span>
+          </label>
+        <% end %>
+      </div>
+    </fieldset>
 
     <div class="min-w-0">
       <label class="mb-1 block text-sm text-gray-600 dark:text-slate-400"><%= t("games.show.score") %></label>

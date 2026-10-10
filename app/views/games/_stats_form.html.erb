@@ -4,7 +4,7 @@
   <div class="space-y-4">
     <div>
       <label class="mb-1 block text-sm text-gray-600 dark:text-slate-400"><%= t("games.show.hours") %></label>
-      <%= number_field_tag "statistics[hours]", saved_hours, step: 0.1, min: 0, class: "w-32 rounded border-gray-300 text-sm dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
+      <%= number_field_tag "statistics[hours]", saved_hours, step: 0.1, min: 0, inputmode: "decimal", class: "min-h-11 w-32 rounded-lg border-gray-300 text-base dark:border-white/15 dark:bg-slate-700 dark:text-slate-100" %>
     </div>
   </div>
 
@@ -25,7 +25,7 @@
 
     <button type="button"
             data-action="click->stats-matches#add"
-            class="inline-flex items-center gap-1 rounded-md border border-indigo-300 px-3 py-2 text-sm text-indigo-700 hover:bg-indigo-50 dark:border-white/15 dark:text-slate-100 dark:hover:bg-slate-700/60">
+            class="inline-flex min-h-11 items-center gap-1 rounded-lg border border-indigo-300 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-50 dark:border-white/15 dark:text-slate-100 dark:hover:bg-slate-700/60">
       + <%= t("games.show.add_game") %>
     </button>
 
@@ -53,6 +53,6 @@
   <% end %>
 
   <div class="pt-2">
-    <%= submit_tag t("games.show.stats_submit"), class: "inline-flex items-center rounded bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700" %>
+    <%= submit_tag t("games.show.stats_submit"), class: "inline-flex min-h-12 w-full cursor-pointer items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-base font-semibold text-white hover:bg-indigo-700 sm:w-auto" %>
   </div>
 <% end %>
