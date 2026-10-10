@@ -74,7 +74,7 @@ class ResolveUserCityJobTest < ActiveSupport::TestCase
     assert_equal moscow_timezone, @user.timezone
   end
 
-  test "unresolved coordinates keep the input and no city, but still get a timezone" do
+  test "unresolved coordinates get the nearby city name and timezone, but no city link" do
     # Самый населённый сосед — Москва, но геокодер назвал район: связь не ставим.
     city!("Moscow", "RU", 524901, timezone: "Europe/Moscow", population: 10_381_222,
           latitude: 55.75204, longitude: 37.61781)
@@ -86,11 +86,11 @@ class ResolveUserCityJobTest < ActiveSupport::TestCase
 
     @user.reload
     assert_nil @user.city_id
-    assert_equal "55.89,37.44", @user.city_name
+    assert_equal "Moscow", @user.city_name
     assert_equal moscow_timezone, @user.timezone
   end
 
-  test "coordinates without a geocoder answer change only the timezone" do
+  test "coordinates without a geocoder answer get the nearby city name, but no city link" do
     city!("Moscow", "RU", 524901, timezone: "Europe/Moscow", population: 10_381_222,
           latitude: 55.75204, longitude: 37.61781)
     @user.update!(city_name: "55.75,37.62", timezone: nil)
@@ -101,8 +101,23 @@ class ResolveUserCityJobTest < ActiveSupport::TestCase
 
     @user.reload
     assert_nil @user.city_id
-    assert_equal "55.75,37.62", @user.city_name
+    assert_equal "Moscow", @user.city_name
     assert_equal moscow_timezone, @user.timezone
+  end
+
+  # Ни ответа геокодера, ни города рядом в справочнике: заменить нечем —
+  # координаты остаются, как и до PR.
+  test "coordinates with no geocoder answer and no nearby city stay as they are" do
+    @user.update!(city_name: "-60.0,-140.0", timezone: nil)
+
+    with_geocoder(nil) do
+      ResolveUserCityJob.perform_now(@user.id, "-60.0,-140.0")
+    end
+
+    @user.reload
+    assert_nil @user.city_id
+    assert_equal "-60.0,-140.0", @user.city_name
+    assert_nil @user.timezone
   end
 
   # --- Запоздавшая job ---------------------------------------------------------

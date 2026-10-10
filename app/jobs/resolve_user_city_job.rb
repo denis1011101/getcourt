@@ -40,12 +40,14 @@ class ResolveUserCityJob < ApplicationJob
     update_attrs[:timezone] = tz_to_set if tz_to_set.present? && user.timezone.to_s.strip != tz_to_set
 
     if coords
-      # координаты заменяем названием, только когда город определён
-      if location.resolved?
-        new_name = location.city.canonical_name
-        update_attrs[:city_name] = new_name if new_name.present? && user.city_name.to_s.strip != new_name
-        update_attrs[:city_id] = location.city.id
-      end
+      # Название — как до связи со справочником: строго определённый город, а
+      # если не вышло — ближайший кандидат (по нему же считаем пояс). Иначе в
+      # профиле остались бы координаты, а сравнения по city_name не сработали.
+      # city_id — только строгий: кандидат по близости основанием не служит.
+      name_city = location.resolved? ? location.city : timezone_city
+      new_name = name_city&.canonical_name
+      update_attrs[:city_name] = new_name if new_name.present? && user.city_name.to_s.strip != new_name
+      update_attrs[:city_id] = location.city.id if location.resolved?
     else
       # for plain name input: do not overwrite user's city_name (we saved translit immediately)
       update_attrs[:city_id] = location.city.id if location.resolved?
