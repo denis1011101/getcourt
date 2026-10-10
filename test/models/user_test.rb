@@ -146,4 +146,44 @@ class UserTest < ActiveSupport::TestCase
     assert_not_includes User.search_pickable("picker-zed-nameless"), User.find_by!(email: "picker-zed-nameless@example.com")
     assert_empty User.search_pickable("   ")
   end
+
+  test "recent_teammates lists people from my games, freshest first, without me and the excluded" do
+    me = User.create!(email: "recent-me-#{SecureRandom.hex(4)}@example.com")
+    old_friend, new_friend, booked, stranger = %w[old new booked stranger].map do |tag|
+      User.create!(email: "recent-#{tag}-#{SecureRandom.hex(4)}@example.com", name: "Recent #{tag}")
+    end
+    mine = Game.create!(user: me, court: courts(:one), date: Date.new(2026, 9, 7), recurring: true)
+    theirs = Game.create!(user: stranger, court: courts(:one), date: Date.new(2026, 9, 7))
+
+    travel_to(2.days.ago) { mine.participations.create!(user: old_friend) }
+    mine.participations.create!(user: me)
+    mine.prebookings.create!(user: new_friend, date: Date.new(2026, 9, 14), slot_index: 1)
+    mine.participations.create!(user: booked)
+    theirs.participations.create!(user: stranger)
+
+    assert_equal [ booked, new_friend, old_friend ], me.recent_teammates
+    assert_equal [ new_friend, old_friend ], me.recent_teammates(except: [ booked.id ])
+    assert_equal [ booked ], me.recent_teammates(limit: 1)
+
+    # Объединённый аккаунт не занимает место в выдаче.
+    booked.update_columns(merged_into_id: new_friend.id, merged_at: Time.current)
+    assert_equal [ new_friend ], me.recent_teammates(limit: 1)
+  end
+
+  test "recent_coaches keeps only selectable coaches of my latest games" do
+    me = User.create!(email: "recent-coach-me-#{SecureRandom.hex(4)}@example.com")
+    anna, boris, gone = %w[anna boris gone].map do |tag|
+      User.create!(email: "recent-coach-#{tag}-#{SecureRandom.hex(4)}@example.com", name: tag.capitalize, coach: true)
+    end
+    older = Game.create!(user: me, court: courts(:one), date: Date.new(2026, 9, 7))
+    newer = Game.create!(user: me, court: courts(:one), date: Date.new(2026, 9, 8))
+    without_coach = Game.create!(user: me, court: courts(:one), date: Date.new(2026, 9, 9))
+    older.update_columns(with_coach: true, coach_id: anna.id, updated_at: 2.days.ago)
+    newer.update_columns(with_coach: true, coach_id: boris.id, updated_at: 1.day.ago)
+    # Галочку «с тренером» сняли — оставшийся coach_id тренером игры не считается.
+    without_coach.update_columns(coach_id: gone.id)
+
+    assert_equal [ boris, anna ], me.recent_coaches(among: [ anna, boris, gone ])
+    assert_equal [ anna ], me.recent_coaches(among: [ anna, gone ])
+  end
 end

@@ -49,6 +49,10 @@
               <%= f.select field, options_from_collection_for_select(coach_options.reject { |c| c == series_coach }, :id, :name, selected),
                            { include_blank: series_coach ? t("games.occurrence_settings.as_series", name: series_coach.name.presence || series_coach.email) : t(blank_key) },
                            id: "occurrence_setting_#{field}_#{date.iso8601}", class: field_classes %>
+              <% if field == :coach_id %>
+                <%= render "shared/recent_picks", people: local_assigns[:recent_coaches].to_a.reject { |c| c == series_coach },
+                                                  select_id: "occurrence_setting_coach_id_#{date.iso8601}" %>
+              <% end %>
             </div>
           <% end %>
           <div>

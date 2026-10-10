@@ -199,6 +199,32 @@ class PrebookingsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # Тех, кого организатор уже записывал, предлагаем одним тапом — и в слот,
+  # и в участники игры; уже записанных туда — нет.
+  test "the organizer gets recent people as one-tap picks for a slot and for participants" do
+    travel_to SEPTEMBER do
+      owner = users(:one)
+      owner.update!(email: "prebooking-recent@example.com")
+      game = recurring_prebooking_game(owner)
+      regular = User.create!(email: "prebooking-recent-regular@example.com", name: "Regular Rita")
+      already_in = User.create!(email: "prebooking-recent-in@example.com", name: "Already Ivan")
+      game.participations.create!(user: already_in)
+      Game.create!(user: owner, court: courts(:one), date: Date.new(2026, 8, 1)).participations.create!(user: regular)
+
+      post session_url, params: { email: owner.email }
+      get game_url(game)
+
+      slot = first_slot(game)
+      assert_select "[data-testid=prebooking-assign] ~ [data-testid=recent-picks]" do
+        assert_select "form[action=?] input[name=user_id][value=?]", assign_game_prebooking_path(game, slot), regular.id.to_s
+      end
+      assert_select "[data-testid=participation-add-user] ~ [data-testid=recent-picks]" do
+        assert_select "form[action=?] input[name=user_id][value=?]", add_user_game_participations_path(game), regular.id.to_s
+        assert_select "input[name=user_id][value=?]", already_in.id.to_s, 0
+      end
+    end
+  end
+
   test "assign is for the organizer or an admin only" do
     travel_to SEPTEMBER do
       game = recurring_prebooking_game(users(:one))

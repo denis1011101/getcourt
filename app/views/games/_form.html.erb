@@ -64,6 +64,7 @@
                   <%= form.collection_select :coach_id, @coaches, :id, :name, { include_blank: t("games.form.coach_blank") },
                         class: "mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 dark:border-white/15 dark:bg-slate-700 dark:text-slate-100",
                         data: { game_kind_target: "coachSelect", training_plan_target: "coachSelect", action: "change->training-plan#reloadLibrary" } %>
+                  <%= render "shared/recent_picks", people: current_user.recent_coaches(among: @coaches), select_id: "game_coach_id" %>
                   <p class="mt-1 text-xs text-gray-500 dark:text-slate-400"><%= t("games.form.coach_hint") %></p>
                 </div>
                 <div>
