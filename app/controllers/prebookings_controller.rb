@@ -66,12 +66,7 @@ class PrebookingsController < ApplicationController
 
   def cancel
     if @prebooking.user == current_user || can_manage_game?
-      # Слот сверх мест заводили под конкретного человека — пустым он не нужен.
-      if @prebooking.slot_index > @game.prebooking_required_players(@prebooking.date)
-        @prebooking.destroy!
-      else
-        @prebooking.update!(user: nil, status: "approved", approved_at: nil)
-      end
+      @prebooking.release!
       redirect_to_prebooking_month @game, @prebooking.date, notice: "Booking cleared."
     else
       head :forbidden
@@ -94,7 +89,7 @@ class PrebookingsController < ApplicationController
 
     requester = @prebooking.user
     date = @prebooking.date
-    @prebooking.update!(user: nil, status: "approved", approved_at: nil)
+    @prebooking.release!
     GameRequestNotification.prebooking(user: requester, game: @game, dates: date, approved: false)
     redirect_to_prebooking_month @game, date, notice: "Prebooking rejected."
   end

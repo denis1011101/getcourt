@@ -61,7 +61,7 @@ module Telegram
                 end
 
                 rejected_user = prebooking.user
-                prebooking.update!(user: nil, status: "approved", approved_at: nil)
+                prebooking.release!
                 poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "Rejected", show_alert: false }) rescue nil
 
                 update_notification_message(poller, chat_id, message_id, prebooking.id, "rejected")
@@ -136,7 +136,7 @@ module Telegram
                 dates_text = dates.map { |date| date.strftime("%Y-%m-%d") }.join(", ")
 
                 pending_prebookings.each do |pb|
-                  pb.update!(user_id: nil, status: "approved", approved_at: nil)
+                  pb.release!
                 end
 
                 poller.send_api("answerCallbackQuery", { callback_query_id: cb_id, text: "All rejected", show_alert: false }) rescue nil
