@@ -113,6 +113,16 @@ es:
       golden_point: Punto de oro
       golden_point_hint: "Con 40-40 no hay ventaja: el siguiente punto gana el juego."
       start: Empezar el partido
+      kind: A qué jugamos
+      kind_match: Partido
+      kind_match_hint: Uno contra uno o dos contra dos, marcador de tenis normal.
+      kind_one_vs_two: 2 contra 1
+      kind_one_vs_two_hint: Tres jugadores, un juego cada vez, el que juega solo va rotando. Gana quien más juegos gane solo.
+      kind_round_robin: Tres jugadores — todos contra todos
+      kind_round_robin_hint: Tres individuales seguidos — A–B, A–C, B–C. La siguiente pareja aparece sola en el marcador.
+      trio: Tres jugadores
+      trio_hint: El orden importa — marca la rotación y las parejas. Como mucho un invitado en la serie.
+      trio_player: "— jugador %{letter} —"
     edit:
       title: Ajustes del partido
       back: Volver al marcador
@@ -141,9 +151,29 @@ es:
       finish: Terminar el partido
       finish_hint: El marcador se guarda en las estadísticas del partido.
       finish_confirm: ¿Terminar el partido y guardar el marcador en las estadísticas?
+    one_vs_two:
+      game_number: "Juego %{number}"
+      solo_played:
+        one: "solo: %{count} vez"
+        other: "solo: %{count} veces"
+      now: "Ahora %{solo} juega solo contra %{pair}"
+      solo_won: "Juego para %{name}"
+      pair_won: "Juego para %{name}"
+      rules: "El + de un jugador es un juego ganado jugando solo, el − quita el último. El juego de la pareja no puntúa, pero pasa el turno de jugar solo."
+      finish: Terminar el juego
+      finish_hint: El líder gana, los demás pierden. El resultado va a las estadísticas y al ranking.
+      finish_confirm: ¿Terminar el 2 contra 1 y guardar el resultado?
+    series:
+      title: Tres jugadores — todos contra todos
+      done_title: Resultado de la serie a tres
+      number: "Partido %{number} de %{total}"
+      live: en juego
+      upcoming: después
+      standing: "victorias: %{wins} · juegos: %{games}"
     flash:
       stale: "Ese partido ya está cerrado: este es el marcador actual."
       finished: Partido terminado, el marcador está en las estadísticas.
+      next_in_series: Partido guardado — la siguiente pareja está en el marcador.
       not_allowed: Los jugadores del partido pueden llevar el marcador cuando empieza.
     entry:
       open: Llevar el marcador
@@ -700,6 +730,7 @@ es:
         score: Marcador
         surface: Superficie
         view_game: Ver partido
+        one_vs_two: 2 contra 1
       player:
         title: Jugador
         singles_elo: "ELO individual: %{value}"
@@ -924,6 +955,29 @@ es:
         pair_ac: Pareja A vs C
         pair_bc: Pareja B vs C
         diagram_note: La pareja que descansa lleva el marcador
+      one_vs_two:
+        title: Tres jugadores — 2 contra 1
+        badge: 2 contra 1
+        body: Si sois tres, jugad un juego cada vez, uno contra dos. Tras cada juego
+          el siguiente pasa a jugar solo — por turnos, así todos juegan solos y en
+          pareja.
+        variant: "Para igualar, jugad a la canadiense: el que va solo tira a la pista
+          de dobles con pasillos, la pareja solo a las líneas de individuales."
+        score_1: Cada juego ganado jugando solo vale 1 punto. El juego que gana la pareja
+          no da puntos
+        score_2: Jugad rondas completas para que todos jueguen solos las mismas veces
+        score_3: Gana quien tenga más puntos, los demás pierden — el resultado va a
+          las estadísticas del partido, al feed de Tennis Life y al ranking individual
+        live_title: Marcador en directo
+        live_body: En el marcador del partido elegid «2 contra 1» y a los tres en orden
+          — resalta quién juega solo y cuenta los puntos. La opción «todos contra
+          todos» (tres individuales A–B, A–C, B–C) también se lleva en el marcador,
+          como serie con tabla de victorias.
+        diagram_title: Marcador 2 × 1
+        player_a: Jugador A
+        player_b: Jugador B
+        player_c: Jugador C
+        diagram_note: "El que juega solo cambia cada juego: A → B → C → A…"
       round_robin:
         title: Round Robin
         body: Cada jugador disputa un partido corto (p. ej. un set o un tiempo fijado)

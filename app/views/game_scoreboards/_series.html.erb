@@ -1,0 +1,24 @@
+<%# Серия втроём: три пары по порядку и таблица по победам. Идущий матч —
+    на табло ниже; закрытый — со счётом, как ушёл в статистику. %>
+<% series = scoreboard_series(scoreboard) %>
+<section class="mb-4 rounded-lg border bg-white p-4 shadow-sm dark:bg-slate-800/80 dark:border-white/10" data-testid="scoreboard-series">
+  <h2 class="mb-2 text-base font-semibold text-gray-900 dark:text-slate-100"><%= t(series[:done] ? "game_scoreboards.series.done_title" : "game_scoreboards.series.title") %></h2>
+  <ol class="space-y-1 text-sm">
+    <% series[:rows].each do |row| %>
+      <li class="flex items-center justify-between gap-2 <%= row[:status] == :live ? "font-semibold text-indigo-700 dark:text-indigo-300" : "text-gray-700 dark:text-slate-300" %>">
+        <span class="truncate"><%= row[:names] %></span>
+        <span class="shrink-0 tabular-nums <%= "text-gray-400 dark:text-slate-500" if row[:status] == :upcoming %>">
+          <%= row[:status] == :finished ? (row[:score] || "—") : t("game_scoreboards.series.#{row[:status]}") %>
+        </span>
+      </li>
+    <% end %>
+  </ol>
+  <div class="mt-3 border-t pt-2 text-sm dark:border-white/10">
+    <% series[:standings].each_with_index do |row, index| %>
+      <p class="flex items-center justify-between gap-2 text-gray-800 dark:text-slate-200">
+        <span class="truncate"><% if series[:done] && index.zero? && row[:wins].positive? %><span aria-hidden="true">🏆 </span><% end %><%= row[:name] %></span>
+        <span class="shrink-0 tabular-nums text-gray-600 dark:text-slate-400"><%= t("game_scoreboards.series.standing", wins: row[:wins], games: row[:games]) %></span>
+      </p>
+    <% end %>
+  </div>
+</section>

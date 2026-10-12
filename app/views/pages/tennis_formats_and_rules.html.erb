@@ -186,6 +186,48 @@
       </div>
     </div>
 
+    <%# ── 2 against 1 ── %>
+    <div class="mb-8" id="one-vs-two">
+      <h2 class="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2"><%= t("pages.formats.one_vs_two.title") %></h2>
+      <div class="flex flex-wrap gap-2 mb-3">
+        <span class="inline-block bg-gray-100 dark:bg-slate-700/50 text-gray-700 dark:text-slate-300 text-xs font-medium px-2 py-1 rounded"><%= t("pages.formats.players_3") %></span>
+        <span class="inline-block bg-gray-100 dark:bg-slate-700/50 text-gray-700 dark:text-slate-300 text-xs font-medium px-2 py-1 rounded"><%= t("pages.formats.courts_1") %></span>
+        <span class="inline-block bg-gray-100 dark:bg-slate-700/50 text-gray-700 dark:text-slate-300 text-xs font-medium px-2 py-1 rounded"><%= t("pages.formats.one_vs_two.badge") %></span>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <p class="text-gray-700 dark:text-slate-300 mb-2"><%= t("pages.formats.one_vs_two.body") %></p>
+          <p class="text-gray-700 dark:text-slate-300 text-sm mb-2"><%= t("pages.formats.one_vs_two.variant") %></p>
+          <h3 class="text-sm font-medium text-gray-900 dark:text-slate-100 mt-3 mb-1"><%= t("pages.formats.scoring") %></h3>
+          <ul class="list-disc pl-5 text-gray-700 dark:text-slate-300 text-sm space-y-1">
+            <li><%= t("pages.formats.one_vs_two.score_1") %></li>
+            <li><%= t("pages.formats.one_vs_two.score_2") %></li>
+            <li><%= t("pages.formats.one_vs_two.score_3") %></li>
+          </ul>
+          <h3 class="text-sm font-medium text-gray-900 dark:text-slate-100 mt-3 mb-1"><%= t("pages.formats.one_vs_two.live_title") %></h3>
+          <p class="text-gray-700 dark:text-slate-300 text-sm"><%= t("pages.formats.one_vs_two.live_body") %></p>
+        </div>
+        <div class="flex justify-center items-start pt-2">
+          <%# Scoreboard diagram: the single player of the current game is highlighted %>
+          <div class="w-48">
+            <div class="rounded border border-gray-300 dark:border-white/20 overflow-hidden text-sm font-mono">
+              <div class="bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-300 text-xs px-2 py-1 font-semibold"><%= t("pages.formats.one_vs_two.diagram_title") %></div>
+              <div class="divide-y divide-gray-200 dark:divide-white/10">
+                <% [ [ "player_a", 4, false ], [ "player_b", 3, true ], [ "player_c", 2, false ] ].each do |key, points, solo| %>
+                  <div class="flex items-center px-2 py-1.5 <%= solo ? "bg-indigo-50 dark:bg-indigo-500/15" : "bg-white dark:bg-slate-800" %>">
+                    <span class="w-4 text-xs" aria-hidden="true"><%= "🎾" if solo %></span>
+                    <span class="flex-1 text-xs text-gray-800 dark:text-slate-200"><%= t("pages.formats.one_vs_two.#{key}") %></span>
+                    <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400"><%= points %></span>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-slate-400 mt-2 text-center"><%= t("pages.formats.one_vs_two.diagram_note") %></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <%# ── Round Robin ── %>
     <div class="mb-6">
       <h2 class="text-lg font-medium text-gray-900 dark:text-slate-100 mb-2"><%= t("pages.formats.round_robin.title") %></h2>

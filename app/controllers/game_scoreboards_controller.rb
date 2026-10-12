@@ -10,18 +10,20 @@ class GameScoreboardsController < ApplicationController
   def show
     @scoreboard = @game.scoreboards.live.first
     @can_score = can_score?
-    @last_finished = @game.scoreboards.where(status: "finished").order(finished_at: :desc).first unless @scoreboard
+    @last_finished = @game.scoreboards.where(status: "finished").order(finished_at: :desc, id: :desc).first unless @scoreboard
   end
 
   def create
     existing = @game.scoreboards.live.first
     return redirect_to(game_scoreboard_path(@game)) if existing
 
-    @scoreboard = @game.scoreboards.new(
+    @scoreboard = GameScoreboard.start(
+      game: @game,
       user: current_user,
-      settings: settings_params,
+      settings: settings_params.merge("kind" => params.dig(:settings, :kind).to_s),
       team_a: team_from(params[:team_a]),
-      team_b: team_from(params[:team_b])
+      team_b: team_from(params[:team_b]),
+      trio: trio_from(params[:trio])
     )
 
     if @scoreboard.save
@@ -47,12 +49,12 @@ class GameScoreboardsController < ApplicationController
   end
 
   def score
-    @scoreboard.score!(side_param, unit_param)
+    @scoreboard.score!(@scoreboard.one_vs_two? ? params[:side].to_s : side_param, unit_param)
     respond_with_board
   end
 
   def unscore
-    @scoreboard.unscore!(side_param, unit_param)
+    @scoreboard.unscore!(@scoreboard.one_vs_two? ? params[:side].to_s : side_param, unit_param)
     respond_with_board
   end
 
@@ -68,6 +70,9 @@ class GameScoreboardsController < ApplicationController
 
   def finish
     @scoreboard.finish!(current_user)
+    # В серии втроём на табло уже встала следующая пара — туда и ведём.
+    return redirect_to(game_scoreboard_path(@game), notice: t("game_scoreboards.flash.next_in_series")) if @scoreboard.next_in_series
+
     redirect_to game_path(@game), notice: t("game_scoreboards.flash.finished")
   end
 
@@ -148,6 +153,12 @@ class GameScoreboardsController < ApplicationController
       "user_ids" => picked.filter_map { |value| value.delete_prefix("u:").to_i if value.start_with?("u:") }.select { |id| allowed_ids.include?(id) },
       "guest_names" => picked.filter_map { |value| value.delete_prefix("g:") if value.start_with?("g:") }.select { |name| allowed_guests.include?(name) }
     }
+  end
+
+  # Трое для игры втроём — в порядке выбора, это порядок ротации.
+  def trio_from(values)
+    allowed = helpers.scoreboard_candidate_options(@game).map(&:last)
+    Array(values).map(&:to_s).reject(&:blank?).uniq.select { |value| allowed.include?(value) }
   end
 
   def scorer_candidates

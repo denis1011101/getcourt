@@ -1,0 +1,23 @@
+<%# «2 против 1»: строка на игрока в порядке ротации. Крупная цифра — геймы,
+    взятые одиночкой; мелкая — сколько раз он уже был один. Подсвечен тот,
+    кто один в текущем гейме. %>
+<% board = scoreboard.state %>
+<% players = scoreboard.trio_players %>
+<div id="game_scoreboard" class="rounded-lg border bg-white shadow-sm dark:bg-slate-800/80 dark:border-white/10 overflow-hidden" data-testid="scoreboard">
+  <p class="flex items-center justify-between gap-2 bg-gray-50 px-3 py-1.5 text-xs font-semibold tracking-wide text-gray-600 dark:bg-slate-700/50 dark:text-slate-300">
+    <span>2 × 1</span>
+    <span class="tabular-nums"><%= t("game_scoreboards.one_vs_two.game_number", number: board.games_played + 1) %></span>
+  </p>
+  <% players.each_with_index do |player, index| %>
+    <% solo = index == board.solo_index %>
+    <div class="flex items-center gap-2 border-t px-3 py-3 dark:border-white/10 <%= "bg-indigo-50 dark:bg-indigo-500/15" if solo %>">
+      <span class="w-5 shrink-0 text-center" aria-hidden="true"><%= "🎾" if solo %></span>
+      <p class="min-w-0 flex-1 truncate text-base font-semibold text-gray-900 dark:text-slate-100">
+        <% if board.leaders.size == 1 && board.leaders.include?(index) %><span aria-hidden="true">🏆</span><% end %>
+        <%= scoreboard_player_label(player) %>
+      </p>
+      <span class="shrink-0 text-xs tabular-nums text-gray-500 dark:text-slate-400"><%= t("game_scoreboards.one_vs_two.solo_played", count: board.solo_played[index]) %></span>
+      <span class="w-10 shrink-0 rounded-md bg-gray-100 text-center text-2xl font-bold tabular-nums text-gray-900 dark:bg-slate-700 dark:text-slate-100"><%= board.solo_wins[index] %></span>
+    </div>
+  <% end %>
+</div>

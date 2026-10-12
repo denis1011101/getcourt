@@ -233,4 +233,43 @@ class GameScoreboardsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to game_scoreboard_url(@game)
     assert_empty @game.scoreboards
   end
+
+  test "three players start a 2 against 1 game, score it and save one result for all" do
+    third = User.create!(email: "scoreboard-third@example.com", name: "Third")
+    @game.participations.create!(user: third)
+
+    post game_scoreboard_url(@game), params: {
+      settings: { kind: "one_vs_two" }, trio: [ "u:#{@owner.id}", "u:#{@rival.id}", "u:#{third.id}" ]
+    }
+    board = @game.scoreboards.live.first
+    assert board.one_vs_two?
+
+    tap("0")
+    tap("pair")
+    get game_scoreboard_url(@game)
+    assert_response :success
+    assert_match "Third", response.body
+
+    post finish_game_scoreboard_url(@game), params: { scoreboard_id: board.id }
+    assert_redirected_to game_path(@game)
+    assert_equal({ @owner.id => "win", @rival.id => "loss", third.id => "loss" },
+                 Match.where(game: @game).pluck(:user_id, :outcome).to_h)
+  end
+
+  test "a three-player series leads from one finished match to the next pair" do
+    third = User.create!(email: "scoreboard-third@example.com", name: "Third")
+    @game.participations.create!(user: third)
+
+    post game_scoreboard_url(@game), params: {
+      settings: { kind: "round_robin", mode: "games", sets_to_win: 1, tiebreak: "1" },
+      trio: [ "u:#{@owner.id}", "u:#{@rival.id}", "u:#{third.id}" ]
+    }
+    tap("a", 6)
+    post finish_game_scoreboard_url(@game), params: { scoreboard_id: live_id }
+
+    assert_redirected_to game_scoreboard_path(@game)
+    follow_redirect!
+    assert_select "[data-testid=scoreboard-series]", text: /6-0/
+    assert_equal [ third.id ], @game.scoreboards.live.first.team_b["user_ids"]
+  end
 end

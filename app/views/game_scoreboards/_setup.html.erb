@@ -14,7 +14,37 @@
   <% end %>
 
   <div class="space-y-4">
-    <section class="<%= card %>">
+    <%# Формат выбирают один раз, при старте: втроём стороны не нужны — только
+        трое по порядку. Лишние блоки прячем по выбранной радиокнопке, без JS;
+        сервер для каждого формата читает только свои поля. %>
+    <% unless editing %>
+      <section class="<%= card %>">
+        <h2 class="<%= heading %>"><%= t("game_scoreboards.setup.kind") %></h2>
+        <div class="grid grid-cols-1 gap-2">
+          <% GameScoreboard::KINDS.each do |kind| %>
+            <label class="flex cursor-pointer items-start gap-2 rounded-md border border-gray-300 px-3 py-3 hover:bg-gray-50 dark:border-white/15 dark:hover:bg-white/5">
+              <%= radio_button_tag "settings[kind]", kind, values["kind"] == kind, class: "mt-0.5 h-4 w-4 text-indigo-600" %>
+              <span>
+                <span class="block text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("game_scoreboards.setup.kind_#{kind}") %></span>
+                <span class="block text-xs text-gray-500 dark:text-slate-400"><%= t("game_scoreboards.setup.kind_#{kind}_hint") %></span>
+              </span>
+            </label>
+          <% end %>
+        </div>
+      </section>
+
+      <section class="<%= card %> hidden group-has-[input[value=one\_vs\_two]:checked]/setup:block group-has-[input[value=round\_robin]:checked]/setup:block">
+        <h2 class="<%= heading %>"><%= t("game_scoreboards.setup.trio") %></h2>
+        <p class="-mt-2 mb-3 text-xs text-gray-500 dark:text-slate-400"><%= t("game_scoreboards.setup.trio_hint") %></p>
+        <% 3.times do |index| %>
+          <%= select_tag "trio[]", options_for_select(options, values["trio"][index]),
+                include_blank: t("game_scoreboards.setup.trio_player", letter: %w[A B C][index]),
+                id: "trio_#{index}", class: select_class %>
+        <% end %>
+      </section>
+    <% end %>
+
+    <section class="<%= card %> <%= 'group-has-[input[value=one\_vs\_two]:checked]/setup:hidden group-has-[input[value=round\_robin]:checked]/setup:hidden' unless editing %>">
       <h2 class="<%= heading %>"><%= t("game_scoreboards.setup.sides") %></h2>
       <p class="-mt-2 mb-3 text-xs text-gray-500 dark:text-slate-400"><%= t("game_scoreboards.setup.sides_hint") %></p>
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -31,7 +61,8 @@
       </div>
     </section>
 
-    <section class="<%= card %>">
+    <%# «_» в произвольном значении Tailwind читает как пробел — экранируем. %>
+    <section class="<%= card %> group-has-[input[value=one\_vs\_two]:checked]/setup:hidden">
       <h2 class="<%= heading %>"><%= t("game_scoreboards.setup.format") %></h2>
 
       <span class="block text-sm font-medium text-gray-700 dark:text-slate-300"><%= t("game_scoreboards.setup.mode") %></span>

@@ -113,6 +113,16 @@ en:
       golden_point: Golden point
       golden_point_hint: At 40-40 there's no advantage — the next point wins the game.
       start: Start the match
+      kind: What are we playing
+      kind_match: Match
+      kind_match_hint: One against one or two against two, regular tennis scoring.
+      kind_one_vs_two: 2 against 1
+      kind_one_vs_two_hint: Three players, one game at a time, the single player rotates. Whoever wins the most games alone wins.
+      kind_round_robin: Three players — everyone plays everyone
+      kind_round_robin_hint: Three singles in a row — A–B, A–C, B–C. The next pair appears on the scoreboard by itself.
+      trio: Three players
+      trio_hint: Order matters — it sets the rotation and the pairs. At most one guest in a series.
+      trio_player: "— player %{letter} —"
     edit:
       title: Match settings
       back: Back to scoreboard
@@ -141,9 +151,29 @@ en:
       finish: Finish the match
       finish_hint: The score goes to the game statistics.
       finish_confirm: Finish the match and save the score to the statistics?
+    one_vs_two:
+      game_number: "Game %{number}"
+      solo_played:
+        one: "alone: %{count} time"
+        other: "alone: %{count} times"
+      now: "Now %{solo} plays alone against %{pair}"
+      solo_won: "Game to %{name}"
+      pair_won: "Game to %{name}"
+      rules: "A player's + is a game they won alone, − takes their last one back. A game won by the pair scores nothing but passes the turn to be alone."
+      finish: Finish the game
+      finish_hint: The leader wins, the others lose. The result goes to statistics and ratings.
+      finish_confirm: Finish the 2 against 1 game and save the result?
+    series:
+      title: Three players — everyone plays everyone
+      done_title: Three-player series result
+      number: "Match %{number} of %{total}"
+      live: playing
+      upcoming: next
+      standing: "wins: %{wins} · games: %{games}"
     flash:
       stale: That match is already closed — here is the current scoreboard.
       finished: Match finished, the score is saved to the statistics.
+      next_in_series: Match saved — the next pair is on the scoreboard.
       not_allowed: Players of the game can keep the score once it starts.
     entry:
       open: Keep score on the scoreboard
@@ -693,6 +723,7 @@ en:
         score: Score
         surface: Surface
         view_game: View game
+        one_vs_two: 2 against 1
       player:
         title: Player
         singles_elo: "Singles ELO: %{value}"
@@ -914,6 +945,29 @@ en:
         pair_ac: Pair A vs C
         pair_bc: Pair B vs C
         diagram_note: Resting pair keeps score
+      one_vs_two:
+        title: Three players — 2 against 1
+        badge: 2 against 1
+        body: With three of you, play one game at a time, one against two. After every
+          game the next player becomes the single one — in turn, so everyone plays
+          both alone and in the pair.
+        variant: "To even the odds, play Canadian style: the single player hits into
+          the doubles court with the alleys, the pair only into the singles lines."
+        score_1: Every game won as the single player is 1 point. A game won by the pair
+          scores nothing
+        score_2: Play full rounds so everyone gets the same number of turns alone
+        score_3: The one with the most points wins, the others lose — the result goes
+          to the game statistics, the Tennis Life feed and the singles rating
+        live_title: Live score on the scoreboard
+        live_body: On the game scoreboard pick "2 against 1" and the three players in
+          order — it highlights who is alone now and counts the points. The "everyone
+          plays everyone" option (three singles A–B, A–C, B–C) runs on the scoreboard
+          too, as a series with a wins table.
+        diagram_title: 2 × 1 scoreboard
+        player_a: Player A
+        player_b: Player B
+        player_c: Player C
+        diagram_note: "The single player changes every game: A → B → C → A…"
       round_robin:
         title: Round Robin
         body: Every player plays a short match (e.g., one set or a timed period) against
