@@ -1,30 +1,20 @@
 require "digest"
 
 class TennisLifeController < ApplicationController
-  skip_before_action :authenticate_user!, only: %i[index classic feed statistics featured_translation highlight]
-  before_action :set_secondary_page_meta, only: %i[classic feed]
+  skip_before_action :authenticate_user!, only: %i[index feed statistics highlight]
+  before_action :set_secondary_page_meta, only: %i[feed]
   helper_method :total_players
 
   FEED_PAGE_SIZE = 20
   PINNED_RATING_LIMIT = 5
-  RATING_LIMIT = 10
   MATCHES_PER_PAGE = 20
   # Plain 90 days, not "since the season started": in January the season window is
   # days long, and everyone who played through the winter would drop out of the rating.
   ACTIVE_RATING_DAYS = 90
 
   def index
-    if tennis_life_feed_enabled?
-      prepare_feed(initial_feed_cursor)
-      render :feed_index
-    else
-      prepare_classic
-    end
-  end
-
-  def classic
-    prepare_classic
-    render :index
+    prepare_feed(initial_feed_cursor)
+    render :feed_index
   end
 
   def feed
@@ -56,13 +46,6 @@ class TennisLifeController < ApplicationController
     render partial: "tennis_life/highlight", locals: { highlight: @highlight }
   end
 
-  def featured_translation
-    post = TennisLife::TelegramPostsFetcher.featured_post
-    text = post && post["text"].to_s.strip.presence
-    @text_en = text && (TranslationCache.fetch(text).presence || text)
-    render layout: false
-  end
-
   private
 
   # Сколько всего людей на сервисе — число, за которым лезли в консоль. Слитые
@@ -77,30 +60,6 @@ class TennisLifeController < ApplicationController
   def set_secondary_page_meta
     @meta_robots = "noindex, follow"
     @canonical_url = "https://#{ApplicationHelper.canonical_host_for(request)}#{tennis_life_path}"
-  end
-
-  def prepare_classic
-    @season_label = Season.current_label
-    @tennis_score_raw = TennisScoreboard::Fetcher.raw_text
-    # Classic shows a single featured post. The stored posts belong to the feed,
-    # where they are interleaved with the other cards.
-    @random_telegram_post = TennisLife::TelegramPostsFetcher.featured_post
-
-    rating_rows = build_rating_rows
-    @rating_rows = rating_rows.first(RATING_LIMIT)
-    total_hours = PlayerStatistic.sum(:singles_hours).to_f + PlayerStatistic.sum(:doubles_hours).to_f
-    total_hours_value = total_hours.round(1)
-    total_hours_value = total_hours_value.to_i if total_hours_value == total_hours_value.to_i
-
-    @stats_cards = [
-      # { title: "Games played", value: Game.count }, # TODO: придумать как считать, наверное надо в статистику класть просто
-      { title: "Hours played", value: total_hours_value },
-      { title: "Players in rating", value: rating_rows.size },
-      { title: "Players registered", value: total_players },
-      { title: "Courts", value: Court.count }
-      # { title: "Tournaments played", value: Tournament.count },
-      # { title: "Game participations", value: Participation.count }
-    ]
   end
 
   # What the feed shows. Each kind is produced by a source in
@@ -136,8 +95,8 @@ class TennisLifeController < ApplicationController
 
     # А сама пришпиленная пятёрка — шапка страницы, а не часть ленты, и снимок ей
     # выходит боком: начальный курсор округляет время вниз до часа, и свежий матч
-    # попадал бы в таблицу только со следующего часа, расходясь с классическим
-    # видом. Поэтому её считаем на текущий момент, как делает prepare_classic.
+    # попадал бы в таблицу только со следующего часа, расходясь со страницей
+    # статистики. Поэтому её считаем на текущий момент, как делает statistics.
     @pinned_rating_rows = build_rating_rows.first(PINNED_RATING_LIMIT)
 
     order = TennisLife::Feed::Builder.new(
@@ -186,10 +145,6 @@ class TennisLifeController < ApplicationController
       format.html { redirect_to tennis_life_path, status: :see_other }
       format.turbo_stream { render :feed, status: :gone }
     end
-  end
-
-  def tennis_life_feed_enabled?
-    ENV["TENNIS_LIFE_FEED"] == "1"
   end
 
   def enqueue_feed_post_translations(posts)

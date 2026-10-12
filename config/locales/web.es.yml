@@ -677,7 +677,6 @@ es:
     feed:
       title: Vida del tenis
       subtitle: Partidos, jugadores, pistas e historias de la comunidad local.
-      classic_link: Vista clásica
       pinned_title: Líderes de la temporada
       pinned_subtitle: Mejores jugadores · temporada %{season}
       all_statistics: Ver todas las estadísticas

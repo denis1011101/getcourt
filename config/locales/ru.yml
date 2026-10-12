@@ -642,15 +642,6 @@ ru:
     index:
       meta_title: "Теннис лайф: рейтинги игроков, результаты ATP/WTA и новости Telegram | GetCourt"
       meta_description: "Следите за статистикой GetCourt, результатами турниров, рейтингами любителей и новостями Telegram в одном месте."
-      title: "Теннис лайф"
-      stats_title: "Статистика GetCourt"
-      feed_title: "Лента Telegram"
-      read_on_telegram: "Читать в Telegram"
-      no_posts: "Пока нет постов."
-      player_rating: "Рейтинг игроков (топ-10)"
-      season_label: "Сезон %{year}"
-      record: "%{wins} побед / %{games} игр"
-      view_all_statistics: "Вся статистика"
       no_rating_data: "Пока нет данных рейтинга."
     statistics:
       meta_title: "Рейтинг теннисистов, ELO и результаты матчей | GetCourt"

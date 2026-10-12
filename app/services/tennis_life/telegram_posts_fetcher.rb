@@ -11,15 +11,6 @@ module TennisLife
         posts.sample
       end
 
-      def featured_post
-        posts = fetch_posts
-        return nil if posts.empty?
-
-        Rails.cache.fetch("tennis_life/featured_post", expires_in: 15.minutes) do
-          posts.sample
-        end
-      end
-
       # Every post in the gist. The importer passes force: true because it runs
       # on a schedule and wants the live gist rather than the page cache.
       def all_posts(force: false)

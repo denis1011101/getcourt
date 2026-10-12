@@ -670,7 +670,6 @@ en:
     feed:
       title: Tennis Life
       subtitle: Games, players, courts and stories from the local tennis community.
-      classic_link: Classic view
       pinned_title: Season leaders
       pinned_subtitle: Top players · season %{season}
       all_statistics: View all statistics
