@@ -13,141 +13,25 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     @previous_queue_adapter = ActiveJob::Base.queue_adapter
     ActiveJob::Base.queue_adapter = :test
     ActiveJob::Base.queue_adapter.enqueued_jobs.clear
-
-    # Most of these tests exercise the classic index, so pin the flag off
-    # instead of inheriting whatever the developer keeps in .env. The tests
-    # that want the feed opt in explicitly.
-    @previous_feed_flag = ENV.delete("TENNIS_LIFE_FEED")
   end
 
   teardown do
     ActiveJob::Base.queue_adapter = @previous_queue_adapter
-    ENV["TENNIS_LIFE_FEED"] = @previous_feed_flag
   end
 
-  test "should get index" do
-    TelegramPost.delete_all
-    stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, nil) do
-      get tennis_life_index_url
+  test "index shows the feed" do
+    get tennis_life_index_url
 
-      assert_response :success
-      assert_includes response.body, I18n.t("tennis_life.index.no_posts")
-    end
+    assert_response :success
+    assert_select "[data-controller='infinite-feed']", count: 1
   end
 
-  test "featured post remains stable inside the cache window" do
-    previous_cache = Rails.cache
-    Rails.cache = ActiveSupport::Cache::MemoryStore.new
-    samples = 0
-    posts = Object.new
-    posts.define_singleton_method(:empty?) { false }
-    posts.define_singleton_method(:sample) do
-      samples += 1
-      SAMPLE_POST.merge("text" => "Post #{samples}")
-    end
+  # Классический вид убран, а старые ссылки на него ведут на ленту.
+  test "classic url redirects to the feed" do
+    get "/tennis_life/classic"
 
-    stub_singleton(TennisLife::TelegramPostsFetcher, :fetch_posts, posts) do
-      first = TennisLife::TelegramPostsFetcher.featured_post
-      second = TennisLife::TelegramPostsFetcher.featured_post
-
-      assert_equal first, second
-      assert_equal 1, samples
-    end
-  ensure
-    Rails.cache = previous_cache if previous_cache
-    TennisLife::TelegramPostsFetcher.singleton_class.send(:private, :fetch_posts)
-  end
-
-  test "index shows featured telegram post link when present" do
-    TelegramPost.delete_all
-    stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, SAMPLE_POST) do
-      get tennis_life_index_url
-      assert_response :success
-      assert_select "a[href='#{SAMPLE_POST["url"]}']"
-    end
-  end
-
-  test "index renders telegram widget for featured post with valid url" do
-    TelegramPost.delete_all
-    stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, SAMPLE_POST) do
-      get tennis_life_index_url
-      assert_response :success
-      assert_select "script[data-telegram-post='test/42']"
-    end
-  end
-
-  test "index renders a featured translation frame without translating synchronously" do
-    TelegramPost.delete_all
-
-    stub_singleton(TranslationCache, :fetch, ->(_) { raise "should not be called by index" }) do
-      stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, SAMPLE_POST) do
-        get tennis_life_index_url
-
-        assert_response :success
-        assert_includes response.body, SAMPLE_POST["text"]
-        assert_select "turbo-frame#featured_post_translation[src=?]", tennis_life_featured_translation_path
-        assert_empty ActiveJob::Base.queue_adapter.enqueued_jobs
-      end
-    end
-  end
-
-  test "featured translation renders translated text in its turbo frame" do
-    stub_singleton(TranslationCache, :fetch, "Great match!") do
-      stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, SAMPLE_POST) do
-        get tennis_life_featured_translation_url
-
-        assert_response :success
-        assert_not_includes response.body, "<!DOCTYPE html>"
-        assert_select "turbo-frame#featured_post_translation", count: 1 do
-          assert_select "p", text: "Great match!"
-        end
-      end
-    end
-  end
-
-  test "featured translation falls back to original text" do
-    stub_singleton(TranslationCache, :fetch, nil) do
-      stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, SAMPLE_POST) do
-        get tennis_life_featured_translation_url
-
-        assert_response :success
-        assert_select "turbo-frame#featured_post_translation", text: SAMPLE_POST["text"]
-      end
-    end
-  end
-
-  test "featured translation renders an empty frame without a featured post" do
-    stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, nil) do
-      get tennis_life_featured_translation_url
-
-      assert_response :success
-      assert_select "turbo-frame#featured_post_translation", count: 1
-      assert_select "turbo-frame#featured_post_translation p", count: 0
-    end
-  end
-
-  test "index renders telegram profile link in player rating" do
-    users(:one).update_columns(
-      name: "Rating Player",
-      telegram_username: "rating_player",
-      email: "rating_player@example.com"
-    )
-    match = Match.create!(
-      user: users(:one),
-      opponent: users(:two),
-      mode: "singles",
-      outcome: "win",
-      played_at: Time.current
-    )
-
-    stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, nil) do
-      get tennis_life_index_url
-
-      assert_response :success
-      assert_select "a[href='https://t.me/rating_player']", text: "@rating_player"
-    end
-  ensure
-    match&.destroy
+    assert_redirected_to "/tennis_life"
+    assert_response :moved_permanently
   end
 
   test "the feed header says how many players are on the service" do
@@ -155,13 +39,10 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     expected = User.not_merged.count
     assert_operator User.count, :>, expected, "слитый аккаунт должен остаться в таблице"
 
-    ENV["TENNIS_LIFE_FEED"] = "1"
-    stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, nil) do
-      get tennis_life_index_url
+    get tennis_life_index_url
 
-      assert_response :success
-      assert_includes response.body, I18n.t("tennis_life.total_players", count: expected)
-    end
+    assert_response :success
+    assert_includes response.body, I18n.t("tennis_life.total_players", count: expected)
   ensure
     merged&.destroy
   end
@@ -212,52 +93,13 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
       played_at: Time.current
     )
 
-    stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, nil) do
-      get tennis_life_index_url
+    get tennis_life_index_url
 
-      assert_response :success
-      assert_includes response.body, "Season #{Season.current_label}"
-      assert_select "a[href='#{tennis_life_statistics_path}']", text: /View all statistics/
-    end
+    assert_response :success
+    assert_includes response.body, I18n.t("tennis_life.feed.pinned_subtitle", season: Season.current_label)
+    assert_select "a[href='#{tennis_life_statistics_path}']", text: I18n.t("tennis_life.feed.all_statistics")
   ensure
     match&.destroy
-  end
-
-  # Stored posts belong to the feed, so classic keeps showing the single gist
-  # post no matter how many of them are in the database.
-  test "classic shows the featured gist post and not the stored ones" do
-    channel = TelegramChannel.create!(username: "@classic_check", url: "https://t.me/classic_check")
-    TelegramPost.create!(
-      telegram_channel: channel,
-      message_id: 103,
-      text: "Пост из базы",
-      published_at: Time.current
-    )
-
-    stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, SAMPLE_POST) do
-      get tennis_life_classic_url
-
-      assert_response :success
-      assert_includes response.body, SAMPLE_POST["text"]
-      assert_not_includes response.body, "Пост из базы"
-      assert_not_includes response.body, "classic_check/103"
-    end
-  end
-
-  test "classic falls back to the empty state when the gist has no post" do
-    TelegramPost.create!(
-      telegram_channel: TelegramChannel.create!(username: "@classic_empty", url: "https://t.me/classic_empty"),
-      message_id: 104,
-      text: "Пост из базы",
-      published_at: Time.current
-    )
-
-    stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, nil) do
-      get tennis_life_classic_url
-
-      assert_response :success
-      assert_includes response.body, I18n.t("tennis_life.index.no_posts")
-    end
   end
 
   test "feed enqueues translation jobs for posts without english text" do
@@ -275,14 +117,12 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
       created_at: 1.day.ago
     )
 
-    stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, nil) do
-      get tennis_life_feed_url
+    get tennis_life_feed_url
 
-      assert_response :success
-      assert_equal 1, ActiveJob::Base.queue_adapter.enqueued_jobs.count
-      assert_equal TranslateTelegramPostJob, ActiveJob::Base.queue_adapter.enqueued_jobs.last[:job]
-      assert_equal [ post.id ], ActiveJob::Base.queue_adapter.enqueued_jobs.last[:args]
-    end
+    assert_response :success
+    assert_equal 1, ActiveJob::Base.queue_adapter.enqueued_jobs.count
+    assert_equal TranslateTelegramPostJob, ActiveJob::Base.queue_adapter.enqueued_jobs.last[:job]
+    assert_equal [ post.id ], ActiveJob::Base.queue_adapter.enqueued_jobs.last[:args]
   end
 
   test "feed renders lazy telegram widget hook and translated fallback" do
@@ -332,12 +172,10 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
       created_at: 1.day.ago
     )
 
-    stub_singleton(TennisLife::TelegramPostsFetcher, :featured_post, nil) do
-      get tennis_life_feed_url
+    get tennis_life_feed_url
 
-      assert_response :success
-      assert_equal 0, ActiveJob::Base.queue_adapter.enqueued_jobs.count
-    end
+    assert_response :success
+    assert_equal 0, ActiveJob::Base.queue_adapter.enqueued_jobs.count
   end
 
   test "feed rejects malformed and future cursors" do
@@ -479,23 +317,19 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes response.body, "в 23:00 мск"
 
-    stub_singleton(TennisScoreboard::Fetcher, :raw_text, scoreboard) { get tennis_life_classic_url(host: "getcourt.co") }
-    assert_response :success
-    assert_includes response.body, "Moscow time (UTC+3)"
-
-    stub_singleton(TennisScoreboard::Fetcher, :raw_text, scoreboard) { get tennis_life_classic_url(host: "ru.getcourt.co") }
-    assert_response :success
-    assert_includes response.body, "Время московское (UTC+3)"
-
-    stub_singleton(TennisScoreboard::Fetcher, :raw_text, nil) { get tennis_life_classic_url(host: "getcourt.co") }
-    assert_response :success
-    assert_not_includes response.body, "UTC+3"
-
     # The feed pins the lead tournament's scoreboard on the first page.
     stub_singleton(TennisScoreboard::Fetcher, :raw_text, scoreboard) { get tennis_life_feed_url(seed: 123, host: "getcourt.co"), as: :turbo_stream }
     assert_response :success
     assert_includes response.body, 'data-feed-card-id="scoreboard:'
     assert_includes response.body, "Moscow time (UTC+3)"
+
+    stub_singleton(TennisScoreboard::Fetcher, :raw_text, scoreboard) { get tennis_life_feed_url(seed: 123, host: "ru.getcourt.co"), as: :turbo_stream }
+    assert_response :success
+    assert_includes response.body, "Время московское (UTC+3)"
+
+    stub_singleton(TennisScoreboard::Fetcher, :raw_text, nil) { get tennis_life_feed_url(seed: 123, host: "getcourt.co"), as: :turbo_stream }
+    assert_response :success
+    assert_not_includes response.body, "UTC+3"
   end
 
   test "feed HTML is noindex and canonical to tennis life" do
@@ -505,26 +339,6 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     assert_equal "text/html", response.media_type
     assert_select %q(meta[name="robots"][content="noindex, follow"])
     assert_select %q(link[rel="canonical"][href="https://getcourt.co/tennis_life"])
-  end
-
-  test "classic is noindex and canonical to tennis life" do
-    get tennis_life_classic_url
-
-    assert_response :success
-    assert_select %q(meta[name="robots"][content="noindex, follow"])
-    assert_select %q(link[rel="canonical"][href="https://getcourt.co/tennis_life"])
-  end
-
-  test "feature flag switches index to the new feed and classic remains available" do
-    ENV["TENNIS_LIFE_FEED"] = "1"
-
-    get tennis_life_url
-    assert_response :success
-    assert_select "[data-controller='infinite-feed']", count: 1
-
-    get tennis_life_classic_url
-    assert_response :success
-    assert_select "[data-controller='infinite-feed']", count: 0
   end
 
   test "statistics shows full player rating and recent matches" do
@@ -796,10 +610,10 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, I18n.t("tennis_life.statistics.win_pct")
   end
 
-  test "pinned leaders match the classic view instead of the cursor snapshot" do
+  test "pinned leaders match the statistics page instead of the cursor snapshot" do
     # Начальный курсор округляет снимок вниз до часа. Матч, записанный внутри
-    # текущего часа, в этот срез не попадает — но лидеры должны совпадать с
-    # классическим видом, а не отставать до следующего часа.
+    # текущего часа, в этот срез не попадает — но лидеры должны совпадать со
+    # страницей статистики, а не отставать до следующего часа.
     travel_to Time.current.beginning_of_hour + 30.minutes do
       leader = User.create!(email: "fresh-leader@example.com", name: "Fresh Leader")
       2.times do
@@ -811,13 +625,13 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
       assert_response :success
       pinned_ids = assigns(:pinned_rating_rows).map { |row| row[:user].id }
 
-      get tennis_life_classic_url
+      get tennis_life_statistics_url
       assert_response :success
-      classic_ids = assigns(:rating_rows).first(TennisLifeController::PINNED_RATING_LIMIT)
-                                         .map { |row| row[:user].id }
+      statistics_ids = assigns(:rating_rows).first(TennisLifeController::PINNED_RATING_LIMIT)
+                                            .map { |row| row[:user].id }
 
       assert_includes pinned_ids, leader.id
-      assert_equal classic_ids, pinned_ids
+      assert_equal statistics_ids, pinned_ids
     end
   end
 

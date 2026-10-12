@@ -675,7 +675,6 @@ ru:
     feed:
       title: Теннисная жизнь
       subtitle: Игры, игроки, корты и истории местного теннисного сообщества.
-      classic_link: Классический вид
       pinned_title: Лидеры сезона
       pinned_subtitle: Лучшие игроки · сезон %{season}
       all_statistics: Вся статистика

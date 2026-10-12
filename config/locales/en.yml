@@ -656,15 +656,6 @@ en:
     index:
       meta_title: "Tennis Life: Player Ratings, ATP/WTA Results and Telegram News | GetCourt"
       meta_description: "Follow the latest GetCourt stats, live tournament results, amateur player ratings, and Telegram news all in one place."
-      title: "Tennis Life"
-      stats_title: "GetCourt Stats"
-      feed_title: "Telegram Feed"
-      read_on_telegram: "Read on Telegram"
-      no_posts: "No posts yet."
-      player_rating: "Player Rating (top 10)"
-      season_label: "Season %{year}"
-      record: "%{wins} wins / %{games} games"
-      view_all_statistics: "View all statistics"
       no_rating_data: "No rating data yet."
     statistics:
       meta_title: "Tennis Player Rankings, ELO Ratings & Match Results | GetCourt"

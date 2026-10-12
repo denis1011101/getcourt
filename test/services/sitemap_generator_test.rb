@@ -40,7 +40,7 @@ class SitemapGeneratorTest < ActiveSupport::TestCase
     assert_includes locs(document), "https://getcourt.co#{tennis_life_path}"
     assert_includes locs(document), "https://getcourt.co#{tennis_life_statistics_path}"
     assert_not_includes locs(document), "https://getcourt.co#{tennis_life_feed_path}"
-    assert_not_includes locs(document), "https://getcourt.co#{tennis_life_classic_path}"
+    assert_not_includes locs(document), "https://getcourt.co/tennis_life/classic"
   end
 
   test "dynamic records include localized urls alternates and lastmod" do

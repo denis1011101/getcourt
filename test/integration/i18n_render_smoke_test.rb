@@ -1,7 +1,7 @@
 require "test_helper"
 
 class I18nRenderSmokeTest < ActionDispatch::IntegrationTest
-  PUBLIC = %w[/ /courts /coaches /tournaments /tennis_life /tennis_life/classic /tennis_life/statistics
+  PUBLIC = %w[/ /courts /coaches /tournaments /tennis_life /tennis_life/statistics
               /ntrp_level_guide /tennis_formats_and_rules /partnership /mission
               /contacts /privacy_policy /searches /sign_in]
 
