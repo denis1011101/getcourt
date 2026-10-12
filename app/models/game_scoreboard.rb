@@ -202,6 +202,9 @@ class GameScoreboard < ApplicationRecord
       return false unless live? && !one_vs_two?
 
       settings = settings.merge(self.settings.to_h.slice(*KIND_KEYS))
+      # В серии пару задаёт её порядок: таблица серии считает стороны по нему,
+      # поэтому стороны тут не меняются — только правила.
+      team_a, team_b = self.team_a, self.team_b if round_robin?
       current = state
       rebuilt = Scoreboard::TennisState.new(settings).settings == current.settings ? actions : current.rebuilt_actions(settings)
       assign_attributes(settings: settings, team_a: team_a, team_b: team_b, actions: rebuilt)

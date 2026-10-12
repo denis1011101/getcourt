@@ -44,6 +44,8 @@
       </section>
     <% end %>
 
+    <%# В серии втроём пару задаёт порядок серии — стороны не правят. %>
+    <% unless editing && scoreboard.round_robin? %>
     <section class="<%= card %> <%= 'group-has-[input[value=one\_vs\_two]:checked]/setup:hidden group-has-[input[value=round\_robin]:checked]/setup:hidden' unless editing %>">
       <h2 class="<%= heading %>"><%= t("game_scoreboards.setup.sides") %></h2>
       <p class="-mt-2 mb-3 text-xs text-gray-500 dark:text-slate-400"><%= t("game_scoreboards.setup.sides_hint") %></p>
@@ -60,6 +62,7 @@
         <% end %>
       </div>
     </section>
+    <% end %>
 
     <%# «_» в произвольном значении Tailwind читает как пробел — экранируем. %>
     <section class="<%= card %> group-has-[input[value=one\_vs\_two]:checked]/setup:hidden">
