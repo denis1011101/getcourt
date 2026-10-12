@@ -49,18 +49,16 @@ class PrebookingsController < ApplicationController
       return
     end
 
-    return head :forbidden unless can_participate?(@game, @prebooking.date)
-
-    if @prebooking.user_id.present?
-      redirect_to_prebooking_month @game, @prebooking.date, alert: "Slot already taken."
-      return
-    end
+    # Как и в состав игры, организатор может записать людей сверх мест: когда
+    # свободных слотов нет, на дату заводится ещё один.
+    return head :forbidden unless can_participate?(@game, @prebooking.date, over_capacity: true)
 
     if @game.prebookings.where(user_id: user.id, date: @prebooking.date).exists?
       redirect_to_prebooking_month @game, @prebooking.date, alert: t("games.prebookings.assign_already_booked", name: helpers.user_display_label(user))
       return
     end
 
+    @prebooking = free_or_extra_slot(@prebooking.date) if @prebooking.user_id.present?
     @prebooking.update!(user: user, status: "approved", approved_at: Time.current)
     GameRequestNotification.prebooking_assigned(user: user, game: @game, date: @prebooking.date) unless user == current_user
     redirect_to_prebooking_month @game, @prebooking.date, notice: t("games.prebookings.assigned", name: helpers.user_display_label(user))
@@ -68,7 +66,7 @@ class PrebookingsController < ApplicationController
 
   def cancel
     if @prebooking.user == current_user || can_manage_game?
-      @prebooking.update!(user: nil, status: "approved", approved_at: nil)
+      @prebooking.release!
       redirect_to_prebooking_month @game, @prebooking.date, notice: "Booking cleared."
     else
       head :forbidden
@@ -91,7 +89,7 @@ class PrebookingsController < ApplicationController
 
     requester = @prebooking.user
     date = @prebooking.date
-    @prebooking.update!(user: nil, status: "approved", approved_at: nil)
+    @prebooking.release!
     GameRequestNotification.prebooking(user: requester, game: @game, dates: date, approved: false)
     redirect_to_prebooking_month @game, date, notice: "Prebooking rejected."
   end
@@ -110,7 +108,7 @@ class PrebookingsController < ApplicationController
     current_user && (current_user == @game.user || (current_user.respond_to?(:admin?) && current_user.admin?))
   end
 
-  def can_participate?(game, date = nil)
+  def can_participate?(game, date = nil, over_capacity: false)
     return false unless game&.prebooking_enabled?
     # Записаться можно только на занятие: слот мог остаться от даты, которую
     # организатор убрал из расписания, — игры в этот день уже не будет.
@@ -123,11 +121,19 @@ class PrebookingsController < ApplicationController
       return false
     end
 
+    return true if over_capacity
+
     scope = game.prebookings
     scope = scope.where(date: date) if date.present?
     taken = scope.where.not(user_id: nil).count
     # Мест на дату столько, сколько слотов: у занятия число может быть своё.
     taken < game.prebooking_required_players(date)
+  end
+
+  def free_or_extra_slot(date)
+    slots = @game.prebookings.where(date: date)
+    slots.where(user_id: nil).order(:slot_index).first ||
+      slots.create!(slot_index: slots.maximum(:slot_index).to_i + 1)
   end
 
   def schedule_owner_notification(game, user)

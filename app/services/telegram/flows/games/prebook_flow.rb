@@ -176,7 +176,7 @@ module Telegram
               cancel_dates.each do |d|
                 pb = game.prebookings.where(user_id: user.id).where("DATE(date) = ?", d).first
                 if pb
-                  pb.update!(user_id: nil, status: "approved", approved_at: nil)
+                  pb.release!
                   cancelled += 1
                 else
                   cancel_failed << d.to_s

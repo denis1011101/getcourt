@@ -210,6 +210,22 @@ class ResetParticipationsJobTest < ActiveJob::TestCase
     assert_equal later.id, game.prebookings.find_by(date: Date.new(2026, 9, 17), slot_index: 1).user_id
   end
 
+  # Организатор записал людей сверх мест — в состав они выходят все.
+  test "players booked beyond the slots all join the roster" do
+    players = Array.new(3) { |i| User.create!(email: "reset-extra-#{i}@example.com") }
+    game = Game.create!(
+      court: courts(:one), user: @owner, date: Date.new(2026, 9, 7), time: "18:00",
+      recurring: true, recurrence_days: [ 1, 4 ], players_count: 2, prebooking_enabled: true
+    )
+    players.each_with_index { |player, i| game.prebookings.create!(date: Date.new(2026, 9, 10), slot_index: i + 1, user: player) }
+
+    travel_to Time.zone.local(2026, 9, 9, 11, 0) do
+      ResetParticipationsJob.perform_now
+    end
+
+    assert_equal players.map(&:id).sort, game.participations.reload.pluck(:user_id).sort
+  end
+
   # Предзапись заведена ради подтверждения организатором: неодобренная заявка
   # не должна попадать в состав в обход него.
   test "a booking waiting for approval is not promoted into the lineup" do

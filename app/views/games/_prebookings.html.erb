@@ -15,7 +15,9 @@
 <%# Тип, корт и число мест можно задать на каждую дату отдельно; пусто — как в серии. %>
 <% settings_by_date = game.occurrence_settings.where(date: dates).includes(:court, :coach, :second_coach).index_by(&:date) %>
 <% required_by_date = dates.index_with { |d| settings_by_date[d]&.players_count || required } %>
-<% taken_by_date = dates.index_with { |d| (1..required_by_date[d]).count { |slot_index| prebookings_by_date_and_slot[[ d, slot_index ]]&.user } } %>
+<%# Организатор может записать людей и сверх мест — такие слоты идут после обычных. %>
+<% extra_slots_by_date = prebookings_by_date_and_slot.values.select { |pb| pb.user && pb.slot_index > required_by_date[pb.date] }.group_by(&:date) %>
+<% taken_by_date = dates.index_with { |d| (1..required_by_date[d]).count { |slot_index| prebookings_by_date_and_slot[[ d, slot_index ]]&.user } + extra_slots_by_date[d].to_a.size } %>
 <% if can_manage && dates.any? %>
   <% anchor_city = game.court&.city_name.presence || current_user.try(:city_name).presence %>
   <% court_options = Court.visible_to(current_user).sorted_for_user(current_user) %>
@@ -142,7 +144,8 @@
         <% cancellation = cancellations_by_date[d] %>
         <% setting = settings_by_date[d] %>
         <% day_required = required_by_date[d] %>
-        <% slots = (1..day_required).map { |slot_index| [ slot_index, prebookings_by_date_and_slot[[ d, slot_index ]] ] } %>
+        <% slots = (1..day_required).map { |slot_index| [ slot_index, prebookings_by_date_and_slot[[ d, slot_index ]] ] } +
+                   extra_slots_by_date[d].to_a.sort_by(&:slot_index).map { |pb| [ pb.slot_index, pb ] } %>
         <% taken = taken_by_date[d].to_i %>
         <%# Без JS работает сам якорь: подсветка через :target, а запас при
             прокрутке — высота липкой шапки (h-16) плюс отступ, иначе карточка
@@ -224,8 +227,9 @@
               <% end %>
             </ul>
             <%# Организатор записывает человека сам — по имени, в первый
-                свободный слот: людям всё равно, под каким номером они стоят. %>
-            <% free_slot = slots.map(&:last).find { |slot| slot && slot.user.nil? } %>
+                свободный слот: людям всё равно, под каким номером они стоят.
+                Свободных нет — сервер заведёт ещё один, как в составе игры. %>
+            <% free_slot = slots.map(&:last).find { |slot| slot && slot.user.nil? } || slots.filter_map(&:last).last %>
             <% if can_manage && free_slot %>
               <%= form_with url: assign_game_prebooking_path(game, free_slot), method: :post, class: "mt-2", data: { testid: "prebooking-assign" } do %>
                 <%= render "shared/user_picker", field_name: "user_id", submit: true,
@@ -234,6 +238,11 @@
               <% booked_ids = slots.filter_map { |_, slot| slot&.user_id } %>
               <%= render "shared/recent_picks", people: recent_people.reject { |person| booked_ids.include?(person.id) }.first(User::RECENT_PICKS_LIMIT),
                                                 url: assign_game_prebooking_path(game, free_slot) %>
+            <% end %>
+            <% if taken > 4 %>
+              <div class="mt-2 rounded-md border border-yellow-200 bg-yellow-50 p-2 text-sm text-yellow-800 dark:border-yellow-500/20 dark:bg-yellow-500/10 dark:text-yellow-200" data-testid="prebooking-classic-limit">
+                <%= t("games.show.classic_limit") %>
+              </div>
             <% end %>
           <% end %>
 
