@@ -132,7 +132,7 @@ class ParticipationsController < ApplicationController
     # человек не добавился.
     return redirect_to(@game, alert: msg, status: :see_other) if msg
 
-    GameRequestNotification.participation_added(user: user, game: @game) unless user == current_user
+    GameRequestNotification.participation_added(user: user, game: @game, by: current_user) unless user == current_user
     ParticipationNotifier.notify_owner(@game, user, action: :guest_added) if current_user != @game.user
 
     respond_to do |format|
