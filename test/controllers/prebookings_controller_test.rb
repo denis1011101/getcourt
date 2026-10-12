@@ -241,7 +241,7 @@ class PrebookingsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "assign refuses a taken slot, a second slot on the same date and an unknown player" do
+  test "assign into a taken slot lands in the first free one; a second slot on the same date and an unknown player are refused" do
     travel_to SEPTEMBER do
       owner = users(:one)
       owner.update!(email: "prebooking-assign-twice@example.com")
@@ -254,16 +254,15 @@ class PrebookingsControllerTest < ActionDispatch::IntegrationTest
 
       post assign_game_prebooking_url(game, slot), params: { user_id: player.id }
       post assign_game_prebooking_url(game, slot), params: { user_id: users(:two).id }
-      assert_equal "Slot already taken.", flash[:alert]
       assert_equal player, slot.reload.user
+      assert_equal users(:two), second.reload.user
 
-      post assign_game_prebooking_url(game, second), params: { user_id: player.id }
+      post assign_game_prebooking_url(game, slot), params: { user_id: player.id }
       assert_equal I18n.t("games.prebookings.assign_already_booked", name: "Twice (prebooking-assign-twice-player@example.com)"), flash[:alert]
-      assert_nil second.reload.user_id
 
-      post assign_game_prebooking_url(game, second), params: { user_id: 0 }
+      post assign_game_prebooking_url(game, slot), params: { user_id: 0 }
       assert_equal I18n.t("games.prebookings.assign_no_user"), flash[:alert]
-      assert_nil second.reload.user_id
+      assert_equal 2, game.prebookings.where(date: slot.date).count
     end
   end
 
@@ -294,6 +293,54 @@ class PrebookingsControllerTest < ActionDispatch::IntegrationTest
       get more_game_prebookings_url(game, month: "2026-09")
 
       assert_select "form[data-testid=?]", "prebooking-assign", 0
+    end
+  end
+
+  # Как и в состав игры, организатор записывает людей сверх мест: слот
+  # заводится на ходу, после четырёх — предупреждение про классический формат,
+  # а снятый с лишнего слота человек забирает слот с собой.
+  test "the organizer assigns players beyond the slots and is warned past four" do
+    travel_to SEPTEMBER do
+      owner = users(:one)
+      owner.update!(email: "prebooking-extra@example.com")
+      game = recurring_prebooking_game(owner)
+      game.update!(players_count: 4)
+      players = Array.new(5) { |i| User.create!(email: "prebooking-extra-#{i}@example.com", name: "Extra #{i}") }
+
+      post session_url, params: { email: owner.email }
+      slot = first_slot(game)
+      players.each { |player| post assign_game_prebooking_url(game, slot), params: { user_id: player.id } }
+
+      extra = game.prebookings.find_by!(date: slot.date, slot_index: 5)
+      assert_equal players.last, extra.user
+      get more_game_prebookings_url(game, month: "2026-09")
+      assert_select "#prebooking-#{slot.date.iso8601} [data-testid=prebooking-classic-limit]", text: I18n.t("games.show.classic_limit")
+      assert_select "#prebooking-#{slot.date.iso8601} form[data-testid=prebooking-assign]"
+
+      post cancel_game_prebooking_url(game, extra)
+      assert_not Prebooking.exists?(extra.id)
+      get more_game_prebookings_url(game, month: "2026-09")
+      assert_select "#prebooking-#{slot.date.iso8601} [data-testid=prebooking-classic-limit]", 0
+    end
+  end
+
+  # Игроки сами сверх мест не записываются — только организатор.
+  test "a player cannot book a date whose slots are all taken" do
+    travel_to SEPTEMBER do
+      owner = users(:one)
+      owner.update!(email: "prebooking-full-owner@example.com")
+      game = recurring_prebooking_game(owner)
+      slot = first_slot(game)
+      game.prebookings.where(date: slot.date).each_with_index do |pb, i|
+        pb.update!(user: User.create!(email: "prebooking-full-#{i}@example.com"), status: "approved")
+      end
+      extra = game.prebookings.create!(date: slot.date, slot_index: 3)
+
+      users(:two).update!(email: "prebooking-full-player@example.com")
+      post session_url, params: { email: users(:two).email }
+      post book_game_prebooking_url(game, extra)
+
+      assert_response :forbidden
     end
   end
 

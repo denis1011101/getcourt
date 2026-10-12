@@ -116,14 +116,12 @@ class ResetParticipationsJob < ApplicationJob
   # переноса сдвигалась на занятие назад — бронь на 17-е становилась бронью на
   # 14-е, — но человек записывается на конкретный день, а не в очередь.
   def apply_prebookings_for_occurrence!(game, nd)
-    players_needed = game.prebooking_required_players(nd)
-
     ActiveRecord::Base.transaction do
       game.participations.delete_all
 
       # Заявка, которую организатор ещё не одобрил, в состав не идёт: иначе
       # предзапись обходила бы подтверждение, ради которого она и заведена.
-      game.prebookings.approved.where(date: nd).where.not(user_id: nil).order(:slot_index).limit(players_needed).each do |prebooking|
+      game.prebookings.approved.where(date: nd).where.not(user_id: nil).order(:slot_index).each do |prebooking|
         game.participations.create!(user_id: prebooking.user_id)
         prebooking.update!(user_id: nil)
       end
