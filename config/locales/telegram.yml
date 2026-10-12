@@ -180,8 +180,10 @@ ru:
       одобрен. Даты: %{dates}.'
     prebooking_request_rejected_user: 'Ваш запрос на предбронирование игры #%{game_id}
       отклонён. Даты: %{dates}.'
-    prebooking_assigned_user: 'Организатор записал вас на игру #%{game_id}. Даты: %{dates}.'
-    participation_added_user: 'Организатор добавил вас в игру #%{game_id}.'
+    prebooking_assigned_user: 'Вас записали на будущую игру %{game} — %{dates}.'
+    prebooking_assigned_user_by: 'Кто записал: %{actor}.'
+    participation_added_user: 'Вас добавили в игру %{game}.'
+    participation_added_user_by: 'Кто добавил: %{actor}.'
     post_game_stats_reminder: |-
       Игра %{datetime} завершилась.
       Заполните статистику на GetCourt.
@@ -793,8 +795,10 @@ en:
       was approved. Dates: %{dates}.'
     prebooking_request_rejected_user: 'Your prebooking request for Game #%{game_id}
       was rejected. Dates: %{dates}.'
-    prebooking_assigned_user: 'The organizer booked you for Game #%{game_id}. Dates: %{dates}.'
-    participation_added_user: 'The organizer added you to Game #%{game_id}.'
+    prebooking_assigned_user: 'You were booked for an upcoming Game %{game} — %{dates}.'
+    prebooking_assigned_user_by: 'Booked by: %{actor}.'
+    participation_added_user: 'You were added to Game %{game}.'
+    participation_added_user_by: 'Added by: %{actor}.'
     post_game_stats_reminder: |-
       The game on %{datetime} has finished.
       Please fill in the statistics on GetCourt.
@@ -1366,8 +1370,10 @@ es:
       ha sido aprobada. Fechas: %{dates}.'
     prebooking_request_rejected_user: 'Tu solicitud de reserva para el partido #%{game_id}
       ha sido rechazada. Fechas: %{dates}.'
-    prebooking_assigned_user: 'El organizador te ha reservado para el partido #%{game_id}. Fechas: %{dates}.'
-    participation_added_user: 'El organizador te ha añadido al partido #%{game_id}.'
+    prebooking_assigned_user: 'Te han reservado plaza en un próximo partido %{game} — %{dates}.'
+    prebooking_assigned_user_by: 'Te reservó: %{actor}.'
+    participation_added_user: 'Te han añadido al partido %{game}.'
+    participation_added_user_by: 'Te añadió: %{actor}.'
     post_game_stats_reminder: |-
       El partido del %{datetime} ha terminado.
       Completa las estadísticas en GetCourt.

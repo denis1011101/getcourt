@@ -60,7 +60,7 @@ class PrebookingsController < ApplicationController
 
     @prebooking = free_or_extra_slot(@prebooking.date) if @prebooking.user_id.present?
     @prebooking.update!(user: user, status: "approved", approved_at: Time.current)
-    GameRequestNotification.prebooking_assigned(user: user, game: @game, date: @prebooking.date) unless user == current_user
+    GameRequestNotification.prebooking_assigned(user: user, game: @game, date: @prebooking.date, by: current_user) unless user == current_user
     redirect_to_prebooking_month @game, @prebooking.date, notice: t("games.prebookings.assigned", name: helpers.user_display_label(user))
   end
 
