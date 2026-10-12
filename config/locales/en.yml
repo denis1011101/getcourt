@@ -43,6 +43,8 @@ en:
               unbalanced_teams: "Sides must be even: one against one or two against two"
               no_registered_players: "At least one registered player is needed — otherwise the score has nowhere to go"
               same_player_twice: "A player can't play for both sides"
+              trio_needs_three: "Pick three different players"
+              trio_one_guest: "A three-player series allows only one guest — a match between two guests has nowhere to be saved"
               training: "Trainings don't keep a score"
         occurrence_setting:
           attributes:

@@ -1,5 +1,8 @@
 <%# Табло без слов: оно же рассылается всем зрителям через Turbo Streams,
     а рендерится на языке того, кто нажал. Цифры, имена и значки понятны всем. %>
+<% if scoreboard.one_vs_two? %>
+<%= render "game_scoreboards/one_vs_two_board", scoreboard: scoreboard %>
+<% else %>
 <% board = scoreboard.state %>
 <div id="game_scoreboard" class="rounded-lg border bg-white shadow-sm dark:bg-slate-800/80 dark:border-white/10 overflow-hidden" data-testid="scoreboard">
   <% %w[a b].each do |side| %>
@@ -28,3 +31,4 @@
     <p class="border-t bg-amber-50 px-3 py-1 text-center text-xs font-semibold tracking-wide text-amber-800 dark:border-white/10 dark:bg-amber-500/15 dark:text-amber-200">TIE-BREAK</p>
   <% end %>
 </div>
+<% end %>

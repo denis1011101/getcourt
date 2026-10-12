@@ -140,10 +140,15 @@ class PlayerStatistic < ApplicationRecord
     end
   end
 
+  # Какие матчи двигают рейтинг режима: «2 против 1» — личный результат,
+  # поэтому считается вместе с одиночками.
+  ELO_POOLS = { "singles" => %w[singles one_vs_two], "doubles" => %w[doubles] }.freeze
+
   def self.recalculate_elo_for_mode!(mode)
-    mode = mode.to_s
+    mode = mode.to_s == "one_vs_two" ? "singles" : mode.to_s
     rating_column = mode == "doubles" ? :doubles_rating : :singles_rating
-    matches = Match.where(mode: mode).order(:played_at, :id).to_a
+    pool = ELO_POOLS.fetch(mode, [ mode ])
+    matches = Match.where(mode: pool).order(:played_at, :id).to_a
     ratings = Hash.new(BASE_ELO)
     reset_times = stats_reset_times_for_matches(matches)
     reset_applied = {}
@@ -156,7 +161,7 @@ class PlayerStatistic < ApplicationRecord
 
     last_elo_played_at_by_user = last_elo_played_at_by_user(grouped_matches(matches).values)
 
-    Match.where(mode: mode).distinct.pluck(:user_id).each do |user_id|
+    Match.where(mode: pool).distinct.pluck(:user_id).each do |user_id|
       next unless elo_rated_user_ids[user_id]
 
       ps = find_or_create_by!(user_id: user_id)
@@ -226,7 +231,9 @@ class PlayerStatistic < ApplicationRecord
   def self.elo_event_key(match)
     stats = match.stats.to_h
 
-    if match.mode == "doubles"
+    if match.mode == "one_vs_two"
+      [ match.mode, match.game_id, match.played_at, stats["match_group_id"] ]
+    elsif match.mode == "doubles"
       team_a_ids = Array(stats["team_a_ids"]).map(&:to_i).sort
       team_b_ids = Array(stats["team_b_ids"]).map(&:to_i).sort
 
@@ -279,7 +286,16 @@ class PlayerStatistic < ApplicationRecord
     stats = sample.stats.to_h
     return if guest_names_present?(stats)
 
-    if sample.mode == "doubles"
+    if sample.mode == "one_vs_two"
+      # Лидер (или делившие первое место) против остальных: проигравшие
+      # теряют рейтинг, как проигравшие ему. Все трое поровну — ничья.
+      team_a_ids = Array(stats["team_a_ids"]).map(&:to_i).uniq
+      team_b_ids = Array(stats["team_b_ids"]).map(&:to_i).uniq
+      return if team_a_ids.empty? || team_b_ids.empty?
+
+      team_b_lost = event_matches.find { |match| team_b_ids.include?(match.user_id) }&.outcome.to_s == "loss"
+      { team_a_ids:, team_b_ids:, team_a_outcome: team_b_lost ? "win" : "draw" }
+    elsif sample.mode == "doubles"
       team_a_ids = Array(stats["team_a_ids"]).map(&:to_i).uniq
       team_b_ids = Array(stats["team_b_ids"]).map(&:to_i).uniq
       return if team_a_ids.empty? || team_b_ids.empty?

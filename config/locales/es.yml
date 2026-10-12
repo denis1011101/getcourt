@@ -14,6 +14,8 @@ es:
               unbalanced_teams: "Los lados deben ser iguales: uno contra uno o dos contra dos"
               no_registered_players: "Hace falta al menos un jugador registrado: si no, el marcador no tiene dónde guardarse"
               same_player_twice: "Un jugador no puede jugar en los dos lados"
+              trio_needs_three: "Elige tres jugadores distintos"
+              trio_one_guest: "En una serie a tres solo puede haber un invitado — un partido entre dos invitados no tiene dónde guardarse"
               training: "En los entrenamientos no se lleva marcador"
         occurrence_setting:
           attributes:

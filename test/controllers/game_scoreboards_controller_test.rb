@@ -233,4 +233,88 @@ class GameScoreboardsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to game_scoreboard_url(@game)
     assert_empty @game.scoreboards
   end
+
+  test "three players start a 2 against 1 game, score it and save one result for all" do
+    third = User.create!(email: "scoreboard-third@example.com", name: "Third")
+    @game.participations.create!(user: third)
+
+    post game_scoreboard_url(@game), params: {
+      settings: { kind: "one_vs_two" }, trio: [ "u:#{@owner.id}", "u:#{@rival.id}", "u:#{third.id}" ]
+    }
+    board = @game.scoreboards.live.first
+    assert board.one_vs_two?
+
+    tap("0")
+    tap("pair")
+    get game_scoreboard_url(@game)
+    assert_response :success
+    assert_match "Third", response.body
+
+    post finish_game_scoreboard_url(@game), params: { scoreboard_id: board.id }
+    assert_redirected_to game_path(@game)
+    assert_equal({ @owner.id => "win", @rival.id => "loss", third.id => "loss" },
+                 Match.where(game: @game).pluck(:user_id, :outcome).to_h)
+  end
+
+  test "a three-player series leads from one finished match to the next pair" do
+    third = User.create!(email: "scoreboard-third@example.com", name: "Third")
+    @game.participations.create!(user: third)
+
+    post game_scoreboard_url(@game), params: {
+      settings: { kind: "round_robin", mode: "games", sets_to_win: 1, tiebreak: "1" },
+      trio: [ "u:#{@owner.id}", "u:#{@rival.id}", "u:#{third.id}" ]
+    }
+    tap("a", 6)
+    post finish_game_scoreboard_url(@game), params: { scoreboard_id: live_id }
+
+    assert_redirected_to game_scoreboard_path(@game)
+    follow_redirect!
+    assert_select "[data-testid=scoreboard-series]", text: /6-0/
+    assert_equal [ third.id ], @game.scoreboards.live.first.team_b["user_ids"]
+  end
+
+  # Таблица серии считает стороны по порядку серии, поэтому поменять их
+  # посреди матча нельзя: иначе победа B досталась бы A.
+  test "a series match keeps its sides when the setup is edited" do
+    third = User.create!(email: "scoreboard-third@example.com", name: "Third")
+    @game.participations.create!(user: third)
+
+    post game_scoreboard_url(@game), params: {
+      settings: { kind: "round_robin", mode: "games", sets_to_win: 1, tiebreak: "1" },
+      trio: [ "u:#{@owner.id}", "u:#{@rival.id}", "u:#{third.id}" ]
+    }
+    get edit_game_scoreboard_url(@game, scoreboard_id: live_id)
+    assert_response :success
+    assert_select "select[name='team_a[]']", count: 0
+
+    patch game_scoreboard_url(@game), params: {
+      scoreboard_id: live_id, team_a: [ "u:#{@rival.id}" ], team_b: [ "u:#{@owner.id}" ],
+      settings: { mode: "games", sets_to_win: 1, tiebreak: "1" }
+    }
+    board = @game.scoreboards.live.first
+    assert_equal [ @owner.id ], board.team_a["user_ids"]
+    assert_equal [ @rival.id ], board.team_b["user_ids"]
+
+    tap("b", 6)
+    post finish_game_scoreboard_url(@game), params: { scoreboard_id: board.id }
+    assert_equal "win", Match.find_by(game: @game, user: @rival).outcome
+    follow_redirect!
+    standings = css_select("[data-testid=scoreboard-series] div p").map(&:text)
+    assert_match(/#{@rival.name}/, standings.first, "первым в таблице — победивший B")
+  end
+
+  test "2 against 1 names both partners even when two of the three share a name" do
+    @owner.update_columns(name: "Denis")
+    namesake = User.create!(email: "scoreboard-namesake@example.com", name: "Denis")
+    third = User.create!(email: "scoreboard-third@example.com", name: "Third")
+    [ namesake, third ].each { |user| @game.participations.create!(user: user) }
+
+    post game_scoreboard_url(@game), params: {
+      settings: { kind: "one_vs_two" }, trio: [ "u:#{@owner.id}", "u:#{namesake.id}", "u:#{third.id}" ]
+    }
+    get game_scoreboard_url(@game)
+
+    assert_response :success
+    assert_includes response.body, "Denis + Third"
+  end
 end

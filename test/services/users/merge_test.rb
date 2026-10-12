@@ -137,6 +137,42 @@ class Users::MergeTest < ActiveSupport::TestCase
     assert_empty Match.where(id: match_ids), "an event a player shares with themselves must be dropped"
   end
 
+  # Строки «2 против 1» — одно событие на троих по match_group_id: если оба
+  # аккаунта играли в нём, уходит и строка третьего, иначе после слияния она
+  # держала бы объединённого игрока на обеих сторонах.
+  test "drops a 2 against 1 event where both accounts played, third player's row included" do
+    target = users(:two)
+    target.update_columns(email: "merge-trio-target@example.com")
+    donor = User.create!(email: "tg-#{SecureRandom.hex(8)}@telegram.getcourt", telegram_generated_email: true)
+    third = users(:one)
+    trio = [ donor, target, third ]
+    played_at = 2.days.ago
+
+    # Первое событие: оба аккаунта в одной проигравшей паре. Второе — на разных сторонах.
+    [ third, donor ].each_with_index do |winner, round|
+      group_id = SecureRandom.uuid
+      trio.each do |user|
+        Match.create!(
+          user: user, game: games(:one), mode: "one_vs_two", outcome: user == winner ? "win" : "loss",
+          played_at: played_at + round.hours,
+          stats: { "team_a_ids" => [ winner.id ], "team_b_ids" => (trio - [ winner ]).map(&:id),
+                   "opponent_ids" => (trio - [ user ]).map(&:id), "match_group_id" => group_id }
+        )
+      end
+    end
+    unrelated = Match.create!(
+      user: third, game: games(:one), mode: "one_vs_two", outcome: "win", played_at: played_at,
+      stats: { "team_a_ids" => [ third.id ], "team_b_ids" => [ 999_001, 999_002 ], "match_group_id" => SecureRandom.uuid }
+    )
+
+    stub_singleton(RecalculateEloJob, :perform_later, ->(_modes) { true }) do
+      Users::Merge.call(source: donor, target: target)
+    end
+
+    assert_equal [ unrelated.id ], Match.where(mode: "one_vs_two").pluck(:id),
+                 "события с обоими аккаунтами ушли целиком, чужое событие той же игры осталось"
+  end
+
   test "the city link moves only together with its city_name" do
     moscow = City.create!(name: "Moscow", asciiname: "Moscow", country_code: "RU", geoname_id: 524901)
     kurgan = City.create!(name: "Kurgan", asciiname: "Kurgan", country_code: "RU", geoname_id: 1501321)

@@ -11,14 +11,18 @@
         и морфится на месте — без мигания и с сохранением прокрутки. %>
     <% turbo_refreshes_with method: :morph, scroll: :preserve %>
     <%= turbo_stream_from @game, :scoreboard %>
+    <%= render "game_scoreboards/series", scoreboard: @scoreboard if @scoreboard.round_robin? %>
     <%= render "game_scoreboards/board", scoreboard: @scoreboard %>
 
     <% if @can_score %>
       <%= render "game_scoreboards/controls", scoreboard: @scoreboard %>
     <% end %>
   <% elsif @can_score %>
+    <%# Серия втроём только что закончилась — итог над формой нового матча. %>
+    <%= render "game_scoreboards/series", scoreboard: @last_finished if @last_finished&.round_robin? %>
     <%= render "game_scoreboards/setup", game: @game, scoreboard: @scoreboard %>
   <% else %>
+    <%= render "game_scoreboards/series", scoreboard: @last_finished if @last_finished&.round_robin? %>
     <section class="<%= card %>">
       <p class="text-sm text-gray-600 dark:text-slate-400"><%= t("game_scoreboards.show.no_live_match") %></p>
       <% if @last_finished %>

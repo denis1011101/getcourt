@@ -195,6 +195,14 @@ module Users
     end
 
     def sides_overlap?(match)
+      # «2 против 1»: оба аккаунта могут попасть и в одну проигравшую пару —
+      # это всё равно один человек дважды из троих.
+      if match.mode == "one_vs_two"
+        stats = match.stats.to_h
+        players = (Array(stats["team_a_ids"]) + Array(stats["team_b_ids"])).filter_map { |id| remap_id(id) }
+        return players.size != players.uniq.size
+      end
+
       side_a, side_b = match_sides(match)
       (side_a & side_b).any?
     end
@@ -218,6 +226,8 @@ module Users
     # Mirrors PlayerStatistic's ELO grouping: one event is one game at one moment
     # between the same two sides.
     def event_key(match)
+      return [ match.mode, match.game_id, match.played_at, match.stats.to_h["match_group_id"] ] if match.mode == "one_vs_two"
+
       [ match.mode, match.game_id, match.played_at, match_sides(match).map(&:sort).sort ]
     end
 

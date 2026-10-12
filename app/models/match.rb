@@ -3,7 +3,9 @@ class Match < ApplicationRecord
   belongs_to :opponent, class_name: "User", optional: true
   belongs_to :game, optional: true
 
-  MODES = %w[singles doubles].freeze
+  # one_vs_two — «2 против 1» втроём (см. GameScoreboard): итог на троих,
+  # в счётчиках и рейтинге идёт как одиночный.
+  MODES = %w[singles doubles one_vs_two].freeze
   OUTCOMES = %w[win loss draw].freeze
   # The first four are what a court can offer (see Court::SURFACES) and travel
   # here from the game; the rest only ever arrive from manually entered matches.

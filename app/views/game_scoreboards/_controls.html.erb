@@ -1,6 +1,9 @@
 <%# Кнопки — под большой палец: «+» во всю ширину стороны, «−» поменьше,
     чтобы не задеть случайно. Порядок сторон — как на табло выше. В режиме
     «Геймы и сеты» под ними ещё пара для сетов: закрыть сет или убрать его. %>
+<% if scoreboard.one_vs_two? %>
+<%= render "game_scoreboards/one_vs_two_controls", scoreboard: scoreboard %>
+<% else %>
 <% board = scoreboard.state %>
 <div id="game_scoreboard_controls">
 <%# Матч выигран: «+» больше ничего не делает, поэтому гасим его и говорим,
@@ -142,3 +145,4 @@
 <p class="mt-1 text-center text-xs text-gray-500 dark:text-slate-400"><%= t("game_scoreboards.controls.finish_hint") %></p>
 <% end %>
 </div>
+<% end %>
