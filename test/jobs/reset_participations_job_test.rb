@@ -89,6 +89,22 @@ class ResetParticipationsJobTest < ActiveJob::TestCase
     assert_equal courts(:two).id, game.reload.court_id
   end
 
+  # Корт у игры один — и серии, и занятия, — так что без галки настройка
+  # даты остаётся у серии: прежний корт хранить негде. Принятое поведение.
+  test "without the release flag the occurrence court stays for the next occurrences" do
+    game = weekly_series
+    game.occurrence_settings.create!(date: NEXT_OCCURRENCE, court: courts(:two))
+    series_without_court = weekly_series
+    series_without_court.occurrence_settings.create!(date: NEXT_OCCURRENCE, without_court: true)
+
+    travel_to(RESET_MOMENT) { ResetParticipationsJob.perform_now }
+    travel_to(RESET_MOMENT + 7.days) { ResetParticipationsJob.perform_now }
+
+    assert_equal NEXT_OCCURRENCE + 7, game.reload.last_participations_reset_at.to_date
+    assert_equal courts(:two).id, game.court_id
+    assert_nil series_without_court.reload.court_id
+  end
+
   # «Без корта» на дату — прямое слово организатора: ни галка, ни предзапись
   # корт тут не удерживают.
   test "clears the court when the occurrence is set to go without one" do
