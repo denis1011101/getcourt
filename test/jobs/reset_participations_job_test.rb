@@ -102,7 +102,8 @@ class ResetParticipationsJobTest < ActiveJob::TestCase
 
     assert_equal NEXT_OCCURRENCE + 7, game.reload.last_participations_reset_at.to_date
     assert_equal courts(:two).id, game.court_id
-    assert_nil series_without_court.reload.court_id
+    assert_equal NEXT_OCCURRENCE + 7, series_without_court.reload.last_participations_reset_at.to_date
+    assert_nil series_without_court.court_id
   end
 
   # «Без корта» на дату — прямое слово организатора: ни галка, ни предзапись
