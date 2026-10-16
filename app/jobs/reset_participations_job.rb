@@ -16,7 +16,7 @@ class ResetParticipationsJob < ApplicationJob
       # неудачная уборка должна дождаться следующего часа, а не пропасть.
       # Отсюда же и порядок: сброс предзаписей уносит людей с даты в состав,
       # повторить его вторым заходом нельзя.
-      next unless reset_occurrence_content(game) && release_court(game)
+      next unless reset_occurrence_content(game) && release_court(game, upcoming)
 
       if game.prebooking_enabled?
         apply_prebookings_for_occurrence!(game, upcoming)
@@ -75,8 +75,20 @@ class ResetParticipationsJob < ApplicationJob
   # Идёт до маркера и по тому же договору, что и уборка контента: false —
   # игру в этот раз пропускаем, и следующий запуск попробует снова, а не
   # оставит старый корт у нового занятия навсегда.
-  def release_court(game)
-    return true unless game.release_court_on_reset? && game.court_id.present?
+  #
+  # Корт, заданный на само занятие в его настройках, главнее галки: его
+  # организатор выбрал под эту дату, и сброс ставит именно его. «Без корта»
+  # там же снимает корт и без галки.
+  # Предзапись на занятие тоже держит корт: люди записывались, видя его на
+  # странице. Проверяем до переноса предзаписей в состав — он их обнуляет.
+  def release_court(game, upcoming)
+    setting = game.occurrence_settings.find_by(date: upcoming)
+    if setting&.court_id
+      game.update_columns(court_id: setting.court_id, updated_at: Time.current) if game.court_id != setting.court_id
+      return true
+    end
+    return true unless (game.release_court_on_reset? || setting&.without_court?) && game.court_id.present?
+    return true if !setting&.without_court? && game.prebooking_enabled? && game.prebookings.approved.where(date: upcoming).where.not(user_id: nil).exists?
 
     # Поиск игроков живёт на корте: уведомления уходят по его городу, и модель
     # без корта его не пропустит. Снимаем вместе, иначе игра висит в поиске

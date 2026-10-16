@@ -69,6 +69,82 @@ class ResetParticipationsJobTest < ActiveJob::TestCase
     assert_empty game.participations
   end
 
+  # Корт, выбранный организатором на само занятие, — уже бронь этой даты:
+  # галка снимает корт прошлого занятия, а не его.
+  test "puts the court chosen for the occurrence despite the release flag" do
+    game = weekly_series(release_court_on_reset: true)
+    game.occurrence_settings.create!(date: NEXT_OCCURRENCE, court: courts(:two))
+
+    travel_to(RESET_MOMENT) { ResetParticipationsJob.perform_now }
+
+    assert_equal courts(:two).id, game.reload.court_id
+  end
+
+  test "puts the court chosen for the occurrence without the release flag too" do
+    game = weekly_series
+    game.occurrence_settings.create!(date: NEXT_OCCURRENCE, court: courts(:two))
+
+    travel_to(RESET_MOMENT) { ResetParticipationsJob.perform_now }
+
+    assert_equal courts(:two).id, game.reload.court_id
+  end
+
+  # «Без корта» на дату — прямое слово организатора: ни галка, ни предзапись
+  # корт тут не удерживают.
+  test "clears the court when the occurrence is set to go without one" do
+    game = weekly_series(prebooking_enabled: true, urgent_player_search: true)
+    game.occurrence_settings.create!(date: NEXT_OCCURRENCE, without_court: true)
+    game.prebookings.create!(date: NEXT_OCCURRENCE, slot_index: 1, user: @player)
+
+    travel_to(RESET_MOMENT) { ResetParticipationsJob.perform_now }
+
+    assert_nil game.reload.court_id
+    assert_not game.urgent_player_search?
+  end
+
+  # Кто записался на занятие заранее, записывался на корт со страницы: снять его
+  # в день сброса — отнять у них площадку, на которую они шли.
+  test "keeps the court when someone is prebooked for the occurrence" do
+    game = weekly_series(release_court_on_reset: true, prebooking_enabled: true)
+    game.prebookings.create!(date: NEXT_OCCURRENCE, slot_index: 1, user: @player)
+
+    travel_to(RESET_MOMENT) { ResetParticipationsJob.perform_now }
+
+    assert_equal courts(:one).id, game.reload.court_id
+    assert_equal [ @player.id ], game.participations.pluck(:user_id)
+  end
+
+  # Заявка без одобрения в состав не идёт — и корт за собой не держит.
+  test "a booking waiting for approval does not keep the court" do
+    game = weekly_series(release_court_on_reset: true, prebooking_enabled: true)
+    game.prebookings.create!(date: NEXT_OCCURRENCE, slot_index: 1, user: @player, status: "pending")
+
+    travel_to(RESET_MOMENT) { ResetParticipationsJob.perform_now }
+
+    assert_nil game.reload.court_id
+  end
+
+  # Бронь держит корт только своего занятия: запись на следующую неделю про
+  # площадку этой ничего не говорит.
+  test "a booking on a later date does not keep the court" do
+    game = weekly_series(release_court_on_reset: true, prebooking_enabled: true)
+    game.prebookings.create!(date: NEXT_OCCURRENCE + 7, slot_index: 1, user: @player)
+
+    travel_to(RESET_MOMENT) { ResetParticipationsJob.perform_now }
+
+    assert_nil game.reload.court_id
+  end
+
+  # Пустой слот — это место под запись, а не человек, который на корт идёт.
+  test "an empty approved slot does not keep the court" do
+    game = weekly_series(release_court_on_reset: true, prebooking_enabled: true)
+    game.prebookings.create!(date: NEXT_OCCURRENCE, slot_index: 1, user: nil)
+
+    travel_to(RESET_MOMENT) { ResetParticipationsJob.perform_now }
+
+    assert_nil game.reload.court_id
+  end
+
   # Маркер сброса закрывает игре повторный заход, поэтому корт снимаем до него:
   # иначе упавшая запись оставила бы старый корт у нового занятия навсегда.
   test "a failed court release leaves the game to the next run" do
