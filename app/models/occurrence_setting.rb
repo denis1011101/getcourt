@@ -20,7 +20,8 @@ class OccurrenceSetting < ApplicationRecord
   validate :players_fit_bookings
 
   after_save :sync_prebooking_slots, if: :saved_change_to_players_count?
-  after_destroy :sync_prebooking_slots
+  # Удаляют всю игру — её слоты уже снесены, пересоздавать нечего.
+  after_destroy :sync_prebooking_slots, unless: :destroyed_by_association
 
   def blank_setting?
     kind.nil? && with_coach.nil? && !coaches_set? && court_id.nil? && !without_court? && players_count.nil?
