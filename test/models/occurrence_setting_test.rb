@@ -51,6 +51,15 @@ class OccurrenceSettingTest < ActiveSupport::TestCase
     assert_equal 4, @game.prebooking_required_players(@date)
   end
 
+  # Слоты к этому моменту уже удалены — пересоздавать их нельзя, иначе игра упрётся во внешний ключ.
+  test "game with a setting can be destroyed" do
+    @game.occurrence_settings.create!(date: @date, players_count: 2)
+
+    assert_difference -> { Game.count } => -1, -> { Prebooking.count } => -2 do
+      @game.destroy!
+    end
+  end
+
   # Тренеры на дату: совпадающие с серией не храним, у игры их нет вовсе.
   test "date coaches are kept only for a training with a coach" do
     setting = @game.occurrence_settings.create!(date: @date, with_coach: true, coach: users(:two), guest_coach_name: "  Иван  ")
