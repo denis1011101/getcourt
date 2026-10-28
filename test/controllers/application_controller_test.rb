@@ -42,4 +42,26 @@ class ApplicationControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "#locale-suggestion", count: 0
   end
+
+  test "tells the native app who is signed in" do
+    native = { "User-Agent" => "GetCourt Android; Hotwire Native Android;" }
+    user = User.create!(email: "native-auth@example.com", email_verified_at: Time.current)
+
+    get more_path, headers: native
+    assert_equal "", cookies[:native_auth]
+
+    post session_url, params: { email: user.email }, headers: native
+    assert_equal user.id.to_s, cookies[:native_auth]
+
+    delete sign_out_path, headers: native
+    assert_equal "", cookies[:native_auth]
+  ensure
+    user&.destroy
+  end
+
+  test "does not set the native auth cookie for browsers" do
+    get more_path
+
+    assert_nil cookies[:native_auth]
+  end
 end

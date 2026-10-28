@@ -21,6 +21,7 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0.0"
+        buildConfigField("String", "BASE_URL", "\"https://getcourt.co\"")
     }
 
     signingConfigs {
@@ -35,6 +36,11 @@ android {
     }
 
     buildTypes {
+        // Installs next to the store build and points at `bin/dev` via `adb reverse tcp:3000 tcp:3000`.
+        debug {
+            applicationIdSuffix = ".debug"
+            buildConfigField("String", "BASE_URL", "\"http://localhost:3000\"")
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true

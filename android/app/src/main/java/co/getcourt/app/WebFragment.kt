@@ -33,16 +33,26 @@ class WebFragment : HotwireWebFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Hotwire paints the WebView with this view's color when moving it between screens;
+        // without one it stays white and flashes before the page renders.
+        view.findViewById<View>(dev.hotwire.navigation.R.id.hotwire_view)
+            ?.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.page))
+
         // The site header already carries navigation; modals keep the app bar for its close button.
         val hideAppBar = pathProperties.context == PresentationContext.DEFAULT
         if (hideAppBar) {
             (toolbarForNavigation()?.parent as? View)?.isVisible = false
         }
 
+        // The tab bar covers the navigation bar, but hides itself for modals and the keyboard.
+        val bottomInsets = if (hideAppBar) {
+            WindowInsetsCompat.Type.ime()
+        } else {
+            WindowInsetsCompat.Type.navigationBars() or WindowInsetsCompat.Type.ime()
+        }
         ViewCompat.setOnApplyWindowInsetsListener(view) { v, insets ->
             val top = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
-            val bottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars() or WindowInsetsCompat.Type.ime()).bottom
-            v.updatePadding(top = if (hideAppBar) top else 0, bottom = bottom)
+            v.updatePadding(top = if (hideAppBar) top else 0, bottom = insets.getInsets(bottomInsets).bottom)
             insets
         }
     }
