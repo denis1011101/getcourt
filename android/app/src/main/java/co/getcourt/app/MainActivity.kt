@@ -14,6 +14,8 @@ import dev.hotwire.navigation.activities.HotwireActivity
 import dev.hotwire.navigation.navigator.Navigator
 import dev.hotwire.navigation.navigator.NavigatorConfiguration
 import dev.hotwire.navigation.navigator.NavigatorHost
+import dev.hotwire.core.turbo.visit.VisitAction
+import dev.hotwire.core.turbo.visit.VisitOptions
 import dev.hotwire.navigation.tabs.HotwireBottomNavigationController
 import dev.hotwire.navigation.tabs.HotwireBottomTab
 import dev.hotwire.navigation.tabs.navigatorConfigurations
@@ -30,9 +32,13 @@ class MainActivity : HotwireActivity() {
             val auth = currentAuth()
             if (auth != observedAuth) {
                 observedAuth = auth
-                // Each navigator owns a Turbo cache and back stack, including the visible one.
-                // Reset on the cookie change itself: the response may arrive after switching tabs.
-                tabs.forEach { navigatorHost(it).navigator.reset() }
+                // Reload every tab at its current URL. Navigator.reset() clears the active URL
+                // and can loop if Android saves state while its asynchronous popBackStack runs.
+                tabs.forEach { tab ->
+                    val navigator = navigatorHost(tab).navigator
+                    val location = navigator.location ?: tab.configuration.startLocation
+                    navigator.route(location, VisitOptions(action = VisitAction.REPLACE))
+                }
             }
             authHandler.postDelayed(this, 500)
         }
