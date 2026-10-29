@@ -27,19 +27,12 @@ class MainActivity : HotwireActivity() {
 
     private val authHandler = Handler(Looper.getMainLooper())
     private var observedAuth = ""
+    private var pendingAuth: String? = null
     private val authCheck = object : Runnable {
         override fun run() {
             val auth = currentAuth()
-            if (auth != observedAuth) {
-                observedAuth = auth
-                // Reload every tab at its current URL. Navigator.reset() clears the active URL
-                // and can loop if Android saves state while its asynchronous popBackStack runs.
-                tabs.forEach { tab ->
-                    val navigator = navigatorHost(tab).navigator
-                    val location = navigator.location ?: tab.configuration.startLocation
-                    navigator.route(location, VisitOptions(action = VisitAction.REPLACE))
-                }
-            }
+            if (auth != observedAuth) pendingAuth = auth
+            applyPendingAuthChange()
             authHandler.postDelayed(this, 500)
         }
     }
@@ -128,6 +121,27 @@ class MainActivity : HotwireActivity() {
         val tab = tabs[index]
         delegate.setCurrentNavigator(tab.configuration)
         tabs.forEach { findViewById<View>(it.configuration.navigatorHostId).isVisible = it == tab }
+    }
+
+
+    private fun applyPendingAuthChange() {
+        val auth = pendingAuth ?: return
+        // Wait for Android to resume before touching navigator state. Also let Hotwire finish
+        // the sign-in POST redirect, otherwise refreshing /sign_in can cancel its return_to.
+        if (supportFragmentManager.isStateSaved) return
+        val activeNavigator = delegate.currentNavigator ?: return
+        if (activeNavigator.location?.let { android.net.Uri.parse(it).path == "/sign_in" } == true) return
+
+        tabs.forEach { tab ->
+            val navigator = navigatorHost(tab).navigator
+            val location = navigator.location ?: tab.configuration.startLocation
+            // Clear Turbo snapshots without popping the Android navigation graph, then reload
+            // the current URL so auth changes cannot leave old account state in cached pages.
+            navigator.session.reset()
+            navigator.route(location, VisitOptions(action = VisitAction.REPLACE))
+        }
+        observedAuth = auth
+        pendingAuth = null
     }
 
     private fun currentAuth(): String = CookieManager.getInstance().getCookie(BuildConfig.BASE_URL)
