@@ -167,3 +167,20 @@ jobs:
           label: rails
           message: "${{ steps.rails.outputs.version }}"
           color: D30001
+
+  android:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Select JDK 21
+        run: echo "JAVA_HOME=$JAVA_HOME_21_X64" >> "$GITHUB_ENV"
+
+      # The hosted runner supplies Android SDK; Gradle installs the required platform/build tools.
+      # Release is intentionally unsigned in CI. Publication verifies the signed artifact separately.
+      - name: Test, lint and build Android (including release R8)
+        run: ./gradlew testDebugUnitTest lintRelease assembleDebug assembleRelease --console=plain

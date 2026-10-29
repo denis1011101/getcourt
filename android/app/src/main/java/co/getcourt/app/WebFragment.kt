@@ -27,7 +27,7 @@ class WebFragment : HotwireWebFragment() {
     private val locationPermissionLauncher = registerForActivityResult(RequestMultiplePermissions()) {
         val (origin, callback) = pendingGeolocation ?: return@registerForActivityResult
         pendingGeolocation = null
-        callback.invoke(origin, hasLocationPermission(), false)
+        callback.invoke(origin, TrustedUrl.allows(origin, BuildConfig.DEBUG) && hasLocationPermission(), false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -61,9 +61,16 @@ class WebFragment : HotwireWebFragment() {
         override fun onGeolocationPermissionsShowPrompt(origin: String?, callback: GeolocationPermissions.Callback?) {
             if (origin == null || callback == null) return
 
+            if (!TrustedUrl.allows(origin, BuildConfig.DEBUG)) {
+                callback.invoke(origin, false, false)
+                return
+            }
             if (hasLocationPermission()) {
                 callback.invoke(origin, true, false)
             } else {
+                pendingGeolocation?.let { (previousOrigin, previousCallback) ->
+                    previousCallback.invoke(previousOrigin, false, false)
+                }
                 pendingGeolocation = origin to callback
                 locationPermissionLauncher.launch(arrayOf(ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION))
             }

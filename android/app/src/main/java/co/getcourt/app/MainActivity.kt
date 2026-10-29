@@ -2,6 +2,8 @@ package co.getcourt.app
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.Menu
 import android.view.View
 import android.webkit.CookieManager
@@ -21,8 +23,20 @@ class MainActivity : HotwireActivity() {
     private var pendingLink: String? = null
     private var currentTabIndex = 0
 
-    // Sign-in state each tab last rendered with (the `native_auth` cookie set by Rails).
-    private val tabAuth = mutableMapOf<Int, String>()
+    private val authHandler = Handler(Looper.getMainLooper())
+    private var observedAuth = ""
+    private val authCheck = object : Runnable {
+        override fun run() {
+            val auth = currentAuth()
+            if (auth != observedAuth) {
+                observedAuth = auth
+                // Each navigator owns a Turbo cache and back stack, including the visible one.
+                // Reset on the cookie change itself: the response may arrive after switching tabs.
+                tabs.forEach { navigatorHost(it).navigator.reset() }
+            }
+            authHandler.postDelayed(this, 500)
+        }
+    }
 
     private val tabs by lazy {
         listOf(
@@ -40,13 +54,22 @@ class MainActivity : HotwireActivity() {
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_nav)
         HotwireBottomNavigationController(this, bottomNav).load(tabs)
-        // All tabs load right away, so they all start with the current sign-in state.
-        tabs.indices.forEach { tabAuth[it] = currentAuth() }
+        observedAuth = savedInstanceState?.getString(KEY_AUTH) ?: currentAuth()
         addNewButton(bottomNav, savedInstanceState?.getInt(KEY_TAB) ?: 0)
 
         if (savedInstanceState == null) {
             pendingLink = linkFrom(intent)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        authHandler.post(authCheck)
+    }
+
+    override fun onPause() {
+        authHandler.removeCallbacks(authCheck)
+        super.onPause()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -64,6 +87,7 @@ class MainActivity : HotwireActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putInt(KEY_TAB, currentTabIndex)
+        outState.putString(KEY_AUTH, observedAuth)
     }
 
     override fun navigatorConfigurations() = tabs.navigatorConfigurations
@@ -93,21 +117,11 @@ class MainActivity : HotwireActivity() {
         showTab(selectedTabIndex)
     }
 
-    // Same as HotwireBottomNavigationController.switchTab (private there), plus a reset of tabs
-    // that were rendered before the user signed in or out.
     private fun showTab(index: Int) {
-        val auth = currentAuth()
-        tabAuth[currentTabIndex] = auth
         currentTabIndex = index
-
         val tab = tabs[index]
         delegate.setCurrentNavigator(tab.configuration)
         tabs.forEach { findViewById<View>(it.configuration.navigatorHostId).isVisible = it == tab }
-
-        if (tabAuth[index] != auth) {
-            navigatorHost(tab).navigator.reset()
-        }
-        tabAuth[index] = auth
     }
 
     private fun currentAuth(): String = CookieManager.getInstance().getCookie(BuildConfig.BASE_URL)
@@ -143,10 +157,12 @@ class MainActivity : HotwireActivity() {
 
     private fun linkFrom(intent: Intent?): String? =
         intent?.takeIf { it.action == Intent.ACTION_VIEW }?.dataString
+            ?.takeIf { TrustedUrl.allows(it, BuildConfig.DEBUG) }
 
     private companion object {
         const val NEW_BUTTON_ID = 100
         const val NEW_BUTTON_ORDER = 2
         const val KEY_TAB = "selected_tab"
+        const val KEY_AUTH = "observed_auth"
     }
 }

@@ -60,6 +60,7 @@ android {
 }
 
 dependencies {
+    testImplementation("junit:junit:4.13.2")
     implementation("dev.hotwire:core:1.3.2")
     implementation("dev.hotwire:navigation-fragments:1.3.2")
 }
