@@ -8,6 +8,7 @@ class ApplicationController < ActionController::Base
 
   protect_from_forgery with: :exception
   before_action :authenticate_user!
+  after_action :remember_auth_for_native_app, if: :hotwire_native_app?
 
   helper_method :current_user, :user_signed_in?, :sign_in, :sign_out, :geocoding_exceeded?, :can_manage?, :can_remove_participant?,
                 :can_send_training_video?
@@ -113,5 +114,11 @@ class ApplicationController < ActionController::Base
 
   def geocoding_exceeded?
     defined?(Geocoding::Quota) && Geocoding::Quota.exceeded?
+  end
+
+  # Приложение сбрасывает фоновые вкладки, когда меняется вход. Сессионная кука для
+  # этого не годится: она меняется и от flash.
+  def remember_auth_for_native_app
+    cookies[:native_auth] = { value: current_user&.id.to_s, httponly: true }
   end
 end

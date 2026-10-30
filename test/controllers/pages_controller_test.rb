@@ -11,6 +11,13 @@ class PagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "more lists the More menu links for guests" do
+    get more_url
+    assert_response :success
+    assert_select "a[href=?]", tournaments_path
+    assert_select "a[href=?]", edit_account_path, count: 0
+  end
+
   # pages_nav partial: each page shows links to all others but not itself
   {
     contacts:              -> { contacts_path },

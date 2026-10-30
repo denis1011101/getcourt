@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.GetCourt" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorSurface">@color/surface</item>
+        <item name="android:windowBackground">@color/surface</item>
+        <item name="android:colorBackground">@color/page</item>
+        <item name="colorPrimary">#A78BFA</item>
+    </style>
+</resources>

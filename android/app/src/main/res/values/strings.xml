@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">GetCourt</string>
+    <string name="tab_games">Games</string>
+    <string name="tab_courts">Courts</string>
+    <string name="tab_life">Life</string>
+    <string name="tab_more">More</string>
+    <string name="tab_new">New</string>
+</resources>

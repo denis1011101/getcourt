@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="surface">#0F172A</color>
+    <!-- Site body background: shown while a page loads or moves between screens. -->
+    <color name="page">#020617</color>
+</resources>

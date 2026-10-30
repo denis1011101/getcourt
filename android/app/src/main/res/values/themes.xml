@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Surface matches the site header so the status-bar and nav-bar strips blend in. -->
+    <style name="Theme.GetCourt" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorSurface">@color/surface</item>
+        <item name="android:windowBackground">@color/surface</item>
+        <item name="android:colorBackground">@color/page</item>
+        <item name="colorPrimary">#7C3AED</item>
+    </style>
+</resources>

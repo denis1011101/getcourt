@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tab_games">Игры</string>
+    <string name="tab_courts">Корты</string>
+    <string name="tab_life">Лайф</string>
+    <string name="tab_more">Ещё</string>
+    <string name="tab_new">Новая</string>
+</resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tab_games">Partidos</string>
+    <string name="tab_courts">Pistas</string>
+    <string name="tab_life">Life</string>
+    <string name="tab_more">Más</string>
+    <string name="tab_new">Nuevo</string>
+</resources>
