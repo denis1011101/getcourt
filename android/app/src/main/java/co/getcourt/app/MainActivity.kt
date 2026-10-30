@@ -126,11 +126,12 @@ class MainActivity : HotwireActivity() {
 
     private fun applyPendingAuthChange() {
         val auth = pendingAuth ?: return
-        // Wait for Android to resume before touching navigator state. Also let Hotwire finish
-        // the sign-in POST redirect, otherwise refreshing /sign_in can cancel its return_to.
+        // Wait for Android to resume before touching navigator state. Let Hotwire finish
+        // sign-in and code verification redirects, or refreshing the form can cancel return_to.
         if (supportFragmentManager.isStateSaved) return
         val activeNavigator = delegate.currentNavigator ?: return
-        if (activeNavigator.location?.let { android.net.Uri.parse(it).path == "/sign_in" } == true) return
+        val activePath = activeNavigator.location?.let { android.net.Uri.parse(it).path }
+        if (activePath == "/sign_in" || activePath == "/sign_in/verify") return
 
         tabs.forEach { tab ->
             val navigator = navigatorHost(tab).navigator
