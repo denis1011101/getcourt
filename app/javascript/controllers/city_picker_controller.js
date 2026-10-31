@@ -5,7 +5,7 @@ import { Controller } from "@hotwired/stimulus"
 // любое ручное редактирование текста этот id сбрасывает — иначе к новому тексту
 // прицепился бы id старого выбора.
 export default class extends Controller {
-  static targets = ["input", "cityId", "results"]
+  static targets = ["input", "cityId", "clearFlag", "clearButton", "results"]
   static values = {
     url: String,
     searching: String,
@@ -33,15 +33,33 @@ export default class extends Controller {
   // прошлого города.
   search() {
     this.cityIdTarget.value = ""
+    this.clearFlagTarget.value = ""
     this.startRequest()
 
     const query = this.inputTarget.value.trim()
+    // Полностью стёртое поле — тоже осознанная очистка города.
+    if (!query) {
+      this.clearFlagTarget.value = "1"
+      if (this.hasClearButtonTarget) this.clearButtonTarget.classList.add("hidden")
+    }
     if (query.length < 2) {
       this.hide()
       return
     }
 
     this.searchTimeout = setTimeout(() => this.fetchCities(query), 300)
+  }
+
+  // Очистка города применяется вместе с формой: флаг говорит серверу, что
+  // пустое поле — осознанное «убрать город», а не нетронутое значение.
+  clear() {
+    this.startRequest()
+    this.inputTarget.value = ""
+    this.cityIdTarget.value = ""
+    this.clearFlagTarget.value = "1"
+    if (this.hasClearButtonTarget) this.clearButtonTarget.classList.add("hidden")
+    this.hide()
+    this.inputTarget.focus()
   }
 
   // Фокус в поле лишь возвращает список: выбранный город остаётся выбранным.
@@ -108,7 +126,9 @@ export default class extends Controller {
     const { id, name } = event.currentTarget.dataset
     this.startRequest()
     this.cityIdTarget.value = id
+    this.clearFlagTarget.value = ""
     this.inputTarget.value = name
+    if (this.hasClearButtonTarget) this.clearButtonTarget.classList.remove("hidden")
     this.hide()
   }
 

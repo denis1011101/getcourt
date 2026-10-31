@@ -562,8 +562,8 @@ en:
         future.
       city: City
       city_placeholder: e.g. Moscow
-      city_hint: Start typing and pick a city from the list — only a picked city is
-        saved. The timezone is filled in for you.
+      city_hint: Start typing and pick a city from the list, then click Save Changes
+        below to apply. The timezone is filled in for you.
       city_searching: Searching…
       city_search_error: Could not load the city list.
       city_clear: Clear city

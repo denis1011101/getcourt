@@ -273,21 +273,42 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     user&.destroy
   end
 
-  test "clear city redirects to profile" do
+  test "update with clear_city flag removes city" do
     user_email = "clear_city_redirect_#{SecureRandom.hex(4)}@example.com"
     post session_url, params: { email: user_email }
     user = User.find_by!(email: user_email)
-    kurgan = City.create!(name: "Kurgan", asciiname: "Kurgan", country_code: "RU", geoname_id: 1501321)
-    user.update!(city_name: "Kurgan", city: kurgan)
+    kurgan = City.create!(name: "Kurgan", asciiname: "Kurgan", country_code: "RU", geoname_id: 1501321, timezone: "Asia/Yekaterinburg")
+    user.update!(city_name: "Kurgan", city: kurgan, timezone: "Asia/Yekaterinburg")
 
-    post clear_city_account_url
+    patch account_url, params: { section: "profile", clear_city: "1", user: { city_name: "" } }
 
     assert_redirected_to profile_account_path
     assert_nil user.reload.city_name
     assert_nil user.city_id
+    assert_nil user.timezone
   ensure
     user&.destroy
     kurgan&.destroy
+  end
+
+  test "clear_city flag survives a failed validation" do
+    with_city_user do |user, cities|
+      user.update!(city: cities[:yekaterinburg], city_name: cities[:yekaterinburg].canonical_name)
+      other_email = "taken_#{SecureRandom.hex(4)}@example.com"
+      other = User.create!(email: other_email)
+
+      patch account_url, params: {
+        section: "profile",
+        clear_city: "1",
+        user: { email: other_email }
+      }
+
+      assert_response :unprocessable_entity
+      assert_select "input[name=clear_city][value='1']"
+      assert_equal cities[:yekaterinburg].canonical_name, user.reload.city_name
+    ensure
+      other&.destroy
+    end
   end
 
   test "account games shows past matches when user has no live games" do

@@ -50,6 +50,8 @@ class UsersController < ApplicationController
       user_attrs["city_name"] = selected_city.canonical_name
       user_attrs["city_id"] = selected_city.id
       user_attrs["timezone"] = selected_city.rails_timezone if selected_city.rails_timezone.present?
+    elsif params[:clear_city] == "1"
+      user_attrs.merge!("city_name" => nil, "city_id" => nil, "timezone" => nil)
     end
 
     if court_preferences_submitted
@@ -112,12 +114,6 @@ class UsersController < ApplicationController
   def search
     users = User.search_pickable(params[:q], limit: USER_SEARCH_LIMIT)
     render json: users.map { |user| { id: user.id, label: helpers.user_display_label(user) } }
-  end
-
-  def clear_city
-    @user = current_user
-    @user.update(timezone: nil, city_name: nil, city_id: nil)
-    redirect_to profile_account_path, notice: "City cleared"
   end
 
   # Расписание тренера — отдельный раздел кабинета: игроку он не нужен вовсе,
@@ -229,6 +225,7 @@ class UsersController < ApplicationController
     # в hidden-поле: в видимом поле он уже стоит, а без id следующая отправка
     # город не изменит.
     @selected_city_id = params[:selected_city_id].presence
+    @clear_city = params[:clear_city].presence
   end
 
   def prepare_court_preferences_state
