@@ -22,14 +22,21 @@
     <span class="text-gray-900 dark:text-slate-100"><%= t("games.show.game_on", date: display_date(@game)) %></span>
   </nav>
 
-  <div class="flex items-center justify-between gap-4 mb-6">
+  <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
     <div>
       <h1 class="text-2xl font-semibold"><%= t("games.show.title") %></h1>
       <p class="text-gray-600 dark:text-slate-400"><%= t("games.show.subtitle") %></p>
     </div>
-    <%= link_to t("games.show.back_to_games"),
-                root_path,
-                class: "shrink-0 inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5" %>
+    <div class="flex flex-wrap items-center gap-2">
+      <% if can_manage?(@game) %>
+        <%= link_to t("common.edit"),
+                    edit_game_path(@game),
+                    class: "inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5" %>
+      <% end %>
+      <%= link_to t("games.show.back_to_games"),
+                  root_path,
+                  class: "inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5" %>
+    </div>
   </div>
 
   <%# Страница длинная, а на телефоне до статистики или календаря листать долго:

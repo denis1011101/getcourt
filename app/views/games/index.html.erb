@@ -178,13 +178,11 @@
   <% active_filters << t("games.index.tournament_games") if params[:tournament_games].present? %>
 
   <%= render "shared/results_summary", count: @games.size, label: t("games.index.count", count: @pagy&.count || @games.size), filters: active_filters do %>
-    <% if user_signed_in? %>
-      <%= link_to new_game_path, class: "hidden md:inline-flex items-center gap-1.5 rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition" do %>
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
-        </svg>
-        <%= t("games.index.new_game") %>
-      <% end %>
+    <%= link_to (user_signed_in? ? new_game_path : new_session_path), class: "hidden md:inline-flex items-center gap-1.5 rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition" do %>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+      </svg>
+      <%= t("games.index.new_game") %>
     <% end %>
   <% end %>
 
@@ -196,9 +194,7 @@
       </svg>
       <p class="text-gray-500 font-medium"><%= t("games.index.empty_title") %></p>
       <p class="text-gray-400 text-sm mt-1"><%= t("games.index.empty_subtitle") %></p>
-      <% if user_signed_in? %>
-        <%= link_to t("games.index.create_game"), new_game_path, class: "inline-flex items-center gap-1.5 mt-4 rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition" %>
-      <% end %>
+      <%= link_to t("games.index.create_game"), (user_signed_in? ? new_game_path : new_session_path), class: "inline-flex items-center gap-1.5 mt-4 rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition" %>
     </div>
   <% else %>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
