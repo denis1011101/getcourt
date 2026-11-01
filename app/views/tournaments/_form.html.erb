@@ -120,9 +120,10 @@
     </div>
   </div>
 
-  <div class="mt-6 flex items-center justify-between">
-    <%= link_to t("tournaments.form.cancel"), (tournament.persisted? ? tournament_path(tournament) : tournaments_path), class: "text-sm text-gray-600 dark:text-slate-400 hover:underline" %>
+  <div class="mt-6 flex items-center gap-3">
     <%= f.submit (tournament.persisted? ? t("tournaments.form.update") : t("tournaments.form.create")),
-          class: "inline-flex items-center rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition cursor-pointer" %>
+          class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition cursor-pointer" %>
+    <%= link_to t("tournaments.form.cancel"), (tournament.persisted? ? tournament_path(tournament) : tournaments_path),
+          class: "inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5" %>
   </div>
 <% end %>
