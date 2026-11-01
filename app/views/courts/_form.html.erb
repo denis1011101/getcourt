@@ -13,8 +13,8 @@
   <%= render "courts/fields", form: form, court: court %>
 
   <div class="mt-4 flex items-center gap-2">
-    <%= form.submit t("courts.form.submit"), class: "rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition" %>
-    <%= link_to t("common.cancel"), courts_path, class: "block inline-flex items-center rounded-md border border-gray-300 dark:border-white/10 px-3 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/5 transition" %>
+    <%= form.submit t("courts.form.submit"), class: "rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 transition cursor-pointer" %>
+    <%= link_to t("common.cancel"), (court.persisted? ? court_path(court) : courts_path), class: "inline-flex items-center rounded-md border border-gray-300 dark:border-white/10 px-3 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/5 transition" %>
   </div>
 
   <%# Удаление живёт здесь, а не в карточке списка: слишком легко снести чужой
