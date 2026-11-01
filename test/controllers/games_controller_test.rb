@@ -1682,4 +1682,26 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     stranger&.destroy
     thief&.destroy
   end
+
+  test "new game form cancel button links to root path" do
+    post session_url, params: { email: "cancel_button_new_game@example.com" }
+    get new_game_url
+
+    assert_response :success
+    assert_select "a[href=?]", root_path, text: I18n.t("common.cancel")
+  end
+
+  test "edit game form cancel button links to game path" do
+    owner = User.create!(email: "cancel_button_edit_game@example.com")
+    game = Game.create!(court: courts(:one), user: owner, date: Date.current + 1.day, time: "10:00")
+    post session_url, params: { email: owner.email }
+
+    get edit_game_url(game)
+
+    assert_response :success
+    assert_select "a[href=?]", game_path(game), text: I18n.t("common.cancel")
+  ensure
+    game&.destroy
+    owner&.destroy
+  end
 end

@@ -582,4 +582,31 @@ class CourtsControllerTest < ActionDispatch::IntegrationTest
     User.find_by(email: owner_email)&.destroy
     User.find_by(email: admin_email)&.destroy
   end
+
+  test "new court form cancel button links to courts path" do
+    user_email = "court_cancel_new_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: user_email }
+
+    get new_court_url
+
+    assert_response :success
+    assert_select "a[href=?]", courts_path, text: I18n.t("common.cancel")
+  ensure
+    User.find_by(email: user_email)&.destroy
+  end
+
+  test "edit court form cancel button links to court path" do
+    owner_email = "court_cancel_edit_#{SecureRandom.hex(4)}@example.com"
+    post session_url, params: { email: owner_email }
+    owner = User.find_by!(email: owner_email)
+    court = Court.create!(name: "Cancel Test Court", moderation_status: "approved", approved_at: Time.current, user: owner)
+
+    get edit_court_url(court)
+
+    assert_response :success
+    assert_select "a[href=?]", court_path(court), text: I18n.t("common.cancel")
+  ensure
+    court&.destroy
+    User.find_by(email: owner_email)&.destroy
+  end
 end

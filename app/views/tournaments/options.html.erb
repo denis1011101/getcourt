@@ -74,7 +74,7 @@
               <%= form_with url: select_bracket_tournament_path(@tournament), method: :post, local: true do |f| %>
                 <%= hidden_field_tag :variant, index %>
                 <%= f.submit t("tournaments.options.select_bracket"),
-                      class: "inline-flex items-center rounded-full bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition cursor-pointer #{'opacity-50 cursor-not-allowed' unless ready}",
+                      class: "inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition cursor-pointer #{'opacity-50 cursor-not-allowed' unless ready}",
                       disabled: !ready %>
               <% end %>
 
