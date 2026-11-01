@@ -9,19 +9,13 @@
 
     <div class="ml-6">
       <p class="text-xs text-gray-500 dark:text-slate-400"><%= t("users.edit.favorite_courts_help") %></p>
-      <div class="mt-2 max-h-56 overflow-y-auto rounded border border-gray-200 p-3 dark:border-white/10">
-        <% @available_courts.each do |court| %>
-          <label class="flex items-start gap-2 py-1">
-            <%= check_box_tag "user[favorite_court_ids][]", court.id, @user.favorite_court_ids.include?(court.id), class: "mt-1 h-4 w-4 text-indigo-600" %>
-            <span class="text-sm text-gray-700 dark:text-slate-300">
-              <%= court.name %>
-              <% if court.city_name.present? %>
-                <span class="text-gray-500 dark:text-slate-400">(<%= court.city_name %>)</span>
-              <% end %>
-            </span>
-          </label>
-        <% end %>
-      </div>
+      <%= render "shared/court_multi_picker",
+            param_name: "user[favorite_court_ids][]",
+            courts: @available_courts,
+            selected_ids: @user.favorite_court_ids,
+            user: @user,
+            id_prefix: "favorite_court",
+            max_height_class: "max-h-60" %>
     </div>
   </div>
 
