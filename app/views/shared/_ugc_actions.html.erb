@@ -1,0 +1,38 @@
+<% author_id = author&.id %>
+<% return if author_id.present? && current_user&.id == author_id %>
+
+<details class="relative inline-block text-left text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
+         data-testid="ugc-actions-menu">
+  <summary class="flex h-7 w-7 cursor-pointer list-none items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition [&::-webkit-details-marker]:hidden"
+           aria-label="<%= t("ugc.actions") %>"
+           title="<%= t("ugc.actions") %>">
+    <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+      <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+    </svg>
+  </summary>
+
+  <div class="absolute right-0 z-30 mt-1 w-44 origin-top-right rounded-md border border-gray-200 bg-white py-1 shadow-lg dark:border-white/10 dark:bg-slate-800">
+    <button type="button"
+            data-action="click->ugc#report"
+            class="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10">
+      <span>🚩</span>
+      <span><%= t("ugc.report") %></span>
+    </button>
+
+    <button type="button"
+            data-action="click->ugc#hide"
+            class="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs text-gray-700 hover:bg-gray-50 dark:text-slate-300 dark:hover:bg-white/5">
+      <span>👁️</span>
+      <span><%= t("ugc.hide") %></span>
+    </button>
+
+    <% if author_id.present? %>
+      <button type="button"
+              data-action="click->ugc#blockAuthor"
+              class="flex w-full items-center gap-2 border-t border-gray-100 px-3 py-1.5 text-left text-xs text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5">
+        <span>🚫</span>
+        <span><%= t("ugc.block_author") %></span>
+      </button>
+    <% end %>
+  </div>
+</details>

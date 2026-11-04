@@ -6,7 +6,20 @@
 
 <% preview = medium.preview_variant %>
 
-<div>
+<div data-controller="ugc"
+     data-ugc-id-value="game_medium_<%= medium.id %>"
+     data-ugc-target-type-value="GameMedium"
+     data-ugc-target-id-value="<%= medium.id %>"
+     data-ugc-author-id-value="<%= medium.user_id %>"
+     data-ugc-author-name-value="<%= author %>"
+     data-ugc-current-user-id-value="<%= current_user&.id || 'guest' %>"
+     data-ugc-report-prompt-value="<%= t("ugc.report_prompt") %>"
+     data-ugc-report-success-value="<%= t("ugc.report_success") %>"
+     data-ugc-report-failed-value="<%= t("ugc.report_failed") %>"
+     data-ugc-block-confirm-value="<%= t("ugc.block_confirm") %>"
+     data-ugc-block-success-value="<%= t("ugc.block_success") %>"
+     data-ugc-hide-success-value="<%= t("ugc.hide_success") %>"
+     data-ugc-undo-label-value="<%= t("ugc.undo") %>">
   <%# preview пуст, если файл только притворяется картинкой — тогда остаётся текст. %>
   <% if preview %>
     <%= image_tag preview,
@@ -23,7 +36,10 @@
   <div class="p-4">
     <div class="flex items-center justify-between gap-3">
       <p class="text-xs font-semibold uppercase tracking-wide text-rose-600 dark:text-rose-300"><%= t("tennis_life.feed.game_media.title") %></p>
-      <p class="text-xs text-gray-500 dark:text-slate-400"><%= medium.created_at.strftime("%Y-%m-%d") %></p>
+      <div class="flex items-center gap-2">
+        <p class="text-xs text-gray-500 dark:text-slate-400"><%= medium.created_at.strftime("%Y-%m-%d") %></p>
+        <%= render "shared/ugc_actions", author: medium.user %>
+      </div>
     </div>
     <p class="mt-2 text-sm text-gray-800 dark:text-slate-200">
       <%= t("tennis_life.feed.game_media.body", author: author, court: game.court&.name.presence || t("tennis_life.feed.game_media.a_court")) %>

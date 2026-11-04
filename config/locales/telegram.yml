@@ -613,6 +613,7 @@ ru:
     admin_partnership: 'Новое предложение о партнёрстве: %{text}'
     admin_court_pending: 'Корт ожидает одобрения (%{action}): %{name} — %{url}'
     admin_court_suggestion: 'Предложена правка корта: %{name} — %{url}'
+    admin_ugc_report: "🚩 Жалоба на контент (%{target_type} #%{target_id})\nПричина: %{reason}\nАвтор: %{author}\nЗаявитель: %{reporter}\nСсылка: %{url}"
     comment_label: 'Комментарий: %{value}'
 en:
   telegram:
@@ -1215,6 +1216,7 @@ en:
     admin_partnership: 'New partnership request: %{text}'
     admin_court_pending: 'Court pending approval (%{action}): %{name} — %{url}'
     admin_court_suggestion: 'Court correction suggested: %{name} — %{url}'
+    admin_ugc_report: "🚩 Content report (%{target_type} #%{target_id})\nReason: %{reason}\nAuthor: %{author}\nReporter: %{reporter}\nURL: %{url}"
     comment_label: 'Comment: %{value}'
 es:
   telegram:
@@ -1414,4 +1416,5 @@ es:
     admin_partnership: 'Nueva propuesta de colaboración: %{text}'
     admin_court_pending: 'Pista pendiente de aprobación (%{action}): %{name} — %{url}'
     admin_court_suggestion: 'Se ha sugerido una corrección de pista: %{name} — %{url}'
+    admin_ugc_report: "🚩 Denuncia de contenido (%{target_type} #%{target_id})\nMotivo: %{reason}\nAutor: %{author}\nDenunciante: %{reporter}\nEnlace: %{url}"
     comment_label: 'Comentario: %{value}'

@@ -27,6 +27,18 @@ module Telegram
       )
     end
 
+    def self.notify_ugc_report(target_type:, target_id:, author:, reporter:, reason:, url:)
+      send_message(
+        :admin_ugc_report,
+        target_type: target_type,
+        target_id: target_id,
+        author: author.presence || "—",
+        reporter: reporter.presence || "—",
+        reason: reason.presence || "—",
+        url: url.presence || "—"
+      )
+    end
+
     def self.send_message(key, **args)
       recipient = admin_recipient
       return unless recipient

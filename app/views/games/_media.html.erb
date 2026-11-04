@@ -9,15 +9,34 @@
   <% if media.any? %>
     <div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
       <% media.each do |medium| %>
-        <figure class="overflow-hidden rounded-md border border-gray-200 dark:border-white/10">
-          <% preview = medium.preview_variant %>
-          <% if preview %>
-            <%= image_tag preview, loading: "lazy", alt: t("games.show.media.alt"), class: "h-32 w-full object-cover" %>
-          <% elsif medium.video? %>
-            <video controls preload="none" playsinline class="h-32 w-full bg-black object-cover">
-              <source src="<%= rails_blob_path(medium.file) %>" type="<%= medium.content_type %>">
-            </video>
-          <% end %>
+        <figure class="relative rounded-md border border-gray-200 dark:border-white/10"
+                data-controller="ugc"
+                data-ugc-id-value="game_medium_<%= medium.id %>"
+                data-ugc-target-type-value="GameMedium"
+                data-ugc-target-id-value="<%= medium.id %>"
+                data-ugc-author-id-value="<%= medium.user_id %>"
+                data-ugc-author-name-value="<%= medium.user&.name.presence || medium.user&.email %>"
+                data-ugc-current-user-id-value="<%= current_user&.id || 'guest' %>"
+                data-ugc-report-prompt-value="<%= t("ugc.report_prompt") %>"
+                data-ugc-report-success-value="<%= t("ugc.report_success") %>"
+                data-ugc-report-failed-value="<%= t("ugc.report_failed") %>"
+                data-ugc-block-confirm-value="<%= t("ugc.block_confirm") %>"
+                data-ugc-block-success-value="<%= t("ugc.block_success") %>"
+                data-ugc-hide-success-value="<%= t("ugc.hide_success") %>"
+                data-ugc-undo-label-value="<%= t("ugc.undo") %>">
+          <div class="absolute right-1 top-1 z-20 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm shadow-sm">
+            <%= render "shared/ugc_actions", author: medium.user %>
+          </div>
+          <div class="overflow-hidden rounded-t-md">
+            <% preview = medium.preview_variant %>
+            <% if preview %>
+              <%= image_tag preview, loading: "lazy", alt: t("games.show.media.alt"), class: "h-32 w-full object-cover" %>
+            <% elsif medium.video? %>
+              <video controls preload="none" playsinline class="h-32 w-full bg-black object-cover">
+                <source src="<%= rails_blob_path(medium.file) %>" type="<%= medium.content_type %>">
+              </video>
+            <% end %>
+          </div>
 
           <% if medium.title.present? || manageable.call(medium) %>
             <figcaption class="space-y-2 border-t border-gray-200 p-2 dark:border-white/10">

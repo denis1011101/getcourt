@@ -940,3 +940,17 @@ en:
       closing: "Thanks for your time,"
       signature: "Denis, GetCourt"
       unsubscribe: "If you would rather not hear from me again, reply with \"no\" and I will not write."
+  ugc:
+    actions: "Content actions"
+    report: "Report"
+    hide: "Hide"
+    block_author: "Block author"
+    report_prompt: "Report this content? You can specify a reason (optional):"
+    report_success: "Thank you. Your report has been submitted and content is hidden."
+    report_failed: "Failed to submit report. Please try again later."
+    block_confirm: "Block this author and hide all their content?"
+    block_success: "Author blocked. Their content is hidden."
+    hide_success: "Content hidden."
+    undo: "Undo"
+    reasons:
+      inappropriate: "Inappropriate content"
