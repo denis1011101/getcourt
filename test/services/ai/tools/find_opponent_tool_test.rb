@@ -26,6 +26,19 @@ class Ai::Tools::FindOpponentToolTest < ActiveSupport::TestCase
     end
   end
 
+  test "returns nil skill when user has no skill_level" do
+    requester = User.new(id: 99, city_name: "Moscow")
+    matching = User.new(id: 2, city_name: "Moscow", skill_level: nil, telegram_username: "match_user")
+    relation = FakeRelation.new([ matching ])
+
+    stub_singleton(User, :not_merged, ->(*) { relation }) do
+      stub_singleton(PlayerStatistic, :summary_for, ->(_u) { { games: 0, wins: 0, win_pct: nil } }) do
+        result = Ai::Tools::FindOpponentTool.new(requester).execute(city: "Moscow")
+        assert_nil result[:opponents][0][:skill]
+      end
+    end
+  end
+
   test "falls back to user city and returns empty state" do
     requester = User.new(city_name: "Kazan")
     relation = FakeRelation.new([])

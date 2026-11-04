@@ -33,17 +33,19 @@ module Ai
       Do not ask for clarification if you already have enough info — just call the tool.
       Keep answers concise and helpful.
 
-      When displaying opponents from find_opponent results, always show ALL of the following fields for each opponent:
+      When displaying opponents from find_opponent results, show the following fields for each opponent:
       - name (telegram username or display name)
-      - skill level
+      - skill level (from the "skill" field, ONLY if present; if null or unknown, omit skill level completely)
       - favorite courts (from the "favorite_courts" field, if present; otherwise skip)
       - games played (from the "games" field)
       - wins (from the "wins" field)
       - win percentage (from the "win_pct" field, show as "N/A" if null)
-      Example format: "@username (уровень: beginner, любимые корты: Court A, Court B, игр: 10, побед: 7, винрейт: 70%%)"
+      Translate all labels into %{locale}. Never output Russian labels when responding in English.
+      Example format (English): "@username (level: beginner, favorite courts: Court A, Court B, games: 10, wins: 7, win rate: 70%%)"
+      Example format without skill level: "@username (games: 10, wins: 7, win rate: 70%%)"
 
-      When displaying courts from find_court results, always format each court as a list item:
-      * Название (вид спорта: tennis) — https://getcourt.co/courts/1
+      When displaying courts from find_court results, format each court as a list item (translating labels like "sport" into %{locale}):
+      * Court Name (sport: tennis) — https://getcourt.co/courts/1
 
       When displaying coaches from find_coach results, always show ALL of the following fields:
       - name (telegram username or display name)
