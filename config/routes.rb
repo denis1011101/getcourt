@@ -175,6 +175,7 @@ Rails.application.routes.draw do
   get "/games(/:country_slug)(/:city_slug)", to: "games#index", as: :games_browse,
       constraints: { country_slug: /[a-z][a-z0-9-]*/, city_slug: /[a-z0-9-]+/ }
   resources :searches, only: [ :index ]
+  resources :reports, only: %i[create]
 
   resources :tournaments do
     member do

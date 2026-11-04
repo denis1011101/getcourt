@@ -889,3 +889,17 @@ es:
       spots_line:
         one: "👥 falta %{count} jugador"
         other: "👥 faltan %{count} jugadores"
+  ugc:
+    actions: "Acciones de contenido"
+    report: "Denunciar"
+    hide: "Ocultar"
+    block_author: "Bloquear autor"
+    report_prompt: "¿Denunciar este contenido? Puedes indicar un motivo (opcional):"
+    report_success: "Gracias. Tu denuncia ha sido enviada y el contenido ha sido ocultado."
+    report_failed: "No se pudo enviar la denuncia. Por favor, inténtalo más tarde."
+    block_confirm: "¿Bloquear a este autor y ocultar todas sus publicaciones?"
+    block_success: "Autor bloqueado. Sus publicaciones están ocultas."
+    hide_success: "Contenido ocultado."
+    undo: "Deshacer"
+    reasons:
+      inappropriate: "Contenido inapropiado"

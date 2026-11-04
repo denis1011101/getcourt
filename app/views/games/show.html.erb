@@ -197,21 +197,39 @@
         <h2 class="text-sm font-semibold text-gray-700 dark:text-slate-300"><%= t("games.show.training_plan") %></h2>
         <ol class="mt-2 space-y-2">
           <% @game.training_blocks.each_with_index do |block, index| %>
-            <li class="text-sm text-gray-700 dark:text-slate-300">
-              <span class="font-medium"><%= index + 1 %>. <%= block.label %></span>
-              <% if block.description.present? %>
-                <span class="mt-0.5 block text-xs text-gray-500 dark:text-slate-400"><%= block.description %></span>
-              <% end %>
-              <%= render "training_blocks/video_link", block: block %>
-              <%# Схему показываем свёрнутой: в плане из пяти блоков пять кортов подряд не читаются. %>
-              <% if block.diagram? %>
-                <details class="mt-1">
-                  <summary class="cursor-pointer text-xs text-indigo-600 hover:underline dark:text-indigo-400"><%= t("training_blocks.diagram.title") %></summary>
-                  <div class="mt-2">
-                    <%= render "training_blocks/diagram", block: block, readonly: true %>
-                  </div>
-                </details>
-              <% end %>
+            <li class="flex items-start justify-between gap-2 text-sm text-gray-700 dark:text-slate-300"
+                data-controller="ugc"
+                data-ugc-container
+                data-ugc-id-value="training_block_<%= block.id %>"
+                data-ugc-target-type-value="TrainingBlock"
+                data-ugc-target-id-value="<%= block.id %>"
+                data-ugc-author-id-value="<%= block.user_id %>"
+                data-ugc-author-name-value="<%= block.user&.name.presence || block.user&.email %>"
+                data-ugc-current-user-id-value="<%= current_user&.id || 'guest' %>"
+                data-ugc-report-prompt-value="<%= t("ugc.report_prompt") %>"
+                data-ugc-report-success-value="<%= t("ugc.report_success") %>"
+                data-ugc-report-failed-value="<%= t("ugc.report_failed") %>"
+                data-ugc-block-confirm-value="<%= t("ugc.block_confirm") %>"
+                data-ugc-block-success-value="<%= t("ugc.block_success") %>"
+                data-ugc-hide-success-value="<%= t("ugc.hide_success") %>"
+                data-ugc-undo-label-value="<%= t("ugc.undo") %>">
+              <div class="flex-1 min-w-0">
+                <span class="font-medium"><%= index + 1 %>. <%= block.label %></span>
+                <% if block.description.present? %>
+                  <span class="mt-0.5 block text-xs text-gray-500 dark:text-slate-400"><%= block.description %></span>
+                <% end %>
+                <%= render "training_blocks/video_link", block: block %>
+                <%# Схему показываем свёрнутой: в плане из пяти блоков пять кортов подряд не читаются. %>
+                <% if block.diagram? %>
+                  <details class="mt-1">
+                    <summary class="cursor-pointer text-xs text-indigo-600 hover:underline dark:text-indigo-400"><%= t("training_blocks.diagram.title") %></summary>
+                    <div class="mt-2">
+                      <%= render "training_blocks/diagram", block: block, readonly: true %>
+                    </div>
+                  </details>
+                <% end %>
+              </div>
+              <%= render "shared/ugc_actions", author: block.user %>
             </li>
           <% end %>
         </ol>
