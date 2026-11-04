@@ -28,7 +28,7 @@ module Telegram
     end
 
     def self.notify_ugc_report(target_type:, target_id:, author:, reporter:, reason:, url:)
-      send_message(
+      res = send_message(
         :admin_ugc_report,
         target_type: target_type,
         target_id: target_id,
@@ -37,6 +37,7 @@ module Telegram
         reason: reason.presence || "—",
         url: url.presence || "—"
       )
+      res.is_a?(Hash) && res["ok"] == true
     end
 
     def self.send_message(key, **args)

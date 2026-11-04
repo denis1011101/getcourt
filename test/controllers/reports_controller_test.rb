@@ -27,7 +27,7 @@ class ReportsControllerTest < ActionDispatch::IntegrationTest
     assert_not @private_block.shared?
     assert_empty @private_block.games
 
-    stub_singleton(Telegram::AdminNotifier, :notify_ugc_report, ->(**_args) { { "ok" => true } }) do
+    stub_singleton(Telegram::AdminNotifier, :notify_ugc_report, ->(**_args) { true }) do
       post reports_path, params: {
         target_type: "TrainingBlock",
         target_id: @private_block.id,
@@ -44,7 +44,7 @@ class ReportsControllerTest < ActionDispatch::IntegrationTest
     assert_not @private_block.shared?
     assert_empty @private_block.games
 
-    stub_singleton(Telegram::AdminNotifier, :notify_ugc_report, ->(**_args) { { "ok" => true } }) do
+    stub_singleton(Telegram::AdminNotifier, :notify_ugc_report, ->(**_args) { true }) do
       post reports_path, params: {
         target_type: "TrainingBlock",
         target_id: @private_block.id,
@@ -69,7 +69,7 @@ class ReportsControllerTest < ActionDispatch::IntegrationTest
       status: "pending"
     )
 
-    stub_singleton(Telegram::AdminNotifier, :notify_ugc_report, ->(**_args) { { "ok" => true } }) do
+    stub_singleton(Telegram::AdminNotifier, :notify_ugc_report, ->(**_args) { true }) do
       post reports_path, params: {
         target_type: "TrainingBlock",
         target_id: @private_block.id,
@@ -95,7 +95,7 @@ class ReportsControllerTest < ActionDispatch::IntegrationTest
       notified = true
       assert_equal "TrainingBlock", args[:target_type]
       assert_equal @private_block.id, args[:target_id]
-      { "ok" => true }
+      true
     }) do
       post reports_path, params: {
         target_type: "TrainingBlock",
@@ -118,7 +118,7 @@ class ReportsControllerTest < ActionDispatch::IntegrationTest
       notified = true
       assert_equal "TrainingBlock", args[:target_type]
       assert_equal @private_block.id, args[:target_id]
-      { "ok" => true }
+      true
     }) do
       post reports_path, params: {
         target_type: "TrainingBlock",
@@ -144,7 +144,7 @@ class ReportsControllerTest < ActionDispatch::IntegrationTest
       assert_includes args[:author], "Content Author"
       assert_includes args[:reporter], "Reporter User"
       assert_equal "Spam content", args[:reason]
-      { "ok" => true }
+      true
     }) do
       post reports_path, params: {
         target_type: "TrainingBlock",
@@ -165,7 +165,7 @@ class ReportsControllerTest < ActionDispatch::IntegrationTest
     stub_singleton(Telegram::AdminNotifier, :notify_ugc_report, ->(**args) {
       notified = true
       assert_includes args[:reporter], "Guest"
-      { "ok" => true }
+      true
     }) do
       post reports_path, params: {
         target_type: "TrainingBlock",
@@ -186,7 +186,7 @@ class ReportsControllerTest < ActionDispatch::IntegrationTest
       notified = true
       assert_equal "User", args[:target_type]
       assert_equal @author.id, args[:target_id]
-      { "ok" => true }
+      true
     }) do
       post reports_path, params: {
         target_type: "User",
@@ -201,7 +201,7 @@ class ReportsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "returns 503 service unavailable when telegram delivery fails" do
-    stub_singleton(Telegram::AdminNotifier, :notify_ugc_report, ->(**_args) { nil }) do
+    stub_singleton(Telegram::AdminNotifier, :notify_ugc_report, ->(**_args) { false }) do
       post reports_path, params: {
         target_type: "TrainingBlock",
         target_id: @shared_block.id,
@@ -211,6 +211,22 @@ class ReportsControllerTest < ActionDispatch::IntegrationTest
       assert_response :service_unavailable
       assert_not response.parsed_body["ok"]
       assert_equal I18n.t("ugc.report_failed"), response.parsed_body["error"]
+    end
+  end
+
+  test "returns 503 when telegram api rejects message with ok false hash" do
+    stub_singleton(Telegram::AdminNotifier, :admin_recipient, -> { { chat_id: "123", locale: "en" } }) do
+      stub_singleton(Telegram::Api, :send_simple, ->(*_args, **_kwargs) { { "ok" => false, "error_code" => 429 } }) do
+        post reports_path, params: {
+          target_type: "TrainingBlock",
+          target_id: @shared_block.id,
+          reason: "Inappropriate"
+        }, as: :json
+
+        assert_response :service_unavailable
+        assert_not response.parsed_body["ok"]
+        assert_equal I18n.t("ugc.report_failed"), response.parsed_body["error"]
+      end
     end
   end
 
