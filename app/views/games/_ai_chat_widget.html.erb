@@ -36,7 +36,7 @@
           </div>
         </div>
         <button data-action="ai-chat#close"
-                class="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all"
+                class="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-all cursor-pointer"
                 aria-label="<%= t("common.close") %>">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
@@ -67,19 +67,19 @@
       <button type="button"
               data-action="ai-chat#quickSend"
               data-ai-chat-message-param="<%= t("games.ai_chat.quick_opponent_message") %>"
-              class="rounded-full border border-indigo-200 dark:border-indigo-500/40 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 shadow-sm hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors">
+              class="cursor-pointer rounded-full border border-indigo-200 dark:border-indigo-500/40 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 shadow-sm hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors">
         <%= t("games.ai_chat.quick_opponent") %>
       </button>
       <button type="button"
               data-action="ai-chat#quickSend"
               data-ai-chat-message-param="<%= t("games.ai_chat.quick_court_message") %>"
-              class="rounded-full border border-indigo-200 dark:border-indigo-500/40 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 shadow-sm hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors">
+              class="cursor-pointer rounded-full border border-indigo-200 dark:border-indigo-500/40 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 shadow-sm hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors">
         <%= t("games.ai_chat.quick_court") %>
       </button>
       <button type="button"
               data-action="ai-chat#quickSend"
               data-ai-chat-message-param="<%= t("games.ai_chat.quick_coach_message") %>"
-              class="rounded-full border border-indigo-200 dark:border-indigo-500/40 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 shadow-sm hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors">
+              class="cursor-pointer rounded-full border border-indigo-200 dark:border-indigo-500/40 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 shadow-sm hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors">
         <%= t("games.ai_chat.quick_coach") %>
       </button>
       <% if current_user&.admin? %>
@@ -99,7 +99,7 @@ Hours: 2
 Team A: @user1, @user2
 Team B: @user3, @user4
 Score: 6:2 6:3"
-                class="rounded-full border border-amber-200 dark:border-amber-500/40 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-amber-700 dark:text-amber-300 shadow-sm hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-colors">
+                class="cursor-pointer rounded-full border border-amber-200 dark:border-amber-500/40 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-amber-700 dark:text-amber-300 shadow-sm hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-colors">
           <%= t("games.ai_chat.quick_record") %>
         </button>
       <% end %>
@@ -114,7 +114,7 @@ Score: 6:2 6:3"
                 placeholder="<%= t("games.ai_chat.placeholder") %>"
                 class="flex-1 resize-none rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-slate-800 px-3 py-2 text-sm text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/30"></textarea>
       <button type="submit"
-              class="flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-md hover:from-indigo-500 hover:to-purple-500 transition-all disabled:opacity-50">
+              class="cursor-pointer disabled:cursor-not-allowed flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-md hover:from-indigo-500 hover:to-purple-500 transition-all disabled:opacity-50">
         <svg data-ai-chat-target="spinner" class="hidden w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>

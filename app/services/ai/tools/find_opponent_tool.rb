@@ -33,7 +33,7 @@ module Ai
             s = PlayerStatistic.summary_for(user)
             {
               name: Telegram::Helpers::UserLookup.display_name(user, fallback: "User ##{user.id}"),
-              skill: user.skill_level.presence || "unknown",
+              skill: user.skill_level.presence,
               city: user.city_name,
               favorite_courts: user.favorite_courts.map(&:name),
               games: s[:games],
