@@ -1704,4 +1704,27 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     game&.destroy
     owner&.destroy
   end
+
+  test "game card and show page expose court city, heading link, and semantic time elements" do
+    owner = User.create!(email: "llm_visibility_game@example.com")
+    court = Court.create!(name: "Central Arena", city_name: "Belgrade", moderation_status: "approved", approved_at: Time.current)
+    game_date = Date.current + 2.days
+    game = Game.create!(court: court, user: owner, date: game_date, time: "19:30")
+
+    get root_url
+    assert_response :success
+    assert_select "h3 a[href=?]", game_path(game), text: "Central Arena"
+    assert_select "p", text: "Belgrade"
+    assert_select "time[datetime=?]", game_date.iso8601
+    assert_select "time[datetime='19:30']"
+
+    get game_url(game)
+    assert_response :success
+    assert_select "#game-details a[href=?]", court_path(court), text: "Central Arena"
+    assert_select "#game-details", text: /Belgrade/
+  ensure
+    game&.destroy
+    court&.destroy
+    owner&.destroy
+  end
 end

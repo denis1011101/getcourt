@@ -137,15 +137,14 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <% @courts.each do |court| %>
         <% addr = court.address %>
-        <% unknown = (addr == "Unknown address" || addr == "Geocoding error") %>
+        <% location_text = (addr.present? && addr != "Unknown address" && addr != "Geocoding error") ? addr : court.city_name.presence %>
+        <% unknown = location_text.blank? %>
         <div class="group relative rounded-xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-          <%= link_to "", court_path(court), class: "absolute inset-0 z-0" %>
-
           <div class="h-1 bg-indigo-500"></div>
 
           <div class="p-4">
             <h3 class="text-base font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors mb-1">
-              <%= court.name %>
+              <%= link_to court.name, court_path(court), class: "after:absolute after:inset-0 after:z-0" %>
             </h3>
             <% if court.sport.present? || court.free? || court.outdoor? || court.indoor? || court.sauna? || court.surfaces.any? %>
               <p class="mb-2 flex flex-wrap gap-1">
@@ -185,7 +184,7 @@
               <svg class="w-3.5 h-3.5 flex-shrink-0 <%= unknown ? 'text-gray-300' : 'text-indigo-400' %>" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 2a6 6 0 00-6 6c0 4.418 6 10 6 10s6-5.582 6-10a6 6 0 00-6-6zm0 8a2 2 0 110-4 2 2 0 010 4z" clip-rule="evenodd"/>
               </svg>
-              <span class="truncate"><%= unknown ? t("courts.index.address_unavailable") : addr %></span>
+              <span class="truncate"><%= unknown ? t("courts.index.address_unavailable") : location_text %></span>
             </p>
 
             <% if court.rated? %>
