@@ -1,0 +1,34 @@
+# GetCourt
+
+> GetCourt (https://getcourt.co) is a web platform and Telegram bot (@GetCourtBot) for organizing local racket-sport games (tennis, padel, squash, table tennis, badminton), finding courts and coaches, running amateur tournaments, and tracking player statistics and ratings.
+
+## Key Pages
+
+- [Upcoming Games](https://getcourt.co/): Browse and join upcoming games and trainings.
+- [Courts Directory](https://getcourt.co/courts): Moderated directory of racket-sport courts by country, city, sport, surface, and indoor/outdoor status.
+- [Tournaments](https://getcourt.co/tournaments): Local amateur tournaments and brackets.
+- [Coaches](https://getcourt.co/coaches): Coaches available for individual and group trainings.
+- [Tennis Life](https://getcourt.co/tennis_life): Community match results, player ratings, and statistics ([Leaderboard](https://getcourt.co/tennis_life/statistics)).
+- [NTRP Level Guide](https://getcourt.co/ntrp-level-guide): Skill level reference guide.
+- [Tennis Formats & Rules](https://getcourt.co/tennis-formats-and-rules): Match formats and scoring rules.
+- [Public API & MCP Documentation](https://getcourt.co/api-and-mcp): Full reference for programmatic access.
+
+## Public JSON API (No Auth Required)
+
+Read-only games API on approved courts (returns upcoming games by default, `upcoming=false` includes past games):
+
+- `GET https://getcourt.co/api/v1/games`
+- `GET https://getcourt.co/api/v1/games/:id`
+
+Example:
+```bash
+curl "https://getcourt.co/api/v1/games?city=Belgrade&sport=Tennis&with_spots=true&limit=10"
+```
+
+See [Public API & MCP Documentation](https://getcourt.co/api-and-mcp) for all query parameters (`city`, `sport`, `skill_level`, `with_spots`, `urgent`, `from`, `to`, `upcoming`, `limit`) and response schema.
+
+## MCP Server
+
+- Endpoint: `POST https://getcourt.co/mcp` (Streamable HTTP, JSON-RPC 2.0)
+- Tools: `search_games`, `get_game`
+- Access: When the endpoint is enabled (at least one token configured), handshake methods (`initialize`, `ping`, `tools/list`) are open; calling tools (`tools/call`) requires `Authorization: Bearer <token>`. Signed-in users with a verified email or linked Telegram can issue a personal token at `https://getcourt.co/account/security`.

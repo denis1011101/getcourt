@@ -609,4 +609,26 @@ class CourtsControllerTest < ActionDispatch::IntegrationTest
     court&.destroy
     User.find_by(email: owner_email)&.destroy
   end
+
+  test "index and show render heading link, free badge, and city fallback when address is unknown" do
+    court = Court.create!(
+      name: "Park Free Court",
+      city_name: "Novi Sad",
+      free: true,
+      moderation_status: "approved",
+      approved_at: Time.current
+    )
+
+    get courts_url, params: { city: "Novi Sad" }
+    assert_response :success
+    assert_select "h3 a[href=?]", court_path(court), text: "Park Free Court"
+    assert_select "span", text: "Novi Sad"
+
+    get court_url(court)
+    assert_response :success
+    assert_select "span", text: I18n.t("courts.index.free_badge")
+    assert_select "p", text: /Novi Sad/
+  ensure
+    court&.destroy
+  end
 end
