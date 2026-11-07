@@ -9,9 +9,10 @@
 - [Tournaments](https://getcourt.co/tournaments): Local amateur tournaments and brackets.
 - [Coaches](https://getcourt.co/coaches): Coaches available for individual and group trainings.
 - [Tennis Life](https://getcourt.co/tennis_life): Community match results, player ratings, and statistics ([Leaderboard](https://getcourt.co/tennis_life/statistics)).
-- [NTRP Level Guide](https://getcourt.co/ntrp-level-guide): Skill level reference guide.
-- [Tennis Formats & Rules](https://getcourt.co/tennis-formats-and-rules): Match formats and scoring rules.
-- [Public API & MCP Documentation](https://getcourt.co/api-and-mcp): Full reference for programmatic access.
+- [NTRP Level Guide](https://getcourt.co/ntrp-level-guide) ([Markdown](https://getcourt.co/ntrp-level-guide.md)): Skill level reference guide.
+- [Tennis Formats & Rules](https://getcourt.co/tennis-formats-and-rules) ([Markdown](https://getcourt.co/tennis-formats-and-rules.md)): Match formats and scoring rules.
+- [Public API & MCP Documentation](https://getcourt.co/api-and-mcp) ([Markdown](https://getcourt.co/api-and-mcp.md)): Full reference for programmatic access.
+- [About & Mission](https://getcourt.co/mission) ([Markdown](https://getcourt.co/mission.md)): About GetCourt and community mission.
 
 ## Public JSON API (No Auth Required)
 
@@ -25,7 +26,7 @@ Example:
 curl "https://getcourt.co/api/v1/games?city=Belgrade&sport=Tennis&with_spots=true&limit=10"
 ```
 
-See [Public API & MCP Documentation](https://getcourt.co/api-and-mcp) for all query parameters (`city`, `sport`, `skill_level`, `with_spots`, `urgent`, `from`, `to`, `upcoming`, `limit`) and response schema.
+See [Public API & MCP Documentation](https://getcourt.co/api-and-mcp) ([Markdown](https://getcourt.co/api-and-mcp.md)) for all query parameters (`city`, `sport`, `skill_level`, `with_spots`, `urgent`, `from`, `to`, `upcoming`, `limit`) and response schema.
 
 ## MCP Server
 

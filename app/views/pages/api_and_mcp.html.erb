@@ -1,5 +1,8 @@
 <% content_for :meta_title, t("pages.api.meta_title") %>
 <% content_for :meta_description, t("pages.api.meta_description") %>
+<% content_for :head do %>
+  <link rel="alternate" type="text/markdown" href="<%= api_and_mcp_url(format: :md) %>">
+<% end %>
 
 <% pre_class = "overflow-x-auto rounded-md bg-gray-900 text-slate-100 p-4 text-xs leading-relaxed dark:bg-slate-900/80" %>
 <% host = ENV.fetch("APP_HOST", "https://getcourt.co") %>
