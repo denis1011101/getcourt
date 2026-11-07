@@ -1,0 +1,132 @@
+<% host = ENV.fetch("APP_HOST", "https://getcourt.co") %>
+# <%= t("pages.api.title") %>
+
+> <%= t("pages.api.subtitle") %>
+
+<%= t("pages.api.intro") %>
+
+## <%= t("pages.api.rest_title") %>
+
+<%= t("pages.api.rest_text") %>
+
+```http
+GET <%= host %>/api/v1/games
+GET <%= host %>/api/v1/games/:id
+```
+
+### <%= t("pages.api.params_title") %>
+
+| <%= t("pages.api.param") %> | <%= t("pages.api.param_meaning") %> |
+|---|---|
+| `city` | <%= t("pages.api.param_city") %> |
+| `sport` | <%= t("pages.api.param_sport") %> |
+| `skill_level` | <%= t("pages.api.param_skill_level") %> |
+| `with_spots` | <%= t("pages.api.param_with_spots") %> |
+| `urgent` | <%= t("pages.api.param_urgent") %> |
+| `from` | <%= t("pages.api.param_from") %> |
+| `to` | <%= t("pages.api.param_to") %> |
+| `upcoming` | <%= t("pages.api.param_upcoming") %> |
+| `limit` | <%= t("pages.api.param_limit") %> |
+
+<%= t("pages.api.recurring_note") %>
+
+### <%= t("pages.api.example_title") %>
+
+```bash
+curl "<%= host %>/api/v1/games?city=Belgrade&sport=Tennis&with_spots=true&limit=2"
+```
+
+### <%= t("pages.api.response_title") %>
+
+```json
+{
+  "games": [
+    {
+      "id": 1042,
+      "date": "2026-09-12",
+      "time": "19:00",
+      "duration_minutes": 90,
+      "recurring": false,
+      "sport": "Tennis",
+      "skill_level": "Intermediate",
+      "surface": "Hard",
+      "environment": "outdoor",
+      "kind": "game",
+      "with_coach": false,
+      "urgent_player_search": true,
+      "comment": "Doubles, bring a spare ball",
+      "players": { "taken": 3, "total": 4, "spots_left": 1 },
+      "court": {
+        "id": 17,
+        "name": "Tennis Club Ada",
+        "city": "Belgrade",
+        "country_code": "RS",
+        "latitude": 44.79,
+        "longitude": 20.41,
+        "indoor": false,
+        "outdoor": true,
+        "free": false,
+        "url": "<%= host %>/courts/17"
+      },
+      "url": "<%= host %>/games/1042"
+    }
+  ]
+}
+```
+
+<%= t("pages.api.privacy_note") %>
+
+<%= html_to_markdown(t("pages.api.nullable_note_html")) %>
+
+## <%= t("pages.api.mcp_title") %>
+
+<%= t("pages.api.mcp_text") %>
+
+- <%= html_to_markdown(t("pages.api.mcp_endpoint_html")) %>
+- <%= html_to_markdown(t("pages.api.mcp_protocol_html")) %>
+- <%= html_to_markdown(t("pages.api.mcp_auth_html")) %>
+- <%= html_to_markdown(t("pages.api.mcp_token_html")) %>
+
+### <%= t("pages.api.tools_title") %>
+
+| <%= t("pages.api.tool") %> | <%= t("pages.api.param_meaning") %> |
+|---|---|
+| `search_games` | <%= t("pages.api.tool_search") %> |
+| `get_game` | <%= t("pages.api.tool_get") %> |
+
+### <%= t("pages.api.client_title") %>
+
+<%= t("pages.api.client_text") %>
+
+```json
+{
+  "mcpServers": {
+    "getcourt": {
+      "type": "http",
+      "url": "<%= host %>/mcp",
+      "headers": { "Authorization": "Bearer YOUR_TOKEN" }
+    }
+  }
+}
+```
+
+### <%= t("pages.api.raw_title") %>
+
+```bash
+curl -X POST <%= host %>/mcp \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call",
+       "params":{"name":"search_games","arguments":{"city":"Belgrade","with_spots":true}}}'
+```
+
+## <%= t("pages.api.limits_title") %>
+
+- <%= t("pages.api.limits_rest") %>
+- <%= t("pages.api.limits_mcp") %>
+- <%= t("pages.api.limits_read_only") %>
+
+## Links
+
+- [<%= t("pages.api.get_token") %>](<%= security_account_url %>)
+- [<%= t("pages.api.source_code") %>](https://github.com/denis1011101/getcourt/blob/main/docs/api-and-mcp.md)

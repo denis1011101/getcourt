@@ -1,6 +1,7 @@
 <% content_for :meta_title, t("pages.formats.meta_title") %>
 <% content_for :meta_description, t("pages.formats.meta_description") %>
 <% content_for :head do %>
+  <link rel="alternate" type="text/markdown" href="<%= tennis_formats_and_rules_url(format: :md) %>">
   <script type="application/ld+json">
     <%= json_escape({
       "@context": "https://schema.org",

@@ -1,5 +1,8 @@
 <% content_for :meta_title, t("pages.mission.meta_title") %>
 <% content_for :meta_description, t("pages.mission.meta_description") %>
+<% content_for :head do %>
+  <link rel="alternate" type="text/markdown" href="<%= mission_url(format: :md) %>">
+<% end %>
 
 <div class="max-w-5xl mx-auto px-4 py-6">
   <div class="bg-white dark:bg-slate-800/80 rounded-lg border dark:border-white/10 p-6 shadow-sm">

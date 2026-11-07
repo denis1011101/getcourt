@@ -1,6 +1,7 @@
 <% content_for :meta_title, t("pages.ntrp.meta_title") %>
 <% content_for :meta_description, t("pages.ntrp.meta_description") %>
 <% content_for :head do %>
+  <link rel="alternate" type="text/markdown" href="<%= ntrp_level_guide_url(format: :md) %>">
   <script type="application/ld+json">
     <%= json_escape({
       "@context": "https://schema.org",
