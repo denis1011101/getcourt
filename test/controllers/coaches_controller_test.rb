@@ -165,4 +165,21 @@ class CoachesControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href='#{mission_path}']", "Mission"
     assert_select "div.mt-6 a[href='#{coaches_path}']", count: 0
   end
+
+  test "renders coach article with semantic dom id" do
+    coach = User.create!(
+      email: "semantic_coach@example.com",
+      name: "Semantic Coach",
+      coach: true,
+      city_name: "Belgrade"
+    )
+
+    get coaches_url
+    assert_response :success
+    assert_select "article##{ActionView::RecordIdentifier.dom_id(coach)}" do
+      assert_select "h2", text: /Semantic Coach/
+    end
+  ensure
+    coach&.destroy
+  end
 end

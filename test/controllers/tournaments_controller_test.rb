@@ -440,4 +440,25 @@ class TournamentsControllerTest < ActionDispatch::IntegrationTest
       delete tournament_participant_url(@tournament, participant)
     end
   end
+
+  test "tournament card renders heading link and semantic time elements" do
+    tournament = Tournament.create!(
+      user: @organizer,
+      name: "Grand Masters Cup",
+      players_count: 8,
+      format: "singles",
+      start_date: Date.current + 3.days,
+      end_date: Date.current + 5.days,
+      time: "14:00"
+    )
+
+    get tournaments_url
+    assert_response :success
+    assert_select "h3 a[href=?]", tournament_path(tournament), text: "Grand Masters Cup"
+    assert_select "time[datetime=?]", tournament.start_date.iso8601
+    assert_select "time[datetime='14:00']"
+    assert_select "time[datetime=?]", tournament.end_date.iso8601
+  ensure
+    tournament&.destroy
+  end
 end

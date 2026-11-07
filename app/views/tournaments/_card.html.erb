@@ -1,6 +1,4 @@
 <div class="group relative rounded-xl border border-gray-100 bg-white dark:border-white/10 dark:bg-slate-800/80 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
-  <%= link_to "", tournament_path(tournament), class: "absolute inset-0 z-0" %>
-
   <!-- Color accent bar -->
   <% format_colors = { "singles" => "bg-green-500", "doubles" => "bg-blue-500" } %>
   <div class="h-1 <%= format_colors[tournament.format.to_s.downcase] || 'bg-indigo-500' %>"></div>
@@ -24,13 +22,13 @@
         <div>
           <% if tournament.start_date.present? %>
             <p class="text-sm font-medium text-gray-900 dark:text-slate-100">
-              <%= tournament.start_date.strftime("%A") %>
+              <time datetime="<%= tournament.start_date.iso8601 %>"><%= tournament.start_date.strftime("%A") %></time>
               <% if tournament.time.present? %>
-                <span class="text-xs text-gray-500 dark:text-slate-400"><%= tournament.time.strftime("%H:%M") %></span>
+                <time datetime="<%= tournament.time.strftime("%H:%M") %>" class="text-xs text-gray-500 dark:text-slate-400"><%= tournament.time.strftime("%H:%M") %></time>
               <% end %>
             </p>
             <% if tournament.end_date.present? %>
-              <p class="text-xs text-gray-500 dark:text-slate-400"><%= t("tournaments.card.until", date: tournament.end_date.strftime("%b %d")) %></p>
+              <p class="text-xs text-gray-500 dark:text-slate-400"><%= t("tournaments.card.until", date: tag.time(tournament.end_date.strftime("%b %d"), datetime: tournament.end_date.iso8601)).html_safe %></p>
             <% end %>
           <% else %>
             <p class="text-xs text-gray-500 dark:text-slate-400"><%= t("tournaments.card.date_tbd") %></p>
@@ -49,7 +47,7 @@
 
     <!-- Tournament name -->
     <h3 class="text-base font-semibold text-gray-900 dark:text-slate-100 mb-2 group-hover:text-indigo-600 transition-colors">
-      <%= tournament.name.presence || t("layout.nav.tournaments") %>
+      <%= link_to (tournament.name.presence || t("layout.nav.tournaments")), tournament_path(tournament), class: "after:absolute after:inset-0 after:z-0" %>
     </h3>
 
     <!-- Badges row -->

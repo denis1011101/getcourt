@@ -39,7 +39,7 @@
   <% if @coaches.any? %>
     <div class="mt-5 space-y-3">
       <% @coaches.each do |coach| %>
-        <article class="rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-slate-800/80 p-4">
+        <article id="<%= dom_id(coach) %>" class="rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-slate-800/80 p-4">
           <h2 class="text-base font-semibold text-gray-900 dark:text-slate-100">
             <%= coach.name.presence || coach.email %>
             <% tg = coach.telegram_username.to_s.strip.delete_prefix("@") %>
