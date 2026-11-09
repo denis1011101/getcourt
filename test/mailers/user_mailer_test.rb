@@ -45,7 +45,31 @@ class UserMailerTest < ActionMailer::TestCase
     assert_includes body, Rails.application.routes.url_helpers.notifications_account_url(host: "example.com")
     assert_includes body, "Central Court"
     assert_includes body, "Usuario de GetCourt ##{owner.id}"
+    assert_includes body, "Puedes desactivar estas notificaciones en tu perfil"
     assert_not_includes body, owner.email
+  ensure
+    game&.destroy
+    court&.destroy
+    recipient&.destroy
+    owner&.destroy
+  end
+
+  test "urgent player search email renders ru manage notifications text" do
+    owner = User.create!(email: "mailer_owner_ru@example.com")
+    recipient = User.create!(email: "mailer_recipient_ru@example.com", name: "Игрок", locale: "ru")
+    court = Court.create!(name: "Центральный корт", city_name: "Москва")
+    game = Game.create!(
+      court: court,
+      user: owner,
+      date: Date.current + 1.day,
+      sport: "Tennis"
+    )
+
+    mail = UserMailer.urgent_player_search(recipient, game)
+    body = mail.parts.map(&:decoded).join
+
+    assert_includes body, "Отключить эти уведомления можно в личном кабинете"
+    assert_includes body, "Настройки уведомлений"
   ensure
     game&.destroy
     court&.destroy

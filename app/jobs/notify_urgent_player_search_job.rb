@@ -40,10 +40,15 @@ class NotifyUrgentPlayerSearchJob < ApplicationJob
       sport: formatter.sport_label(game.sport, locale: locale) || Telegram::I18n.t(:sport_any, locale: locale),
       skill: formatter.skill_level_label(game.skill_level, locale: locale),
       court: game.court&.name.to_s.presence || "—",
-      url: game_url
+      url: game_url,
+      notifications_url: notifications_url
     )
 
     SendTelegramNotificationJob.perform_later(user.telegram_chat_id, text, parse_mode: nil)
+  end
+
+  def notifications_url
+    "#{app_host.to_s.delete_suffix('/')}/account/notifications"
   end
 
   def deliver_email(user, game)

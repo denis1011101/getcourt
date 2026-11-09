@@ -350,6 +350,8 @@ ru:
       Место: %{court}
 
       %{url}
+
+      Отключить эти уведомления: %{notifications_url}
     tennis_life_title: Теннис лайф
     tennis_life_feed_title: Telegram Feed
     tennis_life_no_posts: Пока постов нет.
@@ -963,6 +965,8 @@ en:
       Court: %{court}
 
       %{url}
+
+      Turn off these notifications: %{notifications_url}
     tennis_life_title: Tennis life
     tennis_life_text: Section under development. News, tips, and interesting tennis
       content coming soon.
@@ -1413,6 +1417,8 @@ es:
       Pista: %{court}
 
       %{url}
+
+      Desactivar estas notificaciones: %{notifications_url}
     admin_partnership: 'Nueva propuesta de colaboración: %{text}'
     admin_court_pending: 'Pista pendiente de aprobación (%{action}): %{name} — %{url}'
     admin_court_suggestion: 'Se ha sugerido una corrección de pista: %{name} — %{url}'
