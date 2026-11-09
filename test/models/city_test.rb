@@ -34,6 +34,21 @@ class CityTest < ActiveSupport::TestCase
     assert_nil City.normalize_name("   ")
   end
 
+  test "normalize_name preserves non-transliterated characters without collisions" do
+    refute_equal City.normalize_name("北京"), City.normalize_name("上海")
+    assert_equal "北京", City.normalize_name("  北京 ")
+    assert_equal "上海", City.normalize_name("上海")
+    assert_equal "القاهرة", City.normalize_name("  القاهرة  ")
+    refute_equal City.normalize_name("City 北京"), City.normalize_name("City 上海")
+
+    %i[en ru es].each do |locale|
+      I18n.with_locale(locale) do
+        assert_equal "北京", City.normalize_name("北京")
+        assert_equal "上海", City.normalize_name("上海")
+      end
+    end
+  end
+
   test "alias_names_for lists every spelling that folds into the name" do
     assert_equal %w[ekaterinburg yekaterinburg], City.alias_names_for("ekaterinburg").sort
     assert_equal %w[moscow moskva], City.alias_names_for("moscow").sort

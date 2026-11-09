@@ -35,7 +35,9 @@ class City < ApplicationRecord
 
   def self.fold_name(value)
     transliterated = I18n.transliterate(value.to_s, locale: :ru)
-    I18n.transliterate(transliterated, locale: :en).downcase.strip.gsub(/\s+/, " ")
+    ascii = I18n.transliterate(transliterated, locale: :en)
+    target = ascii.include?("?") ? value.to_s : ascii
+    target.downcase.strip.gsub(/\s+/, " ")
   end
 
   # Вариант → то, к чему приводим (в терминах fold_name).
