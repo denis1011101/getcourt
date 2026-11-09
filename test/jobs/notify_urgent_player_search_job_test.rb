@@ -171,6 +171,141 @@ class NotifyUrgentPlayerSearchJobTest < ActiveJob::TestCase
     assert_empty calls
   end
 
+  test "notifies users when city matches through alias in either direction" do
+    owner = User.create!(email: "owner_alias@example.com", city_name: "Yekaterinburg")
+    court_latin = Court.create!(name: "Latin Court", city_name: "Yekaterinburg")
+    court_cyrillic = Court.create!(name: "Cyrillic Court", city_name: "Екатеринбург")
+
+    user_latin_ekat = User.create!(
+      email: "ekat_latin@example.com",
+      city_name: "Ekaterinburg",
+      notify_nearby: true,
+      notification_channel: "telegram",
+      telegram_chat_id: "5001"
+    )
+    user_cyrillic = User.create!(
+      email: "ekat_cyrillic@example.com",
+      city_name: "Екатеринбург",
+      notify_nearby: true,
+      notification_channel: "telegram",
+      telegram_chat_id: "5002"
+    )
+    user_yekat = User.create!(
+      email: "yekat_user@example.com",
+      city_name: "Yekaterinburg",
+      notify_nearby: true,
+      notification_channel: "telegram",
+      telegram_chat_id: "5003"
+    )
+
+    game_latin = Game.create!(court: court_latin, user: owner, date: Date.current + 1.day, urgent_player_search: true)
+    calls = []
+    with_stubbed_singleton_method(SendTelegramNotificationJob, :perform_later, ->(*args, **kwargs) { calls << args.first }) do
+      NotifyUrgentPlayerSearchJob.perform_now(game_latin.id)
+    end
+    assert_equal %w[5001 5002 5003].sort, calls.map(&:to_s).sort
+
+    game_cyrillic = Game.create!(court: court_cyrillic, user: owner, date: Date.current + 1.day, urgent_player_search: true)
+    calls = []
+    with_stubbed_singleton_method(SendTelegramNotificationJob, :perform_later, ->(*args, **kwargs) { calls << args.first }) do
+      NotifyUrgentPlayerSearchJob.perform_now(game_cyrillic.id)
+    end
+    assert_equal %w[5001 5002 5003].sort, calls.map(&:to_s).sort
+  ensure
+    game_latin&.destroy
+    game_cyrillic&.destroy
+    court_latin&.destroy
+    court_cyrillic&.destroy
+    user_latin_ekat&.destroy
+    user_cyrillic&.destroy
+    user_yekat&.destroy
+    owner&.destroy
+  end
+
+  test "delivers to telegram when notification_channel is nil but telegram_chat_id is present" do
+    owner = User.create!(email: "owner_legacy_tg@example.com", city_name: "Yekaterinburg")
+    court = Court.create!(name: "Legacy TG Court", city_name: "Yekaterinburg")
+    game = Game.create!(court: court, user: owner, date: Date.current + 1.day, urgent_player_search: true)
+    recipient = User.new(
+      name: "Legacy User",
+      city_name: "Yekaterinburg",
+      notify_nearby: true,
+      telegram_chat_id: "6001",
+      notification_channel: nil
+    )
+    recipient.save(validate: false)
+
+    calls = []
+    assert_no_enqueued_emails do
+      with_stubbed_singleton_method(SendTelegramNotificationJob, :perform_later, ->(*args, **kwargs) { calls << args.first }) do
+        NotifyUrgentPlayerSearchJob.perform_now(game.id)
+      end
+    end
+
+    assert_equal [ "6001" ], calls.map(&:to_s)
+  ensure
+    game&.destroy
+    court&.destroy
+    recipient&.destroy
+    owner&.destroy
+  end
+
+  test "delivers to email when notification_channel is explicitly email even if telegram is connected" do
+    owner = User.create!(email: "owner_explicit_email@example.com", city_name: "Yekaterinburg")
+    court = Court.create!(name: "Explicit Email Court", city_name: "Yekaterinburg")
+    game = Game.create!(court: court, user: owner, date: Date.current + 1.day, urgent_player_search: true)
+    recipient = User.create!(
+      email: "explicit_email_recipient@example.com",
+      city_name: "Yekaterinburg",
+      notify_nearby: true,
+      telegram_chat_id: "7001",
+      notification_channel: "email"
+    )
+
+    calls = []
+    assert_enqueued_emails 1 do
+      with_stubbed_singleton_method(SendTelegramNotificationJob, :perform_later, ->(*args, **kwargs) { calls << args.first }) do
+        NotifyUrgentPlayerSearchJob.perform_now(game.id)
+      end
+    end
+
+    assert_empty calls
+  ensure
+    game&.destroy
+    court&.destroy
+    recipient&.destroy
+    owner&.destroy
+  end
+
+  test "does not enqueue any jobs when user has no email and no telegram_chat_id" do
+    owner = User.create!(email: "owner_no_contact@example.com", city_name: "Yekaterinburg")
+    court = Court.create!(name: "No Contact Court", city_name: "Yekaterinburg")
+    game = Game.create!(court: court, user: owner, date: Date.current + 1.day, urgent_player_search: true)
+    recipient = User.new(
+      name: "Nameless Contactless",
+      city_name: "Yekaterinburg",
+      notify_nearby: true,
+      email: nil,
+      telegram_chat_id: nil,
+      notification_channel: nil
+    )
+    recipient.save(validate: false)
+
+    calls = []
+    assert_no_enqueued_emails do
+      with_stubbed_singleton_method(SendTelegramNotificationJob, :perform_later, ->(*args, **kwargs) { calls << args.first }) do
+        NotifyUrgentPlayerSearchJob.perform_now(game.id)
+      end
+    end
+
+    assert_empty calls
+  ensure
+    game&.destroy
+    court&.destroy
+    recipient&.destroy
+    owner&.destroy
+  end
+
   test "notifications_url returns base host for default host and custom host otherwise" do
     job = NotifyUrgentPlayerSearchJob.new
 

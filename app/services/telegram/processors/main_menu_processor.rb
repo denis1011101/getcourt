@@ -55,6 +55,8 @@ module Telegram
               if user.new_record?
                 user.telegram_username = message.dig("from", "username") rescue nil
                 user.name = message.dig("from", "first_name") rescue nil if user.respond_to?(:name=)
+                user.notification_channel = "telegram"
+                user.registration_source = "telegram"
                 user.save(validate: false) rescue nil
                 Rails.logger.info "[Telegram::MainMenuProcessor] created user id=#{user.id} chat=#{chat_id}"
               elsif user.will_save_change_to_telegram_locale?

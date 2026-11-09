@@ -5,11 +5,11 @@ class NotifyUrgentPlayerSearchJob < ApplicationJob
     game = Game.includes(:court, :user).find_by(id: game_id)
     return unless game&.urgent_player_search?
 
-    game_city = game.court&.city_name.to_s.strip.downcase
+    game_city = City.normalize_name(game.court&.city_name)
     return if game_city.blank?
 
     User.where(notify_nearby: true).where.not(id: game.user_id).find_each do |user|
-      next unless user.city_name.to_s.strip.downcase == game_city
+      next unless City.normalize_name(user.city_name) == game_city
 
       deliver(user, game)
     end
@@ -20,7 +20,9 @@ class NotifyUrgentPlayerSearchJob < ApplicationJob
   private
 
   def deliver(user, game)
-    if user.notification_channel == "telegram" && user.telegram_chat_id.present?
+    channel = user.notification_channel.presence || (user.telegram_chat_id.present? ? "telegram" : "email")
+
+    if channel == "telegram" && user.telegram_chat_id.present?
       deliver_telegram(user, game)
     else
       deliver_email(user, game)
@@ -52,7 +54,7 @@ class NotifyUrgentPlayerSearchJob < ApplicationJob
   end
 
   def deliver_email(user, game)
-    return false if user.telegram_generated_email?
+    return false if user.email.blank? || user.telegram_generated_email?
 
     UserMailer.urgent_player_search(user, game).deliver_later
   end

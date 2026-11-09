@@ -10,6 +10,18 @@ class CityTest < ActiveSupport::TestCase
     assert_equal City.normalize_name("Ekaterinburg"), City.normalize_name("Yekaterinburg")
   end
 
+  test "normalize_name handles cyrillic and diacritics consistently across locales" do
+    %i[en ru es].each do |locale|
+      I18n.with_locale(locale) do
+        assert_equal "yekaterinburg", City.normalize_name("Екатеринбург")
+        assert_equal "yekaterinburg", City.normalize_name("Ekaterinburg")
+        assert_equal "yekaterinburg", City.normalize_name("Yekaterinburg")
+        assert_equal "bastad", City.normalize_name("Båstad")
+        assert_equal "malaga", City.normalize_name("Málaga")
+      end
+    end
+  end
+
   test "normalize_name keeps cities that merely start with Y" do
     # Прежний вариант в tournaments_flow срезал ведущую Y перед гласной и
     # превращал York в «ork», а Yokohama — в «okohama».
