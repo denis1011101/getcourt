@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_10_090000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_09_060527) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.integer "blob_id", null: false
     t.datetime "created_at", null: false
@@ -618,7 +618,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_090000) do
     t.integer "merged_into_id"
     t.string "name"
     t.string "notification_channel"
-    t.boolean "notify_nearby", default: false, null: false
+    t.boolean "notify_nearby", default: true, null: false
     t.datetime "onboarded_at"
     t.datetime "onboarding_dismissed_at"
     t.string "preferred_login_via"
