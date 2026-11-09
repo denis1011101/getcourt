@@ -27,6 +27,25 @@ class UserTest < ActiveSupport::TestCase
     assert_nil User.new.telegram_locale
   end
 
+  test "defaults notify_nearby to true for new users" do
+    column = User.columns_hash.fetch("notify_nearby")
+
+    assert_not column.null
+    assert_equal true, ActiveRecord::Type::Boolean.new.cast(column.default)
+    assert_equal true, User.new.notify_nearby
+
+    user = User.create!(email: "notify_nearby_default@example.com", name: "Nearby User")
+    assert_equal true, user.notify_nearby
+    assert_equal true, user.reload.notify_nearby
+
+    opted_out = User.create!(email: "notify_nearby_false@example.com", name: "Opted Out", notify_nearby: false)
+    assert_equal false, opted_out.notify_nearby
+    assert_equal false, opted_out.reload.notify_nearby
+  ensure
+    user&.destroy
+    opted_out&.destroy
+  end
+
   test "defaults notification channel to telegram when telegram is connected" do
     user = User.new(email: "telegram-channel@example.com", telegram_chat_id: 12_345)
 
