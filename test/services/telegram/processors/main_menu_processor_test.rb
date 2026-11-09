@@ -132,4 +132,42 @@ class Telegram::Processors::MainMenuProcessorTest < ActiveSupport::TestCase
 
     assert_equal "es", user.reload.telegram_locale
   end
+
+  test "start initializes notification_channel and registration_source to telegram for a new user" do
+    chat_id = 98_768
+    message = {
+      "chat" => { "id" => chat_id },
+      "from" => { "id" => chat_id, "username" => "brand_new_bot_user", "first_name" => "Newbie" },
+      "text" => "/start"
+    }
+
+    stub_singleton(Telegram::Handlers::MenuHandler, :menu, ->(*) { }) do
+      Telegram::Processors::MainMenuProcessor.handle_message(message)
+    end
+
+    user = User.find_by!(telegram_chat_id: chat_id)
+    assert_equal "telegram", user.notification_channel
+    assert_equal "telegram", user.registration_source
+    assert_equal "brand_new_bot_user", user.telegram_username
+  ensure
+    user&.destroy
+  end
+
+  test "start preserves existing notification_channel for an existing user" do
+    user = users(:one)
+    user.update!(email: "existing-start-channel@example.com", telegram_chat_id: 98_769, notification_channel: "email", registration_source: "email")
+    message = {
+      "chat" => { "id" => user.telegram_chat_id },
+      "from" => { "id" => user.telegram_chat_id, "username" => "existing_user" },
+      "text" => "/start"
+    }
+
+    stub_singleton(Telegram::Handlers::MenuHandler, :menu, ->(*) { }) do
+      Telegram::Processors::MainMenuProcessor.handle_message(message)
+    end
+
+    user.reload
+    assert_equal "email", user.notification_channel
+    assert_equal "email", user.registration_source
+  end
 end

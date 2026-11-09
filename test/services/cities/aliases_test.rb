@@ -102,10 +102,14 @@ class Cities::AliasesTest < ActiveSupport::TestCase
   end
 
   test "global aliases keep the old string comparison of Ekaterinburg and Yekaterinburg" do
-    # Каменск сводится к написанию справочника: ’ после транслитерации — «?».
+    # Каменск сводится к написанию справочника: типографский апостроф ’ сохраняется при lossy fallback.
     expected = { "ekaterinburg" => "yekaterinburg", "erevan" => "yerevan",
-                 "kamensk-uralsky" => "kamensk-ural?skiy", "kamensk-uralskiy" => "kamensk-ural?skiy",
+                 "kamensk-uralsky" => "kamensk-ural’skiy", "kamensk-uralskiy" => "kamensk-ural’skiy",
                  "moskva" => "moscow" }
     assert_equal expected, Cities::Aliases.default.name_aliases
+
+    assert_equal "kamensk-ural’skiy", City.normalize_name("Kamensk-Uralsky")
+    assert_equal "kamensk-ural’skiy", City.normalize_name("Kamensk-Uralskiy")
+    assert_equal "kamensk-ural’skiy", City.normalize_name("Kamensk-Ural’skiy")
   end
 end

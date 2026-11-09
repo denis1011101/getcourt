@@ -10,6 +10,18 @@ class CityTest < ActiveSupport::TestCase
     assert_equal City.normalize_name("Ekaterinburg"), City.normalize_name("Yekaterinburg")
   end
 
+  test "normalize_name handles cyrillic and diacritics consistently across locales" do
+    %i[en ru es].each do |locale|
+      I18n.with_locale(locale) do
+        assert_equal "yekaterinburg", City.normalize_name("Екатеринбург")
+        assert_equal "yekaterinburg", City.normalize_name("Ekaterinburg")
+        assert_equal "yekaterinburg", City.normalize_name("Yekaterinburg")
+        assert_equal "bastad", City.normalize_name("Båstad")
+        assert_equal "malaga", City.normalize_name("Málaga")
+      end
+    end
+  end
+
   test "normalize_name keeps cities that merely start with Y" do
     # Прежний вариант в tournaments_flow срезал ведущую Y перед гласной и
     # превращал York в «ork», а Yokohama — в «okohama».
@@ -20,6 +32,21 @@ class CityTest < ActiveSupport::TestCase
   test "normalize_name returns nil for blank input" do
     assert_nil City.normalize_name(nil)
     assert_nil City.normalize_name("   ")
+  end
+
+  test "normalize_name preserves non-transliterated characters without collisions" do
+    refute_equal City.normalize_name("北京"), City.normalize_name("上海")
+    assert_equal "北京", City.normalize_name("  北京 ")
+    assert_equal "上海", City.normalize_name("上海")
+    assert_equal "القاهرة", City.normalize_name("  القاهرة  ")
+    refute_equal City.normalize_name("City 北京"), City.normalize_name("City 上海")
+
+    %i[en ru es].each do |locale|
+      I18n.with_locale(locale) do
+        assert_equal "北京", City.normalize_name("北京")
+        assert_equal "上海", City.normalize_name("上海")
+      end
+    end
   end
 
   test "alias_names_for lists every spelling that folds into the name" do
