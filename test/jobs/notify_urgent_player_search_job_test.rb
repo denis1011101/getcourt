@@ -82,6 +82,7 @@ class NotifyUrgentPlayerSearchJobTest < ActiveJob::TestCase
     assert_includes calls[0][:args][1], "Продвинутый"
     assert_includes calls[0][:args][1], "Center Court"
     assert_includes calls[0][:args][1], "https://getcourt.co/games/#{game.id}"
+    assert_includes calls[0][:args][1], "Отключить эти уведомления: https://getcourt.co/account/notifications"
   end
 
   test "falls back to email when telegram is selected but not connected" do
@@ -170,7 +171,48 @@ class NotifyUrgentPlayerSearchJobTest < ActiveJob::TestCase
     assert_empty calls
   end
 
+  test "notifications_url returns base host for default host and custom host otherwise" do
+    job = NotifyUrgentPlayerSearchJob.new
+
+    assert_equal "https://getcourt.co/account/notifications", job.send(:notifications_url)
+
+    with_env("APP_HOST", "https://custom.getcourt.co/") do
+      assert_equal "https://custom.getcourt.co/account/notifications", job.send(:notifications_url)
+    end
+  end
+
+  test "interpolates telegram notification text in all locales" do
+    job = NotifyUrgentPlayerSearchJob.new
+    notifications_url = job.send(:notifications_url)
+
+    %w[ru en es].each do |locale|
+      text = Telegram::I18n.t(
+        :urgent_search_notification,
+        locale: locale,
+        id: 123,
+        owner: "Player1",
+        date: "10.11.2026 20:00",
+        sport: "Tennis",
+        skill: "Intermediate",
+        court: "Center Court",
+        url: "https://getcourt.co/games/123",
+        notifications_url: notifications_url
+      )
+
+      assert_includes text, notifications_url
+      refute_includes text, "%{"
+    end
+  end
+
   private
+
+  def with_env(key, value)
+    original = ENV[key]
+    ENV[key] = value
+    yield
+  ensure
+    ENV[key] = original
+  end
 
   def with_stubbed_singleton_method(target, method_name, replacement)
     singleton = target.singleton_class

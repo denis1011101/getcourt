@@ -181,8 +181,8 @@ en:
       any_sport: "Any"
       any_level: "Any"
       view_game: "View game"
-      manage_html: "You received this because nearby game alerts are enabled. <a href='%{url}'>Manage notifications</a>."
-      manage_text: "Manage notifications"
+      manage_html: "You received this because nearby game alerts are enabled. Turn off these notifications in your profile: <a href='%{url}'>Notification settings</a>."
+      manage_text: "Turn off these notifications in your profile"
     notification:
       manage: "Manage notifications"
       view_game: "View game"

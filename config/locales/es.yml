@@ -156,8 +156,8 @@ es:
       any_sport: "Cualquiera"
       any_level: "Cualquiera"
       view_game: "Ver partido"
-      manage_html: "Recibes este mensaje porque tienes activadas las alertas de partidos cercanos. <a href='%{url}'>Gestionar notificaciones</a>."
-      manage_text: "Gestionar notificaciones"
+      manage_html: "Recibes este mensaje porque tienes activadas las alertas de partidos cercanos. Puedes desactivar estas notificaciones en tu perfil: <a href='%{url}'>Ajustes de notificaciones</a>."
+      manage_text: "Puedes desactivar estas notificaciones en tu perfil"
     notification:
       manage: "Gestionar notificaciones"
       view_game: "Ver partido"
