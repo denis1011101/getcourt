@@ -1722,7 +1722,19 @@ class GamesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "#game-details a[href=?]", court_path(court), text: "Central Arena"
     assert_select "#game-details", text: /Belgrade/
+    assert_select "#game-details time[datetime=?]", game_date.iso8601
+    assert_select "#game-details time[datetime='19:30']"
+    assert_select "head link[rel='alternate'][type='application/json'][href=?]", api_v1_game_url(game)
+
+    # Pending moderation courts should not expose public JSON API discovery link
+    pending_court = Court.create!(name: "Pending Arena", moderation_status: "pending")
+    pending_game = Game.create!(court: pending_court, user: owner, date: game_date, time: "20:00")
+    get game_url(pending_game)
+    assert_response :success
+    assert_select "head link[rel='alternate'][type='application/json']", count: 0
   ensure
+    pending_game&.destroy
+    pending_court&.destroy
     game&.destroy
     court&.destroy
     owner&.destroy
