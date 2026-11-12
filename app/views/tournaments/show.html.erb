@@ -56,9 +56,9 @@
         <div>
           <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("tournaments.show.start") %></p>
           <p class="text-lg font-medium text-gray-900 dark:text-slate-100">
-            <%= @tournament.start_date.strftime("%d.%m.%Y") %>
+            <time datetime="<%= @tournament.start_date.iso8601 %>"><%= @tournament.start_date.strftime("%d.%m.%Y") %></time>
             <% if @tournament.time.present? %>
-              <span class="text-base text-gray-500 dark:text-slate-400"><%= @tournament.time.strftime("%H:%M") %></span>
+              <time datetime="<%= @tournament.time.strftime("%H:%M") %>" class="text-base text-gray-500 dark:text-slate-400"><%= @tournament.time.strftime("%H:%M") %></time>
             <% end %>
           </p>
         </div>
@@ -67,7 +67,9 @@
       <% if @tournament.end_date.present? %>
         <div>
           <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("tournaments.show.end_date") %></p>
-          <p class="text-lg font-medium text-gray-900 dark:text-slate-100"><%= @tournament.end_date.strftime("%d.%m.%Y") %></p>
+          <p class="text-lg font-medium text-gray-900 dark:text-slate-100">
+            <time datetime="<%= @tournament.end_date.iso8601 %>"><%= @tournament.end_date.strftime("%d.%m.%Y") %></time>
+          </p>
         </div>
       <% end %>
 

@@ -441,7 +441,7 @@ class TournamentsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "tournament card renders heading link and semantic time elements" do
+  test "tournament card and show page render heading link and semantic time elements" do
     tournament = Tournament.create!(
       user: @organizer,
       name: "Grand Masters Cup",
@@ -455,6 +455,12 @@ class TournamentsControllerTest < ActionDispatch::IntegrationTest
     get tournaments_url
     assert_response :success
     assert_select "h3 a[href=?]", tournament_path(tournament), text: "Grand Masters Cup"
+    assert_select "time[datetime=?]", tournament.start_date.iso8601
+    assert_select "time[datetime='14:00']"
+    assert_select "time[datetime=?]", tournament.end_date.iso8601
+
+    get tournament_url(tournament)
+    assert_response :success
     assert_select "time[datetime=?]", tournament.start_date.iso8601
     assert_select "time[datetime='14:00']"
     assert_select "time[datetime=?]", tournament.end_date.iso8601
