@@ -3,8 +3,8 @@
 require "cgi"
 
 module Games
-  # Карточка игры картинкой. Макет повторяет `games/_card`: человек делится тем же,
-  # что видит в списке игр, поэтому все метки, комментарий и счётчик мест на месте.
+  # Картинка для шеринга повторяет состав данных и условия показа веб-карточки
+  # app/views/games/_card.html.erb. При их изменении проверьте оба представления.
   class ShareCardRenderer
     CANVAS_WIDTH  = 640
     CARD_MARGIN   = 20
@@ -143,8 +143,15 @@ module Games
         lines.each_with_index do |line, i|
           body << text(x, y + 18 + i * 26, line, size: 20, weight: 700, color: TITLE_COLOR)
         end
+        y += lines.size * 26
 
-        y + lines.size * 26 + 8
+        if game.court&.city_name.present?
+          city = truncate_to(game.court.city_name, CONTENT_WIDTH, size: 13)
+          body << text(x, y + 10, city, size: 13, color: MUTED_COLOR)
+          y += 18
+        end
+
+        y + 8
       end
 
       def draw_badges(body, game, x, y)

@@ -37,7 +37,9 @@
     <div class="flex items-center justify-between gap-3">
       <p class="text-xs font-semibold uppercase tracking-wide text-rose-600 dark:text-rose-300"><%= t("tennis_life.feed.game_media.title") %></p>
       <div class="flex items-center gap-2">
-        <p class="text-xs text-gray-500 dark:text-slate-400"><%= medium.created_at.strftime("%Y-%m-%d") %></p>
+        <p class="text-xs text-gray-500 dark:text-slate-400">
+          <time datetime="<%= medium.created_at.to_date.iso8601 %>"><%= medium.created_at.strftime("%Y-%m-%d") %></time>
+        </p>
         <%= render "shared/ugc_actions", author: medium.user %>
       </div>
     </div>

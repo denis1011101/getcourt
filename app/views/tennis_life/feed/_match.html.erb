@@ -5,7 +5,11 @@
 <div class="p-4">
   <div class="flex items-center justify-between gap-3">
     <p class="text-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-300"><%= t("tennis_life.feed.match.title") %><%= " · #{t("tennis_life.feed.match.one_vs_two")}" if match.mode == "one_vs_two" %></p>
-    <p class="text-xs text-gray-500 dark:text-slate-400"><%= match.played_at&.strftime("%Y-%m-%d") %></p>
+    <% if match.played_at.present? %>
+      <p class="text-xs text-gray-500 dark:text-slate-400">
+        <time datetime="<%= match.played_at.to_date.iso8601 %>"><%= match.played_at.strftime("%Y-%m-%d") %></time>
+      </p>
+    <% end %>
   </div>
   <p class="mt-2 font-medium text-gray-900 dark:text-slate-100"><%= t("tennis_life.feed.match.versus", player: player_name, opponent: opponent_name) %></p>
   <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600 dark:text-slate-300">

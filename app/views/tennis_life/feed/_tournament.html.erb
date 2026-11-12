@@ -5,7 +5,11 @@
   <p class="text-xs font-semibold uppercase tracking-wide text-fuchsia-600 dark:text-fuchsia-300"><%= t("tennis_life.feed.tournament.title") %></p>
   <h2 class="mt-2 text-base font-semibold text-gray-900 dark:text-slate-100"><%= tournament.name %></h2>
   <p class="mt-1 text-sm text-gray-600 dark:text-slate-300">
-    <%= tournament.start_date&.strftime("%Y-%m-%d") || t("tournaments.card.date_tbd") %>
+    <% if tournament.start_date.present? %>
+      <time datetime="<%= tournament.start_date.iso8601 %>"><%= tournament.start_date.strftime("%Y-%m-%d") %></time>
+    <% else %>
+      <%= t("tournaments.card.date_tbd") %>
+    <% end %>
     <% if tournament.format.present? %> · <%= t("tournaments.formats.#{tournament.format}", default: tournament.format) %><% end %>
   </p>
   <p class="mt-2 text-xs text-gray-500 dark:text-slate-400"><%= t("tennis_life.feed.tournament.participants", count: participants) %></p>

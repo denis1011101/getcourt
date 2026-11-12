@@ -3,6 +3,7 @@ require "test_helper"
 class Games::ShareCardRendererTest < ActiveSupport::TestCase
   test "card markup repeats the badges, the comment and the free spots of the games list" do
     game = games(:feed_upcoming)
+    game.court.city_name = "Yekaterinburg"
     # Корт из фикстуры разрешает не любое покрытие, а карточке важны только атрибуты игры.
     game.assign_attributes(
       kind: "training",
@@ -19,6 +20,7 @@ class Games::ShareCardRendererTest < ActiveSupport::TestCase
     svg = markup_for(game)
 
     assert_includes svg, "Feed Court"
+    assert_includes svg, "Yekaterinburg"
     assert_includes svg, "Tennis"
     assert_includes svg, "Intermediate"
     assert_includes svg, "Hard"

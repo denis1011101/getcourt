@@ -2,6 +2,9 @@
 <% content_for :meta_title, t("games.show.meta_title", court: @game.court_name, date: l((@game.display_date_for_show || @game.date).to_date, format: :long)) %>
 <% content_for :meta_description, t("games.show.meta_description", count: approved_count, court: @game.court_name) %>
 <% content_for :head do %>
+  <% if @game.court.nil? || @game.court.approved? %>
+    <link rel="alternate" type="application/json" href="<%= api_v1_game_url(@game) %>">
+  <% end %>
   <script type="application/ld+json">
     <%= json_escape({
       "@context": "https://schema.org",
@@ -102,13 +105,25 @@
                  end %>
             <span class="<%= badge_classes %>"><%= badge_text %></span>
           <% end %>
-          <%= display_date(@game) %>
+          <% display_date_val = @game.display_date_for_show || @game.date %>
+          <% if display_date_val.respond_to?(:iso8601) %>
+            <time datetime="<%= display_date_val.iso8601 %>"><%= display_date(@game) %></time>
+          <% else %>
+            <%= display_date(@game) %>
+          <% end %>
         </p>
       </div>
 
       <div>
         <p class="text-sm text-gray-500 dark:text-slate-400"><%= t("games.show.time") %></p>
-        <p class="text-lg font-medium text-gray-900 dark:text-slate-100"><%= display_time(@game) %></p>
+        <p class="text-lg font-medium text-gray-900 dark:text-slate-100">
+          <% game_time_val = @game.next_time || @game.time %>
+          <% if game_time_val.respond_to?(:strftime) %>
+            <time datetime="<%= game_time_val.strftime("%H:%M") %>"><%= display_time(@game) %></time>
+          <% else %>
+            <%= display_time(@game) %>
+          <% end %>
+        </p>
       </div>
 
       <% if @game.respond_to?(:duration_minutes) && @game.duration_minutes.to_i > 0 %>

@@ -43,6 +43,19 @@ class SitemapGeneratorTest < ActiveSupport::TestCase
     assert_not_includes locs(document), "https://getcourt.co/tennis_life/classic"
   end
 
+  test "static indexable pages include reference pages and public directories, excluding noindex pages" do
+    SitemapGenerator.generate!(path: @sitemap_file)
+    document = Nokogiri::XML(File.read(@sitemap_file))
+
+    ApplicationHelper::SEO_INDEXABLE_LOCALES.each do |locale|
+      host = ApplicationHelper.host_for_locale(locale)
+      assert_includes locs(document), "https://#{host}#{api_and_mcp_path}"
+      assert_includes locs(document), "https://#{host}#{tournaments_path}"
+      assert_includes locs(document), "https://#{host}#{coaches_path}"
+      assert_not_includes locs(document), "https://#{host}#{privacy_policy_path}"
+    end
+  end
+
   test "dynamic records include localized urls alternates and lastmod" do
     match = FeaturedMatch.create!(
       tournament_label: "Madrid Open Final",
