@@ -84,6 +84,35 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     assert_includes html, "cursor=#{CGI.escape(cursor.to_param)}"
   end
 
+  test "feed card partials render semantic time elements" do
+    court = Court.create!(name: "Feed Court", city_name: "Belgrade", moderation_status: "approved", approved_at: Time.current)
+    game_date = Date.current + 2.days
+    game = Game.create!(court: court, user: users(:one), date: game_date, time: "18:00")
+    tournament = Tournament.create!(user: users(:one), name: "Feed Cup", players_count: 4, format: "singles", start_date: game_date)
+    match = Match.create!(user: users(:one), opponent: users(:two), mode: "singles", outcome: "win", played_at: Time.current, score: "6-2 6-2")
+
+    # Verify upcoming game card
+    card = TennisLife::Feed::Loader::Card.new(kind: "upcoming_game", id: game.id, record: game, meta: {})
+    rendered = ApplicationController.render(partial: "tennis_life/feed/upcoming_game", locals: { card: card })
+    assert_includes rendered, %(<time datetime="#{game_date.iso8601}">)
+    assert_includes rendered, %(<time datetime="18:00">)
+
+    # Verify tournament card
+    t_card = TennisLife::Feed::Loader::Card.new(kind: "tournament", id: tournament.id, record: tournament, meta: {})
+    t_rendered = ApplicationController.render(partial: "tennis_life/feed/tournament", locals: { card: t_card })
+    assert_includes t_rendered, %(<time datetime="#{game_date.iso8601}">)
+
+    # Verify match card
+    m_card = TennisLife::Feed::Loader::Card.new(kind: "match", id: match.id, record: match, meta: {})
+    m_rendered = ApplicationController.render(partial: "tennis_life/feed/match", locals: { card: m_card })
+    assert_includes m_rendered, %(<time datetime="#{match.played_at.to_date.iso8601}">)
+  ensure
+    match&.destroy
+    tournament&.destroy
+    game&.destroy
+    court&.destroy
+  end
+
   test "index links to full statistics page" do
     match = Match.create!(
       user: users(:one),
@@ -376,6 +405,7 @@ class TennisLifeControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "1492.0"
     assert_includes response.body, "6-4 6-3"
     assert_includes response.body, "Stats Player vs Stats Opponent"
+    assert_select "article time[datetime=?]", match.played_at.iso8601
   ensure
     match&.destroy
   end

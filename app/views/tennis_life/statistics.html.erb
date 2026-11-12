@@ -99,7 +99,11 @@
           <% match_title = match_title_with_guests(match, names_by_id: names_by_id) %>
           <article class="rounded-lg border border-gray-100 p-4 dark:border-white/10">
             <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400">
-              <p><%= match.played_at&.strftime("%Y-%m-%d %H:%M") || "-" %></p>
+              <% if match.played_at.present? %>
+                <p><time datetime="<%= match.played_at.iso8601 %>"><%= match.played_at.strftime("%Y-%m-%d %H:%M") %></time></p>
+              <% else %>
+                <p>-</p>
+              <% end %>
               <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 font-medium text-gray-600 dark:bg-slate-700/60 dark:text-slate-300">
                 <%= match_format_label(match) %>
               </span>
