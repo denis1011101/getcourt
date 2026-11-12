@@ -152,12 +152,12 @@
         <table class="min-w-full divide-y divide-gray-200 dark:divide-white/10">
           <thead class="bg-gray-50 dark:bg-slate-700/50">
             <tr>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">#</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase"><%= t("tournaments.show.player") %></th>
-              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase"><%= t("tournaments.show.wins") %></th>
-              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase"><%= t("tournaments.show.losses") %></th>
-              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase"><%= t("tournaments.show.sets") %></th>
-              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase"><%= t("tournaments.show.games") %></th>
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">#</th>
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase"><%= t("tournaments.show.player") %></th>
+              <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase"><%= t("tournaments.show.wins") %></th>
+              <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase"><%= t("tournaments.show.losses") %></th>
+              <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase"><%= t("tournaments.show.sets") %></th>
+              <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase"><%= t("tournaments.show.games") %></th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 dark:divide-white/10">
@@ -189,11 +189,11 @@
         <table class="min-w-full divide-y divide-gray-200 dark:divide-white/10">
           <thead class="bg-gray-50 dark:bg-slate-700/50">
             <tr>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">#</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase"><%= t("tournaments.show.player_a") %></th>
-              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase"><%= t("tournaments.show.score") %></th>
-              <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase"><%= t("tournaments.show.player_b") %></th>
-              <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase"><%= t("tournaments.show.date") %></th>
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">#</th>
+              <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase"><%= t("tournaments.show.player_a") %></th>
+              <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase"><%= t("tournaments.show.score") %></th>
+              <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase"><%= t("tournaments.show.player_b") %></th>
+              <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase"><%= t("tournaments.show.date") %></th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 dark:divide-white/10">
@@ -215,7 +215,11 @@
                   <% end %>
                   <%= team_b %>
                 </td>
-                <td class="px-4 py-3 text-sm text-right text-gray-500 dark:text-slate-400"><%= match.played_at&.strftime("%d.%m %H:%M") %></td>
+                <td class="px-4 py-3 text-sm text-right text-gray-500 dark:text-slate-400">
+                  <% if match.played_at.present? %>
+                    <time datetime="<%= match.played_at.iso8601 %>"><%= match.played_at.strftime("%d.%m %H:%M") %></time>
+                  <% end %>
+                </td>
               </tr>
             <% end %>
           </tbody>

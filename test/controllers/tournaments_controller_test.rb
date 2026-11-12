@@ -464,7 +464,23 @@ class TournamentsControllerTest < ActionDispatch::IntegrationTest
     assert_select "time[datetime=?]", tournament.start_date.iso8601
     assert_select "time[datetime='14:00']"
     assert_select "time[datetime=?]", tournament.end_date.iso8601
+
+    played_at = Time.current
+    match = TournamentMatch.create!(
+      tournament: tournament,
+      player_a: @organizer,
+      player_b: @participant,
+      score: "6-4 6-3",
+      result: "player_a",
+      played_at: played_at
+    )
+
+    get tournament_url(tournament)
+    assert_response :success
+    assert_select "table th[scope='col']"
+    assert_select "table time[datetime=?]", played_at.iso8601
   ensure
+    match&.destroy
     tournament&.destroy
   end
 end
