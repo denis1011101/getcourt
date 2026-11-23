@@ -50,13 +50,14 @@ class CourtsController < ApplicationController
     end
 
     @approved_photos = @court.court_photos.approved.ordered.includes(file_attachment: :blob)
-    @pending_photos = if current_user&.admin?
-                        @court.court_photos.pending.ordered.includes(:user, file_attachment: :blob)
-                      elsif current_user.present?
-                        @court.court_photos.pending.where(user: current_user).ordered.includes(file_attachment: :blob)
-                      else
-                        CourtPhoto.none
-                      end
+    @pending_photos =
+      if current_user&.admin?
+        @court.court_photos.pending.ordered.includes(:user, file_attachment: :blob)
+      elsif current_user.present?
+        @court.court_photos.pending.where(user: current_user).ordered.includes(file_attachment: :blob)
+      else
+        CourtPhoto.none
+      end
     @active_photos_count = @court.court_photos.active.count
   end
 

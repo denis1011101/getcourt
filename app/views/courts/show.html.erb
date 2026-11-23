@@ -110,23 +110,21 @@
     <div class="lg:col-span-1 space-y-4">
       <div class="bg-white rounded-xl border overflow-hidden dark:bg-slate-800/80 dark:border-white/10">
         <% lat, lng = @court.coordinates.to_s.split(",").map(&:to_f) %>
+        <% slider_items = @approved_photos.filter_map { |photo| (variant = photo.display_variant) ? [ photo, variant ] : nil } %>
 
-        <% if @approved_photos.any? %>
+        <% if slider_items.any? %>
           <div data-controller="court-photos-slider"
                data-action="mouseenter->court-photos-slider#pause mouseleave->court-photos-slider#resume"
                class="relative">
             <div data-court-photos-slider-target="photosView" class="relative h-48 w-full overflow-hidden bg-slate-900">
-              <% @approved_photos.each_with_index do |photo, idx| %>
-                <% variant = photo.display_variant %>
-                <% if variant %>
-                  <div data-court-photos-slider-target="slide"
-                       class="absolute inset-0 transition-opacity duration-700 ease-in-out <%= idx.zero? ? 'opacity-100' : 'opacity-0 pointer-events-none' %>">
-                    <%= image_tag variant, alt: @court.name, class: "h-full w-full object-cover" %>
-                  </div>
-                <% end %>
+              <% slider_items.each_with_index do |(_photo, variant), idx| %>
+                <div data-court-photos-slider-target="slide"
+                     class="absolute inset-0 transition-opacity duration-700 ease-in-out <%= idx.zero? ? 'opacity-100' : 'opacity-0 pointer-events-none' %>">
+                  <%= image_tag variant, alt: @court.name, class: "h-full w-full object-cover" %>
+                </div>
               <% end %>
 
-              <% if @approved_photos.size > 1 %>
+              <% if slider_items.size > 1 %>
                 <button type="button"
                         data-action="click->court-photos-slider#prev"
                         aria-label="<%= t('courts.photos.prev') %>"
@@ -145,7 +143,7 @@
                 </button>
 
                 <div class="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 rounded-full bg-black/35 px-2 py-1">
-                  <% @approved_photos.each_with_index do |_, idx| %>
+                  <% slider_items.each_with_index do |_, idx| %>
                     <button type="button"
                             data-court-photos-slider-target="dot"
                             data-index="<%= idx %>"
