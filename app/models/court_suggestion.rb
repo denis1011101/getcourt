@@ -12,10 +12,10 @@ class CourtSuggestion < ApplicationRecord
     conditions: -> { where(status: "pending") },
     message: :pending_exists
   }
-  before_validation :normalize_payload_coordinates
+  before_validation :normalize_payload_coordinates, if: :will_save_change_to_payload?
   validate :payload_present, on: :create
   validate :payload_fields_are_editable
-  validate :payload_coordinates_valid
+  validate :payload_coordinates_valid, if: :will_save_change_to_payload?
 
   scope :pending, -> { where(status: "pending") }
 

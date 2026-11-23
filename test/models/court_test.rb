@@ -217,6 +217,11 @@ class CourtTest < ActiveSupport::TestCase
 
     trailing_comma_court = Court.new(name: "Comma Coord Court", coordinates: "55.75,")
     assert_not trailing_comma_court.valid?
+
+    existing = courts(:one)
+    existing.update_columns(coordinates: "55.7500001,37.6200001")
+    existing.update!(name: "Renamed Without Moving")
+    assert_equal "55.7500001,37.6200001", existing.reload.coordinates
   end
 
   def court_in_moscow

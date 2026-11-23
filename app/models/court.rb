@@ -25,7 +25,7 @@ class Court < ApplicationRecord
   SURFACES = %w[hard clay grass artificial_grass rubber teraflex].freeze
 
   before_validation :normalize_surfaces
-  before_validation :normalize_coordinates
+  before_validation :normalize_coordinates, if: :will_save_change_to_coordinates?
   validate :surfaces_are_valid
   validate :coordinates_format_valid, if: :will_save_change_to_coordinates?
 
