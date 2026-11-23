@@ -26,7 +26,9 @@ class Court < ApplicationRecord
   SURFACES = %w[hard clay grass artificial_grass rubber teraflex].freeze
 
   before_validation :normalize_surfaces
+  before_validation :normalize_coordinates, if: :will_save_change_to_coordinates?
   validate :surfaces_are_valid
+  validate :coordinates_format_valid, if: :will_save_change_to_coordinates?
 
   # Город и страна выведены из координат: после их реальной смены прежняя
   # связь уже не про этот корт. Новую запишет FetchCourtAddressJob.
@@ -304,5 +306,43 @@ class Court < ApplicationRecord
     parts = str.to_s.split(",").map { |s| (Float(s) rescue nil) }
     return nil if parts.length < 2 || parts.any?(&:nil?)
     [ parts[0], parts[1] ]
+  end
+
+  def self.parse_exact_pair(str)
+    parts = str.to_s.strip.split(/[\s,;]+/)
+    return nil unless parts.length == 2 && parts.none?(&:blank?)
+
+    lat = Float(parts[0]) rescue nil
+    lng = Float(parts[1]) rescue nil
+    return nil unless lat&.finite? && lng&.finite?
+
+    [ lat, lng ]
+  end
+
+  def self.normalize_coordinates_string(str)
+    pair = parse_exact_pair(str)
+    return nil unless pair
+
+    format("%.6f,%.6f", pair[0], pair[1])
+  end
+
+  def self.valid_coordinates?(str)
+    pair = parse_exact_pair(str)
+    return false unless pair
+
+    pair[0].between?(-90, 90) && pair[1].between?(-180, 180)
+  end
+
+  def normalize_coordinates
+    return if coordinates.blank?
+
+    normalized = self.class.normalize_coordinates_string(coordinates)
+    self.coordinates = normalized if normalized
+  end
+
+  def coordinates_format_valid
+    return if coordinates.blank?
+
+    errors.add(:coordinates, :invalid) unless self.class.valid_coordinates?(coordinates)
   end
 end

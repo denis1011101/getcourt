@@ -511,6 +511,9 @@ es:
       section_amenities: Servicios
       use_my_location: Usar mi ubicación
       map_hint: Pulsa en el mapa o arrastra el marcador
+      coordinates_label: Coordenadas (latitud, longitud)
+      coordinates_placeholder: "56.838011, 60.597465"
+      coordinates_hint: Pega las coordenadas de Google Maps — el marcador se moverá automáticamente.
       contacts: Contactos
       contacts_hint: Hasta 5 contactos, cada uno con su tipo.
       contact_type: Tipo de contacto %{number}

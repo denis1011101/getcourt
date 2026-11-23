@@ -12,8 +12,10 @@ class CourtSuggestion < ApplicationRecord
     conditions: -> { where(status: "pending") },
     message: :pending_exists
   }
+  before_validation :normalize_payload_coordinates, if: :will_save_change_to_payload?
   validate :payload_present, on: :create
   validate :payload_fields_are_editable
+  validate :payload_coordinates_valid, if: :will_save_change_to_payload?
 
   scope :pending, -> { where(status: "pending") }
 
@@ -67,5 +69,19 @@ class CourtSuggestion < ApplicationRecord
 
     invalid_fields = payload.to_h.keys.map(&:to_s) - EDITABLE_FIELDS
     errors.add(:payload, :invalid_fields) if invalid_fields.any?
+  end
+
+  def normalize_payload_coordinates
+    return unless payload.is_a?(Hash) && payload["coordinates"].present?
+
+    normalized = Court.normalize_coordinates_string(payload["coordinates"])
+    payload["coordinates"] = normalized if normalized
+  end
+
+  def payload_coordinates_valid
+    return unless payload.is_a?(Hash) && payload["coordinates"].present?
+    return if Court.valid_coordinates?(payload["coordinates"])
+
+    errors.add(:base, I18n.t("activerecord.errors.messages.invalid", default: "Coordinates are invalid"))
   end
 end

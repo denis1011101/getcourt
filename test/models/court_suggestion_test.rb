@@ -1,6 +1,34 @@
 require "test_helper"
 
 class CourtSuggestionTest < ActiveSupport::TestCase
+  test "rejects invalid coordinates in suggestion payload" do
+    court = courts(:one)
+    court.update!(moderation_status: "approved")
+    user = User.create!(name: "Suggester", email: "suggester-coord@example.com")
+
+    bad = court.court_suggestions.build(user: user, payload: { "coordinates" => "95,60" })
+    assert_not bad.valid?
+
+    extra = court.court_suggestions.build(user: user, payload: { "coordinates" => "56,60,123" })
+    assert_not extra.valid?
+
+    good = court.court_suggestions.build(user: user, payload: { "coordinates" => "56.838011; 60.597465" })
+    assert good.valid?
+    assert_equal "56.838011,60.597465", good.payload["coordinates"]
+  end
+
+  test "admin can reject legacy pending suggestion with invalid coordinates" do
+    court = courts(:one)
+    court.update!(moderation_status: "approved")
+    user = User.create!(name: "Legacy Suggester", email: "legacy-suggester@example.com")
+    admin = User.create!(name: "Legacy Admin", email: "legacy-admin@example.com", admin: true)
+
+    legacy = court.court_suggestions.build(user: user, payload: { "coordinates" => "95,60" })
+    legacy.save!(validate: false)
+
+    assert legacy.reject_by!(admin)
+    assert_equal "rejected", legacy.reload.status
+  end
   test "requires a changed field" do
     suggestion = CourtSuggestion.new(court: courts(:one), user: users(:one), payload: {})
 

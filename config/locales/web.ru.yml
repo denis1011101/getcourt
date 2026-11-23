@@ -515,6 +515,9 @@ ru:
       section_amenities: Удобства
       use_my_location: Моё местоположение
       map_hint: Нажмите на карту или перетащите маркер
+      coordinates_label: Координаты (широта, долгота)
+      coordinates_placeholder: "56.838011, 60.597465"
+      coordinates_hint: Можно вставить координаты из Google Карт или Яндекс.Карт — маркер сразу переместится.
       contacts: Контакты
       contacts_hint: До 5 контактов, у каждого свой тип.
       contact_type: Тип контакта %{number}

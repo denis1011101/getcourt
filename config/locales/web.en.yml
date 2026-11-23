@@ -507,6 +507,9 @@ en:
       section_amenities: Amenities
       use_my_location: Use my location
       map_hint: Click on the map or drag the marker
+      coordinates_label: Coordinates (latitude, longitude)
+      coordinates_placeholder: "56.838011, 60.597465"
+      coordinates_hint: Paste coordinates from Google Maps or Yandex Maps — the marker will move automatically.
       contacts: Contacts
       contacts_hint: Up to 5 contacts, each with its own type.
       contact_type: Contact type %{number}

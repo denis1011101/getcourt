@@ -47,15 +47,42 @@ export default class extends Controller {
       this._setPoint(e.latLng.lat(), e.latLng.lng())
     })
 
-    if (!initial) this._writeCoords(lat, lng)
+    if (!this.coordinatesTarget.value.trim()) this._writeCoords(lat, lng)
   }
 
   syncFromInput() {
-    const c = this._readCoords(this.coordinatesTarget.value)
-    if (!c || !this.map) return
+    const raw = this.coordinatesTarget.value.trim()
+    if (!raw) {
+      this._setInvalidState(false)
+      return
+    }
+
+    const c = this._readCoords(raw)
+    if (!c) return
+
+    this._setInvalidState(false)
+    if (!this.map || !this.marker) return
+
     const pos = new google.maps.LatLng(c.lat, c.lng)
     this.marker.setPosition(pos)
-    this.map.setCenter(pos)
+    this.map.panTo(pos)
+  }
+
+  normalizeInput() {
+    const raw = this.coordinatesTarget.value.trim()
+    if (!raw) {
+      this._setInvalidState(false)
+      return
+    }
+
+    const c = this._readCoords(raw)
+    if (!c) {
+      this._setInvalidState(true)
+      return
+    }
+
+    this._setInvalidState(false)
+    this._writeCoords(c.lat, c.lng)
   }
 
   geolocate() {
@@ -71,18 +98,33 @@ export default class extends Controller {
   }
 
   _setPoint(lat, lng) {
+    this._setInvalidState(false)
     this._writeCoords(lat, lng)
   }
 
   _writeCoords(lat, lng) {
-    this.coordinatesTarget.value = `${lat.toFixed(6)},${lng.toFixed(6)}`
+    this.coordinatesTarget.value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`
   }
 
   _readCoords(v) {
     if (!v) return null
-    const parts = v.split(",").map(s => parseFloat(s.trim()))
-    if (parts.length !== 2 || !Number.isFinite(parts[0]) || !Number.isFinite(parts[1])) return null
-    return { lat: parts[0], lng: parts[1] }
+    const parts = v.trim().split(/[\s,;]+/)
+    if (parts.length !== 2 || !parts[0] || !parts[1]) return null
+
+    const numberPattern = /^-?\d+(?:\.\d+)?$/
+    if (!numberPattern.test(parts[0]) || !numberPattern.test(parts[1])) return null
+
+    const lat = Number(parts[0])
+    const lng = Number(parts[1])
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null
+
+    return { lat, lng }
+  }
+
+  _setInvalidState(invalid) {
+    this.coordinatesTarget.classList.toggle("border-red-500", invalid)
+    this.coordinatesTarget.classList.toggle("dark:border-red-400", invalid)
   }
 
   disconnect() {
