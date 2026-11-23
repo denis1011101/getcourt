@@ -1,0 +1,64 @@
+<% if user_signed_in? || @pending_photos.any? || (current_user&.admin? && @approved_photos.any?) %>
+  <div class="bg-white rounded-xl border p-4 space-y-3 dark:bg-slate-800/80 dark:border-white/10">
+    <div class="flex items-center justify-between">
+      <h3 class="text-sm font-semibold text-gray-900 dark:text-slate-100"><%= t("courts.photos.title") %></h3>
+      <span class="text-xs text-gray-400 dark:text-slate-500"><%= @active_photos_count %> / <%= CourtPhoto::MAX_PHOTOS_PER_COURT %></span>
+    </div>
+
+    <% if @pending_photos.any? %>
+      <div class="space-y-2">
+        <% @pending_photos.each do |photo| %>
+          <div class="flex items-center gap-3 rounded-lg border border-yellow-200 bg-yellow-50/70 p-2 dark:border-yellow-500/20 dark:bg-yellow-500/10">
+            <% if (variant = photo.display_variant) %>
+              <%= image_tag variant, alt: court.name, class: "h-12 w-16 rounded object-cover flex-shrink-0" %>
+            <% end %>
+            <div class="min-w-0 flex-1">
+              <p class="text-xs font-medium text-yellow-800 dark:text-yellow-200"><%= t("courts.photos.pending_badge") %></p>
+              <% if current_user&.admin? && photo.user.present? %>
+                <p class="text-xs text-gray-500 dark:text-slate-400 truncate"><%= photo.user.try(:name).presence || photo.user.try(:telegram_username).presence || "##{photo.user_id}" %></p>
+              <% end %>
+            </div>
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              <% if current_user&.admin? %>
+                <%= button_to t("common.approve"), approve_court_photo_path(court, photo), method: :post, class: "rounded-full bg-green-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-green-700 transition" %>
+                <%= button_to t("common.reject"), reject_court_photo_path(court, photo), method: :post, class: "rounded-full bg-red-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-red-700 transition" %>
+              <% elsif photo.user_id == current_user&.id %>
+                <%= button_to t("common.delete"), court_photo_path(court, photo), method: :delete, class: "rounded-full border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/10 transition" %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if current_user&.admin? && @approved_photos.any? %>
+      <div class="grid grid-cols-3 gap-2">
+        <% @approved_photos.each do |photo| %>
+          <div class="relative group rounded-lg overflow-hidden border dark:border-white/10">
+            <% if (variant = photo.display_variant) %>
+              <%= image_tag variant, alt: court.name, class: "h-14 w-full object-cover" %>
+            <% end %>
+            <%= button_to "×", court_photo_path(court, photo), method: :delete,
+                  data: { turbo_confirm: t("courts.photos.delete_confirm") },
+                  title: t("common.delete"),
+                  class: "absolute top-1 right-1 h-5 w-5 rounded-full bg-black/65 text-white text-xs leading-none flex items-center justify-center hover:bg-red-600 transition" %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if user_signed_in? %>
+      <% if @active_photos_count < CourtPhoto::MAX_PHOTOS_PER_COURT %>
+        <%= form_with model: [ court, CourtPhoto.new ], url: court_photos_path(court), class: "space-y-2" do |f| %>
+          <%= f.file_field :file,
+                accept: "image/jpeg,image/png,image/webp",
+                required: true,
+                class: "block w-full text-xs text-gray-500 dark:text-slate-400 file:mr-3 file:rounded-full file:border-0 file:bg-indigo-50 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-indigo-500/15 dark:file:text-indigo-200" %>
+          <%= f.submit t("courts.photos.upload_cta"), class: "w-full rounded-full bg-indigo-600 px-4 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition cursor-pointer" %>
+        <% end %>
+      <% else %>
+        <p class="text-xs text-gray-500 dark:text-slate-400"><%= t("courts.photos.limit_reached", count: CourtPhoto::MAX_PHOTOS_PER_COURT) %></p>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

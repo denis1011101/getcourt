@@ -483,6 +483,22 @@ ru:
       no_coordinates: Координаты недоступны
       create_game: Создать игру
       sign_in_to_create_game: Войдите, чтобы создать игру
+    photos:
+      title: Фотографии корта
+      tab_photos: Фото
+      tab_map: Карта
+      prev: Предыдущее фото
+      next: Следующее фото
+      slide: "Фото %{number}"
+      upload_cta: Добавить фото
+      pending_badge: На модерации
+      pending_notice: Фото отправлено на модерацию.
+      approved_notice: Фото одобрено.
+      rejected_notice: Фото отклонено.
+      deleted_notice: Фото удалено.
+      review_failed: Не удалось обновить статус фото.
+      delete_confirm: Удалить это фото?
+      limit_reached: "Достигнут лимит: не более %{count} фото."
     form:
       errors:
         one: "%{count} ошибка помешала сохранить корт:"

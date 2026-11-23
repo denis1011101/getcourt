@@ -4,6 +4,7 @@ class Court < ApplicationRecord
   has_many :games, dependent: :destroy
   has_many :favorite_court_links, class_name: "FavoriteCourt", dependent: :destroy
   has_many :court_suggestions, dependent: :destroy
+  has_many :court_photos, dependent: :destroy
   has_many :ratings, class_name: "CourtRating", dependent: :destroy
   has_many :fans, through: :favorite_court_links, source: :user
   validates :name, presence: true

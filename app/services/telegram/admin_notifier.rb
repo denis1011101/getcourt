@@ -27,6 +27,17 @@ module Telegram
       )
     end
 
+    def self.notify_court_photo(photo, base_url:)
+      host = base_url.to_s.presence || ENV["APP_HOST"].to_s.presence
+      return if host.blank?
+
+      send_message(
+        :admin_court_photo,
+        name: photo.court.name,
+        url: "#{host}/courts/#{photo.court_id}"
+      )
+    end
+
     def self.notify_ugc_report(target_type:, target_id:, author:, reporter:, reason:, url:)
       res = send_message(
         :admin_ugc_report,

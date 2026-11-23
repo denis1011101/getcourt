@@ -479,6 +479,22 @@ es:
       no_coordinates: Coordenadas no disponibles
       create_game: Crear partido
       sign_in_to_create_game: Inicia sesión para crear un partido
+    photos:
+      title: Fotos de la pista
+      tab_photos: Fotos
+      tab_map: Mapa
+      prev: Foto anterior
+      next: Siguiente foto
+      slide: "Foto %{number}"
+      upload_cta: Añadir foto
+      pending_badge: En moderación
+      pending_notice: Foto enviada a moderación.
+      approved_notice: Foto aprobada.
+      rejected_notice: Foto rechazada.
+      deleted_notice: Foto eliminada.
+      review_failed: No se pudo actualizar el estado de la foto.
+      delete_confirm: "¿Eliminar esta foto?"
+      limit_reached: "Se alcanzó el límite de %{count} fotos."
     form:
       errors:
         one: '1 error impidió guardar la pista:'
