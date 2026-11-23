@@ -475,6 +475,22 @@ en:
       no_coordinates: Coordinates not available
       create_game: Create Game
       sign_in_to_create_game: Sign in to Create Game
+    photos:
+      title: Court photos
+      tab_photos: Photos
+      tab_map: Map
+      prev: Previous photo
+      next: Next photo
+      slide: "Photo %{number}"
+      upload_cta: Add photo
+      pending_badge: Pending approval
+      pending_notice: Photo submitted for moderation.
+      approved_notice: Photo approved.
+      rejected_notice: Photo rejected.
+      deleted_notice: Photo deleted.
+      review_failed: Could not update photo status.
+      delete_confirm: Delete this photo?
+      limit_reached: "Maximum of %{count} photos reached."
     form:
       errors:
         one: '1 error prohibited this court from being saved:'

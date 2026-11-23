@@ -100,6 +100,12 @@ Rails.application.routes.draw do
     # Named `corrections` so the helpers stay distinct from the top-level
     # court_suggestions index below, which owns court_suggestions_path.
     resources :suggestions, only: %i[new create], controller: "court_suggestions", as: :corrections
+    resources :photos, only: %i[create destroy], controller: "court_photos" do
+      member do
+        post :approve
+        post :reject
+      end
+    end
     resource :rating, only: %i[create destroy], controller: "court_ratings"
   end
   resources :court_suggestions, only: %i[index show] do

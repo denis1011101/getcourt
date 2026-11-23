@@ -110,17 +110,93 @@
     <div class="lg:col-span-1 space-y-4">
       <div class="bg-white rounded-xl border overflow-hidden dark:bg-slate-800/80 dark:border-white/10">
         <% lat, lng = @court.coordinates.to_s.split(",").map(&:to_f) %>
+        <% slider_items = @approved_photos.filter_map { |photo| (variant = photo.display_variant) ? [ photo, variant ] : nil } %>
 
-        <%= render "shared/map_panel" do %>
-          <% if lat && lng && !(lat.zero? && lng.zero?) %>
-            <div data-controller="map-show"
-                 data-map-show-lat-value="<%= lat %>"
-                 data-map-show-lng-value="<%= lng %>"
-                 class="h-48 w-full"></div>
-          <% else %>
-            <div class="h-48 w-full bg-gray-50 dark:bg-slate-700 flex items-center justify-center text-gray-400 dark:text-slate-500">
-              <%= t("courts.show.no_coordinates") %>
+        <% if slider_items.any? %>
+          <div data-controller="court-photos-slider"
+               data-action="mouseenter->court-photos-slider#pause mouseleave->court-photos-slider#resume"
+               class="relative">
+            <div data-court-photos-slider-target="photosView" class="relative h-48 w-full overflow-hidden bg-slate-900">
+              <% slider_items.each_with_index do |(_photo, variant), idx| %>
+                <div data-court-photos-slider-target="slide"
+                     class="absolute inset-0 transition-opacity duration-700 ease-in-out <%= idx.zero? ? 'opacity-100' : 'opacity-0 pointer-events-none' %>">
+                  <%= image_tag variant, alt: @court.name, class: "h-full w-full object-cover" %>
+                </div>
+              <% end %>
+
+              <% if slider_items.size > 1 %>
+                <button type="button"
+                        data-action="click->court-photos-slider#prev"
+                        aria-label="<%= t('courts.photos.prev') %>"
+                        class="absolute left-2 top-1/2 -translate-y-1/2 z-10 rounded-full bg-black/45 p-1.5 text-white hover:bg-black/65 transition">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/>
+                  </svg>
+                </button>
+                <button type="button"
+                        data-action="click->court-photos-slider#next"
+                        aria-label="<%= t('courts.photos.next') %>"
+                        class="absolute right-2 top-1/2 -translate-y-1/2 z-10 rounded-full bg-black/45 p-1.5 text-white hover:bg-black/65 transition">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+                  </svg>
+                </button>
+
+                <div class="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5 rounded-full bg-black/35 px-2 py-1">
+                  <% slider_items.each_with_index do |_, idx| %>
+                    <button type="button"
+                            data-court-photos-slider-target="dot"
+                            data-index="<%= idx %>"
+                            data-action="click->court-photos-slider#goTo"
+                            aria-label="<%= t('courts.photos.slide', number: idx + 1) %>"
+                            class="h-1.5 rounded-full transition-all duration-300 <%= idx.zero? ? 'w-4 bg-white' : 'w-1.5 bg-white/50' %>"></button>
+                  <% end %>
+                </div>
+              <% end %>
             </div>
+
+            <div data-court-photos-slider-target="mapView" class="hidden">
+              <%= render "shared/map_panel" do %>
+                <% if lat && lng && !(lat.zero? && lng.zero?) %>
+                  <div data-controller="map-show"
+                       data-map-show-lat-value="<%= lat %>"
+                       data-map-show-lng-value="<%= lng %>"
+                       class="h-48 w-full"></div>
+                <% else %>
+                  <div class="h-48 w-full bg-gray-50 dark:bg-slate-700 flex items-center justify-center text-gray-400 dark:text-slate-500">
+                    <%= t("courts.show.no_coordinates") %>
+                  </div>
+                <% end %>
+              <% end %>
+            </div>
+
+            <div class="absolute top-2 right-2 z-20 inline-flex rounded-full bg-black/55 p-0.5 text-xs font-medium backdrop-blur-sm">
+              <button type="button"
+                      data-court-photos-slider-target="togglePhotosBtn"
+                      data-action="click->court-photos-slider#showPhotos"
+                      class="rounded-full px-2.5 py-1 bg-white text-gray-900 transition">
+                <%= t("courts.photos.tab_photos") %>
+              </button>
+              <button type="button"
+                      data-court-photos-slider-target="toggleMapBtn"
+                      data-action="click->court-photos-slider#showMap"
+                      class="rounded-full px-2.5 py-1 text-white transition">
+                <%= t("courts.photos.tab_map") %>
+              </button>
+            </div>
+          </div>
+        <% else %>
+          <%= render "shared/map_panel" do %>
+            <% if lat && lng && !(lat.zero? && lng.zero?) %>
+              <div data-controller="map-show"
+                   data-map-show-lat-value="<%= lat %>"
+                   data-map-show-lng-value="<%= lng %>"
+                   class="h-48 w-full"></div>
+            <% else %>
+              <div class="h-48 w-full bg-gray-50 dark:bg-slate-700 flex items-center justify-center text-gray-400 dark:text-slate-500">
+                <%= t("courts.show.no_coordinates") %>
+              </div>
+            <% end %>
           <% end %>
         <% end %>
 
@@ -181,6 +257,7 @@
       </div>
 
       <%= render "courts/rating", court: @court %>
+      <%= render "courts/photos_manage", court: @court %>
     </div>
 
     <!-- Right column: Games at this court -->
