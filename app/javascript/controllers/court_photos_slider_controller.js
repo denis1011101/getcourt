@@ -20,20 +20,20 @@ export default class extends Controller {
   next() {
     if (this.slideTargets.length <= 1) return
     this.showSlide((this.index + 1) % this.slideTargets.length)
-    this.restartAutoplay()
+    this.startAutoplay()
   }
 
   prev() {
     if (this.slideTargets.length <= 1) return
     this.showSlide((this.index - 1 + this.slideTargets.length) % this.slideTargets.length)
-    this.restartAutoplay()
+    this.startAutoplay()
   }
 
   goTo(event) {
     const idx = parseInt(event.currentTarget.dataset.index, 10)
     if (Number.isNaN(idx)) return
     this.showSlide(idx)
-    this.restartAutoplay()
+    this.startAutoplay()
   }
 
   pause() {

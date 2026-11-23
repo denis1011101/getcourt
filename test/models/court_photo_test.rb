@@ -67,6 +67,26 @@ class CourtPhotoTest < ActiveSupport::TestCase
     assert another.reload.rejected?
   end
 
+  test "destroying author destroys their photos and destroying admin nullifies reviewed_by" do
+    photo_by_user = @court.court_photos.build(user: @user, status: "pending")
+    attach_png(photo_by_user)
+    photo_by_user.save!
+
+    reviewer_other_user = User.create!(name: "Second Author", email: "second-author@example.com")
+    reviewed_photo = @court.court_photos.build(user: reviewer_other_user, status: "pending")
+    attach_png(reviewed_photo)
+    reviewed_photo.save!
+    assert reviewed_photo.approve_by!(@admin)
+
+    assert_difference -> { CourtPhoto.count }, -1 do
+      @user.destroy!
+    end
+
+    @admin.destroy!
+    assert_nil reviewed_photo.reload.reviewed_by_id
+    assert reviewed_photo.approved?
+  end
+
   private
 
   def attach_png(photo)
