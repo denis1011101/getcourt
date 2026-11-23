@@ -197,6 +197,22 @@ class CourtTest < ActiveSupport::TestCase
 
   private
 
+  test "normalizes coordinates with spaces or semicolons and validates range" do
+    court = Court.new(name: "Coord Court", coordinates: "56.838011; 60.597465")
+    assert court.valid?
+    assert_equal "56.838011,60.597465", court.coordinates
+
+    space_court = Court.new(name: "Space Coord Court", coordinates: "56.838011 60.597465")
+    assert space_court.valid?
+    assert_equal "56.838011,60.597465", space_court.coordinates
+
+    invalid_court = Court.new(name: "Bad Coord Court", coordinates: "95.0, 60.0")
+    assert_not invalid_court.valid?
+
+    garbage_court = Court.new(name: "Garbage Coord Court", coordinates: "not-coords")
+    assert_not garbage_court.valid?
+  end
+
   def court_in_moscow
     moscow = City.create!(name: "Moscow", asciiname: "Moscow", country_code: "RU", geoname_id: 524901)
     court = courts(:one)
