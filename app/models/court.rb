@@ -307,25 +307,41 @@ class Court < ApplicationRecord
     [ parts[0], parts[1] ]
   end
 
-  def normalize_coordinates
-    return if coordinates.blank?
-
-    parts = coordinates.to_s.strip.split(/[\s,;]+/)
-    return unless parts.length == 2
+  def self.parse_exact_pair(str)
+    parts = str.to_s.strip.split(/[\s,;]+/)
+    return nil unless parts.length == 2 && parts.none?(&:blank?)
 
     lat = Float(parts[0]) rescue nil
     lng = Float(parts[1]) rescue nil
-    return unless lat && lng
+    return nil unless lat&.finite? && lng&.finite?
 
-    self.coordinates = format("%.6f,%.6f", lat, lng)
+    [ lat, lng ]
+  end
+
+  def self.normalize_coordinates_string(str)
+    pair = parse_exact_pair(str)
+    return nil unless pair
+
+    format("%.6f,%.6f", pair[0], pair[1])
+  end
+
+  def self.valid_coordinates?(str)
+    pair = parse_exact_pair(str)
+    return false unless pair
+
+    pair[0].between?(-90, 90) && pair[1].between?(-180, 180)
+  end
+
+  def normalize_coordinates
+    return if coordinates.blank?
+
+    normalized = self.class.normalize_coordinates_string(coordinates)
+    self.coordinates = normalized if normalized
   end
 
   def coordinates_format_valid
     return if coordinates.blank?
 
-    pair = self.class.parse_pair(coordinates)
-    if pair.nil? || !pair[0].between?(-90, 90) || !pair[1].between?(-180, 180)
-      errors.add(:coordinates, :invalid)
-    end
+    errors.add(:coordinates, :invalid) unless self.class.valid_coordinates?(coordinates)
   end
 end

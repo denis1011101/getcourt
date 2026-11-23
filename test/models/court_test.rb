@@ -211,6 +211,12 @@ class CourtTest < ActiveSupport::TestCase
 
     garbage_court = Court.new(name: "Garbage Coord Court", coordinates: "not-coords")
     assert_not garbage_court.valid?
+
+    extra_part_court = Court.new(name: "Extra Coord Court", coordinates: "56,60,123")
+    assert_not extra_part_court.valid?
+
+    trailing_comma_court = Court.new(name: "Comma Coord Court", coordinates: "55.75,")
+    assert_not trailing_comma_court.valid?
   end
 
   def court_in_moscow

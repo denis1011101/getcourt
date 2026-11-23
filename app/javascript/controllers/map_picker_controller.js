@@ -47,7 +47,7 @@ export default class extends Controller {
       this._setPoint(e.latLng.lat(), e.latLng.lng())
     })
 
-    if (!initial) this._writeCoords(lat, lng)
+    if (!this.coordinatesTarget.value.trim()) this._writeCoords(lat, lng)
   }
 
   syncFromInput() {
@@ -109,7 +109,10 @@ export default class extends Controller {
   _readCoords(v) {
     if (!v) return null
     const parts = v.trim().split(/[\s,;]+/)
-    if (parts.length !== 2) return null
+    if (parts.length !== 2 || !parts[0] || !parts[1]) return null
+
+    const numberPattern = /^-?\d+(?:\.\d+)?$/
+    if (!numberPattern.test(parts[0]) || !numberPattern.test(parts[1])) return null
 
     const lat = Number(parts[0])
     const lng = Number(parts[1])
