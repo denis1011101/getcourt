@@ -132,7 +132,8 @@
                      data-slide-index="<%= idx %>"
                      data-action="click->court-photos-slider#openLightbox keydown.enter->court-photos-slider#openLightbox keydown.space->court-photos-slider#openLightbox:prevent"
                      role="button"
-                     tabindex="0"
+                     tabindex="<%= idx.zero? ? 0 : -1 %>"
+                     aria-hidden="<%= idx.zero? ? 'false' : 'true' %>"
                      aria-label="<%= t('courts.photos.slide', number: idx + 1) %>"
                      class="absolute inset-0 transition-opacity duration-700 ease-in-out <%= idx.zero? ? 'opacity-100' : 'opacity-0 pointer-events-none' %>">
                   <%= image_tag variant, alt: @court.name, class: "h-full w-full object-cover" %>
@@ -155,10 +156,12 @@
                          class="h-full w-full"></div>
                   <% end %>
                   <!-- Transparent overlay to ensure clicking and swiping over map triggers lightbox and slider -->
-                  <div data-open-type="map"
+                  <div data-court-photos-slider-target="mapOverlay"
+                       data-open-type="map"
                        data-action="click->court-photos-slider#openLightbox keydown.enter->court-photos-slider#openLightbox keydown.space->court-photos-slider#openLightbox:prevent"
                        role="button"
-                       tabindex="0"
+                       tabindex="-1"
+                       aria-hidden="true"
                        aria-label="<%= t('courts.photos.tab_map') %>"
                        class="absolute inset-0 z-10 cursor-pointer"></div>
                   <div class="absolute bottom-2.5 right-2.5 z-10 pointer-events-none rounded-full bg-black/55 px-2 py-1 text-[11px] text-white/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shadow">
@@ -368,10 +371,12 @@
                          data-map-show-lng-value="<%= lng %>"
                          class="h-56 w-full"></div>
                   <% end %>
-                  <div data-open-type="map"
+                  <div data-court-photos-slider-target="mapOverlay"
+                       data-open-type="map"
                        data-action="click->court-photos-slider#openLightbox keydown.enter->court-photos-slider#openLightbox keydown.space->court-photos-slider#openLightbox:prevent"
                        role="button"
                        tabindex="0"
+                       aria-hidden="false"
                        aria-label="<%= t('courts.photos.tab_map') %>"
                        class="absolute inset-0 z-10 cursor-pointer"></div>
                 </div>

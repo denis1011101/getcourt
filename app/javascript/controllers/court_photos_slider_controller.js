@@ -5,6 +5,7 @@ export default class extends Controller {
     "viewport",
     "slide",
     "mapSlide",
+    "mapOverlay",
     "dot",
     "togglePhotosBtn",
     "toggleMapBtn",
@@ -158,11 +159,19 @@ export default class extends Controller {
         slide.classList.toggle("opacity-100", active)
         slide.classList.toggle("opacity-0", !active)
         slide.classList.toggle("pointer-events-none", !active)
+        slide.setAttribute("tabindex", active ? "0" : "-1")
+        slide.setAttribute("aria-hidden", (!active).toString())
       })
 
       if (this.hasMapSlideTarget) {
         this.mapSlideTarget.classList.add("opacity-0", "pointer-events-none")
         this.mapSlideTarget.classList.remove("opacity-100", "pointer-events-auto")
+        this.mapSlideTarget.setAttribute("aria-hidden", "true")
+      }
+
+      if (this.hasMapOverlayTarget) {
+        this.mapOverlayTarget.setAttribute("tabindex", "-1")
+        this.mapOverlayTarget.setAttribute("aria-hidden", "true")
       }
     } else {
       this.isShowingMap = true
@@ -170,12 +179,20 @@ export default class extends Controller {
       this.slideTargets.forEach(slide => {
         slide.classList.add("opacity-0", "pointer-events-none")
         slide.classList.remove("opacity-100")
+        slide.setAttribute("tabindex", "-1")
+        slide.setAttribute("aria-hidden", "true")
       })
 
       if (this.hasMapSlideTarget) {
         this.mapSlideTarget.classList.remove("opacity-0", "pointer-events-none")
         this.mapSlideTarget.classList.add("opacity-100", "pointer-events-auto")
+        this.mapSlideTarget.setAttribute("aria-hidden", "false")
         window.dispatchEvent(new Event("resize"))
+      }
+
+      if (this.hasMapOverlayTarget) {
+        this.mapOverlayTarget.setAttribute("tabindex", "0")
+        this.mapOverlayTarget.setAttribute("aria-hidden", "false")
       }
     }
 
@@ -442,11 +459,13 @@ export default class extends Controller {
         slide.classList.toggle("opacity-100", active)
         slide.classList.toggle("opacity-0", !active)
         slide.classList.toggle("pointer-events-none", !active)
+        slide.setAttribute("aria-hidden", (!active).toString())
       })
 
       if (this.hasLightboxMapSlideTarget) {
         this.lightboxMapSlideTarget.classList.add("opacity-0", "pointer-events-none")
         this.lightboxMapSlideTarget.classList.remove("opacity-100", "pointer-events-auto")
+        this.lightboxMapSlideTarget.setAttribute("aria-hidden", "true")
       }
 
       if (this.hasLightboxCounterTarget) {
@@ -463,11 +482,13 @@ export default class extends Controller {
       this.lightboxSlideTargets.forEach(slide => {
         slide.classList.add("opacity-0", "pointer-events-none")
         slide.classList.remove("opacity-100")
+        slide.setAttribute("aria-hidden", "true")
       })
 
       if (this.hasLightboxMapSlideTarget) {
         this.lightboxMapSlideTarget.classList.remove("opacity-0", "pointer-events-none")
         this.lightboxMapSlideTarget.classList.add("opacity-100", "pointer-events-auto")
+        this.lightboxMapSlideTarget.setAttribute("aria-hidden", "false")
         this.initFullscreenMap()
       }
 
