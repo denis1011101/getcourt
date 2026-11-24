@@ -20,10 +20,10 @@
             </div>
             <div class="flex items-center gap-1.5 flex-shrink-0">
               <% if current_user&.admin? %>
-                <%= button_to t("common.approve"), approve_court_photo_path(court, photo), method: :post, class: "rounded-full bg-green-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-green-700 transition" %>
-                <%= button_to t("common.reject"), reject_court_photo_path(court, photo), method: :post, class: "rounded-full bg-red-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-red-700 transition" %>
+                <%= button_to t("common.approve"), approve_court_photo_path(court, photo), method: :post, class: "rounded-full bg-green-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-green-700 transition cursor-pointer" %>
+                <%= button_to t("common.reject"), reject_court_photo_path(court, photo), method: :post, class: "rounded-full bg-red-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-red-700 transition cursor-pointer" %>
               <% elsif photo.user_id == current_user&.id %>
-                <%= button_to t("common.delete"), court_photo_path(court, photo), method: :delete, class: "rounded-full border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/10 transition" %>
+                <%= button_to t("common.delete"), court_photo_path(court, photo), method: :delete, class: "rounded-full border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/10 transition cursor-pointer" %>
               <% end %>
             </div>
           </div>
@@ -41,7 +41,7 @@
             <%= button_to "×", court_photo_path(court, photo), method: :delete,
                   data: { turbo_confirm: t("courts.photos.delete_confirm") },
                   title: t("common.delete"),
-                  class: "absolute top-1 right-1 h-5 w-5 rounded-full bg-black/65 text-white text-xs leading-none flex items-center justify-center hover:bg-red-600 transition" %>
+                  class: "absolute top-1 right-1 h-5 w-5 rounded-full bg-black/65 text-white text-xs leading-none flex items-center justify-center hover:bg-red-600 transition cursor-pointer" %>
           </div>
         <% end %>
       </div>
@@ -49,12 +49,69 @@
 
     <% if user_signed_in? %>
       <% if @active_photos_count < CourtPhoto::MAX_PHOTOS_PER_COURT %>
-        <%= form_with model: [ court, CourtPhoto.new ], url: court_photos_path(court), class: "space-y-2" do |f| %>
+        <%= form_with model: [ court, CourtPhoto.new ], url: court_photos_path(court),
+                      data: { controller: "court-photo-upload" },
+                      class: "space-y-3 pt-1" do |f| %>
           <%= f.file_field :file,
+                id: f.field_id(:file),
                 accept: "image/jpeg,image/png,image/webp",
                 required: true,
-                class: "block w-full text-xs text-gray-500 dark:text-slate-400 file:mr-3 file:rounded-full file:border-0 file:bg-indigo-50 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-indigo-500/15 dark:file:text-indigo-200" %>
-          <%= f.submit t("courts.photos.upload_cta"), class: "w-full rounded-full bg-indigo-600 px-4 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition cursor-pointer" %>
+                data: { court_photo_upload_target: "input", action: "change->court-photo-upload#onFileChange" },
+                class: "sr-only" %>
+
+          <label for="<%= f.field_id(:file) %>"
+                 data-court-photo-upload-target="dropzone"
+                 data-action="keydown.enter->court-photo-upload#browse keydown.space->court-photo-upload#browse:prevent dragover->court-photo-upload#onDragOver dragleave->court-photo-upload#onDragLeave drop->court-photo-upload#onDrop"
+                 role="button"
+                 tabindex="0"
+                 aria-label="<%= t('courts.photos.upload_dropzone') %>"
+                 class="relative flex flex-col items-center justify-center rounded-xl border-2 [border-style:dashed] border-slate-300 dark:border-white/20 p-4 transition-all duration-200 cursor-pointer hover:border-indigo-500 hover:bg-indigo-50/30 dark:hover:border-indigo-400 dark:hover:bg-indigo-500/10 select-none">
+
+            <!-- Empty / Initial state -->
+            <div data-court-photo-upload-target="emptyState" class="flex flex-col items-center text-center space-y-1.5 py-1 pointer-events-none">
+              <div class="h-9 w-9 rounded-full bg-indigo-100 dark:bg-indigo-950/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                </svg>
+              </div>
+              <p class="text-xs font-semibold text-gray-800 dark:text-slate-200">
+                <%= t("courts.photos.upload_dropzone") %>
+              </p>
+              <p class="text-[11px] text-gray-500 dark:text-slate-400">
+                <%= t("courts.photos.upload_hint") %>
+              </p>
+            </div>
+
+            <!-- Preview state (hidden initially) -->
+            <div data-court-photo-upload-target="previewContainer" class="hidden w-full flex items-center gap-3">
+              <img data-court-photo-upload-target="previewImage" alt="<%= t('courts.photos.title') %>" class="h-12 w-14 rounded-lg object-cover flex-shrink-0 border dark:border-white/10" />
+              <div class="min-w-0 flex-1">
+                <p data-court-photo-upload-target="fileName" class="text-xs font-medium text-gray-900 dark:text-slate-100 truncate"></p>
+                <p data-court-photo-upload-target="fileSize" class="text-[11px] text-gray-500 dark:text-slate-400 mt-0.5"></p>
+                <span class="inline-block text-[11px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline mt-0.5 cursor-pointer">
+                  <%= t("courts.photos.change_photo") %>
+                </span>
+              </div>
+              <button type="button"
+                      data-action="click->court-photo-upload#clear"
+                      title="<%= t('common.delete') %>"
+                      aria-label="<%= t('common.delete') %>"
+                      class="h-7 w-7 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-gray-600 dark:text-slate-300 flex items-center justify-center transition cursor-pointer">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </label>
+
+          <p data-court-photo-upload-target="errorMessage" class="hidden text-xs text-red-600 dark:text-red-400 font-medium text-center"></p>
+
+          <%= f.submit t("courts.photos.upload_cta"),
+                data: {
+                  court_photo_upload_target: "submitBtn",
+                  action: "click->court-photo-upload#submitOrBrowse"
+                },
+                class: "w-full rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 transition cursor-pointer" %>
         <% end %>
       <% else %>
         <p class="text-xs text-gray-500 dark:text-slate-400"><%= t("courts.photos.limit_reached", count: CourtPhoto::MAX_PHOTOS_PER_COURT) %></p>

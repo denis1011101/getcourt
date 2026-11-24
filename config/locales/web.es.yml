@@ -487,6 +487,12 @@ es:
       next: Siguiente foto
       slide: "Foto %{number}"
       upload_cta: Añadir foto
+      upload_dropzone: Haz clic para subir o arrastra y suelta
+      upload_hint: JPG, PNG, WebP hasta 5 MB
+      change_photo: Cambiar foto
+      open_gallery: Abrir galería en pantalla completa
+      close_gallery: Cerrar galería
+      counter: "%{current} de %{total}"
       pending_badge: En moderación
       pending_notice: Foto enviada a moderación.
       approved_notice: Foto aprobada.

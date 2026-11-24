@@ -491,6 +491,12 @@ ru:
       next: Следующее фото
       slide: "Фото %{number}"
       upload_cta: Добавить фото
+      upload_dropzone: Нажмите для загрузки или перетащите фото
+      upload_hint: JPG, PNG, WebP до 5 МБ
+      change_photo: Выбрать другое фото
+      open_gallery: Открыть галерею на весь экран
+      close_gallery: Закрыть галерею
+      counter: "%{current} из %{total}"
       pending_badge: На модерации
       pending_notice: Фото отправлено на модерацию.
       approved_notice: Фото одобрено.
