@@ -483,6 +483,12 @@ en:
       next: Next photo
       slide: "Photo %{number}"
       upload_cta: Add photo
+      upload_dropzone: Click to upload or drag and drop
+      upload_hint: JPG, PNG, WebP up to 5 MB
+      change_photo: Change photo
+      open_gallery: Open fullscreen gallery
+      close_gallery: Close gallery
+      counter: "%{current} of %{total}"
       pending_badge: Pending approval
       pending_notice: Photo submitted for moderation.
       approved_notice: Photo approved.
