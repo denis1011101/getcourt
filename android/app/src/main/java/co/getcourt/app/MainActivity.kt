@@ -2,8 +2,6 @@ package co.getcourt.app
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.Menu
 import android.view.View
 import android.webkit.CookieManager
@@ -25,17 +23,10 @@ class MainActivity : HotwireActivity() {
     private var pendingLink: String? = null
     private var currentTabIndex = 0
 
-    private val authHandler = Handler(Looper.getMainLooper())
     private var observedAuth = ""
     private var pendingAuth: String? = null
-    private val authCheck = object : Runnable {
-        override fun run() {
-            val auth = currentAuth()
-            if (auth != observedAuth) pendingAuth = auth
-            applyPendingAuthChange()
-            authHandler.postDelayed(this, 500)
-        }
-    }
+    private var pendingAuthNavigator: Navigator? = null
+    private val authNavigators = mutableSetOf<Navigator>()
 
     private val tabs by lazy {
         listOf(
@@ -63,12 +54,7 @@ class MainActivity : HotwireActivity() {
 
     override fun onResume() {
         super.onResume()
-        authHandler.post(authCheck)
-    }
-
-    override fun onPause() {
-        authHandler.removeCallbacks(authCheck)
-        super.onPause()
+        applyPendingAuthChange()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -124,25 +110,88 @@ class MainActivity : HotwireActivity() {
     }
 
 
+    fun onVisitStarted(navigator: Navigator) {
+        if (navigator == pendingAuthNavigator) {
+            pendingAuthNavigator = null
+        }
+    }
+
+    fun onFormSubmissionStarted(navigator: Navigator, location: String) {
+        if (isAuthActionPath(location)) {
+            authNavigators.add(navigator)
+            if (pendingAuthNavigator == navigator) pendingAuthNavigator = null
+        }
+    }
+
+    fun onFormSubmissionFinished(navigator: Navigator, location: String) {
+        if (!isAuthActionPath(location)) return
+        val auth = currentAuth()
+        if (auth != observedAuth) {
+            authNavigators.add(navigator)
+            pendingAuth = auth
+        } else if (pendingAuth == null) {
+            authNavigators.remove(navigator)
+        }
+    }
+
+    fun onVisitError(navigator: Navigator) {
+        authNavigators.remove(navigator)
+        if (pendingAuthNavigator == navigator) pendingAuthNavigator = null
+
+        // A successful sign-in can change cookies even when its destination fails to load.
+        // Keep the new auth state, but stop waiting for this failed visit to complete.
+        pendingAuth = currentAuth().takeIf { it != observedAuth }
+        applyPendingAuthChange()
+    }
+
+    fun onVisitCompleted(navigator: Navigator) {
+        val auth = currentAuth()
+        if (auth == observedAuth) {
+            if (pendingAuth == null) authNavigators.remove(navigator)
+            return
+        }
+
+        if (authNavigators.isNotEmpty() && navigator !in authNavigators) return
+        if (isSignInPath(navigator.location)) return
+
+        pendingAuth = auth
+        pendingAuthNavigator = navigator
+        applyPendingAuthChange()
+    }
+
     private fun applyPendingAuthChange() {
         val auth = pendingAuth ?: return
-        // Wait for Android to resume before touching navigator state. Let Hotwire finish
-        // sign-in and code verification redirects, or refreshing the form can cancel return_to.
-        if (supportFragmentManager.isStateSaved) return
-        val activeNavigator = delegate.currentNavigator ?: return
-        val activePath = activeNavigator.location?.let { android.net.Uri.parse(it).path }
-        if (activePath == "/sign_in" || activePath == "/sign_in/verify") return
+        val authNavigator = pendingAuthNavigator
+        // Wait for an auth redirect to finish, or for all auth attempts to fail.
+        // With no completed destination to preserve, refresh every tab once with the new cookie.
+        if (authNavigator == null && authNavigators.isNotEmpty()) return
+        if (supportFragmentManager.isStateSaved || isSignInPath(authNavigator?.location)) return
+
+        observedAuth = auth
+        pendingAuth = null
+        pendingAuthNavigator = null
+        authNavigators.clear()
 
         tabs.forEach { tab ->
             val navigator = navigatorHost(tab).navigator
-            val location = navigator.location ?: tab.configuration.startLocation
             // Clear Turbo snapshots without popping the Android navigation graph, then reload
-            // the current URL so auth changes cannot leave old account state in cached pages.
+            // background tabs so auth changes cannot leave old account state in cached pages.
             navigator.session.reset()
-            navigator.route(location, VisitOptions(action = VisitAction.REPLACE))
+            if (navigator != authNavigator) {
+                val location = navigator.location ?: tab.configuration.startLocation
+                navigator.route(location, VisitOptions(action = VisitAction.REPLACE))
+            }
         }
-        observedAuth = auth
-        pendingAuth = null
+    }
+
+    private fun isSignInPath(location: String?): Boolean {
+        val path = location?.let { android.net.Uri.parse(it).path }
+        return path == "/sign_in" || path == "/sign_in/verify"
+    }
+
+    private fun isAuthActionPath(location: String?): Boolean {
+        val path = location?.let { android.net.Uri.parse(it).path }
+        return isSignInPath(location) || path == "/sign_out" || path == "/account"
     }
 
     private fun currentAuth(): String = CookieManager.getInstance().getCookie(BuildConfig.BASE_URL)

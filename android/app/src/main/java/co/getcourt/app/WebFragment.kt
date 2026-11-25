@@ -14,6 +14,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import dev.hotwire.core.turbo.config.context
+import dev.hotwire.core.turbo.errors.VisitError
 import dev.hotwire.core.turbo.nav.PresentationContext
 import dev.hotwire.core.turbo.webview.HotwireWebChromeClient
 import dev.hotwire.navigation.destinations.HotwireDestinationDeepLink
@@ -55,6 +56,32 @@ class WebFragment : HotwireWebFragment() {
             v.updatePadding(top = if (hideAppBar) top else 0, bottom = insets.getInsets(bottomInsets).bottom)
             insets
         }
+    }
+
+    override fun onVisitStarted(location: String) {
+        (activity as? MainActivity)?.onVisitStarted(navigator)
+    }
+
+    override fun onFormSubmissionStarted(location: String) {
+        (activity as? MainActivity)?.onFormSubmissionStarted(navigator, location)
+    }
+
+    override fun onFormSubmissionFinished(location: String) {
+        (activity as? MainActivity)?.onFormSubmissionFinished(navigator, location)
+    }
+
+    override fun onVisitCompleted(location: String, completedOffline: Boolean) {
+        // /sign_in uses data-turbo="false", so forward its submit to TurboSession like Turbo forms do.
+        navigator.session.webView.evaluateJavascript(
+            "if (!window.nativeFormHook) { window.nativeFormHook = true; addEventListener('submit', e => { if (e.target.dataset.turbo === 'false') TurboSession.formSubmissionStarted(e.target.action) }) }",
+            null
+        )
+        (activity as? MainActivity)?.onVisitCompleted(navigator)
+    }
+
+    override fun onVisitErrorReceived(location: String, error: VisitError) {
+        super.onVisitErrorReceived(location, error)
+        (activity as? MainActivity)?.onVisitError(navigator)
     }
 
     override fun createWebChromeClient() = object : HotwireWebChromeClient(navigator.session) {
