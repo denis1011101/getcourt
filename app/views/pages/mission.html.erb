@@ -12,6 +12,24 @@
       <%= t("pages.mission.intro") %>
     </p>
 
+    <section aria-labelledby="founder" class="mb-6 space-y-2">
+      <h2 id="founder" class="text-lg font-medium text-gray-900 dark:text-slate-100"><%= t("pages.mission.founder_title") %></h2>
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-start">
+        <%= image_tag "https://github.com/denis1011101.png", alt: "", width: 96, height: 96,
+              referrerpolicy: "no-referrer", class: "size-24 shrink-0 rounded-lg object-cover" %>
+        <div class="space-y-2">
+          <h3 class="font-medium text-gray-900 dark:text-slate-100">Denis Levenko</h3>
+          <p class="text-gray-700 dark:text-slate-300"><%= t("pages.mission.founder_role") %></p>
+          <p class="text-gray-600 dark:text-slate-400"><%= t("pages.mission.founder_work") %></p>
+          <ul class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-indigo-600 dark:text-indigo-400">
+            <li><%= link_to t("pages.mission.founder_website"), "https://denis1011101.xyz/", class: "hover:underline" %></li>
+            <li><%= link_to "GitHub", "https://github.com/denis1011101/", class: "hover:underline" %></li>
+            <li><%= link_to "LinkedIn", "https://www.linkedin.com/in/denis-levenko/", class: "hover:underline" %></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
       <div class="space-y-3">
         <h2 class="text-lg font-medium text-gray-900 dark:text-slate-100"><%= t("pages.mission.opponents_title") %></h2>
