@@ -439,46 +439,46 @@
           <% end %>
         <% end %>
 
-        <div class="p-4 space-y-3">
+        <dl class="p-4 space-y-3">
           <% if court_location.present? %>
             <div>
-              <p class="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wide font-medium"><%= t("courts.show.address") %></p>
-              <p class="text-sm font-medium text-gray-900 dark:text-slate-100 mt-0.5"><%= court_location %></p>
+              <dt class="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wide font-medium"><%= t("courts.show.address") %></dt>
+              <dd class="text-sm font-medium text-gray-900 dark:text-slate-100 mt-0.5"><%= court_location %></dd>
             </div>
           <% end %>
 
           <% if @court.sport.present? %>
             <div>
-              <p class="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wide font-medium"><%= t("courts.show.sport") %></p>
-              <p class="text-sm font-medium text-gray-900 dark:text-slate-100 mt-0.5"><%= @court.sport %></p>
+              <dt class="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wide font-medium"><%= t("courts.show.sport") %></dt>
+              <dd class="text-sm font-medium text-gray-900 dark:text-slate-100 mt-0.5"><%= @court.sport %></dd>
             </div>
           <% end %>
 
           <% if @court.surfaces.any? %>
             <div>
-              <p class="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wide font-medium"><%= t("courts.show.surfaces") %></p>
-              <p class="text-sm font-medium text-gray-900 dark:text-slate-100 mt-0.5"><%= @court.surface_labels.join(" · ") %></p>
+              <dt class="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wide font-medium"><%= t("courts.show.surfaces") %></dt>
+              <dd class="text-sm font-medium text-gray-900 dark:text-slate-100 mt-0.5"><%= @court.surface_labels.join(" · ") %></dd>
             </div>
           <% end %>
 
           <% if @court.sauna? %>
             <div>
-              <p class="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wide font-medium"><%= t("courts.show.sauna") %></p>
-              <p class="text-sm font-medium text-gray-900 dark:text-slate-100 mt-0.5"><%= t("courts.show.sauna_available") %></p>
+              <dt class="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wide font-medium"><%= t("courts.show.sauna") %></dt>
+              <dd class="text-sm font-medium text-gray-900 dark:text-slate-100 mt-0.5"><%= t("courts.show.sauna_available") %></dd>
             </div>
           <% end %>
 
           <% if lat && lng && !(lat.zero? && lng.zero?) %>
             <div>
-              <p class="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wide font-medium"><%= t("courts.show.coordinates") %></p>
-              <p class="text-sm font-mono text-gray-600 dark:text-slate-400 mt-0.5"><%= lat.round(6) %>, <%= lng.round(6) %></p>
+              <dt class="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wide font-medium"><%= t("courts.show.coordinates") %></dt>
+              <dd class="text-sm font-mono text-gray-600 dark:text-slate-400 mt-0.5"><%= lat.round(6) %>, <%= lng.round(6) %></dd>
             </div>
           <% end %>
 
           <% if @court.formatted_contact.present? %>
             <div>
-              <p class="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wide font-medium"><%= t("courts.show.contact") %></p>
-              <div class="mt-0.5 space-y-1 text-sm font-medium">
+              <dt class="text-xs text-gray-400 dark:text-slate-500 uppercase tracking-wide font-medium"><%= t("courts.show.contact") %></dt>
+              <dd class="mt-0.5 space-y-1 text-sm font-medium">
                 <% @court.contact_links.each do |contact| %>
                   <p>
                     <% if contact[:href].present? %>
@@ -489,10 +489,10 @@
                     <% end %>
                   </p>
                 <% end %>
-              </div>
+              </dd>
             </div>
           <% end %>
-        </div>
+        </dl>
       </div>
 
       <%= render "courts/rating", court: @court %>
